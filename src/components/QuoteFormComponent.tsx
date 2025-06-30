@@ -14,6 +14,7 @@ export default function QuoteFormComponent() {
   const [quoteForm, setQuoteForm] = useState({
     senderPostalCode: '',
     senderCountryCode: 'JP',
+    senderStateCode: '',
     senderCityName: '',
     recipientPostalCode: '',
     recipientCountryCode: 'US',
@@ -42,11 +43,12 @@ export default function QuoteFormComponent() {
           recipientCityName: ''
         }
       }
-      // 出荷元の国コードが変更された場合、都市名をリセット
+      // 出荷元の国コードが変更された場合、州コードと都市名をリセット
       if (name === 'senderCountryCode') {
         return {
           ...prev,
           [name]: value,
+          senderStateCode: '',
           senderCityName: ''
         }
       }
@@ -82,6 +84,11 @@ export default function QuoteFormComponent() {
       // 出荷元の都市名を追加（設定されている場合）
       if (quoteForm.senderCityName) {
         requestBody.sender.city = quoteForm.senderCityName
+      }
+
+      // 出荷元がUSまたはCAの場合は州コードも追加
+      if ((quoteForm.senderCountryCode === 'US' || quoteForm.senderCountryCode === 'CA') && quoteForm.senderStateCode) {
+        requestBody.sender.stateCode = quoteForm.senderStateCode
       }
 
       // 仕向地の都市名を追加（設定されている場合）
@@ -199,7 +206,8 @@ export default function QuoteFormComponent() {
                   />
                 </div>
               )}
-              <div>
+
+              <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
                   国コード
                 </label>
@@ -218,6 +226,7 @@ export default function QuoteFormComponent() {
                 >
                   <option value="JP">🇯🇵 JP (日本)</option>
                   <option value="US">🇺🇸 US (アメリカ)</option>
+                  <option value="CA">🇨🇦 CA (カナダ)</option>
                   <option value="CN">🇨🇳 CN (中国)</option>
                   <option value="KR">🇰🇷 KR (韓国)</option>
                   <option value="DE">🇩🇪 DE (ドイツ)</option>
@@ -227,6 +236,36 @@ export default function QuoteFormComponent() {
                   <option value="SG">🇸🇬 SG (シンガポール)</option>
                 </select>
               </div>
+
+              {/* 州・県選択（USまたはCAの場合のみ表示） */}
+              {(quoteForm.senderCountryCode === 'US' || quoteForm.senderCountryCode === 'CA') && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    州・県 <span style={{ color: '#dc3545' }}>*</span>
+                  </label>
+                  <select
+                    name="senderStateCode"
+                    value={quoteForm.senderStateCode}
+                    onChange={handleQuoteInputChange}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid #ced4da',
+                      borderRadius: '4px',
+                      fontSize: '0.9rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="">-- 州・県を選択してください --</option>
+                    {getStatesByCountry(quoteForm.senderCountryCode as 'US' | 'CA').map(state => (
+                      <option key={state.code} value={state.code}>
+                        {state.name} ({state.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* 荷受先情報 */}
