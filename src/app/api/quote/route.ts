@@ -46,15 +46,55 @@ interface ShippingQuoteResponse {
   timestamp: string
 }
 
-// FedExアクセストークンを取得する関数
-async function getFedExAccessToken(): Promise<string> {
-  const clientId = process.env.FEDEX_API_KEY
-  const clientSecret = process.env.FEDEX_SECRET_KEY
+// FedX アカウント情報の型定義
+interface FedXAccountConfig {
+  apiKey: string
+  secretKey: string
+  accountNumber: string
+  accountType: 'export' | 'import'
+}
 
-  if (!clientId || !clientSecret) {
-    throw new Error('FedExのAPIキーまたはシークレットキーが設定されていません')
+// 環境変数からFedXアカウント設定を取得する関数
+function getFedXAccountConfig(senderCountryCode: string): FedXAccountConfig {
+  const isExport = senderCountryCode === 'JP'
+  
+  if (isExport) {
+    // 輸出用のアカウント情報
+    const apiKey = process.env.FEDEX_EXPORT_API_KEY
+    const secretKey = process.env.FEDEX_EXPORT_SECRET_KEY
+    const accountNumber = process.env.FEDEX_EXPORT_ACCOUNT_NUMBER
+    
+    if (!apiKey || !secretKey || !accountNumber) {
+      throw new Error('FedXの輸出用環境変数が設定されていません (FEDEX_EXPORT_API_KEY, FEDEX_EXPORT_SECRET_KEY, FEDEX_EXPORT_ACCOUNT_NUMBER)')
+    }
+    
+    return {
+      apiKey,
+      secretKey,
+      accountNumber,
+      accountType: 'export'
+    }
+  } else {
+    // 輸入用のアカウント情報
+    const apiKey = process.env.FEDEX_IMPORT_API_KEY
+    const secretKey = process.env.FEDEX_IMPORT_SECRET_KEY
+    const accountNumber = process.env.FEDEX_IMPORT_ACCOUNT_NUMBER
+    
+    if (!apiKey || !secretKey || !accountNumber) {
+      throw new Error('FedXの輸入用環境変数が設定されていません (FEDEX_IMPORT_API_KEY, FEDEX_IMPORT_SECRET_KEY, FEDEX_IMPORT_ACCOUNT_NUMBER)')
+    }
+    
+    return {
+      apiKey,
+      secretKey,
+      accountNumber,
+      accountType: 'import'
+    }
   }
+}
 
+// FedXアクセストークンを取得する関数（APIキーとシークレットキーを受け取る）
+async function getFedXAccessToken(apiKey: string, secretKey: string): Promise<string> {
   const response = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
     method: 'POST',
     headers: {
@@ -62,27 +102,21 @@ async function getFedExAccessToken(): Promise<string> {
     },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
+      client_id: apiKey,
+      client_secret: secretKey,
     }),
   })
 
   if (!response.ok) {
-    throw new Error(`FedEx認証API呼び出しエラー: ${response.status} ${response.statusText}`)
+    throw new Error(`FedX認証API呼び出しエラー: ${response.status} ${response.statusText}`)
   }
 
   const tokenData = await response.json()
   return tokenData.access_token
 }
 
-// FedEx Rate APIのリクエストボディを構築する関数
-function buildFedExRateRequest(request: ShippingQuoteRequest) {
-  const accountNumber = process.env.FEDEX_ACCOUNT_NUMBER
-
-  if (!accountNumber) {
-    throw new Error('FedExアカウント番号が設定されていません')
-  }
-
+// FedX Rate APIのリクエストボディを構築する関数（アカウント番号を受け取る）
+function buildFedXRateRequest(request: ShippingQuoteRequest, accountNumber: string) {
   // shipper addressを構築（郵便番号がある場合のみ含める）
   const shipperAddress: any = {
     countryCode: request.sender.countryCode
@@ -140,8 +174,8 @@ function buildFedExRateRequest(request: ShippingQuoteRequest) {
   }
 }
 
-// FedEx Rate APIを呼び出す関数
-async function getFedExRates(accessToken: string, requestData: any): Promise<FedExRateResponse> {
+// FedX Rate APIを呼び出す関数
+async function getFedXRates(accessToken: string, requestData: any): Promise<FedExRateResponse> {
   const response = await fetch('https://apis-sandbox.fedex.com/rate/v1/rates/quotes', {
     method: 'POST',
     headers: {
@@ -154,7 +188,7 @@ async function getFedExRates(accessToken: string, requestData: any): Promise<Fed
 
   if (!response.ok) {
     const errorText = await response.text()
-    throw new Error(`FedEx Rate API呼び出しエラー: ${response.status} ${response.statusText} - ${errorText}`)
+    throw new Error(`FedX Rate API呼び出しエラー: ${response.status} ${response.statusText} - ${errorText}`)
   }
 
   return await response.json()
@@ -200,7 +234,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('=== FedEx配送見積もりAPIが呼び出されました ===')
+    console.log('=== FedX配送見積もりAPIが呼び出されました ===')
     console.log('荷送人情報:', {
       郵便番号: body.sender.postalCode || '未設定',
       都市名: body.sender.city || '未設定',
@@ -215,33 +249,45 @@ export async function POST(request: NextRequest) {
       重量: `${body.package.weight}kg`
     })
 
-    // 1. FedXアクセストークンを取得
-    console.log('FedExアクセストークンを取得中...')
-    const accessToken = await getFedExAccessToken()
+    // 1. sender.countryCodeに基づいてFedXアカウント設定を取得
+    console.log(`sender.countryCode: ${body.sender.countryCode} - アカウント設定を取得中...`)
+    const accountConfig = getFedXAccountConfig(body.sender.countryCode)
+    console.log(`${accountConfig.accountType}用アカウントを選択しました`)
+
+    // 2. 選択されたアカウントでFedXアクセストークンを取得
+    console.log('FedXアクセストークンを取得中...')
+    const accessToken = await getFedXAccessToken(accountConfig.apiKey, accountConfig.secretKey)
     console.log('アクセストークン取得完了')
 
-    // 2. FedEx Rate APIリクエストデータを構築
-    const fedexRequestData = buildFedExRateRequest(body)
+    // 3. 選択されたアカウント番号でFedX Rate APIリクエストデータを構築
+    const fedexRequestData = buildFedXRateRequest(body, accountConfig.accountNumber)
     console.log('FedX APIリクエストデータ:', JSON.stringify(fedexRequestData, null, 2))
 
-    // 3. FedEx Rate APIを呼び出し
-    console.log('FedEx Rate APIを呼び出し中...')
-    const fedexResponse = await getFedExRates(accessToken, fedexRequestData)
-    console.log('FedEx APIレスポンス:', JSON.stringify(fedexResponse, null, 2))
+    // 4. FedX Rate APIを呼び出し
+    console.log('FedX Rate APIを呼び出し中...')
+    const fedexResponse = await getFedXRates(accessToken, fedexRequestData)
+    console.log('FedX APIレスポンス:', JSON.stringify(fedexResponse, null, 2))
 
-    // 4. レスポンスから料金情報を抽出
-    const rates = fedexResponse.output.rateReplyDetails.map(detail => ({
+    // 5. レスポンスから料金情報を抽出
+    const rates = fedexResponse.output.rateReplyDetails.map((detail: {
+      serviceName: string
+      ratedShipmentDetails: Array<{
+        totalNetCharge: number
+        currency: string
+      }>
+    }) => ({
       serviceName: detail.serviceName,
       amount: detail.ratedShipmentDetails[0].totalNetCharge,
       currency: detail.ratedShipmentDetails[0].currency
     }))
 
     console.log('抽出された料金情報:', rates)
+    console.log('使用されたアカウント:', `${accountConfig.accountType}用 (${accountConfig.accountNumber})`)
     console.log('=========================================')
 
     const response: ShippingQuoteResponse = {
       success: true,
-      message: 'FedXからの見積もりを正常に取得しました',
+      message: `FedX ${accountConfig.accountType}用アカウントから見積もりを正常に取得しました`,
       rates: rates,
       timestamp: new Date().toISOString()
     }
@@ -249,7 +295,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { status: 200 })
 
   } catch (error) {
-    console.error('FedEx API処理エラー:', error)
+    console.error('FedX API処理エラー:', error)
     
     const response: ShippingQuoteResponse = {
       success: false,
