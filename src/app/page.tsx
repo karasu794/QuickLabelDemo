@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { getCurrentUser, getUserProfile } from '@/lib/supabase/client'
 import { getStatesByCountry } from '@/lib/data/locations'
 import type { User } from '@supabase/supabase-js'
@@ -11,8 +10,6 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const searchParams = useSearchParams()
-
   // 郵便番号が任意となる国のリスト
   const postalCodeOptionalCountries = ['HK', 'AE', 'SG']
   
