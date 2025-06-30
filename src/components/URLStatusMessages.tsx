@@ -12,10 +12,10 @@ export default function URLStatusMessages() {
     <>
       {/* 登録成功メッセージ */}
       {registrationSuccess === 'success' && (
-        <div style={{
-          background: '#d4edda',
-          padding: '1rem',
-          borderRadius: '4px',
+        <div style={{ 
+          background: '#d4edda', 
+          padding: '1rem', 
+          borderRadius: '4px', 
           border: '1px solid #c3e6cb',
           marginBottom: '2rem'
         }}>
@@ -28,10 +28,10 @@ export default function URLStatusMessages() {
 
       {/* エラーメッセージ */}
       {authError && (
-        <div style={{
-          background: '#f8d7da',
-          padding: '1rem',
-          borderRadius: '4px',
+        <div style={{ 
+          background: '#f8d7da', 
+          padding: '1rem', 
+          borderRadius: '4px', 
           border: '1px solid #f5c6cb',
           marginBottom: '2rem'
         }}>
