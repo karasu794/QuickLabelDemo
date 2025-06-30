@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
 import { getCurrentUser, getUserProfile } from '@/lib/supabase/client'
 import QuoteFormComponent from '@/components/QuoteFormComponent'
+import URLStatusMessages from '@/components/URLStatusMessages'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/types/supabase'
 
@@ -11,9 +11,6 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const searchParams = useSearchParams()
-
-
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -35,10 +32,6 @@ export default function HomePage() {
     loadUserData()
   }, [])
 
-  // URLパラメータからメッセージを表示
-  const registrationSuccess = searchParams.get('registration')
-  const authError = searchParams.get('error')
-
   if (loading) {
     return (
       <div style={{ padding: '2rem', fontFamily: 'system-ui', textAlign: 'center' }}>
@@ -52,40 +45,9 @@ export default function HomePage() {
     <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
       <h1>QuickLabel - Supabase連携テスト</h1>
       
-      {/* 登録成功メッセージ */}
-      {registrationSuccess === 'success' && (
-        <div style={{ 
-          background: '#d4edda', 
-          padding: '1rem', 
-          borderRadius: '4px', 
-          border: '1px solid #c3e6cb',
-          marginBottom: '2rem'
-        }}>
-          <p style={{ margin: '0', color: '#155724' }}>
-            <strong>✅ 登録が完了しました！</strong><br />
-            確認メールを送信しましたので、メール内のリンクをクリックしてアカウントを有効化してください。
-          </p>
-        </div>
-      )}
-
-      {/* エラーメッセージ */}
-      {authError && (
-        <div style={{ 
-          background: '#f8d7da', 
-          padding: '1rem', 
-          borderRadius: '4px', 
-          border: '1px solid #f5c6cb',
-          marginBottom: '2rem'
-        }}>
-          <p style={{ margin: '0', color: '#721c24' }}>
-            <strong>❌ 認証エラーが発生しました</strong><br />
-            {authError === 'auth_callback_error' && 'メール確認の処理中にエラーが発生しました。'}
-            {authError === 'otp_expired' && 'メール確認リンクの有効期限が切れています。'}
-            {authError === 'access_denied' && 'アクセスが拒否されました。'}
-            {authError === 'unexpected_error' && '予期しないエラーが発生しました。'}
-          </p>
-        </div>
-      )}
+      <Suspense fallback={null}>
+        <URLStatusMessages />
+      </Suspense>
       
       <div style={{ marginTop: '2rem' }}>
         <h2>認証状況:</h2>
