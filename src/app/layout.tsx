@@ -1,9 +1,15 @@
+// src/app/layout.tsx
+
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+import Header from '@/components/Header' // ★ Headerコンポーネントをインポート
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'QuickLabel',
-  description: 'Quick labeling application with Supabase',
+  description: 'FedEx Label Creation Service',
 }
 
 export default function RootLayout({
@@ -13,7 +19,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <Header /> {/* ★ bodyタグのすぐ下にHeaderを配置 */}
+        <main className="container mx-auto p-6 bg-gray-50 min-h-screen">
+          {children}
+        </main>
+      </body>
     </html>
   )
-} 
+}

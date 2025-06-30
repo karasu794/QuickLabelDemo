@@ -9,6 +9,11 @@ const config = {
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    "bg-[#4D148C]",
+    "text-white",
+    "shadow-lg"
+  ],
   prefix: "",
   theme: {
     container: {
@@ -77,7 +82,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
 } satisfies Config
 
 export default config
