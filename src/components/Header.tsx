@@ -46,23 +46,23 @@ export default function Header() {
 
   if (loading) {
     return (
-      <header className="bg-purple-800 shadow-lg" style={{backgroundColor: '#4D148C'}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <Link href="/" className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200">
-                QuickLabel
-              </Link>
-            </div>
-            <div className="text-white">読み込み中...</div>
+          <header className="bg-fedex-purple shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex-shrink-0">
+            <Link href="/" className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200">
+              QuickLabel
+            </Link>
           </div>
+          <div className="text-white">読み込み中...</div>
         </div>
-      </header>
+      </div>
+    </header>
     )
   }
 
   return (
-    <header className="bg-purple-800 shadow-lg" style={{backgroundColor: '#4D148C'}}>
+    <header className="bg-fedex-purple shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Site Title */}

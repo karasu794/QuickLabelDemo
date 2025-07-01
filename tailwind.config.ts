@@ -6,8 +6,10 @@ const config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
+  // お客様が元々使っていた、shadcn/ui用のテーマ設定を復元
   theme: {
     container: {
       center: true,
@@ -75,7 +77,8 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")], // tailwindcss-animateを追加
+  // 必要なプラグインも復元
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
 export default config
