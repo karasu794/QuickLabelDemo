@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getStatesByCountry } from '@/lib/data/locations'
-import { useShipperInfo, type ShipperInfo } from '@/store/shippingFormStore'
+import { useShippingFormStore, type ShipperInfo } from '@/store/shippingFormStore'
 
 export default function ShipperInfoPage() {
   const router = useRouter()
-  const { shipperInfo, updateShipperInfo } = useShipperInfo()
+  
+  // Zustandストアから直接状態とアクションを取得
+  const shipperInfo = useShippingFormStore((state) => state.shipperInfo)
+  const updateShipperInfo = useShippingFormStore((state) => state.updateShipperInfo)
 
   // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
@@ -25,10 +27,9 @@ export default function ShipperInfoPage() {
     }
   }
 
-  // フォーム送信ハンドラー
+  // フォーム送信ハンドラー（次のページへの遷移のみ）
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('荷送人情報:', shipperInfo)
     router.push('/shipping/new/recipient')
   }
 

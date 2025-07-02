@@ -1,12 +1,18 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useItems, useShippingPurpose, type ItemInfo } from '@/store/shippingFormStore'
+import { useShippingFormStore, type ItemInfo } from '@/store/shippingFormStore'
 
 export default function Component() {
   const router = useRouter()
-  const { items, addItem, updateItem, removeItem } = useItems()
-  const { shippingPurpose, setShippingPurpose } = useShippingPurpose()
+  
+  // Zustandストアから直接状態とアクションを取得
+  const items = useShippingFormStore((state) => state.items)
+  const addItem = useShippingFormStore((state) => state.addItem)
+  const updateItem = useShippingFormStore((state) => state.updateItem)
+  const removeItem = useShippingFormStore((state) => state.removeItem)
+  const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
+  const setShippingPurpose = useShippingFormStore((state) => state.setShippingPurpose)
 
   // 品目情報を更新する関数
   const handleItemChange = (index: number, field: keyof ItemInfo, value: string | number) => {
@@ -18,11 +24,9 @@ export default function Component() {
     router.push('/shipping/new/contents')
   }
 
-  // フォーム送信ハンドラー
+  // フォーム送信ハンドラー（次のページへの遷移のみ）
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('内容品情報:', items)
-    console.log('発送目的:', shippingPurpose)
     router.push('/shipping/new/review')
   }
 

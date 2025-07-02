@@ -1,11 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { usePackages, type PackageInfo } from '@/store/shippingFormStore'
+import { useShippingFormStore, type PackageInfo } from '@/store/shippingFormStore'
 
 export default function PackageDetailsForm() {
   const router = useRouter()
-  const { packages, addPackage, updatePackage, removePackage } = usePackages()
+  
+  // Zustandストアから直接状態とアクションを取得
+  const packages = useShippingFormStore((state) => state.packages)
+  const addPackage = useShippingFormStore((state) => state.addPackage)
+  const updatePackage = useShippingFormStore((state) => state.updatePackage)
+  const removePackage = useShippingFormStore((state) => state.removePackage)
 
   // 荷物情報を更新する関数
   const handlePackageChange = (index: number, field: keyof PackageInfo, value: string) => {
@@ -17,10 +22,9 @@ export default function PackageDetailsForm() {
     router.push('/shipping/new/recipient')
   }
 
-  // フォーム送信ハンドラー
+  // フォーム送信ハンドラー（次のページへの遷移のみ）
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('荷物情報:', packages)
     router.push('/shipping/new/contents')
   }
 

@@ -1,49 +1,78 @@
 'use client'
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  useShipperInfo, 
-  useRecipientInfo, 
-  usePackages, 
-  useItems, 
-  useContents,
-  useShippingPurpose 
-} from '@/store/shippingFormStore'
+import { useShippingFormStore } from '@/store/shippingFormStore'
+import SquarePaymentForm from '@/components/SquarePaymentForm'
 
-export default function Component() {
+export default function ReviewPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [paymentCompleted, setPaymentCompleted] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   
-  // Zustandストアから全てのデータを取得
-  const { shipperInfo } = useShipperInfo()
-  const { recipientInfo } = useRecipientInfo()
-  const { packages } = usePackages()
-  const { items } = useItems()
-  const { contents } = useContents()
-  const { shippingPurpose } = useShippingPurpose()
+  // Zustandストアから直接全てのデータを取得
+  const shipperInfo = useShippingFormStore((state) => state.shipperInfo)
+  const recipientInfo = useShippingFormStore((state) => state.recipientInfo)
+  const packages = useShippingFormStore((state) => state.packages)
+  const items = useShippingFormStore((state) => state.items)
+  const contents = useShippingFormStore((state) => state.contents)
+  const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
+
+  // 料金計算ロジック
+  const calculations = useMemo(() => {
+    // 荷物の総重量を計算
+    const totalWeight = packages.reduce((sum, pkg) => sum + parseFloat(pkg.weight || '0'), 0)
+    
+    // 送料計算（簡易計算式）
+    const baseShippingFee = 1500 // 基本送料
+    const weightFee = totalWeight * 850 // 重量料金（1kgあたり850円）
+    const shippingFee = Math.round(baseShippingFee + weightFee)
+    
+    // サービス手数料（送料の15%）
+    const serviceFee = Math.round(shippingFee * 0.15)
+    
+    // 税金（消費税10%）
+    const subtotal = shippingFee + serviceFee
+    const tax = Math.round(subtotal * 0.10)
+    
+    // 最終請求額
+    const total = subtotal + tax
+    
+    return {
+      shippingFee,
+      serviceFee, 
+      tax,
+      subtotal,
+      total,
+      totalWeight
+    }
+  }, [packages])
 
   // 戻るボタンハンドラー
   const handlePrevious = () => {
     router.push('/shipping/new/items')
   }
 
-  // 決済・送信処理
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
+  // 決済成功時の処理
+  const handlePaymentSuccess = async (paymentId: string) => {
+    console.log('決済成功:', paymentId)
+    setPaymentCompleted(true)
+    setPaymentError(null)
     
     try {
+      // 送り状データを送信
       const shippingData = {
+        paymentId,
         shipperInfo,
         recipientInfo,
         packages,
         items,
         contents,
-        shippingPurpose
+        shippingPurpose,
+        totalAmount: calculations.total
       }
-      
-      console.log('送信データ:', shippingData)
       
       const response = await fetch('/api/ship', {
         method: 'POST',
@@ -54,22 +83,28 @@ export default function Component() {
       })
       
       if (!response.ok) {
-        throw new Error('送信に失敗しました')
+        throw new Error('送り状作成に失敗しました')
       }
       
       const result = await response.json()
-      console.log('送信結果:', result)
+      console.log('送り状作成成功:', result)
       
-      // 成功時の処理（例：完了ページへの遷移）
-      alert('送り状が正常に作成されました！')
+      // 成功ページへリダイレクト
+      alert('決済が完了し、送り状が正常に作成されました！')
       
     } catch (error) {
-      console.error('送信エラー:', error)
-      alert('送信に失敗しました。もう一度お試しください。')
-    } finally {
-      setIsSubmitting(false)
+      console.error('送り状作成エラー:', error)
+      setPaymentError('決済は完了しましたが、送り状の作成でエラーが発生しました。サポートにお問い合わせください。')
     }
   }
+
+  // 決済エラー時の処理
+  const handlePaymentError = (error: string) => {
+    console.error('決済エラー:', error)
+    setPaymentError(error)
+    setPaymentCompleted(false)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto max-w-4xl px-4">
@@ -220,6 +255,14 @@ export default function Component() {
                   </div>
                 </div>
               ))}
+              
+              {/* 荷物サマリー */}
+              <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700">総重量</span>
+                  <span className="font-semibold text-gray-900">{calculations.totalWeight.toFixed(1)} kg</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -296,14 +339,66 @@ export default function Component() {
             </div>
           </div>
 
-          {/* 配送料金 */}
-          <div className="bg-blue-50 border-blue-200 border rounded-lg shadow-md">
+          {/* 料金詳細 */}
+          <div className="bg-white rounded-lg shadow-md border border-gray-200">
+            <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
+              <h2 className="text-xl font-semibold">料金詳細</h2>
+              <p className="text-purple-100 text-sm">配送料とサービス料の内訳</p>
+            </div>
             <div className="p-6">
-              <div className="flex justify-between items-center text-lg">
-                <p className="font-semibold text-blue-900">配送料金</p>
-                <p className="font-bold text-blue-900 text-2xl">¥8,500</p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">配送料金</span>
+                  <span className="font-medium">¥{calculations.shippingFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">サービス手数料</span>
+                  <span className="font-medium">¥{calculations.serviceFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">消費税（10%）</span>
+                  <span className="font-medium">¥{calculations.tax.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-t-2 border-[#4D148C]">
+                  <span className="text-lg font-semibold text-gray-900">最終請求額</span>
+                  <span className="text-2xl font-bold text-[#4D148C]">¥{calculations.total.toLocaleString()}</span>
+                </div>
               </div>
-              <p className="text-sm text-blue-700 mt-2">※ 関税・諸税は含まれておりません</p>
+              <p className="text-sm text-gray-500 mt-4">※ 関税・諸税は含まれておりません</p>
+            </div>
+          </div>
+
+          {/* Square決済フォーム */}
+          <div className="bg-white rounded-lg shadow-md border border-gray-200">
+            <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
+              <h2 className="text-xl font-semibold">お支払い方法</h2>
+              <p className="text-purple-100 text-sm">安全で確実な決済システム</p>
+            </div>
+            <div className="p-6">
+              {/* エラーメッセージ */}
+              {paymentError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-700 text-sm">{paymentError}</p>
+                </div>
+              )}
+
+              {/* 決済完了メッセージ */}
+              {paymentCompleted && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                  <p className="text-green-700 text-sm font-medium">
+                    ✅ 決済が正常に完了しました！送り状を作成中です...
+                  </p>
+                </div>
+              )}
+
+              {/* Square決済フォーム */}
+              {!paymentCompleted && (
+                <SquarePaymentForm
+                  amount={calculations.total}
+                  onPaymentSuccess={handlePaymentSuccess}
+                  onPaymentError={handlePaymentError}
+                />
+              )}
             </div>
           </div>
 
@@ -313,21 +408,24 @@ export default function Component() {
               {/* 戻るボタン */}
               <button
                 onClick={handlePrevious}
-                className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent rounded-md transition-colors duration-200"
+                disabled={paymentCompleted}
+                className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ← 前へ
               </button>
               
-              {/* 決済ボタン */}
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full sm:w-1/2 h-14 text-lg font-semibold bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white rounded-md transition-colors duration-200"
-              >
-                {isSubmitting ? '処理中...' : '決済して送り状を作成する'}
-              </button>
+              {/* 完了状態の表示 */}
+              {paymentCompleted && (
+                <div className="w-full sm:w-1/2 h-14 flex items-center justify-center text-lg font-semibold bg-green-600 text-white rounded-md">
+                  決済完了・送り状作成中
+                </div>
+              )}
             </div>
-            <p className="text-center text-sm text-gray-600 mt-4">決済完了後、送り状をダウンロードできます</p>
+            {!paymentCompleted && (
+              <p className="text-center text-sm text-gray-600 mt-4">
+                決済完了後、送り状をダウンロードできます
+              </p>
+            )}
           </div>
         </div>
       </div>
