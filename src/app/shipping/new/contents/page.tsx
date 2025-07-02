@@ -36,12 +36,23 @@ export default function ContentsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mx-auto max-w-4xl space-y-6">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-gray-900">送り状作成 (4/5)</h1>
-          <p className="text-gray-600">内容品の詳細</p>
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">送り状作成 (4/5)</h1>
+          <p className="text-gray-600">内容品の詳細を入力してください</p>
+        </div>
+
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+            <span>ステップ 4 / 5</span>
+            <span>80% 完了</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="bg-[#4D148C] h-2 rounded-full" style={{ width: "80%" }}></div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

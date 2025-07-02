@@ -33,26 +33,36 @@ export default function ShipperInfoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* ページヘッダー */}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-            📦 送り状作成 (1/5) - 荷送人情報
-          </h1>
-          <div className="bg-gray-100 px-4 py-2 rounded-md text-sm text-gray-600">
-            ステップ 1: 荷送人情報 → 荷受人情報 → 荷物情報 → 配送オプション → 確認・送信
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">送り状作成 (1/5)</h1>
+          <p className="text-gray-600">荷送人情報を入力してください</p>
+        </div>
+
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+            <span>ステップ 1 / 5</span>
+            <span>20% 完了</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="bg-[#4D148C] h-2 rounded-full" style={{ width: "20%" }}></div>
           </div>
         </div>
 
         {/* メインフォーム */}
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+          <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
+            <h2 className="text-xl font-semibold">荷送人情報</h2>
+            <p className="text-purple-100 text-sm">荷送人の詳細情報を入力してください</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* 基本情報セクション */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-700 border-b-2 border-blue-500 pb-2">
-                👤 基本情報
-              </h2>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 担当者名 */}
@@ -123,10 +133,8 @@ export default function ShipperInfoPage() {
             </div>
 
             {/* 住所情報セクション */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-700 border-b-2 border-blue-500 pb-2">
-                🏠 住所情報
-              </h2>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
 
               {/* 国選択 */}
               <div className="space-y-2">
@@ -140,16 +148,16 @@ export default function ShipperInfoPage() {
                   required
                   className="w-full max-w-sm p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="JP">🇯🇵 日本</option>
-                  <option value="US">🇺🇸 アメリカ</option>
-                  <option value="CA">🇨🇦 カナダ</option>
-                  <option value="CN">🇨🇳 中国</option>
-                  <option value="KR">🇰🇷 韓国</option>
-                  <option value="DE">🇩🇪 ドイツ</option>
-                  <option value="FR">🇫🇷 フランス</option>
-                  <option value="HK">🇭🇰 香港</option>
-                  <option value="AE">🇦🇪 アラブ首長国連邦</option>
-                  <option value="SG">🇸🇬 シンガポール</option>
+                  <option value="JP">日本</option>
+                  <option value="US">アメリカ</option>
+                  <option value="CA">カナダ</option>
+                  <option value="CN">中国</option>
+                  <option value="KR">韓国</option>
+                  <option value="DE">ドイツ</option>
+                  <option value="FR">フランス</option>
+                  <option value="HK">香港</option>
+                  <option value="AE">アラブ首長国連邦</option>
+                  <option value="SG">シンガポール</option>
                 </select>
               </div>
 
@@ -245,33 +253,16 @@ export default function ShipperInfoPage() {
               </div>
             </div>
 
-            {/* フォーム送信ボタン */}
-            <div className="border-t border-gray-200 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-gray-500">
-                💡 入力した情報は自動保存されます
-              </div>
+            {/* Navigation */}
+            <div className="flex justify-end pt-6">
               <button
                 type="submit"
-                className="w-full sm:w-auto px-8 py-3 bg-purple-700 text-white font-bold rounded-md hover:bg-purple-800 transition-colors duration-200 flex items-center justify-center gap-2"
+                className="px-8 py-3 bg-[#4D148C] hover:bg-[#3D0F6B] text-white rounded-md transition-colors duration-200"
               >
-                次へ：荷受人情報 →
+                次へ：荷受人情報
               </button>
             </div>
           </form>
-        </div>
-
-        {/* ナビゲーションヘルプ */}
-        <div className="mt-8 p-6 bg-gray-100 rounded-md text-sm text-gray-600">
-          <p className="font-semibold mb-2">
-            📋 送り状作成の流れ:
-          </p>
-          <ol className="space-y-1 pl-4">
-            <li><strong>1. 荷送人情報</strong> ← 現在のステップ</li>
-            <li>2. 荷受人情報</li>
-            <li>3. 荷物情報</li>
-            <li>4. 配送オプション</li>
-            <li>5. 確認・送信</li>
-          </ol>
         </div>
       </div>
     </div>

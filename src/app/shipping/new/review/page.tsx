@@ -24,6 +24,11 @@ export default function Component() {
   const { contents } = useContents()
   const { shippingPurpose } = useShippingPurpose()
 
+  // 戻るボタンハンドラー
+  const handlePrevious = () => {
+    router.push('/shipping/new/items')
+  }
+
   // 決済・送信処理
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -302,15 +307,26 @@ export default function Component() {
             </div>
           </div>
 
-          {/* 決済ボタン */}
+          {/* ナビゲーションボタン */}
           <div className="pt-6 pb-8">
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full h-14 text-lg font-semibold bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white rounded-md transition-colors duration-200"
-            >
-              {isSubmitting ? '処理中...' : '決済して送り状を作成する'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+              {/* 戻るボタン */}
+              <button
+                onClick={handlePrevious}
+                className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent rounded-md transition-colors duration-200"
+              >
+                ← 前へ
+              </button>
+              
+              {/* 決済ボタン */}
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full sm:w-1/2 h-14 text-lg font-semibold bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white rounded-md transition-colors duration-200"
+              >
+                {isSubmitting ? '処理中...' : '決済して送り状を作成する'}
+              </button>
+            </div>
             <p className="text-center text-sm text-gray-600 mt-4">決済完了後、送り状をダウンロードできます</p>
           </div>
         </div>

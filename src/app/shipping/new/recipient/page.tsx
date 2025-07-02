@@ -68,16 +68,35 @@ export default function Component() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mx-auto max-w-2xl">
-        <div className="w-full bg-white rounded-lg shadow-md">
-          <div className="pb-6 p-6">
-            <h1 className="text-2xl font-bold text-[#4D148C]">送り状作成 (2/5) - 荷受人情報</h1>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">送り状作成 (2/5)</h1>
+          <p className="text-gray-600">荷受人情報を入力してください</p>
+        </div>
+
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+            <span>ステップ 2 / 5</span>
+            <span>40% 完了</span>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6 p-6">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="bg-[#4D148C] h-2 rounded-full" style={{ width: "40%" }}></div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+          <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
+            <h2 className="text-xl font-semibold">荷受人情報</h2>
+            <p className="text-purple-100 text-sm">荷受人の詳細情報を入力してください</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Contact Information Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">連絡先情報</h3>
+              <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -256,20 +275,20 @@ export default function Component() {
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-6">
-              <button 
+            {/* Navigation */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6">
+              <button
                 type="button"
                 onClick={handlePrevious}
-                className="flex-1 sm:flex-none sm:w-32 px-4 py-2 border border-gray-300 rounded-md bg-transparent hover:bg-gray-50 transition-colors duration-200"
+                className="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent rounded-md transition-colors duration-200"
               >
-                前へ
+                ← 前へ
               </button>
-              <button 
+              <button
                 type="submit"
-                className="flex-1 px-6 py-2 bg-[#4D148C] hover:bg-[#3D0F6B] text-white rounded-md transition-colors duration-200"
+                className="order-1 sm:order-2 px-8 py-3 bg-[#4D148C] hover:bg-[#3D0F6B] text-white rounded-md transition-colors duration-200"
               >
-                次へ：荷物の詳細
+                次へ：荷物の詳細 →
               </button>
             </div>
           </form>
