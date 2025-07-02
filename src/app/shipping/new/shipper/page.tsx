@@ -1,34 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { getStatesByCountry } from '@/lib/data/locations'
-
-interface ShipperInfo {
-  contactName: string
-  companyName: string
-  taxId: string
-  phoneNumber: string
-  countryCode: string
-  stateCode: string
-  address1: string
-  address2: string
-  postalCode: string
-  cityName: string
-}
+import { useShipperInfo, type ShipperInfo } from '@/store/shippingFormStore'
 
 export default function ShipperInfoPage() {
-  const [shipperInfo, setShipperInfo] = useState<ShipperInfo>({
-    contactName: '',
-    companyName: '',
-    taxId: '',
-    phoneNumber: '',
-    countryCode: 'JP',
-    stateCode: '',
-    address1: '',
-    address2: '',
-    postalCode: '',
-    cityName: ''
-  })
+  const router = useRouter()
+  const { shipperInfo, updateShipperInfo } = useShipperInfo()
 
   // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
@@ -36,29 +15,21 @@ export default function ShipperInfoPage() {
   // フォーム入力値変更ハンドラー
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setShipperInfo(prev => {
-      // 国コードが変更された場合、州コードと都市名をリセット
-      if (name === 'countryCode') {
-        return {
-          ...prev,
-          [name]: value,
-          stateCode: '',
-          cityName: ''
-        }
-      }
-      return {
-        ...prev,
-        [name]: value
-      }
-    })
+    // 国コードが変更された場合、州コードと都市名をリセット
+    if (name === 'countryCode') {
+      updateShipperInfo('countryCode', value)
+      updateShipperInfo('stateCode', '')
+      updateShipperInfo('cityName', '')
+    } else {
+      updateShipperInfo(name as keyof ShipperInfo, value)
+    }
   }
 
   // フォーム送信ハンドラー
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('荷送人情報:', shipperInfo)
-    // TODO: 次のステップ（荷受人情報）へのページ遷移を実装
-    alert('次のステップ（荷受人情報）への遷移を実装予定です')
+    router.push('/shipping/new/recipient')
   }
 
   return (
