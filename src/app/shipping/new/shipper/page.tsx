@@ -11,7 +11,6 @@ export default function ShipperInfoPage() {
   // Zustandストアから直接状態とアクションを取得
   const shipperInfo = useShippingFormStore((state) => state.shipperInfo)
   const updateShipperInfo = useShippingFormStore((state) => state.updateShipperInfo)
-  const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
 
   // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
@@ -42,8 +41,6 @@ export default function ShipperInfoPage() {
   // フォーム送信ハンドラー（次のページへの遷移のみ）
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // 荷送人情報ステップを完了としてマーク
-    markStepCompleted('/shipping/new/shipper')
     router.push('/shipping/new/recipient')
   }
 
