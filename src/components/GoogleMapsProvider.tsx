@@ -3,13 +3,6 @@
 import React from 'react'
 import Script from 'next/script'
 
-// Google Maps APIの型定義
-declare global {
-  interface Window {
-    google: any
-  }
-}
-
 interface GoogleMapsProviderProps {
   children: React.ReactNode
 }
