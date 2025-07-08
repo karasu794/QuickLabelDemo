@@ -143,11 +143,57 @@ export default function Home() {
 
   // ジョブステータスのチェック
   const checkJobStatus = async (jobId: string): Promise<JobStatus> => {
-    const response = await fetch(`/api/quote/${jobId}`)
-    if (!response.ok) {
-      throw new Error('ジョブステータスの確認に失敗しました')
+    console.log(`ジョブステータス確認開始: ${jobId}`)
+    
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒でタイムアウト
+      
+      const response = await fetch(`/api/quote/${jobId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      console.log(`レスポンス受信: ${response.status} ${response.statusText}`)
+      
+      if (!response.ok) {
+        let errorMessage = `ジョブステータスの確認に失敗しました (${response.status}: ${response.statusText})`
+        
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (parseError) {
+          console.error('レスポンス解析エラー:', parseError)
+        }
+        
+        throw new Error(errorMessage)
+      }
+      
+      const data = await response.json()
+      console.log('ジョブステータス取得成功:', data)
+      return data
+      
+    } catch (error) {
+      console.error('checkJobStatus内部エラー:', error)
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('ジョブステータスの確認がタイムアウトしました')
+        }
+        if (error.message.includes('fetch')) {
+          throw new Error(`ネットワークエラー: ${error.message}`)
+        }
+        throw error
+      }
+      
+      throw new Error('ジョブステータスの確認中に不明なエラーが発生しました')
     }
-    return await response.json()
   }
 
   // ポーリング開始
@@ -342,12 +388,16 @@ export default function Home() {
         }),
       })
 
+      console.log(`ジョブ作成レスポンス: ${response.status} ${response.statusText}`)
+
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('ジョブ作成エラーレスポンス:', errorData)
         throw new Error(errorData.error || `APIエラー: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('ジョブ作成成功:', data)
       
       if (data.error) {
         throw new Error(data.error)
@@ -358,6 +408,7 @@ export default function Home() {
       }
 
       // ジョブIDを保存してポーリング開始
+      console.log(`ポーリング開始: ジョブID ${data.jobId}`)
       setCurrentJobId(data.jobId)
       setPollingStatus(data.message || '見積もりを処理中です...')
       startPolling(data.jobId)
