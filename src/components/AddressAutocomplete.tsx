@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import usePlacesAutocomplete, {
   getGeocode,
   getLatLng,
@@ -29,6 +29,44 @@ export default function AddressAutocomplete({
   id,
   countryCode,
 }: AddressAutocompleteProps) {
+  const [isApiLoaded, setIsApiLoaded] = useState(false)
+
+  // Google Maps APIの読み込み状態を監視
+  useEffect(() => {
+    const checkGoogleMapsAPI = () => {
+      if (
+        typeof window !== 'undefined' &&
+        window.google &&
+        window.google.maps &&
+        window.google.maps.places
+      ) {
+        setIsApiLoaded(true)
+        console.log('Google Maps API is ready for use-places-autocomplete')
+      }
+    }
+
+    // 初回チェック
+    checkGoogleMapsAPI()
+
+    // APIがまだ読み込まれていない場合は定期的にチェック
+    if (!isApiLoaded) {
+      const interval = setInterval(() => {
+        checkGoogleMapsAPI()
+      }, 100)
+
+      // 5秒後にタイムアウト
+      const timeout = setTimeout(() => {
+        clearInterval(interval)
+        console.error('Google Maps API loading timeout')
+      }, 5000)
+
+      return () => {
+        clearInterval(interval)
+        clearTimeout(timeout)
+      }
+    }
+  }, [isApiLoaded])
+
   const {
     ready,
     value: inputValue,
@@ -41,6 +79,8 @@ export default function AddressAutocomplete({
       language: 'ja', // 日本語で結果を返す
     },
     debounce: 300, // 300ms のデバウンス
+    // Google Maps APIが読み込まれているかチェック
+    initOnMount: isApiLoaded,
   })
 
   // 外部からの値の変更を反映
@@ -84,17 +124,24 @@ export default function AddressAutocomplete({
     onChange('')
   }
 
-  // Google Maps APIが読み込まれていない場合は通常のInputを表示
-  if (!ready) {
+  // Google Maps APIが読み込まれていない、またはreadyでない場合は通常のInputを表示
+  if (!isApiLoaded || !ready) {
     return (
-      <Input
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={className}
-        required={required}
-      />
+      <div className="relative">
+        <Input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={className}
+          required={required}
+        />
+        {!isApiLoaded && (
+          <div className="absolute -bottom-5 left-0 text-xs text-gray-500">
+            Google Maps APIを読み込み中...
+          </div>
+        )}
+      </div>
     )
   }
 
