@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useShippingFormStore } from '@/store/shippingFormStore'
 
 const steps = [
   { id: 1, name: '荷送人情報', href: '/shipping/new/shipper' },
@@ -20,8 +19,6 @@ export default function ShippingNewLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const completedSteps = useShippingFormStore((state) => state.completedSteps)
-  const isStepCompleted = useShippingFormStore((state) => state.isStepCompleted)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,46 +54,25 @@ export default function ShippingNewLayout({
           <nav className="space-y-1">
             {steps.map((step) => {
               const isActive = pathname === step.href
-              const isCompleted = isStepCompleted(step.href)
               const currentStepIndex = steps.findIndex(s => s.href === pathname)
               const stepIndex = step.id - 1
-              const isFuture = stepIndex > currentStepIndex
-              
-              // 完了済みステップは常にリンク可能
-              // 現在のステップはリンク不要
-              // 未来のステップはリンク無効
-              const isClickable = isCompleted || !isFuture
               
               const stepContent = (
                 <div className={`
                   flex items-center p-3 rounded-lg transition-all duration-200
                   ${isActive 
                     ? 'bg-purple-200 border-l-4 border-purple-600 text-purple-800' 
-                    : isCompleted 
-                      ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' 
-                      : isFuture 
-                        ? 'text-gray-400 pointer-events-none'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}>
                   <div className={`
                     flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium mr-3
                     ${isActive 
                       ? 'bg-purple-600 text-white' 
-                      : isCompleted 
-                        ? 'bg-orange-500 text-white' 
-                        : isFuture
-                          ? 'bg-gray-200 text-gray-400'
-                          : 'bg-gray-100 text-gray-500'
+                      : 'bg-gray-100 text-gray-500'
                     }
                   `}>
-                    {isCompleted ? (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      step.id
-                    )}
+                    {step.id}
                   </div>
                   <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>
                     {step.name}
@@ -106,7 +82,7 @@ export default function ShippingNewLayout({
               
               return (
                 <div key={step.id}>
-                  {isClickable && !isActive ? (
+                  {!isActive ? (
                     <Link href={step.href}>
                       {stepContent}
                     </Link>
