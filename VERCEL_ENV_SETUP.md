@@ -149,3 +149,41 @@ NEXT_PUBLIC_SITE_URL=https://your-vercel-app.vercel.app
 - [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) - Supabase基本設定
 - [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables)
 - [Supabase API Documentation](https://supabase.com/docs/reference/javascript/introduction) 
+
+## 自動URL設定の改善
+
+### 新しい設定ファイル（`src/lib/config.ts`）
+
+アプリケーションのベースURLを環境に応じて自動的に決定するための設定ファイルが追加されました。
+
+```typescript
+export const siteUrl = (() => {
+  // Vercel環境の場合、VERCEL_URLを使用
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  // ローカル環境の場合、NEXT_PUBLIC_SITE_URLを使用、なければデフォルト値
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+})();
+```
+
+### 動作
+
+1. **Vercel環境**: `VERCEL_URL` 環境変数が自動的に設定されるため、`https://${VERCEL_URL}` を使用
+2. **ローカル環境**: `NEXT_PUBLIC_SITE_URL` が設定されている場合はその値を使用、なければ `http://localhost:3000` をデフォルト値として使用
+
+### 利点
+
+- 環境変数の設定忘れによるエラーを防止
+- Vercel環境での自動的なURL設定
+- ローカル開発環境での柔軟な設定
+
+### 使用方法
+
+```typescript
+import { siteUrl } from '@/lib/config';
+
+// バックグラウンド処理のURL
+const processingUrl = `${siteUrl}/api/quote/process/${jobId}`;
+``` 

@@ -193,7 +193,8 @@ export async function POST(request: NextRequest) {
     // バックグラウンド処理をトリガー
     try {
       // Next.js API Routeの場合、別エンドポイントを非同期で呼び出し
-      const processingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/quote/process/${jobData.id}`;
+      const { siteUrl } = await import('@/lib/config');
+      const processingUrl = `${siteUrl}/api/quote/process/${jobData.id}`;
       
       // 非同期で処理を開始（await不要）
       setTimeout(async () => {
