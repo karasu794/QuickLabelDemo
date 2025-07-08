@@ -56,6 +56,14 @@ export interface ContentItem {
   hsCode: string
 }
 
+export interface SelectedRate {
+  serviceName: string
+  amount: number
+  currency: string
+  transitTime?: string
+  serviceType?: string
+}
+
 // ストアの状態とアクションの型定義
 interface ShippingFormState {
   // 状態
@@ -65,6 +73,8 @@ interface ShippingFormState {
   items: ItemInfo[]
   contents: ContentItem[]
   shippingPurpose: string
+  selectedRate: SelectedRate | null
+  completedSteps: string[]
 
   // 荷送人情報のアクション
   setShipperInfo: (info: ShipperInfo) => void
@@ -94,6 +104,13 @@ interface ShippingFormState {
 
   // 発送目的のアクション
   setShippingPurpose: (purpose: string) => void
+
+  // 選択された料金のアクション
+  setSelectedRate: (rate: SelectedRate | null) => void
+
+  // 完了ステップのアクション
+  markStepCompleted: (stepPath: string) => void
+  isStepCompleted: (stepPath: string) => boolean
 
   // リセット機能
   resetForm: () => void
@@ -165,6 +182,8 @@ export const useShippingFormStore = create<ShippingFormState>()(
       items: [initialItem],
       contents: [initialContent],
       shippingPurpose: '',
+      selectedRate: null,
+      completedSteps: [],
 
       // 荷送人情報のアクション
       setShipperInfo: (info) => set({ shipperInfo: info }),
@@ -240,6 +259,21 @@ export const useShippingFormStore = create<ShippingFormState>()(
       // 発送目的のアクション
       setShippingPurpose: (purpose) => set({ shippingPurpose: purpose }),
 
+      // 選択された料金のアクション
+      setSelectedRate: (rate) => set({ selectedRate: rate }),
+
+      // 完了ステップのアクション
+      markStepCompleted: (stepPath) => 
+        set((state) => ({
+          completedSteps: state.completedSteps.includes(stepPath) 
+            ? state.completedSteps 
+            : [...state.completedSteps, stepPath]
+        })),
+      isStepCompleted: (stepPath) => {
+        const state = get()
+        return state.completedSteps.includes(stepPath)
+      },
+
       // リセット機能
       resetForm: () => 
         set({
@@ -248,7 +282,9 @@ export const useShippingFormStore = create<ShippingFormState>()(
           packages: [initialPackage],
           items: [initialItem],
           contents: [initialContent],
-          shippingPurpose: ''
+          shippingPurpose: '',
+          selectedRate: null,
+          completedSteps: []
         })
     }),
     {
@@ -259,7 +295,9 @@ export const useShippingFormStore = create<ShippingFormState>()(
         packages: state.packages,
         items: state.items,
         contents: state.contents,
-        shippingPurpose: state.shippingPurpose
+        shippingPurpose: state.shippingPurpose,
+        selectedRate: state.selectedRate,
+        completedSteps: state.completedSteps
       })
     }
   )

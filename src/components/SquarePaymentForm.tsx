@@ -4,14 +4,14 @@ import React, { useState } from 'react'
 import { CreditCard, PaymentForm } from 'react-square-web-payments-sdk'
 
 interface SquarePaymentFormProps {
-  amount: number // 決済金額
-  onPaymentSuccess?: (paymentId: string) => void // 決済成功時のコールバック
-  onPaymentError?: (error: string) => void // 決済エラー時のコールバック
+  amount: number // 決済金額（表示用）
+  onTokenReceived?: (token: string) => void // トークン取得時のコールバック
+  onPaymentError?: (error: string) => void // エラー時のコールバック
 }
 
 export default function SquarePaymentForm({ 
   amount, 
-  onPaymentSuccess,
+  onTokenReceived,
   onPaymentError 
 }: SquarePaymentFormProps) {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -31,32 +31,6 @@ export default function SquarePaymentForm({
     )
   }
 
-  // バックエンドAPIで決済を処理する関数
-  const processPayment = async (sourceId: string) => {
-    try {
-      const response = await fetch('/api/payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: amount,
-          sourceId: sourceId // Square Web SDKから取得したトークン
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('決済に失敗しました')
-      }
-
-      const result = await response.json()
-      return result
-    } catch (error) {
-      console.error('決済処理エラー:', error)
-      throw error
-    }
-  }
-
   // カード情報がトークン化された際の処理
   const cardTokenizeResponseReceived = async (token: any, buyer: any) => {
     console.log('Received token:', token)
@@ -65,21 +39,17 @@ export default function SquarePaymentForm({
     setIsProcessing(true)
     
     try {
-      // 実際の決済処理を実行
-      const paymentResult = await processPayment(token.token)
-      console.log('Payment successful:', paymentResult)
-      
-      // 成功時のコールバック
-      if (onPaymentSuccess && paymentResult.paymentId) {
-        onPaymentSuccess(paymentResult.paymentId)
+      // トークンをコールバックで返す（決済処理はバックエンドで実行）
+      if (onTokenReceived && token.token) {
+        await onTokenReceived(token.token)
       }
       
     } catch (error) {
-      console.error('Decision processing failed:', error)
+      console.error('Token processing failed:', error)
       
       // エラー時のコールバック
       if (onPaymentError) {
-        onPaymentError(error instanceof Error ? error.message : '決済に失敗しました')
+        onPaymentError(error instanceof Error ? error.message : 'トークン処理に失敗しました')
       }
     } finally {
       setIsProcessing(false)
@@ -108,7 +78,7 @@ export default function SquarePaymentForm({
             {isProcessing ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                決済処理中...
+                処理中...
               </>
             ) : (
               '決済して送り状を作成する'

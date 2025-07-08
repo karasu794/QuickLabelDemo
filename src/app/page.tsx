@@ -1,11 +1,13 @@
 // src/app/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import { usStates, canadianProvinces } from "@/lib/data/locations"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
+const POLLING_INTERVAL = 2000 // 2秒ごとにポーリング
+const TIMEOUT_DURATION = 60000 // 60秒でタイムアウト
 
 interface QuoteResult {
   serviceType: string
@@ -15,6 +17,53 @@ interface QuoteResult {
   deliveryDayOfWeek?: string
   packagingType: string
   rateType: string
+}
+
+interface JobStatus {
+  status: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
+  message: string
+  jobId: string
+  data?: {
+    success: boolean
+    rates: QuoteResult[]
+  }
+  error?: string
+}
+
+// プログレス情報を取得する関数
+const getProgressInfo = (status: string) => {
+  switch (status) {
+    case 'pending':
+      return {
+        percent: 10,
+        message: '依頼を受付中...',
+        description: 'リクエストをキューに追加しています'
+      }
+    case 'processing_auth':
+      return {
+        percent: 33,
+        message: 'FedExサーバーに接続中...',
+        description: '認証トークンを取得しています'
+      }
+    case 'processing_rate_request':
+      return {
+        percent: 66,
+        message: '料金を計算中...',
+        description: '配送オプションと料金を取得しています'
+      }
+    case 'completed':
+      return {
+        percent: 100,
+        message: '完了！',
+        description: '見積もりが正常に完了しました'
+      }
+    default:
+      return {
+        percent: 0,
+        message: '処理中...',
+        description: 'しばらくお待ちください'
+      }
+  }
 }
 
 export default function Home() {
@@ -49,6 +98,16 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [quoteResults, setQuoteResults] = useState<QuoteResult[]>([])
+  
+  // 非同期処理のための新しいステート
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [pollingStatus, setPollingStatus] = useState<string>("")
+  const [progress, setProgress] = useState<number>(0)
+  const [currentStatus, setCurrentStatus] = useState<string>('') // 現在のステータスを追跡
+  
+  // ポーリング用のref
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Reset dependent fields when origin country changes
   useEffect(() => {
@@ -69,6 +128,102 @@ export default function Home() {
       }))
     }
   }, [quoteParams.destinationCountry, quoteParams.destinationSelected])
+
+  // ポーリングの停止
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+  }
+
+  // ジョブステータスのチェック
+  const checkJobStatus = async (jobId: string): Promise<JobStatus> => {
+    const response = await fetch(`/api/quote/${jobId}`)
+    if (!response.ok) {
+      throw new Error('ジョブステータスの確認に失敗しました')
+    }
+    return await response.json()
+  }
+
+  // ポーリング開始
+  const startPolling = (jobId: string) => {
+    let checks = 0
+
+    const poll = async () => {
+      try {
+        checks++
+        console.log(`ジョブステータスチェック中 (${checks}回目): ${jobId}`)
+        
+        const status = await checkJobStatus(jobId)
+        console.log('取得したステータス:', status.status)
+        
+        // サーバーから取得したステータスに基づいてプログレス情報を設定
+        const progressInfo = getProgressInfo(status.status)
+        setProgress(progressInfo.percent)
+        setPollingStatus(progressInfo.message)
+        setCurrentStatus(status.status) // 現在のステータスを保存
+        
+        console.log(`プログレス更新: ${progressInfo.percent}% - ${progressInfo.message}`)
+
+        switch (status.status) {
+          case 'completed':
+            // 成功時の処理
+            if (status.data?.rates) {
+              setQuoteResults(status.data.rates)
+              setPollingStatus(`見積もり完了 - ${status.data.rates.length}件の配送オプションを取得しました`)
+            } else {
+              throw new Error('見積もり結果が見つかりません')
+            }
+            setIsLoading(false)
+            setCurrentJobId(null)
+            setCurrentStatus('')
+            stopPolling()
+            break
+
+          case 'failed':
+            // エラー時の処理
+            throw new Error(status.error || '見積もりの取得に失敗しました')
+
+          case 'pending':
+          case 'processing_auth':
+          case 'processing_rate_request':
+            // 継続してポーリング
+            console.log(`ジョブ進行中: ${status.status} - ${progressInfo.message}`)
+            break
+
+          default:
+            throw new Error('不明なジョブステータスです')
+        }
+      } catch (error) {
+        console.error('ポーリングエラー:', error)
+        setError(error instanceof Error ? error.message : 'ジョブの確認中にエラーが発生しました')
+        setIsLoading(false)
+        setCurrentJobId(null)
+        setCurrentStatus('')
+        stopPolling()
+      }
+    }
+
+    // 初回即座にチェック
+    poll()
+
+    // 定期的なポーリングを開始（より頻繁にチェック）
+    pollingIntervalRef.current = setInterval(poll, 1000) // 1秒ごとに変更
+
+    // タイムアウト設定
+    timeoutRef.current = setTimeout(() => {
+      setError('見積もりの取得がタイムアウトしました。もう一度お試しください。')
+      setIsLoading(false)
+      setCurrentJobId(null)
+      setCurrentStatus('')
+      stopPolling()
+    }, TIMEOUT_DURATION)
+  }
 
   const handleQuoteParamsChange = (field: keyof ExtendedQuoteParams, value: string | boolean) => {
     setQuoteParams(prev => ({
@@ -111,9 +266,12 @@ export default function Home() {
     setIsLoading(true)
     setError("")
     setQuoteResults([])
+    setProgress(0)
+    setPollingStatus("")
+    setCurrentStatus('') // ステータスをリセット
 
     try {
-      // Validate required fields
+      // Validate required fields (same as before)
       if (!quoteParams.originSelected || !quoteParams.destinationSelected) {
         throw new Error("出荷地と仕向地の両方を選択してください")
       }
@@ -170,7 +328,9 @@ export default function Home() {
         throw new Error("出荷日を選択してください")
       }
 
-      // Call quote API
+      // 非同期ジョブを開始
+      setPollingStatus("見積もりリクエストを送信中...")
+      
       const response = await fetch('/api/quote', {
         method: 'POST',
         headers: {
@@ -193,19 +353,28 @@ export default function Home() {
         throw new Error(data.error)
       }
 
-      if (!data.rates || data.rates.length === 0) {
-        throw new Error("利用可能な配送オプションが見つかりませんでした。条件を確認してください。")
+      if (!data.jobId) {
+        throw new Error('ジョブIDが返されませんでした')
       }
 
-      setQuoteResults(data.rates)
+      // ジョブIDを保存してポーリング開始
+      setCurrentJobId(data.jobId)
+      setPollingStatus(data.message || '見積もりを処理中です...')
+      startPolling(data.jobId)
 
     } catch (err) {
       console.error('Quote request failed:', err)
       setError(err instanceof Error ? err.message : '見積もりの取得に失敗しました')
-    } finally {
       setIsLoading(false)
     }
   }
+
+  // コンポーネントアンマウント時にポーリングを停止
+  useEffect(() => {
+    return () => {
+      stopPolling()
+    }
+  }, [])
 
   // Get state options based on country
   const getOriginStateOptions = () => {
@@ -237,8 +406,103 @@ export default function Home() {
         postalCodeNotRequiredCountries={POSTAL_CODE_NOT_REQUIRED_COUNTRIES}
       />
 
+      {/* Loading Progress Section */}
+      {isLoading && (
+        <div className="max-w-4xl mx-auto mt-8 px-4">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">見積もり処理中</h3>
+                <p className="text-gray-600 mb-4">{pollingStatus}</p>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                  <div 
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+                    style={{ width: `${progress}%` }}
+                  >
+                    {/* アニメーション効果 */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {/* Progress Percentage */}
+                <div className="flex justify-between text-sm text-gray-500 mb-4">
+                  <span>進捗状況</span>
+                  <span className="font-medium">{progress}%</span>
+                </div>
+                
+                {/* Detailed Status */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {getProgressInfo(currentStatus || 'pending').description}
+                    </span>
+                  </div>
+                  
+                  {/* Processing Steps */}
+                  <div className="flex justify-center space-x-4 text-xs text-gray-500">
+                    <div className={`flex items-center space-x-1 ${
+                      currentStatus === 'pending' || currentStatus === 'processing_auth' || currentStatus === 'processing_rate_request' || currentStatus === 'completed' 
+                      ? 'text-blue-600' : ''
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentStatus === 'pending' || currentStatus === 'processing_auth' || currentStatus === 'processing_rate_request' || currentStatus === 'completed'
+                        ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}></div>
+                      <span>受付</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${
+                      currentStatus === 'processing_auth' || currentStatus === 'processing_rate_request' || currentStatus === 'completed'
+                      ? 'text-blue-600' : ''
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentStatus === 'processing_auth' || currentStatus === 'processing_rate_request' || currentStatus === 'completed'
+                        ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}></div>
+                      <span>認証</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${
+                      currentStatus === 'processing_rate_request' || currentStatus === 'completed'
+                      ? 'text-blue-600' : ''
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentStatus === 'processing_rate_request' || currentStatus === 'completed'
+                        ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}></div>
+                      <span>計算</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${
+                      currentStatus === 'completed' ? 'text-green-600' : ''
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        currentStatus === 'completed' ? 'bg-green-600' : 'bg-gray-300'
+                      }`}></div>
+                      <span>完了</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-500">
+                  FedEx APIから料金情報を取得しています...
+                  {currentJobId && (
+                    <span className="block mt-1 text-xs">
+                      ジョブID: {currentJobId}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Results Section */}
-      {quoteResults.length > 0 && (
+      {quoteResults.length > 0 && !isLoading && (
         <div className="max-w-4xl mx-auto mt-8 px-4">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">

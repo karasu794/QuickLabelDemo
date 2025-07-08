@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import AddressAutocomplete from '@/components/AddressAutocomplete'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 
 export default function TestAddressAutocompletePage() {
   const [address1, setAddress1] = useState('')
@@ -42,12 +42,18 @@ export default function TestAddressAutocompletePage() {
     return () => clearTimeout(timerId)
   }, [])
 
-  const handleAddress1Select = (address: string, lat?: number, lng?: number) => {
+  const handleAddress1Select = (place: google.maps.places.PlaceResult) => {
+    const address = place.formatted_address || ''
+    const lat = place.geometry?.location?.lat()
+    const lng = place.geometry?.location?.lng()
     setSelectedAddress({ address, lat, lng })
     console.log('住所1選択:', { address, lat, lng })
   }
 
-  const handleAddress2Select = (address: string, lat?: number, lng?: number) => {
+  const handleAddress2Select = (place: google.maps.places.PlaceResult) => {
+    const address = place.formatted_address || ''
+    const lat = place.geometry?.location?.lat()
+    const lng = place.geometry?.location?.lng()
     setSelectedAddress({ address, lat, lng })
     console.log('住所2選択:', { address, lat, lng })
   }
@@ -83,7 +89,6 @@ export default function TestAddressAutocompletePage() {
                 onChange={setAddress1}
                 onAddressSelect={handleAddress1Select}
                 placeholder="例: 東京都渋谷区渋谷1-1-1"
-                countryCode="JP"
                 className="w-full"
               />
               <p className="mt-2 text-sm text-gray-600">
@@ -100,7 +105,6 @@ export default function TestAddressAutocompletePage() {
                 onChange={setAddress2}
                 onAddressSelect={handleAddress2Select}
                 placeholder="例: 123 Main St, New York, NY"
-                countryCode="US"
                 className="w-full"
               />
               <p className="mt-2 text-sm text-gray-600">

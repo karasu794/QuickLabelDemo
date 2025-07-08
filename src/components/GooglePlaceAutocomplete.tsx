@@ -81,6 +81,7 @@ export function GooglePlaceAutocomplete({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [lastSelectedValue, setLastSelectedValue] = useState<string>(''); // 最後に選択された値を追跡
+  const [isComposing, setIsComposing] = useState(false); // IME入力中かどうかを追跡
 
   // Google Maps APIが読み込まれているかチェック
   useEffect(() => {
@@ -116,7 +117,16 @@ export function GooglePlaceAutocomplete({
         types: ['geocode', 'establishment'] // geocodeと施設の両方を含める
       });
 
-      autocomplete.addListener('place_changed', () => {
+      // place_changedイベントリスナーを追加
+      const placeChangedListener = () => {
+        console.log('place_changed event fired, isComposing:', isComposing);
+        
+        // IME入力中の場合は処理を遅延
+        if (isComposing) {
+          console.log('IME composing, delaying place selection');
+          return;
+        }
+        
         const place = autocomplete.getPlace();
         console.log('Selected place:', place);
         
@@ -125,8 +135,79 @@ export function GooglePlaceAutocomplete({
           onChange(formattedAddress);
           setLastSelectedValue(formattedAddress); // 選択された値を記録
           onPlaceSelect(place);
+        } else if (place.name) {
+          // formatted_addressがない場合はnameを使用
+          onChange(place.name);
+          setLastSelectedValue(place.name);
+          onPlaceSelect(place);
         }
-      });
+      };
+
+      autocomplete.addListener('place_changed', placeChangedListener);
+
+      // 追加のイベントリスナーで確実にキャッチ
+      const inputElement = inputRef.current;
+      
+      // IME入力の状態を監視
+      const handleCompositionStart = () => {
+        console.log('IME composition started');
+        setIsComposing(true);
+      };
+      
+      const handleCompositionEnd = () => {
+        console.log('IME composition ended');
+        setIsComposing(false);
+        
+        // IME確定後に少し遅延してplace選択をチェック
+        setTimeout(() => {
+          const place = autocomplete.getPlace();
+          if (place && (place.formatted_address || place.name)) {
+            console.log('Place selection after IME composition:', place);
+            placeChangedListener();
+          }
+        }, 300); // IME確定後の遅延
+      };
+      
+      // キーボードでのEnter選択をキャッチ
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' && !isComposing) {
+          // 少し遅延を入れてplace_changedが発火する時間を確保
+          setTimeout(() => {
+            const place = autocomplete.getPlace();
+            if (place && (place.formatted_address || place.name)) {
+              console.log('Enter key triggered place selection:', place);
+              placeChangedListener();
+            }
+          }, 100);
+        }
+      };
+
+      // Autocompleteドロップダウンのクリックイベントをキャッチするため
+      // documentにクリックリスナーを追加
+      const handleDocumentClick = (e: MouseEvent) => {
+        // pac-itemクラスを持つ要素（予測候補）がクリックされた場合
+        const target = e.target as HTMLElement;
+        if (target.closest('.pac-item')) {
+          console.log('Dropdown item clicked, isComposing:', isComposing);
+          
+          // IME入力中の場合はより長い遅延を設定
+          const delay = isComposing ? 500 : 200;
+          
+          setTimeout(() => {
+            const place = autocomplete.getPlace();
+            if (place && (place.formatted_address || place.name)) {
+              console.log('Dropdown item clicked - place selected:', place);
+              placeChangedListener();
+            }
+          }, delay);
+        }
+      };
+
+      // イベントリスナーを追加
+      inputElement.addEventListener('compositionstart', handleCompositionStart);
+      inputElement.addEventListener('compositionend', handleCompositionEnd);
+      inputElement.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('click', handleDocumentClick);
 
       autocompleteRef.current = autocomplete;
 
@@ -134,11 +215,15 @@ export function GooglePlaceAutocomplete({
         if (autocompleteRef.current) {
           window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
         }
+        inputElement.removeEventListener('compositionstart', handleCompositionStart);
+        inputElement.removeEventListener('compositionend', handleCompositionEnd);
+        inputElement.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('click', handleDocumentClick);
       };
     } catch (error) {
       console.error('Error initializing Google Places Autocomplete:', error);
     }
-  }, [isGoogleLoaded, onChange, onPlaceSelect]);
+  }, [isGoogleLoaded, onChange, onPlaceSelect, isComposing]);
 
   // 入力値の変更をハンドル
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

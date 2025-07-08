@@ -31,6 +31,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               手数料管理
             </Link>
+            <Link 
+              href="/admin/notifications" 
+              className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+            >
+              通知一覧
+            </Link>
           </nav>
         </div>
         

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { getStatesByCountry } from '@/lib/data/locations'
 import { useShippingFormStore, type RecipientInfo } from '@/store/shippingFormStore'
-import AddressAutocomplete from '@/components/AddressAutocomplete'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 
 export default function Component() {
   const router = useRouter()
@@ -32,10 +32,10 @@ export default function Component() {
   }
 
   // 住所選択時のハンドラー
-  const handleAddressSelect = (address: string) => {
+  const handleAddressSelect = (place: google.maps.places.PlaceResult) => {
     // Google Maps APIから選択された住所を解析して各フィールドに設定
     // ここでは簡易的に住所全体をaddress1に設定
-    updateRecipientInfo('address1', address)
+    updateRecipientInfo('address1', place.formatted_address || '')
   }
 
   // 前へボタンハンドラー
@@ -259,7 +259,6 @@ export default function Component() {
                   placeholder="丸の内1-1-1"
                   required
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  countryCode={recipientInfo.countryCode}
                 />
               </div>
 

@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Server Actions are available by default in Next.js 14
+  webpack: (config, { isServer }) => {
+    // punycode deprecation 警告を抑制
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      punycode: false,
+    };
+    
+    return config;
+  },
 }
- 
+
 module.exports = nextConfig 

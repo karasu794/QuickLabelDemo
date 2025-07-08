@@ -68,6 +68,39 @@ export type Database = {
           },
         ]
       }
+      quote_jobs: {
+        Row: {
+          id: string
+          status: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
+          request_payload: Json
+          response_payload: Json | null
+          error_message: string | null
+          created_at: string | null
+          updated_at: string | null
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          status?: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
+          request_payload: Json
+          response_payload?: Json | null
+          error_message?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          status?: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
+          request_payload?: Json
+          response_payload?: Json | null
+          error_message?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          completed_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -87,4 +120,8 @@ export type Database = {
 // TypeScript型エイリアス
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
-export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'] 
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
+
+export type QuoteJob = Database['public']['Tables']['quote_jobs']['Row']
+export type QuoteJobInsert = Database['public']['Tables']['quote_jobs']['Insert']
+export type QuoteJobUpdate = Database['public']['Tables']['quote_jobs']['Update'] 
