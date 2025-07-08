@@ -9,16 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.2",
     "@supabase/ssr": "^0.5.2",
-    "use-places-autocomplete": "^4.0.1",
+    "@supabase/supabase-js": "^2.46.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.456.0",
     "next": "14.2.17",
     "react": "^18",
     "react-dom": "^18",
+    "react-square-web-payments-sdk": "^3.2.4-beta.1",
+    "square": "^43.0.0",
     "tailwind-merge": "^2.5.5",
+    "use-places-autocomplete": "^4.0.1",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
