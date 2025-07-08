@@ -1,12 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
 
 export default function TestAddressAutocompletePage() {
   const [address1, setAddress1] = useState('')
   const [address2, setAddress2] = useState('')
   const [selectedAddress, setSelectedAddress] = useState<{address: string, lat?: number, lng?: number} | null>(null)
+  const [debugInfo, setDebugInfo] = useState<string[]>([])
+
+  useEffect(() => {
+    const logs: string[] = []
+    
+    // APIキーの確認
+    const apiKey = process.env.NEXT_PUBLIC_Maps_API_KEY
+    logs.push(`APIキー設定: ${apiKey ? `あり（長さ: ${apiKey.length}文字）` : 'なし'}`)
+    
+    // Google Maps APIの読み込み状態確認
+    const checkGoogleMaps = () => {
+      if (typeof window !== 'undefined') {
+        logs.push(`window.google: ${window.google ? 'あり' : 'なし'}`)
+        if (window.google) {
+          logs.push(`window.google.maps: ${window.google.maps ? 'あり' : 'なし'}`)
+          if (window.google.maps) {
+            logs.push(`window.google.maps.places: ${window.google.maps.places ? 'あり' : 'なし'}`)
+          }
+        }
+      }
+      setDebugInfo([...logs])
+    }
+
+    // 初回チェック
+    checkGoogleMaps()
+
+    // 遅延チェック（APIが非同期で読み込まれる場合）
+    const timerId = setTimeout(() => {
+      logs.push('--- 3秒後の再チェック ---')
+      checkGoogleMaps()
+    }, 3000)
+
+    return () => clearTimeout(timerId)
+  }, [])
 
   const handleAddress1Select = (address: string, lat?: number, lng?: number) => {
     setSelectedAddress({ address, lat, lng })
@@ -22,6 +56,14 @@ export default function TestAddressAutocompletePage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">住所自動入力テスト</h1>
+        
+        {/* デバッグ情報 */}
+        <div className="bg-gray-900 text-green-400 p-4 rounded-lg mb-6 font-mono text-sm">
+          <h3 className="text-white font-bold mb-2">デバッグ情報:</h3>
+          {debugInfo.map((info, index) => (
+            <div key={index}>{info}</div>
+          ))}
+        </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           <div>
@@ -86,6 +128,16 @@ export default function TestAddressAutocompletePage() {
               <li>住所選択時に緯度経度も取得可能</li>
               <li>クリアボタン付き</li>
               <li>Google Maps API未読み込み時は通常のInputを表示</li>
+            </ul>
+          </div>
+
+          <div className="mt-8 p-4 bg-yellow-50 rounded-md border border-yellow-200">
+            <h3 className="font-semibold text-yellow-800 mb-2">トラブルシューティング:</h3>
+            <ul className="list-disc list-inside text-sm text-yellow-700 space-y-1">
+              <li>コンソール（F12）でエラーを確認してください</li>
+              <li>Google Cloud ConsoleでAPIキーの制限を確認してください</li>
+              <li>Places APIが有効になっているか確認してください</li>
+              <li>Vercelの環境変数にAPIキーが設定されているか確認してください</li>
             </ul>
           </div>
         </div>
