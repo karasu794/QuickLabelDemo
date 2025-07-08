@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header' // ★ Headerコンポーネントをインポート
-import GoogleMapsProvider from '@/components/GoogleMapsProvider'
+import { GoogleMapsProvider } from '@/components/GooglePlaceAutocomplete'
 
 const inter = Inter({ subsets: ['latin'] })
 

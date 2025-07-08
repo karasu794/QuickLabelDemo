@@ -1,100 +1,145 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// リクエストボディの型定義
-interface ShippingQuoteRequest {
-  // 荷送人情報
-  sender: {
-    postalCode?: string
-    countryCode: string
-    city?: string
-  }
-  // 荷受人情報
-  recipient: {
-    postalCode?: string
-    countryCode: string
-    city?: string
-  }
-  // 荷物情報
-  package: {
-    weight: number // kg単位
-  }
+// 新しいリクエストボディの型定義
+interface QuoteParams {
+  originCountry: string
+  originPostalCode: string
+  destinationCountry: string
+  destinationPostalCode: string
+  shipDate: string
+  isResidential: boolean
+  higherInsurance: boolean
+  originStateCode: string
+  originCityName: string
+  destinationStateCode: string
+  destinationCityName: string
 }
 
-// FedEx API レスポンスの型定義
-interface FedExRateResponse {
-  output: {
-    rateReplyDetails: Array<{
-      serviceName: string
-      ratedShipmentDetails: Array<{
-        totalNetCharge: number
-        currency: string
-      }>
-    }>
-  }
+interface Package {
+  id: number
+  packagingType: string
+  weight: string
+  length: string
+  width: string
+  height: string
 }
 
-// レスポンスの型定義
-interface ShippingQuoteResponse {
-  success: boolean
-  message: string
-  rates?: Array<{
-    serviceName: string
-    amount: number
-    currency: string
-  }>
-  error?: string
-  timestamp: string
+interface QuoteRequest {
+  quoteParams: QuoteParams
+  packages: Package[]
 }
 
-// FedX アカウント情報の型定義
-interface FedXAccountConfig {
-  apiKey: string
-  secretKey: string
-  accountNumber: string
-  accountType: 'export' | 'import'
-}
-
-// 環境変数からFedXアカウント設定を取得する関数
-function getFedXAccountConfig(senderCountryCode: string): FedXAccountConfig {
-  const isExport = senderCountryCode === 'JP'
+// 日本語からローマ字への変換マップ
+const japaneseToRomajiMap: { [key: string]: string } = {
+  // 都道府県
+  '北海道': 'Hokkaido',
+  '青森県': 'Aomori',
+  '岩手県': 'Iwate',
+  '宮城県': 'Miyagi',
+  '秋田県': 'Akita',
+  '山形県': 'Yamagata',
+  '福島県': 'Fukushima',
+  '茨城県': 'Ibaraki',
+  '栃木県': 'Tochigi',
+  '群馬県': 'Gunma',
+  '埼玉県': 'Saitama',
+  '千葉県': 'Chiba',
+  '東京都': 'Tokyo',
+  '神奈川県': 'Kanagawa',
+  '新潟県': 'Niigata',
+  '富山県': 'Toyama',
+  '石川県': 'Ishikawa',
+  '福井県': 'Fukui',
+  '山梨県': 'Yamanashi',
+  '長野県': 'Nagano',
+  '岐阜県': 'Gifu',
+  '静岡県': 'Shizuoka',
+  '愛知県': 'Aichi',
+  '三重県': 'Mie',
+  '滋賀県': 'Shiga',
+  '京都府': 'Kyoto',
+  '大阪府': 'Osaka',
+  '兵庫県': 'Hyogo',
+  '奈良県': 'Nara',
+  '和歌山県': 'Wakayama',
+  '鳥取県': 'Tottori',
+  '島根県': 'Shimane',
+  '岡山県': 'Okayama',
+  '広島県': 'Hiroshima',
+  '山口県': 'Yamaguchi',
+  '徳島県': 'Tokushima',
+  '香川県': 'Kagawa',
+  '愛媛県': 'Ehime',
+  '高知県': 'Kochi',
+  '福岡県': 'Fukuoka',
+  '佐賀県': 'Saga',
+  '長崎県': 'Nagasaki',
+  '熊本県': 'Kumamoto',
+  '大分県': 'Oita',
+  '宮崎県': 'Miyazaki',
+  '鹿児島県': 'Kagoshima',
+  '沖縄県': 'Okinawa',
   
-  if (isExport) {
-    // 輸出用のアカウント情報
-    const apiKey = process.env.FEDEX_EXPORT_API_KEY
-    const secretKey = process.env.FEDEX_EXPORT_SECRET_KEY
-    const accountNumber = process.env.FEDEX_EXPORT_ACCOUNT_NUMBER
-    
-    if (!apiKey || !secretKey || !accountNumber) {
-      throw new Error('FedXの輸出用環境変数が設定されていません (FEDEX_EXPORT_API_KEY, FEDEX_EXPORT_SECRET_KEY, FEDEX_EXPORT_ACCOUNT_NUMBER)')
-    }
-    
-    return {
-      apiKey,
-      secretKey,
-      accountNumber,
-      accountType: 'export'
-    }
-  } else {
-    // 輸入用のアカウント情報
-    const apiKey = process.env.FEDEX_IMPORT_API_KEY
-    const secretKey = process.env.FEDEX_IMPORT_SECRET_KEY
-    const accountNumber = process.env.FEDEX_IMPORT_ACCOUNT_NUMBER
-    
-    if (!apiKey || !secretKey || !accountNumber) {
-      throw new Error('FedXの輸入用環境変数が設定されていません (FEDEX_IMPORT_API_KEY, FEDEX_IMPORT_SECRET_KEY, FEDEX_IMPORT_ACCOUNT_NUMBER)')
-    }
-    
-    return {
-      apiKey,
-      secretKey,
-      accountNumber,
-      accountType: 'import'
+  // 主要都市
+  '札幌市': 'Sapporo',
+  '仙台市': 'Sendai',
+  '横浜市': 'Yokohama',
+  '川崎市': 'Kawasaki',
+  '名古屋市': 'Nagoya',
+  '京都市': 'Kyoto',
+  '大阪市': 'Osaka',
+  '神戸市': 'Kobe',
+  '広島市': 'Hiroshima',
+  '福岡市': 'Fukuoka',
+  
+  // 東京23区
+  '千代田区': 'Chiyoda-ku',
+  '中央区': 'Chuo-ku',
+  '港区': 'Minato-ku',
+  '新宿区': 'Shinjuku-ku',
+  '文京区': 'Bunkyo-ku',
+  '台東区': 'Taito-ku',
+  '墨田区': 'Sumida-ku',
+  '江東区': 'Koto-ku',
+  '品川区': 'Shinagawa-ku',
+  '目黒区': 'Meguro-ku',
+  '大田区': 'Ota-ku',
+  '世田谷区': 'Setagaya-ku',
+  '渋谷区': 'Shibuya-ku',
+  '中野区': 'Nakano-ku',
+  '杉並区': 'Suginami-ku',
+  '豊島区': 'Toshima-ku',
+  '北区': 'Kita-ku',
+  '荒川区': 'Arakawa-ku',
+  '板橋区': 'Itabashi-ku',
+  '練馬区': 'Nerima-ku',
+  '足立区': 'Adachi-ku',
+  '葛飾区': 'Katsushika-ku',
+  '江戸川区': 'Edogawa-ku'
+};
+
+// 日本語テキストをローマ字に変換する関数
+function convertToRomaji(text: string): string {
+  if (!text) return text;
+  
+  let result = text;
+  for (const [japanese, romaji] of Object.entries(japaneseToRomajiMap)) {
+    if (result.includes(japanese)) {
+      result = result.replace(japanese, romaji);
     }
   }
+  return result;
 }
 
-// FedXアクセストークンを取得する関数（APIキーとシークレットキーを受け取る）
-async function getFedXAccessToken(apiKey: string, secretKey: string): Promise<string> {
+// FedEx APIアクセストークンを取得
+async function getFedExAccessToken(): Promise<string> {
+  const apiKey = process.env.FEDEX_API_KEY;
+  const secretKey = process.env.FEDEX_SECRET_KEY;
+
+  if (!apiKey || !secretKey) {
+    throw new Error('FedEx API credentials are not configured');
+  }
+
   const response = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
     method: 'POST',
     headers: {
@@ -105,77 +150,222 @@ async function getFedXAccessToken(apiKey: string, secretKey: string): Promise<st
       client_id: apiKey,
       client_secret: secretKey,
     }),
-  })
+  });
 
   if (!response.ok) {
-    throw new Error(`FedX認証API呼び出しエラー: ${response.status} ${response.statusText}`)
+    const errorText = await response.text();
+    throw new Error(`FedEx authentication failed: ${response.status} ${errorText}`);
   }
 
-  const tokenData = await response.json()
-  return tokenData.access_token
+  const tokenData = await response.json();
+  return tokenData.access_token;
 }
 
-// FedX Rate APIのリクエストボディを構築する関数（アカウント番号を受け取る）
-function buildFedXRateRequest(request: ShippingQuoteRequest, accountNumber: string) {
-  // shipper addressを構築（郵便番号がある場合のみ含める）
+// FedEx Rate APIリクエストを構築
+function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
+  const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG'];
+  
+  // 出荷地住所を構築
   const shipperAddress: any = {
-    countryCode: request.sender.countryCode
+    countryCode: quoteParams.originCountry
+  };
+  
+  if (!postalCodeNotRequiredCountries.includes(quoteParams.originCountry) && quoteParams.originPostalCode) {
+    shipperAddress.postalCode = quoteParams.originPostalCode;
   }
-  if (request.sender.postalCode && request.sender.postalCode.trim() !== '') {
-    shipperAddress.postalCode = request.sender.postalCode
+  
+  if (quoteParams.originStateCode) {
+    shipperAddress.stateOrProvinceCode = quoteParams.originStateCode;
   }
-  // 都市名がある場合は追加
-  if (request.sender.city && request.sender.city.trim() !== '') {
-    shipperAddress.city = request.sender.city
+  
+  if (quoteParams.originCityName) {
+    // 日本の都市名をローマ字に変換
+    shipperAddress.city = quoteParams.originCountry === 'JP' ? 
+      convertToRomaji(quoteParams.originCityName) : 
+      quoteParams.originCityName;
   }
 
-  // recipient addressを構築
+  // 仕向地住所を構築
   const recipientAddress: any = {
-    countryCode: request.recipient.countryCode
+    countryCode: quoteParams.destinationCountry
+  };
+  
+  if (!postalCodeNotRequiredCountries.includes(quoteParams.destinationCountry)) {
+    if (quoteParams.destinationPostalCode) {
+      recipientAddress.postalCode = quoteParams.destinationPostalCode;
+    }
+  } else {
+    // 郵便番号不要国にはダミー値を設定
+    recipientAddress.postalCode = '00000';
   }
   
-  // 郵便番号の処理
-  if (request.recipient.postalCode && request.recipient.postalCode.trim() !== '') {
-    // 郵便番号が存在する場合はそのまま使用
-    recipientAddress.postalCode = request.recipient.postalCode
-  } else if (request.recipient.city && request.recipient.city.trim() !== '') {
-    // 郵便番号が存在しないが都市名がある場合（郵便番号不要国）はダミー値を設定
-    recipientAddress.postalCode = '00000'
-    console.log('郵便番号不要国のためダミー値"00000"を設定しました')
+  if (quoteParams.destinationStateCode) {
+    recipientAddress.stateOrProvinceCode = quoteParams.destinationStateCode;
   }
   
-  // 都市名がある場合は追加
-  if (request.recipient.city && request.recipient.city.trim() !== '') {
-    recipientAddress.city = request.recipient.city
+  if (quoteParams.destinationCityName) {
+    // 日本の都市名をローマ字に変換
+    recipientAddress.city = quoteParams.destinationCountry === 'JP' ? 
+      convertToRomaji(quoteParams.destinationCityName) : 
+      quoteParams.destinationCityName;
   }
+
+  // パッケージ情報を構築
+  const requestedPackageLineItems = packages.map(pkg => {
+    const packageItem: any = {
+      weight: {
+        units: 'KG',
+        value: parseFloat(pkg.weight)
+      }
+    };
+
+    // カスタム梱包材の場合は寸法を追加
+    if (pkg.packagingType === 'customer') {
+      packageItem.dimensions = {
+        length: parseInt(pkg.length),
+        width: parseInt(pkg.width),
+        height: parseInt(pkg.height),
+        units: 'CM'
+      };
+    }
+
+    return packageItem;
+  });
 
   return {
     accountNumber: {
-      value: accountNumber
+      value: process.env.FEDEX_ACCOUNT_NUMBER
     },
     requestedShipment: {
       shipper: {
         address: shipperAddress
       },
       recipient: {
-        address: recipientAddress
+        address: recipientAddress,
+        residential: quoteParams.isResidential
       },
+      shipDatestamp: quoteParams.shipDate,
+      // serviceTypeを削除して、すべての利用可能なサービスを取得
+      packagingType: 'YOUR_PACKAGING',
       pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
-      rateRequestType: ['ACCOUNT'],
-      requestedPackageLineItems: [
-        {
-          weight: {
-            units: 'KG',
-            value: request.package.weight
-          }
-        }
-      ]
+      rateRequestType: ['ACCOUNT', 'LIST'], // LISTを追加してより多くのオプションを取得
+      requestedPackageLineItems: requestedPackageLineItems
     }
-  }
+  };
 }
 
-// FedX Rate APIを呼び出す関数
-async function getFedXRates(accessToken: string, requestData: any): Promise<FedExRateResponse> {
+// 複数のサービスタイプをリクエストする関数
+async function getAllServiceRates(accessToken: string, baseRequest: any, quoteParams: QuoteParams) {
+  const allRates: any[] = [];
+  
+  // 国内配送か国際配送かを判定
+  const isDomestic = quoteParams.originCountry === quoteParams.destinationCountry;
+  
+  let serviceTypes: string[] = [];
+  
+  if (isDomestic) {
+    // 国内配送のサービスタイプ
+    if (quoteParams.originCountry === 'US') {
+      serviceTypes = [
+        'FEDEX_GROUND',
+        'FEDEX_EXPRESS_SAVER',
+        'FEDEX_2_DAY',
+        'STANDARD_OVERNIGHT',
+        'PRIORITY_OVERNIGHT',
+        'FIRST_OVERNIGHT'
+      ];
+    } else if (quoteParams.originCountry === 'JP') {
+      serviceTypes = [
+        'FEDEX_INTERNATIONAL_PRIORITY', // 日本国内でも利用可能
+        'FEDEX_INTERNATIONAL_ECONOMY'
+      ];
+    } else {
+      // その他の国の国内配送
+      serviceTypes = [
+        'FEDEX_GROUND',
+        'FEDEX_EXPRESS_SAVER',
+        'STANDARD_OVERNIGHT'
+      ];
+    }
+  } else {
+    // 国際配送のサービスタイプ
+    serviceTypes = [
+      'INTERNATIONAL_PRIORITY',
+      'INTERNATIONAL_ECONOMY',
+      'INTERNATIONAL_FIRST',
+      'INTERNATIONAL_PRIORITY_EXPRESS',
+      'FEDEX_INTERNATIONAL_PRIORITY',
+      'FEDEX_INTERNATIONAL_ECONOMY',
+      'INTERNATIONAL_GROUND'
+    ];
+  }
+  
+  console.log(`${isDomestic ? '国内' : '国際'}配送で見積もりを取得中...`);
+  console.log('使用するサービスタイプ:', serviceTypes);
+  
+  // 各サービスタイプに対してリクエストを送信
+  for (const serviceType of serviceTypes) {
+    try {
+      const requestWithService = {
+        ...baseRequest,
+        requestedShipment: {
+          ...baseRequest.requestedShipment,
+          serviceType: serviceType
+        }
+      };
+      
+      console.log(`${serviceType}の見積もりを取得中...`);
+      const response = await getFedExRates(accessToken, requestWithService);
+      
+      if (response.output?.rateReplyDetails) {
+        allRates.push(...response.output.rateReplyDetails);
+        console.log(`${serviceType}: ${response.output.rateReplyDetails.length}件の料金を取得`);
+      }
+    } catch (error) {
+      console.log(`${serviceType}の取得でエラー:`, error);
+      // エラーが発生してもサービス毎に続行
+      continue;
+    }
+    
+    // APIレート制限を避けるため少し待機
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  // サービスタイプを指定せずに汎用的な見積もりも取得
+  try {
+    console.log('汎用的な見積もりを取得中...');
+    const genericResponse = await getFedExRates(accessToken, baseRequest);
+    if (genericResponse.output?.rateReplyDetails) {
+      allRates.push(...genericResponse.output.rateReplyDetails);
+      console.log(`汎用的な見積もり: ${genericResponse.output.rateReplyDetails.length}件の料金を取得`);
+    }
+  } catch (error) {
+    console.log('汎用的な見積もりでエラー:', error);
+  }
+  
+  // 重複を除去（serviceNameで判定）
+  const uniqueRates = allRates.filter((rate, index, self) => 
+    index === self.findIndex(r => r.serviceName === rate.serviceName)
+  );
+  
+  // 料金順でソート（安い順）
+  uniqueRates.sort((a, b) => {
+    const priceA = a.ratedShipmentDetails?.[0]?.totalNetCharge || 0;
+    const priceB = b.ratedShipmentDetails?.[0]?.totalNetCharge || 0;
+    return priceA - priceB;
+  });
+  
+  console.log(`合計 ${uniqueRates.length} 件の一意な配送オプションを取得しました`);
+  
+  return {
+    output: {
+      rateReplyDetails: uniqueRates
+    }
+  };
+}
+
+// FedEx Rate APIを呼び出し
+async function getFedExRates(accessToken: string, requestData: any) {
   const response = await fetch('https://apis-sandbox.fedex.com/rate/v1/rates/quotes', {
     method: 'POST',
     headers: {
@@ -184,138 +374,102 @@ async function getFedXRates(accessToken: string, requestData: any): Promise<FedE
       'X-locale': 'ja_JP'
     },
     body: JSON.stringify(requestData)
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`FedX Rate API呼び出しエラー: ${response.status} ${response.statusText} - ${errorText}`)
+    const errorText = await response.text();
+    console.error('FedEx API Error Response:', errorText);
+    throw new Error(`FedEx Rate API failed: ${response.status} ${errorText}`);
   }
 
-  return await response.json()
+  return await response.json();
 }
 
 export async function POST(request: NextRequest) {
-  console.log('APIが受け取ったリクエストボディ:', await request.clone().json());
   try {
-    // リクエストボディの解析
-    const body: ShippingQuoteRequest = await request.json()
+    const body: QuoteRequest = await request.json();
+    console.log('受信したリクエスト:', JSON.stringify(body, null, 2));
+
+    const { quoteParams, packages } = body;
 
     // バリデーション
-    if (!body.sender?.countryCode) {
+    if (!quoteParams.originCountry || !quoteParams.destinationCountry) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: '荷送人の国コードが必要です',
-          timestamp: new Date().toISOString()
-        },
+        { error: '出荷地と仕向地の国を選択してください' },
         { status: 400 }
-      )
+      );
     }
 
-    if (!body.recipient?.countryCode) {
+    if (!packages || packages.length === 0) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: '荷受人の国コードが必要です',
-          timestamp: new Date().toISOString()
-        },
+        { error: 'パッケージ情報が必要です' },
         { status: 400 }
-      )
+      );
     }
 
-    if (!body.package?.weight || body.package.weight <= 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: '荷物の重量が必要です（0より大きい値）',
-          timestamp: new Date().toISOString()
-        },
-        { status: 400 }
-      )
+    // パッケージの重量をチェック
+    for (const pkg of packages) {
+      if (!pkg.weight || parseFloat(pkg.weight) <= 0) {
+        return NextResponse.json(
+          { error: 'すべてのパッケージの重量を入力してください' },
+          { status: 400 }
+        );
+      }
     }
 
-    console.log('=== FedX配送見積もりAPIが呼び出されました ===')
-    console.log('荷送人情報:', {
-      郵便番号: body.sender.postalCode || '未設定',
-      都市名: body.sender.city || '未設定',
-      国コード: body.sender.countryCode
-    })
-    console.log('荷受人情報:', {
-      郵便番号: body.recipient.postalCode || '未設定',
-      都市名: body.recipient.city || '未設定',
-      国コード: body.recipient.countryCode
-    })
-    console.log('荷物情報:', {
-      重量: `${body.package.weight}kg`
-    })
+    console.log('FedEx API呼び出し開始...');
+    
+    // FedExアクセストークンを取得
+    const accessToken = await getFedExAccessToken();
+    console.log('アクセストークン取得完了');
 
-    // 1. sender.countryCodeに基づいてFedXアカウント設定を取得
-    console.log(`sender.countryCode: ${body.sender.countryCode} - アカウント設定を取得中...`)
-    const accountConfig = getFedXAccountConfig(body.sender.countryCode)
-    console.log(`${accountConfig.accountType}用アカウントを選択しました`)
+    // FedEx APIリクエストを構築
+    const fedexRequest = buildFedExRateRequest(quoteParams, packages);
+    console.log('FedEx APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
 
-    // 2. 選択されたアカウントでFedXアクセストークンを取得
-    console.log('FedXアクセストークンを取得中...')
-    const accessToken = await getFedXAccessToken(accountConfig.apiKey, accountConfig.secretKey)
-    console.log('アクセストークン取得完了')
+    // FedEx Rate APIを呼び出し
+    const fedexResponse = await getAllServiceRates(accessToken, fedexRequest, quoteParams);
+    console.log('FedEx APIレスポンス:', JSON.stringify(fedexResponse, null, 2));
 
-    // 3. 選択されたアカウント番号でFedX Rate APIリクエストデータを構築
-    const fedexRequestData = buildFedXRateRequest(body, accountConfig.accountNumber)
-    console.log('FedX APIリクエストデータ:', JSON.stringify(fedexRequestData, null, 2))
+    // レスポンスを変換
+    const rates = fedexResponse.output.rateReplyDetails.map((detail: any) => {
+      const ratedShipment = detail.ratedShipmentDetails[0];
+      return {
+        serviceType: detail.serviceName,
+        totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge).toString(),
+        estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
+        deliveryDate: detail.commit?.dateDetail?.dayFormat,
+        deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
+        packagingType: detail.packagingType || 'YOUR_PACKAGING',
+        rateType: 'ACCOUNT'
+      };
+    });
 
-    // 4. FedX Rate APIを呼び出し
-    console.log('FedX Rate APIを呼び出し中...')
-    const fedexResponse = await getFedXRates(accessToken, fedexRequestData)
-    console.log('FedX APIレスポンス:', JSON.stringify(fedexResponse, null, 2))
+    console.log('処理された料金データ:', rates);
 
-    // 5. レスポンスから料金情報を抽出
-    const rates = fedexResponse.output.rateReplyDetails.map((detail: {
-      serviceName: string
-      ratedShipmentDetails: Array<{
-        totalNetCharge: number
-        currency: string
-      }>
-    }) => ({
-      serviceName: detail.serviceName,
-      amount: detail.ratedShipmentDetails[0].totalNetCharge,
-      currency: detail.ratedShipmentDetails[0].currency
-    }))
-
-    console.log('抽出された料金情報:', rates)
-    console.log('使用されたアカウント:', `${accountConfig.accountType}用 (${accountConfig.accountNumber})`)
-    console.log('=========================================')
-
-    const response: ShippingQuoteResponse = {
+    return NextResponse.json({
       success: true,
-      message: `FedX ${accountConfig.accountType}用アカウントから見積もりを正常に取得しました`,
-      rates: rates,
-      timestamp: new Date().toISOString()
-    }
-
-    return NextResponse.json(response, { status: 200 })
+      rates: rates
+    });
 
   } catch (error) {
-    console.error('FedX API処理エラー:', error)
+    console.error('見積もり処理エラー:', error);
     
-    const response: ShippingQuoteResponse = {
-      success: false,
-      message: 'FedX API処理中にエラーが発生しました',
-      error: error instanceof Error ? error.message : '不明なエラー',
-      timestamp: new Date().toISOString()
+    let errorMessage = '見積もりの取得に失敗しました';
+    if (error instanceof Error) {
+      errorMessage = error.message;
     }
-    
-    return NextResponse.json(response, { status: 500 })
+
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
+    );
   }
 }
 
-// GETリクエストに対するエラーレスポンス
 export async function GET() {
   return NextResponse.json(
-    { 
-      success: false, 
-      error: 'このエンドポイントはPOSTリクエストのみ対応しています',
-      timestamp: new Date().toISOString()
-    },
+    { error: 'このエンドポイントはPOSTリクエストのみ対応しています' },
     { status: 405 }
-  )
+  );
 } 
