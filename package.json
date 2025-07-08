@@ -21,6 +21,7 @@
     "react-square-web-payments-sdk": "^3.2.4-beta.1",
     "square": "^43.0.0",
     "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7",
     "use-places-autocomplete": "^4.0.1",
     "zustand": "^4.5.5"
   },
