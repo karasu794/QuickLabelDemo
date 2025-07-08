@@ -1,40 +1,46 @@
-import { createClient } from '@/lib/supabase/server'
-
-interface Profile {
-  id: string
-  email: string | null
-  contact_name: string | null
-  company_name: string | null
-  created_at: string | null
-}
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export default async function UsersPage() {
-  const supabase = createClient()
+  // Service Role Keyクライアントを使用して全ユーザーデータにアクセス
+  const supabase = createServiceRoleClient()
   
-  // profilesテーブルから全ユーザーを取得
-  const { data: profiles, error } = await supabase
-    .from('profiles')
-    .select('id, email, contact_name, company_name, created_at')
-    .order('created_at', { ascending: false })
+  console.log('管理者ページ: Service Role Keyクライアント使用開始')
 
-  if (error) {
-    console.error('Error fetching profiles:', error)
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700">ユーザー情報の取得に失敗しました。</p>
-      </div>
-    )
-  }
+  try {
+    // profilesテーブルから全ユーザーを取得
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('id, email, contact_name, company_name, created_at')
+      .order('created_at', { ascending: false })
 
-  return (
-    <div className="space-y-6">
-      {/* ヘッダー */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">会員管理</h1>
-        <div className="text-sm text-gray-500">
-          総会員数: {profiles?.length || 0}名
+    if (error) {
+      console.error('Error fetching profiles:', error)
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700">ユーザー情報の取得に失敗しました。</p>
+          <p className="text-red-600 text-sm mt-2">エラー: {error.message}</p>
         </div>
-      </div>
+      )
+    }
+
+    console.log(`管理者ページ: ${profiles?.length || 0}件のユーザー情報を取得`)
+
+    return (
+      <div className="space-y-6">
+        {/* ヘッダー */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">会員管理</h1>
+          <div className="text-sm text-gray-500">
+            総会員数: {profiles?.length || 0}名
+          </div>
+        </div>
+
+        {/* サーバーサイド接続確認メッセージ */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-green-800 text-sm">
+            ✅ Service Role Key経由でSupabaseに接続済み ({profiles?.length || 0}件のプロフィールを取得)
+          </p>
+        </div>
 
       {/* ユーザーテーブル */}
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -58,7 +64,7 @@ export default async function UsersPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {profiles && profiles.length > 0 ? (
-                profiles.map((profile: Profile) => (
+                profiles.map((profile) => (
                   <tr key={profile.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {profile.email || '-'}
@@ -107,4 +113,18 @@ export default async function UsersPage() {
       </div>
     </div>
   )
+  } catch (error) {
+    console.error('管理者ページでのエラー:', error)
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-700">ページの読み込み中にエラーが発生しました。</p>
+        <p className="text-red-600 text-sm mt-2">
+          エラー: {error instanceof Error ? error.message : '不明なエラー'}
+        </p>
+        <p className="text-gray-600 text-sm mt-2">
+          Service Role Keyが正しく設定されているか確認してください。
+        </p>
+      </div>
+    )
+  }
 } 

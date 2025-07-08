@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          key: string
+          value: Json
+          description: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          value: Json
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          value?: Json
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          id: string
+          type: string
+          message: string
+          is_read: boolean | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+          read_at: string | null
+        }
+        Insert: {
+          id?: string
+          type: string
+          message: string
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          read_at?: string | null
+        }
+        Update: {
+          id?: string
+          type?: string
+          message?: string
+          is_read?: boolean | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          read_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string
@@ -118,6 +178,14 @@ export type Database = {
 }
 
 // TypeScript型エイリアス
+export type AppSetting = Database['public']['Tables']['app_settings']['Row']
+export type AppSettingInsert = Database['public']['Tables']['app_settings']['Insert']
+export type AppSettingUpdate = Database['public']['Tables']['app_settings']['Update']
+
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']

@@ -1,114 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
-// Supabase client（service role）
+// Service Role Key用のSupabaseクライアント
 const getSupabaseServiceClient = () => {
-  return createClient()
+  return createServiceRoleClient()
 }
 
-// GETリクエスト: 現在のサービス手数料率を取得
 export async function GET() {
   try {
+    console.log('設定API: Service Role Keyクライアント使用開始')
+    
     const supabase = getSupabaseServiceClient()
-
-    // app_settingsテーブルからservice_fee_percentageを取得
-    const { data, error } = await (supabase as any)
+    
+    // app_settingsテーブルからサービス手数料率を取得
+    const { data: settings, error } = await supabase
       .from('app_settings')
-      .select('value')
+      .select('key, value, description')
       .eq('key', 'service_fee_percentage')
       .single()
 
     if (error) {
       console.error('設定取得エラー:', error)
       return NextResponse.json(
-        { error: '設定の取得に失敗しました' },
+        { error: '設定の取得に失敗しました', details: error.message },
         { status: 500 }
       )
     }
 
-    if (!data) {
-      // 設定が存在しない場合、デフォルト値を返却
+    if (!settings) {
+      console.log('設定が見つかりません。デフォルト値を使用します。')
       return NextResponse.json({
-        service_fee_percentage: 15 // デフォルト15%
+        key: 'service_fee_percentage',
+        value: '15',
+        description: 'サービス手数料率（パーセンテージ）'
       })
     }
 
-    // valueは文字列として保存されているため、数値に変換
-    const feePercentage = parseFloat(data.value as string)
-
-    return NextResponse.json({
-      service_fee_percentage: feePercentage
-    })
+    console.log('設定取得成功:', settings)
+    return NextResponse.json(settings)
 
   } catch (error) {
-    console.error('設定取得エラー:', error)
+    console.error('設定API内部エラー:', error)
     return NextResponse.json(
-      { error: 'サーバーエラーが発生しました' },
+      { 
+        error: '内部サーバーエラーが発生しました',
+        details: error instanceof Error ? error.message : '不明なエラー'
+      },
       { status: 500 }
     )
   }
 }
 
-// POSTリクエスト: サービス手数料率を更新
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { fee } = body
-
-    // バリデーション
-    if (typeof fee !== 'number') {
-      return NextResponse.json(
-        { error: '手数料率は数値で入力してください' },
-        { status: 400 }
-      )
-    }
-
-    if (fee < 0 || fee > 100) {
-      return NextResponse.json(
-        { error: '手数料率は0%から100%の間で入力してください' },
-        { status: 400 }
-      )
-    }
-
+    console.log('設定更新API: Service Role Keyクライアント使用開始')
+    
     const supabase = getSupabaseServiceClient()
+    const body = await request.json()
+    
+    const { key, value, description } = body
 
-    // app_settingsテーブルでservice_fee_percentageをUPSERT
-    const { error } = await (supabase as any)
+    if (!key || !value) {
+      return NextResponse.json(
+        { error: 'keyとvalueは必須項目です' },
+        { status: 400 }
+      )
+    }
+
+    // 設定を更新（存在しない場合は作成）
+    const { data: updatedSetting, error } = await supabase
       .from('app_settings')
       .upsert({
-        key: 'service_fee_percentage',
-        value: fee.toString(), // JSONB型なので文字列として保存
-        description: 'サービス手数料率（パーセンテージ）',
-      }, {
-        onConflict: 'key'
+        key,
+        value,
+        description: description || null,
+        updated_at: new Date().toISOString()
       })
+      .select()
+      .single()
 
     if (error) {
       console.error('設定更新エラー:', error)
       return NextResponse.json(
-        { error: '設定の更新に失敗しました' },
+        { error: '設定の更新に失敗しました', details: error.message },
         { status: 500 }
       )
     }
 
-    console.log(`サービス手数料率を ${fee}% に更新しました`)
-
-    return NextResponse.json({
-      success: true,
-      message: 'サービス手数料率を正常に更新しました',
-      service_fee_percentage: fee
-    })
+    console.log('設定更新成功:', updatedSetting)
+    return NextResponse.json(updatedSetting)
 
   } catch (error) {
-    console.error('設定更新エラー:', error)
+    console.error('設定更新API内部エラー:', error)
     return NextResponse.json(
-      { error: 'サーバーエラーが発生しました' },
+      { 
+        error: '内部サーバーエラーが発生しました',
+        details: error instanceof Error ? error.message : '不明なエラー'
+      },
       { status: 500 }
     )
   }
-}
-
-// PUTリクエスト（POSTと同じ動作）
-export async function PUT(request: NextRequest) {
-  return POST(request)
 } 

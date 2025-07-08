@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 
@@ -36,6 +37,27 @@ export const createClient = () => {
     }
   )
 }
+
+/**
+ * Service Role Key用のSupabaseクライアントを作成
+ * サーバーサイドAPIから全てのデータに安全にアクセスする際に使用
+ * RLSポリシーをバイパスし、管理者権限でアクセス可能
+ */
+export const createServiceRoleClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Supabase URL または Service Role Key が設定されていません');
+  }
+
+  return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+};
 
 /**
  * Route Handler用のSupabaseクライアントを作成

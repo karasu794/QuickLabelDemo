@@ -32,6 +32,31 @@ interface QuoteRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    // 環境変数の確認
+    console.log('環境変数確認:', {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? '設定済み' : '未設定',
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '設定済み' : '未設定',
+      serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? '設定済み' : '未設定',
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    // 重要な環境変数の確認
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('NEXT_PUBLIC_SUPABASE_URLが設定されていません');
+      return NextResponse.json(
+        { error: 'データベース設定エラー: SUPABASE_URLが未設定' },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabaseの認証キーが設定されていません');
+      return NextResponse.json(
+        { error: 'データベース設定エラー: 認証キーが未設定' },
+        { status: 500 }
+      );
+    }
+
     const body: QuoteRequest = await request.json();
     console.log('見積もりジョブリクエスト受信:', JSON.stringify(body, null, 2));
 
@@ -62,8 +87,54 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Supabaseクライアントを作成
+    // Supabaseクライアントを作成（Service Role Key使用）
     const supabase = createClient();
+    console.log('Supabaseクライアント作成完了');
+
+    // Service Role Keyでのクライアント作成も試す
+    let serviceSupabase = null;
+    try {
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+      serviceSupabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      console.log('Service Role Keyでのクライアント作成完了');
+    } catch (serviceError) {
+      console.log('Service Role Keyでのクライアント作成失敗:', serviceError);
+    }
+
+    // 使用するクライアントを決定
+    const activeSupabase = serviceSupabase || supabase;
+    console.log('使用するクライアント:', serviceSupabase ? 'Service Role' : 'Anonymous');
+
+    // Supabase接続テスト
+    try {
+      console.log('Supabase接続テスト開始...');
+      const { data: testData, error: testError } = await activeSupabase
+        .from('quote_jobs')
+        .select('count')
+        .limit(1);
+      
+      console.log('Supabase接続テスト結果:', {
+        success: !testError,
+        error: testError
+      });
+
+      if (testError) {
+        console.error('Supabase接続テストエラー:', testError);
+        return NextResponse.json(
+          { error: `データベース接続エラー: ${testError.message}` },
+          { status: 500 }
+        );
+      }
+    } catch (connectionError) {
+      console.error('Supabase接続例外:', connectionError);
+      return NextResponse.json(
+        { error: 'データベース接続に失敗しました' },
+        { status: 500 }
+      );
+    }
 
     // リクエストペイロードを準備
     const requestPayload = {
@@ -72,8 +143,11 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     };
 
+    console.log('リクエストペイロード準備完了:', JSON.stringify(requestPayload, null, 2));
+
     // quote_jobsテーブルにジョブを作成
-    const { data: jobData, error: insertError } = await supabase
+    console.log('quote_jobsテーブルへの書き込みを開始...');
+    const { data: jobData, error: insertError } = await activeSupabase
       .from('quote_jobs')
       .insert({
         status: 'pending',
@@ -82,10 +156,34 @@ export async function POST(request: NextRequest) {
       .select('id')
       .single();
 
+    console.log('Supabase書き込み結果:', {
+      success: !insertError,
+      jobData: jobData,
+      error: insertError
+    });
+
     if (insertError) {
-      console.error('ジョブ作成エラー:', insertError);
+      console.error('ジョブ作成エラー詳細:', {
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        code: insertError.code
+      });
+      
       return NextResponse.json(
-        { error: 'ジョブの作成に失敗しました' },
+        { 
+          error: `ジョブの作成に失敗しました: ${insertError.message}`,
+          details: insertError.details,
+          hint: insertError.hint
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!jobData || !jobData.id) {
+      console.error('ジョブデータが返されませんでした:', jobData);
+      return NextResponse.json(
+        { error: 'ジョブIDが取得できませんでした' },
         { status: 500 }
       );
     }
@@ -126,8 +224,13 @@ export async function POST(request: NextRequest) {
           
           // エラーの場合、ジョブステータスを更新
           try {
-            const supabase = createClient();
-            await supabase
+            const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+            const errorSupabase = createServiceClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
+            
+            await errorSupabase
               .from('quote_jobs')
               .update({
                 status: 'failed',

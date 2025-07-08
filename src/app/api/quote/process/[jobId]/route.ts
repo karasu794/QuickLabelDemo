@@ -422,8 +422,22 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
     const { jobId } = params;
     console.log(`バックグラウンド処理開始 - ジョブID: ${jobId}`);
 
-    // Supabaseクライアントを作成
-    const supabase = createClient();
+    // 環境変数の確認
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('必要な環境変数が設定されていません');
+      return NextResponse.json(
+        { error: 'データベース設定エラー' },
+        { status: 500 }
+      );
+    }
+
+    // Service Role Keyを使用したSupabaseクライアントを作成
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    console.log('Service Role Keyでのクライアント作成完了');
 
     // ジョブを取得
     const { data: job, error: fetchError } = await supabase
@@ -535,8 +549,13 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
     
     // エラーをデータベースに記録
     try {
-      const supabase = createClient();
-      await supabase
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+      const errorSupabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      
+      await errorSupabase
         .from('quote_jobs')
         .update({
           status: 'failed',
