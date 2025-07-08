@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
 interface ShipmentResult {
   trackingNumber: string
@@ -11,7 +11,7 @@ interface ShipmentResult {
   shipmentId: string
 }
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const [shipmentData, setShipmentData] = useState<ShipmentResult | null>(null)
 
@@ -176,5 +176,20 @@ export default function SuccessPage() {
         </ul>
       </div>
     </div>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4D148C] mx-auto mb-4"></div>
+          <p className="text-gray-600">ページを読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 } 
