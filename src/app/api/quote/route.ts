@@ -95,15 +95,51 @@ export async function POST(request: NextRequest) {
     // バックグラウンド処理をトリガー
     try {
       // Next.js API Routeの場合、別エンドポイントを非同期で呼び出し
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/quote/process/${jobData.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }).catch(error => {
-        // エラーログを出力するが、クライアントレスポンスには影響しない
-        console.error('バックグラウンド処理の開始に失敗:', error);
-      });
+      const processingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/quote/process/${jobData.id}`;
+      
+      // 非同期で処理を開始（await不要）
+      setTimeout(async () => {
+        try {
+          console.log('バックグラウンド処理を開始します:', processingUrl);
+          
+          // タイムアウト処理を手動で実装
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 55000); // 55秒でタイムアウト
+          
+          const response = await fetch(processingUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            console.error('バックグラウンド処理が失敗しました:', response.status, response.statusText);
+          } else {
+            console.log('バックグラウンド処理が正常に完了しました');
+          }
+        } catch (fetchError) {
+          console.error('バックグラウンド処理でエラーが発生しました:', fetchError);
+          
+          // エラーの場合、ジョブステータスを更新
+          try {
+            const supabase = createClient();
+            await supabase
+              .from('quote_jobs')
+              .update({
+                status: 'failed',
+                error_message: fetchError instanceof Error ? fetchError.message : 'バックグラウンド処理でエラーが発生しました',
+                completed_at: new Date().toISOString()
+              })
+              .eq('id', jobData.id);
+          } catch (dbError) {
+            console.error('エラー状態の更新に失敗しました:', dbError);
+          }
+        }
+      }, 0); // 即座に実行
     } catch (error) {
       console.error('バックグラウンド処理トリガーエラー:', error);
     }

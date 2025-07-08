@@ -415,6 +415,9 @@ async function getFedExRates(accessToken: string, requestData: any) {
 }
 
 export async function POST(request: NextRequest, { params }: { params: { jobId: string } }) {
+  const startTime = Date.now();
+  const TIMEOUT_MS = 50000; // 50秒のタイムアウト（Vercelの制限を考慮）
+  
   try {
     const { jobId } = params;
     console.log(`バックグラウンド処理開始 - ジョブID: ${jobId}`);
@@ -437,97 +440,114 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       );
     }
 
-    // ステータスを認証処理中に更新
-    console.log('FedEx認証処理を開始します...');
-    await supabase
-      .from('quote_jobs')
-      .update({ status: 'processing_auth' })
-      .eq('id', jobId);
-
-    // リクエストペイロードを取得
-    const { quoteParams, packages } = job.request_payload as any;
-
-    console.log('FedEx API認証開始...');
-    
-    // FedExアクセストークンを取得
-    const accessToken = await getFedExAccessToken();
-    console.log('アクセストークン取得完了');
-
-    // ステータスを料金リクエスト処理中に更新
-    console.log('料金計算処理を開始します...');
-    await supabase
-      .from('quote_jobs')
-      .update({ status: 'processing_rate_request' })
-      .eq('id', jobId);
-
-    // FedEx APIリクエストを構築
-    const fedexRequest = buildFedExRateRequest(quoteParams, packages);
-    console.log('FedEx APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
-
-    // FedEx Rate APIを呼び出し
-    const fedexResponse = await getAllServiceRates(accessToken, fedexRequest, quoteParams);
-    console.log('FedEx APIレスポンス取得完了');
-
-    // レスポンスを変換
-    const rates = fedexResponse.output.rateReplyDetails.map((detail: any) => {
-      const ratedShipment = detail.ratedShipmentDetails[0];
-      return {
-        serviceType: detail.serviceName,
-        totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge).toString(),
-        estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
-        deliveryDate: detail.commit?.dateDetail?.dayFormat,
-        deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
-        packagingType: detail.packagingType || 'YOUR_PACKAGING',
-        rateType: 'ACCOUNT'
-      };
-    });
-
-    // 結果をデータベースに保存
-    const responsePayload = {
-      success: true,
-      rates: rates,
-      processedAt: new Date().toISOString()
-    };
-
-    console.log('処理完了 - 結果をデータベースに保存します...');
-    await supabase
-      .from('quote_jobs')
-      .update({
-        status: 'completed',
-        response_payload: responsePayload,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-
-    console.log(`ジョブ完了: ${jobId} - ${rates.length}件の料金を取得`);
-
-    return NextResponse.json({
-      success: true,
-      message: 'バックグラウンド処理が完了しました',
-      ratesCount: rates.length
-    });
-
-  } catch (error) {
-    console.error('バックグラウンド処理エラー:', error);
-    
-    const { jobId } = params;
-    const supabase = createClient();
-    
-    // エラー情報をデータベースに保存
-    let errorMessage = 'FedEx APIの呼び出しに失敗しました';
-    if (error instanceof Error) {
-      errorMessage = error.message;
+    // 既に処理済みかチェック
+    if (job.status === 'completed') {
+      console.log('ジョブは既に完了しています');
+      return NextResponse.json({ success: true, message: 'ジョブは既に完了しています' });
     }
 
-    await supabase
-      .from('quote_jobs')
-      .update({
-        status: 'failed',
-        error_message: errorMessage,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
+    // タイムアウト処理を設定
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('処理がタイムアウトしました')), TIMEOUT_MS);
+    });
 
+    // メイン処理をPromiseでラップ
+    const mainProcessPromise = (async () => {
+      // ステータスを認証処理中に更新
+      console.log('FedEx認証処理を開始します...');
+      await supabase
+        .from('quote_jobs')
+        .update({ status: 'processing_auth' })
+        .eq('id', jobId);
+
+      // リクエストペイロードを取得
+      const { quoteParams, packages } = job.request_payload as any;
+
+      console.log('FedEx API認証開始...');
+      
+      // FedXアクセストークンを取得
+      const accessToken = await getFedExAccessToken();
+      console.log('アクセストークン取得完了');
+
+      // 実行時間チェック
+      if (Date.now() - startTime > TIMEOUT_MS * 0.8) {
+        throw new Error('処理時間が上限に近づいています');
+      }
+
+      // ステータスを料金リクエスト処理中に更新
+      console.log('料金計算処理を開始します...');
+      await supabase
+        .from('quote_jobs')
+        .update({ status: 'processing_rate_request' })
+        .eq('id', jobId);
+
+      // FedX APIリクエストを構築
+      const fedexRequest = buildFedExRateRequest(quoteParams, packages);
+      console.log('FedX APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
+
+      // FedX Rate APIを呼び出し（タイムアウト付き）
+      const fedexResponse = await getAllServiceRates(accessToken, fedexRequest, quoteParams);
+      console.log('FedX APIレスポンス取得完了');
+
+      // レスポンスを変換
+      const rates = fedexResponse.output.rateReplyDetails.map((detail: any) => {
+        const ratedShipment = detail.ratedShipmentDetails[0];
+        return {
+          serviceType: detail.serviceName,
+          totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge).toString(),
+          estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
+          deliveryDate: detail.commit?.dateDetail?.dayFormat,
+          deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
+          packagingType: detail.packagingType || 'YOUR_PACKAGING',
+          rateType: 'ACCOUNT'
+        };
+      });
+
+      // 結果をデータベースに保存
+      const responsePayload = {
+        success: true,
+        rates: rates,
+        processedAt: new Date().toISOString()
+      };
+
+      console.log('処理完了 - 結果をデータベースに保存します...');
+      await supabase
+        .from('quote_jobs')
+        .update({
+          status: 'completed',
+          response_payload: responsePayload,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+
+      return { success: true, rates: rates.length };
+    })();
+
+    // タイムアウト処理と実行を競合させる
+    const result = await Promise.race([mainProcessPromise, timeoutPromise]);
+
+    console.log(`処理完了: ${Date.now() - startTime}ms`);
+    return NextResponse.json(result as any);
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'バックグラウンド処理でエラーが発生しました';
+    console.error('バックグラウンド処理エラー:', errorMessage);
+    
+    // エラーをデータベースに記録
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('quote_jobs')
+        .update({
+          status: 'failed',
+          error_message: errorMessage,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', params.jobId);
+    } catch (dbError) {
+      console.error('データベース更新エラー:', dbError);
+    }
+    
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }
