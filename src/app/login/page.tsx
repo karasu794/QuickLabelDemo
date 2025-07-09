@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,8 +40,13 @@ export default function LoginPage() {
         }
       } else {
         console.log('ログイン成功:', data.user?.email)
-        // ログイン成功時はアカウントページにリダイレクト
-        router.push('/account')
+        // ログイン成功時は元のページまたはアカウントページにリダイレクト
+        const returnUrl = searchParams.get('returnUrl')
+        if (returnUrl) {
+          router.push(decodeURIComponent(returnUrl))
+        } else {
+          router.push('/account')
+        }
       }
     } catch (error) {
       console.error('予期しないエラー:', error)

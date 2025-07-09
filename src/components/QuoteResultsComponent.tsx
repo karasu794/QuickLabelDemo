@@ -1,11 +1,14 @@
 "use client"
 
 import React from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Separator } from "./ui/separator"
 import { Clock, Package, Truck } from "lucide-react"
+import { useShippingFormStore, type QuoteToShippingParams } from "@/store/shippingFormStore"
+import { useAuth } from "@/hooks/useAuth"
 
 export interface Rate {
   serviceId: string
@@ -28,16 +31,43 @@ export interface Rate {
 interface QuoteResultsProps {
   rates: Rate[]
   selectedRateId?: string
-  onRateSelect: (rate: Rate) => void
-  onContinue: () => void
+  onRateSelect?: (rate: Rate) => void
+  onContinue?: () => void
+  quoteParams?: QuoteToShippingParams // 見積もりフォームの情報を追加
 }
 
 export default function QuoteResultsComponent({ 
   rates, 
   selectedRateId, 
   onRateSelect, 
-  onContinue 
+  onContinue,
+  quoteParams
 }: QuoteResultsProps) {
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
+  const setSelectedRate = useShippingFormStore((state) => state.setSelectedRate)
+  const setInitialShippingInfoFromQuote = useShippingFormStore((state) => state.setInitialShippingInfoFromQuote)
+
+  // 料金選択ハンドラー
+  const handleSelectRate = (rate: Rate) => {
+    // Zustandストアに選択された料金を保存
+    setSelectedRate({
+      serviceName: rate.serviceName,
+      amount: rate.totalRate,
+      currency: 'JPY',
+      transitTime: rate.transitTime,
+      serviceType: rate.serviceId
+    })
+
+    // 見積もりフォームの情報を送り状フォームに変換・保存
+    if (quoteParams) {
+      setInitialShippingInfoFromQuote(quoteParams)
+    }
+
+    // ログイン状態に関わらず送り状作成フローに遷移（AuthGuardで認証チェック）
+    router.push('/shipping/new/shipper')
+  }
+
   if (rates.length === 0) {
     return null
   }
@@ -73,7 +103,12 @@ export default function QuoteResultsComponent({
                   ? 'ring-2 ring-orange-500 bg-orange-50' 
                   : 'hover:shadow-md hover:bg-gray-50'
               }`}
-              onClick={() => onRateSelect(rate)}
+              onClick={() => {
+                // 既存のコールバックも呼び出す（後方互換性のため）
+                if (onRateSelect) {
+                  onRateSelect(rate)
+                }
+              }}
             >
               <CardContent className="p-4 lg:p-6 w-full">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -84,7 +119,11 @@ export default function QuoteResultsComponent({
                       id={`rate-${rate.serviceId}`}
                       name="selectedRate"
                       checked={selectedRateId === rate.serviceId}
-                      onChange={() => onRateSelect(rate)}
+                      onChange={() => {
+                        if (onRateSelect) {
+                          onRateSelect(rate)
+                        }
+                      }}
                       className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
                     />
                   </div>
@@ -122,7 +161,13 @@ export default function QuoteResultsComponent({
                     <div className="text-sm text-gray-500 line-through">
                       ¥{rate.baseRate.toLocaleString()}
                     </div>
-                    <div className="bg-orange-500 text-white px-3 py-2 rounded-md">
+                    <div 
+                      className="bg-orange-500 text-white px-3 py-2 rounded-md cursor-pointer hover:bg-orange-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSelectRate(rate)
+                      }}
+                    >
                       <span className="text-lg font-bold">¥{rate.totalRate.toLocaleString()}</span>
                     </div>
                     <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
@@ -162,6 +207,19 @@ export default function QuoteResultsComponent({
                           <span className="text-orange-600">¥{rate.totalRate.toLocaleString()}</span>
                         </div>
                       </div>
+                      
+                      {/* このサービスを選択ボタン */}
+                      <div className="mt-4">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelectRate(rate)
+                          }}
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold"
+                        >
+                          このサービスを選択
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -170,8 +228,8 @@ export default function QuoteResultsComponent({
           ))}
         </div>
 
-        {/* Continue Button */}
-        {selectedRateId && (
+        {/* Continue Button - 既存のonContinueがある場合 */}
+        {selectedRateId && onContinue && (
           <div className="pt-6">
             <Button 
               onClick={onContinue}

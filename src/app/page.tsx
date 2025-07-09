@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
+import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
 import { usStates, canadianProvinces } from "@/lib/data/locations"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
@@ -75,6 +76,7 @@ export default function Home() {
     shipDate: new Date().toISOString().split('T')[0],
     isResidential: false,
     higherInsurance: false,
+    declaredValue: "", // 保険の申告金額を初期化
     originStateCode: "",
     originCityName: "",
     destinationStateCode: "",
@@ -374,6 +376,11 @@ export default function Home() {
         throw new Error("出荷日を選択してください")
       }
 
+      // Validate declared value if higher insurance is selected
+      if (quoteParams.higherInsurance && (!quoteParams.declaredValue || Number.parseFloat(quoteParams.declaredValue) <= 0)) {
+        throw new Error("より高額な賠償責任補償を利用する場合は、保険の申告金額を入力してください")
+      }
+
       // 非同期ジョブを開始
       setPollingStatus("見積もりリクエストを送信中...")
       
@@ -552,69 +559,33 @@ export default function Home() {
         </div>
       )}
 
-      {/* Results Section */}
+      {/* Results Section - New FedX Quote Results Component */}
       {quoteResults.length > 0 && !isLoading && (
-        <div className="max-w-4xl mx-auto mt-8 px-4">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">
-              配送オプション ({quoteResults.length}件)
-            </h2>
-            <p className="text-gray-600 mb-6">
-              以下の配送オプションからお選びください。料金は安い順に表示されています。
-            </p>
-            <div className="space-y-4">
-              {quoteResults.map((result, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{result.serviceType}</h3>
-                        {index === 0 && (
-                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-                            最安値
-                          </span>
-                        )}
-                        {result.serviceType.includes('PRIORITY') && (
-                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                            高速配送
-                          </span>
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-600">
-                          梱包材: {result.packagingType} | 料金タイプ: {result.rateType}
-                        </p>
-                        {result.deliveryDate && (
-                          <p className="text-sm text-gray-600">
-                            配達予定: {result.deliveryDate}
-                            {result.deliveryDayOfWeek && ` (${result.deliveryDayOfWeek})`}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500">
-                          サービス詳細: {getServiceDescription(result.serviceType)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right ml-4">
-                      <div className="text-2xl font-bold text-gray-900">
-                        ¥{parseInt(result.totalNetFedExCharge).toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        税込み
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>ヒント:</strong> 配達速度と料金のバランスを考慮してサービスをお選びください。
-                Priority系は速達配送、Economy系は経済配送です。
-              </p>
-            </div>
-          </div>
-        </div>
+        <FedExQuoteResults 
+          rates={quoteResults.map(result => ({
+            serviceType: result.serviceType,
+            totalNetFedExCharge: result.totalNetFedExCharge,
+            estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
+            deliveryDate: result.deliveryDate,
+            deliveryDayOfWeek: result.deliveryDayOfWeek,
+            packagingType: result.packagingType,
+            rateType: result.rateType
+          }))}
+          isLoading={false}
+          isUserLoggedIn={false} // TODO: 実際のログイン状態を取得
+          quoteParams={{
+            originCountry: quoteParams.originCountry,
+            originPostalCode: quoteParams.originPostalCode,
+            originStateCode: quoteParams.originStateCode,
+            originCityName: quoteParams.originCityName,
+            originAddressInput: quoteParams.originAddressInput,
+            destinationCountry: quoteParams.destinationCountry,
+            destinationPostalCode: quoteParams.destinationPostalCode,
+            destinationStateCode: quoteParams.destinationStateCode,
+            destinationCityName: quoteParams.destinationCityName,
+            destinationAddressInput: quoteParams.destinationAddressInput
+          }}
+        />
       )}
     </main>
   )

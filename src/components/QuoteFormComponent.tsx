@@ -27,6 +27,7 @@ export interface QuoteParams {
   shipDate: string
   isResidential: boolean
   higherInsurance: boolean
+  declaredValue: string // 保険の申告金額を追加
 }
 
 // 拡張された見積もりパラメータの型
@@ -603,15 +604,39 @@ export default function QuoteFormComponent({
               <div className="space-y-6">
                 <h2 className="text-2xl font-semibold text-gray-900">お客様の貨物詳細を教えてください</h2>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="insurance"
-                    checked={quoteParams.higherInsurance}
-                    onCheckedChange={(checked: boolean) => onQuoteParamsChange("higherInsurance", checked)}
-                  />
-                  <Label htmlFor="insurance" className="text-base">
-                    より高額な賠償責任補償を利用する
-                  </Label>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="insurance"
+                      checked={quoteParams.higherInsurance}
+                      onCheckedChange={(checked: boolean) => onQuoteParamsChange("higherInsurance", checked)}
+                    />
+                    <Label htmlFor="insurance" className="text-base">
+                      より高額な賠償責任補償を利用する
+                    </Label>
+                  </div>
+
+                  {/* 保険の申告金額フィールド（チェックボックスがONの場合のみ表示） */}
+                  {quoteParams.higherInsurance && (
+                    <div className="ml-6 space-y-2">
+                      <Label htmlFor="declared-value" className="text-base font-medium">
+                        保険の申告金額 (円)
+                      </Label>
+                      <Input
+                        id="declared-value"
+                        type="number"
+                        step="1000"
+                        min="0"
+                        placeholder="100000"
+                        value={quoteParams.declaredValue}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onQuoteParamsChange("declaredValue", e.target.value)}
+                        className="h-12 text-base max-w-xs"
+                      />
+                      <p className="text-sm text-gray-600">
+                        より高額な賠償責任補償を適用する場合の、荷物の申告価値を入力してください。
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -652,8 +677,12 @@ export default function QuoteFormComponent({
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="customer">お客様ご用意の梱包材</SelectItem>
-                              <SelectItem value="fedex-box">FedEx Box</SelectItem>
-                              <SelectItem value="fedex-pak">FedEx Pak</SelectItem>
+                              <SelectItem value="FEDEX_ENVELOPE">FedEx Envelope</SelectItem>
+                              <SelectItem value="FEDEX_PAK">FedEx Pak</SelectItem>
+                              <SelectItem value="FEDEX_TUBE">FedEx Tube</SelectItem>
+                              <SelectItem value="FEDEX_10KG_BOX">FedEx 10kg Box</SelectItem>
+                              <SelectItem value="FEDEX_25KG_BOX">FedEx 25kg Box</SelectItem>
+                              <SelectItem value="FEDEX_BOX">FedEx Box</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

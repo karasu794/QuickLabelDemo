@@ -64,6 +64,20 @@ export interface SelectedRate {
   serviceType?: string
 }
 
+// 見積もりフォームの情報を送り状フォームに変換する際の型定義
+export interface QuoteToShippingParams {
+  originCountry: string
+  originPostalCode: string
+  originStateCode: string
+  originCityName: string
+  originAddressInput: string
+  destinationCountry: string
+  destinationPostalCode: string
+  destinationStateCode: string
+  destinationCityName: string
+  destinationAddressInput: string
+}
+
 // ストアの状態とアクションの型定義
 interface ShippingFormState {
   // 状態
@@ -83,6 +97,9 @@ interface ShippingFormState {
   // 荷受人情報のアクション
   setRecipientInfo: (info: RecipientInfo) => void
   updateRecipientInfo: (field: keyof RecipientInfo, value: string) => void
+
+  // 見積もり情報から送り状情報への変換アクション
+  setInitialShippingInfoFromQuote: (quoteParams: QuoteToShippingParams) => void
 
   // 荷物情報のアクション
   setPackages: (packages: PackageInfo[]) => void
@@ -198,6 +215,41 @@ export const useShippingFormStore = create<ShippingFormState>()(
         set((state) => ({
           recipientInfo: { ...state.recipientInfo, [field]: value }
         })),
+
+      // 見積もり情報から送り状情報への変換アクション
+      setInitialShippingInfoFromQuote: (quoteParams) => {
+        const newShipperInfo: ShipperInfo = {
+          contactName: '',
+          companyName: '',
+          taxId: '',
+          phoneNumber: '',
+          countryCode: quoteParams.originCountry,
+          stateCode: quoteParams.originStateCode,
+          address1: quoteParams.originAddressInput || '',
+          address2: '',
+          postalCode: quoteParams.originPostalCode,
+          cityName: quoteParams.originCityName
+        }
+
+        const newRecipientInfo: RecipientInfo = {
+          contactName: '',
+          companyName: '',
+          taxNumber: '',
+          phoneNumber: '',
+          email: '',
+          countryCode: quoteParams.destinationCountry,
+          postalCode: quoteParams.destinationPostalCode,
+          cityName: quoteParams.destinationCityName,
+          stateCode: quoteParams.destinationStateCode,
+          address1: quoteParams.destinationAddressInput || '',
+          address2: ''
+        }
+
+        set({ 
+          shipperInfo: newShipperInfo,
+          recipientInfo: newRecipientInfo
+        })
+      },
 
       // 荷物情報のアクション
       setPackages: (packages) => set({ packages }),
