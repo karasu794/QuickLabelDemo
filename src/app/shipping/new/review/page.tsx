@@ -75,7 +75,7 @@ export default function ReviewPage() {
 
   // 戻るボタンハンドラー
   const handlePrevious = () => {
-    router.push('/shipping/new/items')
+    router.push('/shipping/new/contents')
   }
 
   // トークン受信時の処理（決済と送り状作成を統合）
@@ -312,7 +312,7 @@ export default function ReviewPage() {
           <div className="flex flex-row items-center justify-between space-y-0 p-6 pb-4">
             <h2 className="text-xl font-semibold">内容品・商品詳細</h2>
             <Link
-              href="/shipping/new/items"
+              href="/shipping/new/contents"
               className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,9 +369,12 @@ export default function ReviewPage() {
                   <div>
                     <p className="text-sm text-gray-600">発送目的</p>
                     <p className="font-medium">
-                      {shippingPurpose === 'personal' ? '個人使用' :
-                       shippingPurpose === 'gift' ? '贈答品 (ギフト)' :
-                       shippingPurpose === 'commercial' ? '商用 (有償)' : shippingPurpose}
+                      {shippingPurpose === 'PERSONAL_USE' ? '個人使用' :
+                       shippingPurpose === 'GIFT' ? '贈答品' :
+                       shippingPurpose === 'SAMPLE' ? 'サンプル' :
+                       shippingPurpose === 'REPAIR_AND_RETURN' ? '修理・返送品' :
+                       shippingPurpose === 'DOCUMENTS' ? '書類' :
+                       shippingPurpose === 'COMMERCIAL' ? '商用・有償' : shippingPurpose}
                     </p>
                   </div>
                 </div>

@@ -2,15 +2,15 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { useShippingFormStore } from '@/store/shippingFormStore'
 
 const steps = [
   { id: 1, name: '荷送人情報', href: '/shipping/new/shipper' },
   { id: 2, name: '荷受人情報', href: '/shipping/new/recipient' },
   { id: 3, name: '荷物情報', href: '/shipping/new/packages' },
-  { id: 4, name: '内容品情報', href: '/shipping/new/contents' },
-  { id: 5, name: 'アイテム情報', href: '/shipping/new/items' },
-  { id: 6, name: '確認画面', href: '/shipping/new/review' },
-  { id: 7, name: '完了', href: '/shipping/new/success' }
+  { id: 4, name: '内容品の詳細', href: '/shipping/new/contents' },
+  { id: 5, name: '確認画面', href: '/shipping/new/review' },
+  { id: 6, name: '完了', href: '/shipping/new/success' }
 ]
 
 export default function ShippingNewLayout({
@@ -19,6 +19,7 @@ export default function ShippingNewLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const isStepCompleted = useShippingFormStore((state) => state.isStepCompleted)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,35 +55,53 @@ export default function ShippingNewLayout({
           <nav className="space-y-1">
             {steps.map((step) => {
               const isActive = pathname === step.href
-              const currentStepIndex = steps.findIndex(s => s.href === pathname)
-              const stepIndex = step.id - 1
+              const isCompleted = isStepCompleted(step.href)
               
               const stepContent = (
                 <div className={`
-                  flex items-center p-3 rounded-lg transition-all duration-200
+                  flex items-center justify-between p-3 rounded-lg transition-all duration-200
                   ${isActive 
                     ? 'bg-purple-200 border-l-4 border-purple-600 text-purple-800' 
+                    : isCompleted
+                    ? 'bg-orange-100 border-l-4 border-orange-400 text-orange-800 hover:bg-orange-150'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}>
-                  <div className={`
-                    flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium mr-3
-                    ${isActive 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-gray-100 text-gray-500'
-                    }
-                  `}>
-                    {step.id}
+                  <div className="flex items-center">
+                    <div className={`
+                      flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium mr-3
+                      ${isActive 
+                        ? 'bg-purple-600 text-white' 
+                        : isCompleted
+                        ? 'bg-orange-400 text-white'
+                        : 'bg-gray-100 text-gray-500'
+                      }
+                    `}>
+                      {isCompleted ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        step.id
+                      )}
+                    </div>
+                    <span className={`text-sm ${isActive ? 'font-medium' : isCompleted ? 'font-medium' : ''}`}>
+                      {step.name}
+                    </span>
                   </div>
-                  <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>
-                    {step.name}
-                  </span>
+                  
+                  {/* 編集ボタン（完了したステップのみ表示） */}
+                  {isCompleted && !isActive && (
+                    <span className="text-xs text-orange-600 font-medium px-2 py-1 bg-orange-50 rounded-md">
+                      編集
+                    </span>
+                  )}
                 </div>
               )
               
               return (
                 <div key={step.id}>
-                  {!isActive ? (
+                  {(!isActive && isCompleted) || (!isActive && !isCompleted) ? (
                     <Link href={step.href}>
                       {stepContent}
                     </Link>

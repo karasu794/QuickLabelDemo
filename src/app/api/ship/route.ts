@@ -278,8 +278,12 @@ function buildFedExShipmentRequest(data: ShipmentRequest) {
         currency: data.items[0]?.currency || 'USD',
       },
       commercialInvoice: {
-        purpose: data.shippingPurpose === 'commercial' ? 'SOLD' : 
-                data.shippingPurpose === 'gift' ? 'GIFT' : 'PERSONAL_USE',
+        purpose: data.shippingPurpose === 'COMMERCIAL' ? 'SOLD' :
+                data.shippingPurpose === 'GIFT' ? 'GIFT' :
+                data.shippingPurpose === 'SAMPLE' ? 'SAMPLE' :
+                data.shippingPurpose === 'REPAIR_AND_RETURN' ? 'REPAIR_AND_RETURN' :
+                data.shippingPurpose === 'DOCUMENTS' ? 'DOCUMENTS' :
+                'PERSONAL_USE',
       },
       commodities: commoditiesData.map(commodity => ({
         description: commodity.description,
