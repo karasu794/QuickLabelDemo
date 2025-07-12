@@ -373,10 +373,45 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
     return priceA - priceB;
   });
   
-  console.log(`合計 ${uniqueRates.length} 件の一意な配送オプションを取得しました`);
+  // 輸入見積もりの場合、FEDEX_CONNECT_PLUSを除外
+  const isExport = quoteParams.originCountry === 'JP';
+  let filteredRates = uniqueRates;
+  
+  console.log(`発送判定: originCountry=${quoteParams.originCountry}, isExport=${isExport}`);
+  
+  if (!isExport) {
+    // 輸入の場合、FEDEX_CONNECT_PLUSを除外
+    const originalCount = filteredRates.length;
+    
+    // デバッグ用：すべてのサービス名をログ出力
+    console.log('フィルタリング前のサービス名一覧:');
+    filteredRates.forEach((rate, index) => {
+      console.log(`  ${index + 1}. "${rate.serviceName}"`);
+    });
+    
+    // Connect Plusを含むサービスを除外（部分一致で判定）
+    filteredRates = filteredRates.filter(rate => {
+      const serviceName = rate.serviceName || '';
+      const isConnectPlus = serviceName.toLowerCase().includes('connect plus');
+      if (isConnectPlus) {
+        console.log(`除外対象: "${serviceName}"`);
+      }
+      return !isConnectPlus;
+    });
+    
+    const filteredCount = filteredRates.length;
+    
+    if (originalCount > filteredCount) {
+      console.log(`輸入見積もりのため、Connect Plusサービスを除外しました (${originalCount} → ${filteredCount}件)`);
+    } else {
+      console.log('Connect Plusサービスは見つかりませんでした');
+    }
+  }
+  
+  console.log(`合計 ${filteredRates.length} 件の一意な配送オプションを取得しました`);
   
   // 料金が取得できなかった場合のエラー
-  if (uniqueRates.length === 0) {
+  if (filteredRates.length === 0) {
     // 詳細なエラー情報を提供
     const errorDetails = results
       .filter(r => !r.success && r.error)
@@ -388,7 +423,7 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
   
   return {
     output: {
-      rateReplyDetails: uniqueRates
+      rateReplyDetails: filteredRates
     }
   };
 }

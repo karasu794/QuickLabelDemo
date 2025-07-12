@@ -1,0 +1,3393 @@
+{
+	"info": {
+		"_postman_id": "192ecf2c-a7ba-4887-b854-27821ba86cdc",
+		"name": "Harmonized Code Lookup API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3306035"
+	},
+	"item": [
+		{
+			"name": "Search Harmonized Code",
+			"item": [
+				{
+					"name": "Full Schema",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "processing options with APPLY_SPELLING_CHECK",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pencil\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "processing options with FORMAT_HS_CODE",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJDWFMtVFAiXSwiUGF5bG9hZCI6eyJjbGllbnRJZGVudGl0eSI6eyJjbGllbnRLZXkiOiJsN2YxYjljYzRhNDBkYTRkZThiZDk3NGVmN2E5MWQ1YmQ5In0sImF1dGhlbnRpY2F0aW9uUmVhbG0iOiJDTUFDIiwiYWRkaXRpb25hbElkZW50aXR5Ijp7InRpbWVTdGFtcCI6IjI1LVNlcC0yMDIzIDE1OjIxOjIzIEVTVCIsImdyYW50X3R5cGUiOiJjbGllbnRfY3JlZGVudGlhbHMiLCJhcGltb2RlIjoiU2FuZGJveCIsImN4c0lzcyI6Imh0dHBzOi8vY3hzYXV0aHNlcnZlci1zdGFnaW5nLmFwcC5wYWFzLmZlZGV4LmNvbS90b2tlbi9vYXV0aDIifSwicGVyc29uYVR5cGUiOiJEaXJlY3RJbnRlZ3JhdG9yX0IyQiJ9LCJleHAiOjE2OTU2NzY4ODMsImp0aSI6IjdjZmI0MTFiLTg1NTEtNDM2Yy04ZTcwLWFmNTZmODMyYzYxNCJ9.Us7BxcYUHzbyjvptNUjAjEjgKx6RZgxeLefEgov4QiKr3ipaSFMion6YUaDnR0I-XE7Fdb5q0TsfZEiBQ4L6SsSQL02fqeyNk_H1vOjLD5K4OmKN7Avai6h_94t2n11DZhwt3e3aKL9s0dI6uXvcmkYgp95U9_Elq6byjC2Xj1M77YIFs24CKjZ3MnsYHDQ-NAricXQCp9Vtx-NGoeRDNLu6m1Hcb4EKZp_B-OFNwy01rHI5hWKfNDCuo33VSOvKTTSjeJ5rn3UDkiCC440sK-sh40hB_QKX1_qaQETVHAxthmo6_7gkZ9xYdkwTP-Tc2XPPR97NgagETD2IWhSHg0FtDQ1roXFLIX1JTtebgT11AhxUzBcYGcEroqUzMx3I8CYXuP1yoz1vjwjUL5eo_z-ksY794kJXWrFt1WrC2yYtzfQw3XvooEhYUhVGY57KuiLjRvcfXYfiVuCQKLBOzY9aHNIlZ13TtxE_1EcVRBZf_twSy-V8GY7-ED2oDEzC22DR0BKpOcU2AP403yMetlsNOszSE92e8vEbI5N2kocwnoAhzDDhIsxbcLnydEtUGXpdz0-XQPOmKVB_AYfiTHqd-oiS_aql8RnP7gRYPqqRFNJ7SYIJqQWc0wY4bUbPaXsxviS5ie7zCoWtGf1_WTcxVV3EU9M0jILTqkSXcE4",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pencil\",\n    \"processingOptions\": {\n        \"options\": [\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchType- DESCRIPTION and SearchText-Bananas",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"Bananas\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2019-10-22\",\n    \"searchFilter\": \"All\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchType- CODE and SearchText-841231",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"841231\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"CODE\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2019-10-22\",\n    \"searchFilter\": \"All\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "searchLevel-FULL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"Towel\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchLevel-HS6",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - AT_LEAST",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"AT_LEAST\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - AT_MOST",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"AT_MOST\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - CONTAINS",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"CONTAINS\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - EXACT_MATCH",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"EXACT_MATCH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - GREATER_THAN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"GREATER_THAN\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type -  LESS_THAN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"LESS_THAN\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "additionalFilters Type - RANGE",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pen\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\",\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"RANGE\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APPLY_SPELLING_CHECK , CODE , FULL , AT_LEAST , EXACT",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"841231\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\"\n        ]\n    },\n    \"searchType\": \"CODE\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"AT_LEAST\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"EXACT\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FORMAT_HS_CODE , DESCRIPTION , HS6 ,  AT_MOST , ANY",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"color\",\n    \"processingOptions\": {\n        \"options\": [\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"AT_MOST\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ANY\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APPLY_SPELLING_CHECK , CODE , FULL , CONTAINS , ALL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"841231\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\"\n        ]\n    },\n    \"searchType\": \"CODE\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"CONTAINS\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FORMAT_HS_CODE , DESCRIPTION , HS6 , EXACT_MATCH , EXACT",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"pencil\",\n    \"processingOptions\": {\n        \"options\": [\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"EXACT_MATCH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"EXACT\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APPLY_SPELLING_CHECK , CODE , FULL , GREATER_THAN , ANY",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"841231\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\"\n        ]\n    },\n    \"searchType\": \"CODE\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"GREATER_THAN\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ANY\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FORMAT_HS_CODE , DESCRIPTION , HS6 , LESS_THAN , ALL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"Cell\",\n    \"processingOptions\": {\n        \"options\": [\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"LESS_THAN\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ALL\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APPLY_SPELLING_CHECK , CODE , FULL , RANGE , EXACT",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"841231\",\n    \"processingOptions\": {\n        \"options\": [\n            \"APPLY_SPELLING_CHECK\"\n        ]\n    },\n    \"searchType\": \"CODE\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"RANGE\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"EXACT\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FORMAT_HS_CODE , DESCRIPTION , HS6 , STARTS_WITH , ANY",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"resultsRequested\": 10,\n    \"searchText\": \"book\",\n    \"processingOptions\": {\n        \"options\": [\n            \"FORMAT_HS_CODE\"\n        ]\n    },\n    \"searchType\": \"DESCRIPTION\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"resultsToSkip\": 1,\n    \"additionalFilters\": [\n        {\n            \"field\": \"HS_CODE\",\n            \"values\": [\n                \"73\",\n                \"08\"\n            ],\n            \"type\": \"STARTS_WITH\"\n        }\n    ],\n    \"shipDate\": \"2023-07-27\",\n    \"searchFilter\": \"ANY\",\n    \"uuid\": \"00f0ffquo6\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "without searchText Attribute",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "without searchLevel Attribute",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"iphone\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "without destinationCountryCode Attribute",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"iphone\",\n    \"searchLevel\": \"FULL\",\n    \"shipDate\": \"2019-10-22\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "without shipDate Attribute",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"iphone\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Minimum payload with searchLevel - HS6",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"iphone\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Minimum payload wiith searchType - DESCRIPTION and searchLevel - FULL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"iphone\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\",\n    \"searchType\": \"DESCRIPTION\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Minimum payload wiith searchType - DESCRIPTION and searchLevel - HS6",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"bed\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\",\n    \"searchType\": \"DESCRIPTION\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Minimum payload wiith searchType - CODE and searchLevel - FULL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"841231\",\n    \"searchLevel\": \"FULL\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\",\n    \"searchType\": \"CODE\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Minimum payload wiith searchType - CODE and searchLevel - HS6",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchText\": \"841231\",\n    \"searchLevel\": \"HS6\",\n    \"destinationCountryCode\": \"US\",\n    \"shipDate\": \"2019-10-22\",\n    \"searchType\": \"CODE\"\n}"
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/search",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Harmonized Code",
+			"item": [
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry FR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=FR&importDate=2023-07-27&harmonizedCode= 9504.20.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "FR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 9504.20.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry FR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=FR&importDate=2023-07-27&harmonizedCode=9022.90.200000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "FR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9022.90.200000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry FR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=FR&importDate=2023-07-27&harmonizedCode=8414.51.001000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "FR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8414.51.001000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry ES",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=ES&importDate=2023-07-27&harmonizedCode=4202.11.101000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "ES"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "4202.11.101000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry ES",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=ES&importDate=2023-07-27&harmonizedCode=8482.40.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "ES"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8482.40.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry ES",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=ES&importDate=2023-07-27&harmonizedCode=6205.30.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "ES"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "6205.30.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry DE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=DE&importDate=2023-07-27&harmonizedCode=6401.10.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "DE"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "6401.10.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry DE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=DE&importDate=2023-07-27&harmonizedCode=9101.11.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "DE"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9101.11.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry DE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=DE&importDate=2023-07-27&harmonizedCode=9503.00.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "DE"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9503.00.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry US",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=DE&importDate=2023-07-27&harmonizedCode=9503.00.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "DE"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9503.00.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry US",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=US&importDate=2023-07-27&harmonizedCode=9506.62.404000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "US"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9506.62.404000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry US",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=US&importDate=2023-07-27&harmonizedCode= 8506.50.001000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "US"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 8506.50.001000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CN&importDate=2023-07-27&harmonizedCode= 8471.41.101000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 8471.41.101000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CN&importDate=2023-07-27&harmonizedCode= 8528.42.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 8528.42.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CN&importDate=2023-07-27&harmonizedCode=8471.60.400000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8471.60.400000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry IN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=IN&importDate=2023-07-27&harmonizedCode=9404.10.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "IN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9404.10.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry IN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=IN&importDate=2023-07-27&harmonizedCode=9028.30.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "IN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9028.30.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry IN",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=IN&importDate=2023-07-27&harmonizedCode= 2510.20.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "IN"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 2510.20.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry JP",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=JP&importDate=2023-07-27&harmonizedCode=8423.10.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "JP"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8423.10.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry JP",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=JP&importDate=2023-07-27&harmonizedCode=8448.51.010300",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "JP"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8448.51.010300"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry JP",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=JP&importDate=2023-07-27&harmonizedCode=8518.30.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "JP"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8518.30.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CA&importDate=2023-07-27&harmonizedCode= 6912.00.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CA"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 6912.00.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CA&importDate=2023-07-27&harmonizedCode=7010.90.002100",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CA"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "7010.90.002100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CA&importDate=2023-07-27&harmonizedCode=8501.20.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CA"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8501.20.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry AR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=AR&importDate=2023-07-27&harmonizedCode=4901.91.00110K",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "AR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "4901.91.00110K"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry AR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=AR&importDate=2023-07-27&harmonizedCode= 4819.40.00811E",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "AR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": " 4819.40.00811E"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry AR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=AR&importDate=2023-07-27&harmonizedCode=8471.41.90100W",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "AR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "8471.41.90100W"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry BR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=BR&importDate=2023-07-27&harmonizedCode=7320.10.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "BR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "7320.10.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry BR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=BR&importDate=2023-07-27&harmonizedCode=6209.20.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "BR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "6209.20.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry BR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=BR&importDate=2023-07-27&harmonizedCode=9503.00.290000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "BR"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9503.00.290000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CO&importDate=2023-07-27&harmonizedCode=9101.91.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CO"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "9101.91.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CO&importDate=2023-07-27&harmonizedCode=2309.90.300000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CO"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "2309.90.300000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry CO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=CO&importDate=2023-07-27&harmonizedCode=6216.00.100000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "CO"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "6216.00.100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieving Harmonized code details for destinationCountry AE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-locale",
+								"value": "en_US",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://apis-sandbox.fedex.com/commodity/v1/hscodes/edtdetail?destinationCountry=AE&importDate=2023-07-27&harmonizedCode=6106.90.000000",
+							"protocol": "https",
+							"host": [
+								"apis-sandbox",
+								"fedex",
+								"com"
+							],
+							"path": [
+								"commodity",
+								"v1",
+								"hscodes",
+								"edtdetail"
+							],
+							"query": [
+								{
+									"key": "destinationCountry",
+									"value": "AE"
+								},
+								{
+									"key": "importDate",
+									"value": "2023-07-27"
+								},
+								{
+									"key": "harmonizedCode",
+									"value": "6106.90.000000"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

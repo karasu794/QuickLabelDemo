@@ -680,8 +680,6 @@ export default function QuoteFormComponent({
                               <SelectItem value="FEDEX_ENVELOPE">FedEx Envelope</SelectItem>
                               <SelectItem value="FEDEX_PAK">FedEx Pak</SelectItem>
                               <SelectItem value="FEDEX_TUBE">FedEx Tube</SelectItem>
-                              <SelectItem value="FEDEX_10KG_BOX">FedEx 10kg Box</SelectItem>
-                              <SelectItem value="FEDEX_25KG_BOX">FedEx 25kg Box</SelectItem>
                               <SelectItem value="FEDEX_BOX">FedEx Box</SelectItem>
                             </SelectContent>
                           </Select>
