@@ -74,12 +74,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/shipping/new/shipper"
-              className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
-            >
-              送り状作成
-            </Link>
+            {user && (
+              <Link
+                href="/shipping/new/shipper"
+                className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
+              >
+                送り状作成
+              </Link>
+            )}
             
             {user ? (
               // ログイン済みの場合: アカウント + ログアウト
@@ -132,13 +134,15 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-white/20">
-              <Link
-                href="/shipping/new/shipper"
-                className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                送り状作成
-              </Link>
+              {user && (
+                <Link
+                  href="/shipping/new/shipper"
+                  className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  送り状作成
+                </Link>
+              )}
               
               {user ? (
                 // ログイン済みの場合: アカウント + ログアウト

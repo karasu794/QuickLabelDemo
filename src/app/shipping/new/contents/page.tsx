@@ -6,7 +6,8 @@ import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
 import { useDraftSave } from '@/hooks/useDraftSave'
 import HSCodeAutocomplete from '@/components/HSCodeAutocomplete'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAsciiValidation } from '@/hooks/useAsciiValidation'
 
 export default function ContentsPage() {
   const router = useRouter()
@@ -27,9 +28,40 @@ export default function ContentsPage() {
     updateItem(index, field as keyof ItemInfo, value)
   }
 
+  // 品名バリデーション
+  const [descriptionValidations, setDescriptionValidations] = useState<Record<number, {isValid: boolean, errorMessage?: string, className: string}>>({})
+
+  // アイテム数変更時のバリデーション状態調整
+  useEffect(() => {
+    // 不要なバリデーション状態を削除
+    setDescriptionValidations(prev => {
+      const newValidations = { ...prev }
+      Object.keys(newValidations).forEach(key => {
+        const index = parseInt(key)
+        if (index >= items.length) {
+          delete newValidations[index]
+        }
+      })
+      return newValidations
+    })
+  }, [items.length])
+
   // 品名変更時の処理
   const handleDescriptionChange = (index: number, description: string) => {
     updateItem(index, 'description', description)
+    
+    // ASCII文字バリデーション
+    const hasNonAscii = /[^\x00-\x7F]/.test(description)
+    const validation = {
+      isValid: !hasNonAscii,
+      errorMessage: hasNonAscii ? '半角英数字で入力してください' : undefined,
+      className: hasNonAscii ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+    }
+    
+    setDescriptionValidations(prev => ({
+      ...prev,
+      [index]: validation
+    }))
   }
 
   // HSコード変更時の処理
@@ -205,6 +237,8 @@ export default function ContentsPage() {
                     onDescriptionChange={(description) => handleDescriptionChange(index, description)}
                     onHSCodeChange={(hsCode) => handleHSCodeChange(index, hsCode)}
                     required={true}
+                    validationClassName={descriptionValidations[index]?.className || 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}
+                    errorMessage={descriptionValidations[index]?.errorMessage}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

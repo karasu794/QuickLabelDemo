@@ -7,6 +7,8 @@ import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
 import { useDraftSave } from '@/hooks/useDraftSave'
+import { useMultipleAsciiValidation } from '@/hooks/useAsciiValidation'
+import { useEffect } from 'react'
 
 export default function Component() {
   const router = useRouter()
@@ -19,9 +21,30 @@ export default function Component() {
   // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
 
+  // ASCII文字バリデーションフック
+  const asciiValidation = useMultipleAsciiValidation({
+    contactName: recipientInfo.contactName,
+    companyName: recipientInfo.companyName,
+    taxNumber: recipientInfo.taxNumber,
+    address1: recipientInfo.address1,
+    address2: recipientInfo.address2,
+    cityName: recipientInfo.cityName
+  })
+
+  // Zustandストアの値が変更されたときにバリデーションを更新
+  useEffect(() => {
+    asciiValidation.updateValue('contactName', recipientInfo.contactName)
+    asciiValidation.updateValue('companyName', recipientInfo.companyName)
+    asciiValidation.updateValue('taxNumber', recipientInfo.taxNumber)
+    asciiValidation.updateValue('address1', recipientInfo.address1)
+    asciiValidation.updateValue('address2', recipientInfo.address2)
+    asciiValidation.updateValue('cityName', recipientInfo.cityName)
+  }, [recipientInfo.contactName, recipientInfo.companyName, recipientInfo.taxNumber, recipientInfo.address1, recipientInfo.address2, recipientInfo.cityName])
+
   // フォーム入力値変更ハンドラー
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
     // 国コードが変更された場合、州コードと都市名をリセット
     if (name === 'countryCode') {
       updateRecipientInfo('countryCode', value)
@@ -30,8 +53,17 @@ export default function Component() {
       updateRecipientInfo('address1', '')
       updateRecipientInfo('address2', '')
       updateRecipientInfo('postalCode', '')
+      // バリデーション状態もリセット
+      asciiValidation.updateValue('cityName', '')
+      asciiValidation.updateValue('address1', '')
+      asciiValidation.updateValue('address2', '')
     } else {
       updateRecipientInfo(name as keyof RecipientInfo, value)
+      
+      // ASCII文字バリデーションが必要なフィールドの場合、バリデーションを更新
+      if (['contactName', 'companyName', 'taxNumber', 'address1', 'address2', 'cityName'].includes(name)) {
+        asciiValidation.updateValue(name, value)
+      }
     }
   }
 
@@ -39,7 +71,11 @@ export default function Component() {
   const handleAddressSelect = (place: google.maps.places.PlaceResult) => {
     // Google Maps APIから選択された住所を解析して各フィールドに設定
     // ここでは簡易的に住所全体をaddress1に設定
-    updateRecipientInfo('address1', place.formatted_address || '')
+    const addressValue = place.formatted_address || ''
+    updateRecipientInfo('address1', addressValue)
+    
+    // 住所1のバリデーションを更新
+    asciiValidation.updateValue('address1', addressValue)
   }
 
   // 前へボタンハンドラー
@@ -114,8 +150,11 @@ export default function Component() {
                     onChange={handleInputChange}
                     placeholder="山田 太郎" 
                     required 
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('contactName').className}`}
                   />
+                  {asciiValidation.getValidation('contactName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('contactName').errorMessage}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -126,8 +165,11 @@ export default function Component() {
                     value={recipientInfo.companyName}
                     onChange={handleInputChange}
                     placeholder="株式会社サンプル" 
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('companyName').className}`}
                   />
+                  {asciiValidation.getValidation('companyName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('companyName').errorMessage}</p>
+                  )}
                 </div>
               </div>
 
@@ -139,8 +181,11 @@ export default function Component() {
                   value={recipientInfo.taxNumber}
                   onChange={handleInputChange}
                   placeholder="T12345678901" 
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('taxNumber').className}`}
                 />
+                {asciiValidation.getValidation('taxNumber').errorMessage && (
+                  <p className="text-xs text-red-500">{asciiValidation.getValidation('taxNumber').errorMessage}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -225,8 +270,11 @@ export default function Component() {
                     onChange={handleInputChange}
                     placeholder={postalCodeNotRequiredCountries.includes(recipientInfo.countryCode) ? "Hong Kong" : "東京都千代田区"} 
                     required
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('cityName').className}`}
                   />
+                  {asciiValidation.getValidation('cityName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('cityName').errorMessage}</p>
+                  )}
                 </div>
 
                 {/* 州・県選択（USまたはCAの場合のみ表示） */}
@@ -258,12 +306,18 @@ export default function Component() {
                   <label htmlFor="address1" className="block text-sm font-medium text-gray-700">住所1 *</label>
                   <AddressAutocomplete
                     value={recipientInfo.address1}
-                    onChange={(value) => updateRecipientInfo('address1', value)}
+                    onChange={(value) => {
+                      updateRecipientInfo('address1', value)
+                      asciiValidation.updateValue('address1', value)
+                    }}
                     onAddressSelect={handleAddressSelect}
                     placeholder="丸の内1-1-1"
                     required
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address1').className}`}
                   />
+                  {asciiValidation.getValidation('address1').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('address1').errorMessage}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -274,8 +328,11 @@ export default function Component() {
                     value={recipientInfo.address2}
                     onChange={handleInputChange}
                     placeholder="ビル名・部屋番号など" 
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address2').className}`}
                   />
+                  {asciiValidation.getValidation('address2').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('address2').errorMessage}</p>
+                  )}
                 </div>
               </div>
             </div>

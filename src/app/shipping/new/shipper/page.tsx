@@ -7,6 +7,8 @@ import { AddressAutocomplete, parseAddressComponents } from '@/components/Addres
 import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
 import { useDraftSave } from '@/hooks/useDraftSave'
+import { useMultipleAsciiValidation } from '@/hooks/useAsciiValidation'
+import { useEffect } from 'react'
 
 export default function ShipperInfoPage() {
   const router = useRouter()
@@ -19,9 +21,30 @@ export default function ShipperInfoPage() {
   // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
 
+  // ASCII文字バリデーションフック
+  const asciiValidation = useMultipleAsciiValidation({
+    contactName: shipperInfo.contactName,
+    companyName: shipperInfo.companyName,
+    taxId: shipperInfo.taxId,
+    address1: shipperInfo.address1,
+    address2: shipperInfo.address2,
+    cityName: shipperInfo.cityName
+  })
+
+  // Zustandストアの値が変更されたときにバリデーションを更新
+  useEffect(() => {
+    asciiValidation.updateValue('contactName', shipperInfo.contactName)
+    asciiValidation.updateValue('companyName', shipperInfo.companyName)
+    asciiValidation.updateValue('taxId', shipperInfo.taxId)
+    asciiValidation.updateValue('address1', shipperInfo.address1)
+    asciiValidation.updateValue('address2', shipperInfo.address2)
+    asciiValidation.updateValue('cityName', shipperInfo.cityName)
+  }, [shipperInfo.contactName, shipperInfo.companyName, shipperInfo.taxId, shipperInfo.address1, shipperInfo.address2, shipperInfo.cityName])
+
   // フォーム入力値変更ハンドラー
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
     // 国コードが変更された場合、州コードと都市名をリセット
     if (name === 'countryCode') {
       updateShipperInfo('countryCode', value)
@@ -30,8 +53,17 @@ export default function ShipperInfoPage() {
       updateShipperInfo('address1', '')
       updateShipperInfo('address2', '')
       updateShipperInfo('postalCode', '')
+      // バリデーション状態もリセット
+      asciiValidation.updateValue('cityName', '')
+      asciiValidation.updateValue('address1', '')
+      asciiValidation.updateValue('address2', '')
     } else {
       updateShipperInfo(name as keyof ShipperInfo, value)
+      
+      // ASCII文字バリデーションが必要なフィールドの場合、バリデーションを更新
+      if (['contactName', 'companyName', 'taxId', 'address1', 'address2', 'cityName'].includes(name)) {
+        asciiValidation.updateValue(name, value)
+      }
     }
   }
 
@@ -45,20 +77,34 @@ export default function ShipperInfoPage() {
     }
     
     // 英語版の住所情報を優先的に使用
+    let addressValue = ''
     if (parsed.formattedAddressEn) {
       // 西洋式の住所形式に合わせて設定
-      const cleanAddress = parsed.formattedAddressEn.replace(/^(日本、|Japan,?\s*)/i, '')
-      updateShipperInfo('address1', cleanAddress)
+      addressValue = parsed.formattedAddressEn.replace(/^(日本、|Japan,?\s*)/i, '')
+      updateShipperInfo('address1', addressValue)
     } else if (place.formatted_address) {
-      const cleanAddress = place.formatted_address.replace(/^(日本、|Japan,?\s*)/i, '')
-      updateShipperInfo('address1', cleanAddress)
+      addressValue = place.formatted_address.replace(/^(日本、|Japan,?\s*)/i, '')
+      updateShipperInfo('address1', addressValue)
+    }
+    
+    // 住所1のバリデーションを更新
+    if (addressValue) {
+      asciiValidation.updateValue('address1', addressValue)
     }
     
     // 都市名の設定（英語版を優先）
+    let cityValue = ''
     if (parsed.cityEn) {
-      updateShipperInfo('cityName', parsed.cityEn)
+      cityValue = parsed.cityEn
+      updateShipperInfo('cityName', cityValue)
     } else if (parsed.city) {
-      updateShipperInfo('cityName', parsed.city)
+      cityValue = parsed.city
+      updateShipperInfo('cityName', cityValue)
+    }
+    
+    // 都市名のバリデーションを更新
+    if (cityValue) {
+      asciiValidation.updateValue('cityName', cityValue)
     }
     
     // 州コードの設定（該当する場合）
@@ -128,8 +174,11 @@ export default function ShipperInfoPage() {
                     onChange={handleInputChange}
                     placeholder="Taro Yamada"
                     required
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('contactName').className}`}
                   />
+                  {asciiValidation.getValidation('contactName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('contactName').errorMessage}</p>
+                  )}
                   <p className="text-xs text-gray-500">※ ローマ字で入力 / Enter in Roman letters</p>
                 </div>
 
@@ -144,8 +193,11 @@ export default function ShipperInfoPage() {
                     value={shipperInfo.companyName}
                     onChange={handleInputChange}
                     placeholder="Sample Corporation"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('companyName').className}`}
                   />
+                  {asciiValidation.getValidation('companyName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('companyName').errorMessage}</p>
+                  )}
                   <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
                 </div>
               </div>
@@ -162,8 +214,11 @@ export default function ShipperInfoPage() {
                     value={shipperInfo.taxId}
                     onChange={handleInputChange}
                     placeholder="T1234567890123"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('taxId').className}`}
                   />
+                  {asciiValidation.getValidation('taxId').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('taxId').errorMessage}</p>
+                  )}
                 </div>
 
                 {/* 電話番号 */}
@@ -270,8 +325,11 @@ export default function ShipperInfoPage() {
                     onChange={handleInputChange}
                     placeholder={postalCodeNotRequiredCountries.includes(shipperInfo.countryCode) ? "Hong Kong" : "Chiyoda-ku"}
                     required
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('cityName').className}`}
                   />
+                  {asciiValidation.getValidation('cityName').errorMessage && (
+                    <p className="text-xs text-red-500">{asciiValidation.getValidation('cityName').errorMessage}</p>
+                  )}
                 </div>
               </div>
 
@@ -282,14 +340,20 @@ export default function ShipperInfoPage() {
                 </label>
                 <AddressAutocomplete
                   value={shipperInfo.address1}
-                  onChange={(value) => updateShipperInfo('address1', value)}
+                  onChange={(value) => {
+                    updateShipperInfo('address1', value)
+                    asciiValidation.updateValue('address1', value)
+                  }}
                   onAddressSelect={handleAddressSelect}
                   placeholder="1-1-1 Marunouchi, Chiyoda-ku, Tokyo"
                   required
                   englishMode={true}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address1').className}`}
                   label=""
                 />
+                {asciiValidation.getValidation('address1').errorMessage && (
+                  <p className="text-xs text-red-500">{asciiValidation.getValidation('address1').errorMessage}</p>
+                )}
                 <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
               </div>
 
@@ -304,8 +368,11 @@ export default function ShipperInfoPage() {
                   value={shipperInfo.address2}
                   onChange={handleInputChange}
                   placeholder="ABC Building 5F"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address2').className}`}
                 />
+                {asciiValidation.getValidation('address2').errorMessage && (
+                  <p className="text-xs text-red-500">{asciiValidation.getValidation('address2').errorMessage}</p>
+                )}
                 <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
               </div>
             </div>

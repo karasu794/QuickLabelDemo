@@ -30,6 +30,10 @@ interface HSCodeAutocompleteProps {
   required?: boolean
   // 無効化フラグ
   disabled?: boolean
+  // バリデーション用のクラス名
+  validationClassName?: string
+  // エラーメッセージ
+  errorMessage?: string
 }
 
 export default function HSCodeAutocomplete({
@@ -41,7 +45,9 @@ export default function HSCodeAutocomplete({
   label = '品名・説明',
   placeholder = '例：コットンTシャツ、電子機器、書籍など',
   required = false,
-  disabled = false
+  disabled = false,
+  validationClassName = 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+  errorMessage
 }: HSCodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<HSCodeSuggestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -196,7 +202,7 @@ export default function HSCodeAutocomplete({
             placeholder={placeholder}
             required={required}
             disabled={disabled}
-            className="w-full min-h-[80px] p-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            className={`w-full min-h-[80px] p-3 pr-10 border rounded-md focus:ring-2 resize-none ${validationClassName}`}
           />
           {isLoading && (
             <div className="absolute right-3 top-3">
@@ -209,6 +215,12 @@ export default function HSCodeAutocomplete({
             </div>
           )}
         </div>
+        {errorMessage && (
+          <div className="flex items-center space-x-2 text-red-600 text-sm">
+            <AlertCircle className="h-4 w-4" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
       </div>
 
       {/* HSコード候補リスト */}

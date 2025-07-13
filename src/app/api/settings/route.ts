@@ -31,8 +31,7 @@ export async function GET() {
       console.log('設定が見つかりません。デフォルト値を使用します。')
       return NextResponse.json({
         key: 'service_fee_percentage',
-        value: '15',
-        description: 'サービス手数料率（パーセンテージ）'
+        value: '15'
       })
     }
 
@@ -58,7 +57,7 @@ export async function PUT(request: NextRequest) {
     const supabase = getSupabaseServiceClient()
     const body = await request.json()
     
-    const { key, value, description } = body
+    const { key, value } = body
 
     if (!key || !value) {
       return NextResponse.json(
@@ -73,7 +72,6 @@ export async function PUT(request: NextRequest) {
       .upsert({
         key,
         value,
-        description: description || null,
         updated_at: new Date().toISOString()
       })
       .select()
