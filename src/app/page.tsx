@@ -37,26 +37,25 @@ export default function Home() {
   const [quoteParams, setQuoteParams] = useState<ExtendedQuoteParams>({
     originCountry: "JP",
     originPostalCode: "",
+    originStateCode: "",
+    originCityName: "",
+    originAddressInput: "",
+    originSelected: false,
     destinationCountry: "US",
     destinationPostalCode: "",
+    destinationStateCode: "",
+    destinationCityName: "",
+    destinationAddressInput: "",
+    destinationSelected: false,
     shipDate: new Date().toISOString().split('T')[0],
     isResidential: false,
     higherInsurance: false,
-    declaredValue: "", // 保険の申告金額を初期化
-    originStateCode: "",
-    originCityName: "",
-    destinationStateCode: "",
-    destinationCityName: "",
-    // 新しいフィールド
-    originAddressInput: "",
-    destinationAddressInput: "",
-    originSelected: false,
-    destinationSelected: false
+    declaredValue: ""
   })
 
   const [packages, setPackages] = useState<Package[]>([{
     id: 1,
-    packagingType: "customer",
+    packagingType: "YOUR_PACKAGING",
     weight: "",
     length: "",
     width: "",
@@ -252,7 +251,7 @@ export default function Home() {
     const newId = Math.max(...packages.map(p => p.id)) + 1
     setPackages(prev => [...prev, {
       id: newId,
-      packagingType: "customer",
+      packagingType: "YOUR_PACKAGING",
       weight: "",
       length: "",
       width: "",
@@ -330,10 +329,12 @@ export default function Home() {
         throw new Error("出荷日を選択してください")
       }
 
-      // Validate declared value if higher insurance is selected
-      if (quoteParams.higherInsurance && (!quoteParams.declaredValue || Number.parseFloat(quoteParams.declaredValue) <= 0)) {
-        throw new Error("より高額な賠償責任補償を利用する場合は、保険の申告金額を入力してください")
+      // Validate declared value for higher insurance
+      if (quoteParams.higherInsurance && (!quoteParams.declaredValue || Number(quoteParams.declaredValue) <= 0)) {
+        throw new Error("追加保険に加入する場合は、保証金額を入力してください")
       }
+
+
 
       // 非同期ジョブを開始
       const response = await fetch('/api/quote', {
@@ -432,9 +433,6 @@ export default function Home() {
         onAddPackage={handleAddPackage}
         onRemovePackage={handleRemovePackage}
         onSubmit={handleSubmit}
-        originStateOptions={getOriginStateOptions()}
-        destinationStateOptions={getDestinationStateOptions()}
-        postalCodeNotRequiredCountries={POSTAL_CODE_NOT_REQUIRED_COUNTRIES}
       />
 
       {/* Loading Section - Simplified */}
@@ -442,13 +440,13 @@ export default function Home() {
         <div ref={loadingRef} className="max-w-4xl mx-auto mt-8 px-4">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">見積もり処理中</h3>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">見積もり処理中</h3>
               <p className="text-gray-600">
-                FedEx APIから料金情報を取得しています...
-              </p>
+                  FedEx APIから料金情報を取得しています...
+                </p>
             </div>
           </div>
         </div>
@@ -457,7 +455,7 @@ export default function Home() {
       {/* Results Section - New FedX Quote Results Component */}
       {quoteResults.length > 0 && !isLoading && (
         <div ref={resultsRef}>
-          <FedExQuoteResults 
+        <FedExQuoteResults 
           rates={quoteResults.map(result => ({
             serviceType: result.serviceType,
             totalNetFedExCharge: result.totalNetFedExCharge,
@@ -481,7 +479,7 @@ export default function Home() {
             destinationCityName: quoteParams.destinationCityName,
             destinationAddressInput: quoteParams.destinationAddressInput
           }}
-          />
+        />
         </div>
       )}
     </main>

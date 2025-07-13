@@ -101,6 +101,9 @@ interface ShippingFormState {
   // 見積もり情報から送り状情報への変換アクション
   setInitialShippingInfoFromQuote: (quoteParams: QuoteToShippingParams) => void
 
+  // 部分的な住所情報を更新するアクション
+  setAddressPart: (type: 'origin' | 'destination', data: { countryCode: string; stateCode: string; cityName: string; postalCode: string; address1: string }) => void
+
   // 荷物情報のアクション
   setPackages: (packages: PackageInfo[]) => void
   addPackage: () => void
@@ -218,17 +221,19 @@ export const useShippingFormStore = create<ShippingFormState>()(
 
       // 見積もり情報から送り状情報への変換アクション
       setInitialShippingInfoFromQuote: (quoteParams) => {
+        console.log('📋 Setting initial shipping info from quote:', quoteParams);
+        
         const newShipperInfo: ShipperInfo = {
           contactName: '',
           companyName: '',
           taxId: '',
           phoneNumber: '',
-          countryCode: quoteParams.originCountry,
-          stateCode: quoteParams.originStateCode,
+          countryCode: quoteParams.originCountry || 'JP',
+          stateCode: quoteParams.originStateCode || '',
           address1: quoteParams.originAddressInput || '',
           address2: '',
-          postalCode: quoteParams.originPostalCode,
-          cityName: quoteParams.originCityName
+          postalCode: quoteParams.originPostalCode || '',
+          cityName: quoteParams.originCityName || ''
         }
 
         const newRecipientInfo: RecipientInfo = {
@@ -237,18 +242,42 @@ export const useShippingFormStore = create<ShippingFormState>()(
           taxNumber: '',
           phoneNumber: '',
           email: '',
-          countryCode: quoteParams.destinationCountry,
-          postalCode: quoteParams.destinationPostalCode,
-          cityName: quoteParams.destinationCityName,
-          stateCode: quoteParams.destinationStateCode,
+          countryCode: quoteParams.destinationCountry || 'US',
+          postalCode: quoteParams.destinationPostalCode || '',
+          cityName: quoteParams.destinationCityName || '',
+          stateCode: quoteParams.destinationStateCode || '',
           address1: quoteParams.destinationAddressInput || '',
           address2: ''
         }
+
+        console.log('🚚 Generated shipper info (English):', {
+          country: newShipperInfo.countryCode,
+          state: newShipperInfo.stateCode,
+          city: newShipperInfo.cityName,
+          address: newShipperInfo.address1,
+          postalCode: newShipperInfo.postalCode
+        });
+        
+        console.log('📦 Generated recipient info (English):', {
+          country: newRecipientInfo.countryCode,
+          state: newRecipientInfo.stateCode,
+          city: newRecipientInfo.cityName,
+          address: newRecipientInfo.address1,
+          postalCode: newRecipientInfo.postalCode
+        });
 
         set({ 
           shipperInfo: newShipperInfo,
           recipientInfo: newRecipientInfo
         })
+      },
+
+      // 部分的な住所情報を更新するアクション
+      setAddressPart: (type, data) => {
+        const key = type === 'origin' ? 'shipperInfo' : 'recipientInfo';
+        set((state) => ({
+          [key]: { ...state[key], ...data }
+        }));
       },
 
       // 荷物情報のアクション

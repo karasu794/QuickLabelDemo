@@ -374,17 +374,17 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
             description: item.description,
             countryOfManufacture: item.countryOfOrigin || item.countryOfManufacture,
             quantity: item.quantity,
-            quantityUnits: 'PCS',
-            unitPrice: {
+        quantityUnits: 'PCS',
+        unitPrice: {
               amount: parseFloat(convertedUnitPrice.toFixed(2)),
               currency: itemCurrency,
-            },
-            customsValue: {
+        },
+        customsValue: {
               amount: parseFloat(convertedCustomsValue.toFixed(2)),
               currency: itemCurrency,
-            },
-            weight: {
-              units: 'KG',
+        },
+        weight: {
+          units: 'KG',
               value: item.weight,
             },
             ...(item.hsCode && { harmonizedCode: item.hsCode }),
@@ -687,9 +687,9 @@ export async function POST(request: NextRequest) {
     
     // Step 3: Square決済の実行
     try {
-      console.log('💳 Square決済の実行中...')
-      const idempotencyKey = randomUUID()
-      
+    console.log('💳 Square決済の実行中...')
+    const idempotencyKey = randomUUID()
+    
       console.log('📋 Square決済リクエスト詳細:')
       console.log(`  sourceId: ${data.sourceId}`)
       console.log(`  amount: ${data.finalCharge}`)
@@ -829,7 +829,7 @@ export async function POST(request: NextRequest) {
       // 決済は完了しているため、エラーでも記録を残す
       console.log('⚠️ 決済完了済み - 管理者による手動処理が必要')
       return NextResponse.json(
-        {
+        { 
           error: '取引記録の保存に失敗しました',
           step: 'database_initial_save',
           paymentId: paymentId, // 決済IDは返す
@@ -906,11 +906,11 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ 送り状作成完了済み - 部分的成功')
       return NextResponse.json(
         {
-          success: true,
-          trackingNumber: trackingNumber,
+      success: true,
+      trackingNumber: trackingNumber,
           paymentId: paymentId,
           shipmentId: shipmentId,
-          labelUrl: labelUrl,
+      labelUrl: labelUrl,
           warning: 'DB更新でエラーが発生しましたが、送り状作成は完了しています',
           details: error instanceof Error ? error.message : '不明なエラー'
         },
@@ -925,8 +925,8 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         trackingNumber: trackingNumber,
-        paymentId: paymentId,
-        shipmentId: shipmentId,
+      paymentId: paymentId,
+      shipmentId: shipmentId,
         labelUrl: labelUrl,
         message: '送り状作成と決済が正常に完了しました'
       },
@@ -938,7 +938,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ 予期しないエラー:', error)
     
     return NextResponse.json(
-      {
+      { 
         error: '予期しないエラーが発生しました',
         step: 'unexpected_error',
         paymentId: paymentId,

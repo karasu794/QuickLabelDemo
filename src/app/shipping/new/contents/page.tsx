@@ -211,24 +211,24 @@ export default function ContentsPage() {
               </Button>
             </div>
 
-            {items.map((item, index) => (
+          {items.map((item, index) => (
               <div key={index} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="font-medium text-gray-900">品目 {index + 1}</h3>
-                  {items.length > 1 && (
+                {items.length > 1 && (
                     <Button
-                      type="button"
-                      onClick={() => removeItem(index)}
+                    type="button"
+                    onClick={() => removeItem(index)}
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-800"
-                    >
+                  >
                       削除
                     </Button>
-                  )}
-                </div>
-
-                <div className="space-y-6 p-6">
+                )}
+              </div>
+              
+              <div className="space-y-6 p-6">
                   {/* HSコード自動入力コンポーネント */}
                   <HSCodeAutocomplete
                     description={item.description}
@@ -242,40 +242,40 @@ export default function ContentsPage() {
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* 製造国 */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        製造国 <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={item.countryOfManufacture}
-                        onChange={(e) => handleItemChange(index, 'countryOfManufacture', e.target.value)}
-                        required
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        {countries.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* 数量 */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        数量 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                        required
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                      />
-                    </div>
+                  {/* 製造国 */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      製造国 <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={item.countryOfManufacture}
+                      onChange={(e) => handleItemChange(index, 'countryOfManufacture', e.target.value)}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {countries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  {/* 数量 */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      数量 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                      required
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                    />
+                  </div>
+                </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* 重量 */}
@@ -295,11 +295,11 @@ export default function ContentsPage() {
                       />
                     </div>
 
-                    {/* 単価 */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        単価 <span className="text-red-500">*</span>
-                      </label>
+                  {/* 単価 */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      単価 <span className="text-red-500">*</span>
+                    </label>
                       <input
                         type="number"
                         min="0"
@@ -342,7 +342,7 @@ export default function ContentsPage() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
 
           {/* Navigation */}
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 pt-8">
@@ -351,7 +351,7 @@ export default function ContentsPage() {
               variant="outline"
               onClick={handlePrevious}
               className="w-full sm:w-auto order-2 sm:order-1"
-            >
+                >
               ← 前のステップ
             </Button>
 
@@ -366,7 +366,7 @@ export default function ContentsPage() {
               >
                 {isLoading ? '保存中...' : '下書き保存'}
               </Button>
-
+              
               <Button
                 type="submit"
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"

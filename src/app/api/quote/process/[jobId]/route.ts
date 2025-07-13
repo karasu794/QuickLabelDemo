@@ -10,6 +10,7 @@ interface QuoteParams {
   shipDate: string
   isResidential: boolean
   higherInsurance: boolean
+  declaredValue: string
   originStateCode: string
   originCityName: string
   destinationStateCode: string
@@ -530,7 +531,13 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         .update({ status: 'processing_rate_request' })
         .eq('id', jobId);
 
-      // FedX APIリクエストを構築
+      // FedX APIリクエストを構築前にデバッグログを追加
+      console.log('==== デバッグ: quoteParams検証 ====');
+      console.log('originStateCode:', quoteParams.originStateCode);
+      console.log('destinationStateCode:', quoteParams.destinationStateCode);
+      console.log('destinationCountry:', quoteParams.destinationCountry);
+      console.log('destinationCityName:', quoteParams.destinationCityName);
+      
       const fedexRequest = buildFedExRateRequest(quoteParams, packages);
       console.log('FedX APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
 
