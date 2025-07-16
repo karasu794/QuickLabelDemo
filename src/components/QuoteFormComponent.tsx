@@ -335,16 +335,13 @@ export default function QuoteFormComponent({
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 text-lg bg-orange-400 hover:bg-orange-500 text-white"
+              className={`w-full h-12 text-lg text-white ${
+                isLoading 
+                  ? 'bg-orange-300 cursor-not-allowed' 
+                  : 'bg-orange-400 hover:bg-orange-500'
+              }`}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  処理中...
-                </>
-              ) : (
-                '料金を表示'
-              )}
+              見積もりを表示
             </Button>
           </form>
         </CardContent>

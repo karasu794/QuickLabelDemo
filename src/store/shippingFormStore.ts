@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useEffect, useState } from 'react'
 
 // 型定義
 export interface ShipperInfo {
@@ -430,4 +431,103 @@ export const useShippingPurpose = () => {
   const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
   const setShippingPurpose = useShippingFormStore((state) => state.setShippingPurpose)
   return { shippingPurpose, setShippingPurpose }
-} 
+}
+
+/**
+ * Zustandのハイドレーション完了を検出するフック（最終安定版）
+ * Google Maps API読み込みも考慮した完全な初期化待機
+ */
+export const useHydratedStore = () => {
+  const [isHydrated, setIsHydrated] = useState(false)
+  
+  useEffect(() => {
+    // クライアントサイドでのみ実行
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    let timeoutId: NodeJS.Timeout
+    let retryCount = 0
+    const maxRetries = 30 // 最大3秒待機（100ms × 30回）
+    
+    const checkHydration = () => {
+      try {
+        // Zustandストアから実際の状態を取得してチェック
+        const currentState = useShippingFormStore.getState()
+        const hasPersistedData = currentState && (
+          currentState.shipperInfo.contactName ||
+          currentState.recipientInfo.contactName ||
+          currentState.selectedRate
+        )
+        
+        // Google Maps API読み込み状態もチェック
+        const isGoogleMapsReady = typeof window !== 'undefined' && 
+          (window as any).google && 
+          (window as any).google.maps && 
+          (window as any).google.maps.places;
+        
+        // ログ出力を1秒ごとに制限（10回に1回のみ）
+        if (retryCount % 10 === 0) {
+          console.log(`📋 ハイドレーションチェック ${retryCount + 1}/${maxRetries}:`, {
+            hasPersistedData,
+            stateExists: !!currentState,
+            shipperExists: !!currentState?.shipperInfo,
+            recipientExists: !!currentState?.recipientInfo,
+            googleMapsReady: isGoogleMapsReady
+          })
+        }
+        
+        // 基本的なハイドレーション完了条件（Google Maps不要な場合もある）
+        const basicHydrationComplete = retryCount >= 10; // 1秒経過
+        const fullHydrationComplete = hasPersistedData || retryCount >= maxRetries;
+        
+        if (fullHydrationComplete || basicHydrationComplete) {
+          console.log('✅ Zustand hydration completed successfully', {
+            reason: fullHydrationComplete ? 'full' : 'timeout',
+            retryCount
+          })
+          setIsHydrated(true)
+          return
+        }
+        
+        // リトライ
+        retryCount++
+        timeoutId = setTimeout(checkHydration, 100)
+        
+      } catch (error) {
+        console.error('❌ Hydration check error:', error)
+        setIsHydrated(true) // エラー時もローディングを解除
+      }
+    }
+    
+    // 初期遅延後にチェック開始
+    timeoutId = setTimeout(checkHydration, 100)
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [])
+
+  // ハイドレーション完了後にストアの状態を取得
+  const storeState = useShippingFormStore()
+
+  return {
+    isHydrated,
+    store: isHydrated ? storeState : null
+  }
+}
+
+/**
+ * ハイドレーション完了まで待機するローディングコンポーネント用フック（改良版）
+ */
+export const useWaitForHydration = () => {
+  const { isHydrated, store } = useHydratedStore()
+  
+  return {
+    isLoading: !isHydrated,
+    isReady: isHydrated,
+    store
+  }
+}

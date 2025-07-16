@@ -1,388 +1,319 @@
 'use client'
 
+import { useState } from 'react'
+import { useItems, useWaitForHydration, useRecipientInfo } from '@/store/shippingFormStore'
+import { getPopularCountryOptions } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
-import { useShippingFormStore, type ItemInfo } from '@/store/shippingFormStore'
-import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
-import { useDraftSave } from '@/hooks/useDraftSave'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import HSCodeAutocomplete from '@/components/HSCodeAutocomplete'
-import { useState, useEffect } from 'react'
-import { useAsciiValidation } from '@/hooks/useAsciiValidation'
+
+import { AlertCircle, Plus, Package, X, Loader2 } from 'lucide-react'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function ContentsPage() {
   const router = useRouter()
-  const { saveDraft, isLoading, message } = useDraftSave()
+  const { isLoading, isReady } = useWaitForHydration()
+  const { items, setItems, addItem, updateItem, removeItem } = useItems()
+  const { recipientInfo } = useRecipientInfo()
+  const [error, setError] = useState('')
   
-  // Zustandストアから状態とアクションを取得
-  const items = useShippingFormStore((state) => state.items)
-  const addItem = useShippingFormStore((state) => state.addItem)
-  const updateItem = useShippingFormStore((state) => state.updateItem)
-  const removeItem = useShippingFormStore((state) => state.removeItem)
-  const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
-  const setShippingPurpose = useShippingFormStore((state) => state.setShippingPurpose)
-  const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
-  const recipientInfo = useShippingFormStore((state) => state.recipientInfo)
+  const countryOptions = getPopularCountryOptions()
 
-  // 品目情報を更新する関数
-  const handleItemChange = (index: number, field: keyof ItemInfo, value: string | number) => {
-    updateItem(index, field as keyof ItemInfo, value)
+  const handleItemChange = (index: number, field: keyof typeof items[0], value: string | number) => {
+    updateItem(index, field, value)
   }
 
-  // 品名バリデーション
-  const [descriptionValidations, setDescriptionValidations] = useState<Record<number, {isValid: boolean, errorMessage?: string, className: string}>>({})
-
-  // アイテム数変更時のバリデーション状態調整
-  useEffect(() => {
-    // 不要なバリデーション状態を削除
-    setDescriptionValidations(prev => {
-      const newValidations = { ...prev }
-      Object.keys(newValidations).forEach(key => {
-        const index = parseInt(key)
-        if (index >= items.length) {
-          delete newValidations[index]
-        }
-      })
-      return newValidations
-    })
-  }, [items.length])
-
-  // 品名変更時の処理
+  // HSCodeAutocomplete用のハンドラー
   const handleDescriptionChange = (index: number, description: string) => {
     updateItem(index, 'description', description)
-    
-    // ASCII文字バリデーション
-    const hasNonAscii = /[^\x00-\x7F]/.test(description)
-    const validation = {
-      isValid: !hasNonAscii,
-      errorMessage: hasNonAscii ? '半角英数字で入力してください' : undefined,
-      className: hasNonAscii ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-    }
-    
-    setDescriptionValidations(prev => ({
-      ...prev,
-      [index]: validation
-    }))
   }
 
-  // HSコード変更時の処理
   const handleHSCodeChange = (index: number, hsCode: string) => {
     updateItem(index, 'hsCode', hsCode)
   }
 
-  // 前へボタンハンドラー
+  const handleAddItem = () => {
+    addItem()
+  }
+
+  const handleRemoveItem = (index: number) => {
+    if (items.length > 1) {
+      removeItem(index)
+    }
+  }
+
+  const validateForm = () => {
+    for (const item of items) {
+      if (!item.description.trim()) {
+        setError('すべての商品の説明を入力してください')
+        return false
+      }
+      if (!item.countryOfManufacture) {
+        setError('すべての商品の製造国を選択してください')
+        return false
+      }
+      if (item.quantity <= 0) {
+        setError('数量は1以上を入力してください')
+        return false
+      }
+      if (item.weight <= 0) {
+        setError('重量は0より大きい値を入力してください')
+        return false
+      }
+      if (item.unitPrice <= 0) {
+        setError('単価は0より大きい値を入力してください')
+        return false
+      }
+    }
+    return true
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    
+    if (validateForm()) {
+      router.push('/shipping/new/review')
+    }
+  }
+
   const handlePrevious = () => {
     router.push('/shipping/new/packages')
   }
 
-  // フォーム送信ハンドラー
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    markStepCompleted('/shipping/new/contents')
-    router.push('/shipping/new/review')
+  const getTotalValue = () => {
+    return items.reduce((total, item) => total + (item.unitPrice * item.quantity), 0)
   }
 
-  const countries = [
-    { code: 'JP', name: '日本' },
-    { code: 'US', name: 'アメリカ' },
-    { code: 'CN', name: '中国' },
-    { code: 'KR', name: '韓国' },
-    { code: 'TW', name: '台湾' },
-    { code: 'HK', name: '香港' },
-    { code: 'SG', name: 'シンガポール' },
-    { code: 'TH', name: 'タイ' },
-    { code: 'VN', name: 'ベトナム' },
-    { code: 'MY', name: 'マレーシア' },
-    { code: 'ID', name: 'インドネシア' },
-    { code: 'PH', name: 'フィリピン' },
-    { code: 'IN', name: 'インド' },
-    { code: 'BD', name: 'バングラデシュ' },
-    { code: 'PK', name: 'パキスタン' },
-    { code: 'LK', name: 'スリランカ' },
-    { code: 'MM', name: 'ミャンマー' },
-    { code: 'KH', name: 'カンボジア' },
-    { code: 'LA', name: 'ラオス' },
-    { code: 'GB', name: 'イギリス' },
-    { code: 'FR', name: 'フランス' },
-    { code: 'DE', name: 'ドイツ' },
-    { code: 'IT', name: 'イタリア' },
-    { code: 'ES', name: 'スペイン' },
-    { code: 'NL', name: 'オランダ' },
-    { code: 'BE', name: 'ベルギー' },
-    { code: 'CH', name: 'スイス' },
-    { code: 'AT', name: 'オーストリア' },
-    { code: 'SE', name: 'スウェーデン' },
-    { code: 'NO', name: 'ノルウェー' },
-    { code: 'DK', name: 'デンマーク' },
-    { code: 'FI', name: 'フィンランド' },
-    { code: 'IE', name: 'アイルランド' },
-    { code: 'PT', name: 'ポルトガル' },
-    { code: 'PL', name: 'ポーランド' },
-    { code: 'CZ', name: 'チェコ' },
-    { code: 'HU', name: 'ハンガリー' },
-    { code: 'RO', name: 'ルーマニア' },
-    { code: 'BG', name: 'ブルガリア' },
-    { code: 'HR', name: 'クロアチア' },
-    { code: 'SI', name: 'スロベニア' },
-    { code: 'SK', name: 'スロバキア' },
-    { code: 'LT', name: 'リトアニア' },
-    { code: 'LV', name: 'ラトビア' },
-    { code: 'EE', name: 'エストニア' },
-    { code: 'CA', name: 'カナダ' },
-    { code: 'MX', name: 'メキシコ' },
-    { code: 'AU', name: 'オーストラリア' },
-    { code: 'NZ', name: 'ニュージーランド' },
-    { code: 'ZA', name: '南アフリカ' },
-    { code: 'EG', name: 'エジプト' },
-    { code: 'MA', name: 'モロッコ' },
-    { code: 'NG', name: 'ナイジェリア' },
-    { code: 'KE', name: 'ケニア' },
-    { code: 'GH', name: 'ガーナ' },
-    { code: 'ET', name: 'エチオピア' },
-    { code: 'TZ', name: 'タンザニア' },
-    { code: 'UG', name: 'ウガンダ' },
-    { code: 'RW', name: 'ルワンダ' },
-    { code: 'BR', name: 'ブラジル' },
-    { code: 'AR', name: 'アルゼンチン' },
-    { code: 'CL', name: 'チリ' },
-    { code: 'CO', name: 'コロンビア' },
-    { code: 'PE', name: 'ペルー' },
-    { code: 'OTHER', name: 'その他' }
-  ]
+  const getTotalWeight = () => {
+    return items.reduce((total, item) => total + item.weight, 0)
+  }
 
-  const shippingPurposeOptions = [
-    { value: 'PERSONAL_USE', label: '個人使用' },
-    { value: 'GIFT', label: '贈答品' },
-    { value: 'SAMPLE', label: 'サンプル' },
-    { value: 'REPAIR_AND_RETURN', label: '修理・返送品' },
-    { value: 'DOCUMENTS', label: '書類' },
-    { value: 'COMMERCIAL', label: '商用・有償' }
-  ]
+  // HSコード機能が使用可能かどうかを判定
+  const isHSCodeAvailable = recipientInfo && recipientInfo.countryCode && recipientInfo.countryCode.trim() !== ''
 
   return (
     <AuthGuard>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            送り状作成 (4/5) - 内容品の詳細
-          </h1>
-          <p className="text-gray-600">
-            税関手続きに必要な内容品の詳細情報を入力してください
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Shipping Purpose */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">発送目的</h2>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                発送目的 <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={shippingPurpose}
-                onChange={(e) => setShippingPurpose(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">発送目的を選択してください</option>
-                {shippingPurposeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">内容品情報</h1>
+            <p className="text-gray-600">送る商品の詳細情報を入力してください</p>
           </div>
 
-          {/* Items */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">内容品の詳細</h2>
-              <Button
-                type="button"
-                onClick={addItem}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <span>+</span>
-                <span>品目を追加</span>
-              </Button>
-            </div>
-
-          {items.map((item, index) => (
-              <div key={index} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">品目 {index + 1}</h3>
-                {items.length > 1 && (
-                    <Button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-800"
-                  >
-                      削除
-                    </Button>
-                )}
-              </div>
-              
-              <div className="space-y-6 p-6">
-                  {/* HSコード自動入力コンポーネント */}
-                  <HSCodeAutocomplete
-                    description={item.description}
-                    hsCode={item.hsCode}
-                    destinationCountryCode={recipientInfo.countryCode}
-                    onDescriptionChange={(description) => handleDescriptionChange(index, description)}
-                    onHSCodeChange={(hsCode) => handleHSCodeChange(index, hsCode)}
-                    required={true}
-                    validationClassName={descriptionValidations[index]?.className || 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}
-                    errorMessage={descriptionValidations[index]?.errorMessage}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* 製造国 */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      製造国 <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={item.countryOfManufacture}
-                      onChange={(e) => handleItemChange(index, 'countryOfManufacture', e.target.value)}
-                      required
-                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      {countries.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 数量 */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      数量 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                      required
-                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                    />
-                  </div>
+          {/* ハイドレーション待機ローディング */}
+          {isLoading && (
+            <Card>
+              <CardContent className="p-12">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                  <p className="text-gray-600">データを読み込み中...</p>
                 </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* 重量 */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        重量 (kg) <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.1"
-                        value={item.weight}
-                        onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)}
-                        required
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                        placeholder="0.0"
-                      />
-                    </div>
-
-                  {/* 単価 */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      単価 <span className="text-red-500">*</span>
-                    </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.unitPrice}
-                        onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        required
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                        placeholder="0.00"
-                      />
-                    </div>
-
-                    {/* 通貨 */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        通貨 <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={item.currency}
-                        onChange={(e) => handleItemChange(index, 'currency', e.target.value)}
-                        required
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="JPY">JPY (日本円)</option>
-                        <option value="USD">USD (米ドル)</option>
-                        <option value="EUR">EUR (ユーロ)</option>
-                        <option value="GBP">GBP (英ポンド)</option>
-                        <option value="CNY">CNY (中国元)</option>
-                        <option value="KRW">KRW (韓国ウォン)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* 計算値表示 */}
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <div className="text-sm text-gray-600">
-                      合計価値: {(item.unitPrice * item.quantity).toFixed(2)} {item.currency}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            </div>
-
-          {/* Navigation */}
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 pt-8">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              className="w-full sm:w-auto order-2 sm:order-1"
-                >
-              ← 前のステップ
-            </Button>
-
-            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 order-1 sm:order-2">
-              {/* Draft Save Button */}
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => saveDraft()}
-                disabled={isLoading}
-                className="w-full sm:w-auto text-sm"
-              >
-                {isLoading ? '保存中...' : '下書き保存'}
-              </Button>
-              
-              <Button
-                type="submit"
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                次のステップ →
-              </Button>
-            </div>
-          </div>
-
-          {/* Draft Save Message */}
-          {message && (
-            <div className="text-center">
-              <p className="text-sm text-green-600">{message}</p>
-            </div>
+              </CardContent>
+            </Card>
           )}
-        </form>
+
+          {/* フォーム本体 */}
+          {isReady && (
+
+          <Card>
+            <CardHeader className="bg-green-600 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                内容品情報
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {items.map((item, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">商品 {index + 1}</h3>
+                      {items.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveItem(index)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* HSコード自動入力コンポーネント */}
+                      {isHSCodeAvailable ? (
+                        <HSCodeAutocomplete
+                          description={item.description}
+                          hsCode={item.hsCode}
+                          destinationCountryCode={recipientInfo.countryCode}
+                          onDescriptionChange={(description) => handleDescriptionChange(index, description)}
+                          onHSCodeChange={(hsCode) => handleHSCodeChange(index, hsCode)}
+                          label="商品説明・HSコード"
+                          placeholder="商品の詳細な説明を入力してください（例：コットンTシャツ、電子機器、書籍など）"
+                          required
+                        />
+                      ) : (
+                        <div className="space-y-4">
+                          {/* 通常の入力フィールド（HSコード機能無効時） */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`description-${index}`}>商品説明 *</Label>
+                            <textarea
+                              id={`description-${index}`}
+                              value={item.description}
+                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleItemChange(index, 'description', e.target.value)}
+                              placeholder="商品の詳細な説明を入力してください"
+                              rows={3}
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`hsCode-${index}`}>HSコード</Label>
+                            <Input
+                              id={`hsCode-${index}`}
+                              value={item.hsCode}
+                              onChange={(e) => handleItemChange(index, 'hsCode', e.target.value)}
+                              placeholder="例: 1234.56.78"
+                            />
+                          </div>
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                            <div className="flex items-center space-x-2 text-yellow-700 text-sm">
+                              <AlertCircle className="h-4 w-4" />
+                              <span>HSコード自動入力機能を使用するには、まず受取人の国を選択してください。</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`countryOfManufacture-${index}`}>製造国 *</Label>
+                        <Select 
+                          value={item.countryOfManufacture} 
+                          onValueChange={(value) => handleItemChange(index, 'countryOfManufacture', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="製造国を選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countryOptions.map((country) => (
+                              <SelectItem key={country.value} value={country.value}>
+                                {country.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`quantity-${index}`}>数量 *</Label>
+                        <Input
+                          id={`quantity-${index}`}
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`weight-${index}`}>重量 (kg) *</Label>
+                        <Input
+                          id={`weight-${index}`}
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          value={item.weight}
+                          onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`unitPrice-${index}`}>単価 (JPY) *</Label>
+                        <Input
+                          id={`unitPrice-${index}`}
+                          type="number"
+                          min="0"
+                          value={item.unitPrice}
+                          onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`currency-${index}`}>通貨</Label>
+                        <Select 
+                          value={item.currency} 
+                          onValueChange={(value) => handleItemChange(index, 'currency', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="JPY">JPY</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="text-right text-sm text-gray-600">
+                      合計価格: {(item.unitPrice * item.quantity).toLocaleString()} {item.currency}
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddItem}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  商品を追加
+                </Button>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">総重量:</span> {getTotalWeight().toFixed(1)} kg
+                    </div>
+                    <div>
+                      <span className="font-medium">総価格:</span> {getTotalValue().toLocaleString()} JPY
+                    </div>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    <span className="text-red-700">{error}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <Button type="button" variant="outline" onClick={handlePrevious}>
+                    戻る
+                  </Button>
+                  <Button type="submit">
+                    次へ
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+          )}
+        </div>
       </div>
     </AuthGuard>
   )

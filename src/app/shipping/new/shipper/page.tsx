@@ -1,418 +1,341 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useShipperInfo, useWaitForHydration } from '@/store/shippingFormStore'
+import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
+import { usStates, canadianProvinces, getPopularCountryOptions } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
-import { getStatesByCountry } from '@/lib/data/locations'
-import { useShippingFormStore, type ShipperInfo } from '@/store/shippingFormStore'
-import { AddressAutocomplete, parseAddressComponents } from '@/components/AddressAutocomplete'
-import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
-import { useDraftSave } from '@/hooks/useDraftSave'
-import { useMultipleAsciiValidation } from '@/hooks/useAsciiValidation'
-import { useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AlertCircle, Building2, Loader2 } from 'lucide-react'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function ShipperInfoPage() {
   const router = useRouter()
-  const { saveDraft, isLoading, message } = useDraftSave()
+  const { isLoading, isReady } = useWaitForHydration()
+  const { shipperInfo, updateShipperInfo } = useShipperInfo()
+  const [error, setError] = useState('')
+  const [addressInput, setAddressInput] = useState('')
+  const [isAddressSelected, setIsAddressSelected] = useState(false)
   
-  // Zustandストアから直接状態とアクションを取得
-  const shipperInfo = useShippingFormStore((state) => state.shipperInfo)
-  const updateShipperInfo = useShippingFormStore((state) => state.updateShipperInfo)
-
-  // 郵便番号が不要で都市名が必要な国のリスト
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
+  // const countryOptions = getPopularCountryOptions()
+  
+  // 一時的に静的リストでテスト
+  const countryOptions = [
+    { value: 'JP', label: '日本' },
+    { value: 'US', label: 'アメリカ合衆国' },
+    { value: 'CN', label: '中国' },
+    { value: 'KR', label: '韓国' },
+    { value: 'TW', label: '台湾' }
+  ]
 
-  // ASCII文字バリデーションフック
-  const asciiValidation = useMultipleAsciiValidation({
-    contactName: shipperInfo.contactName,
-    companyName: shipperInfo.companyName,
-    taxId: shipperInfo.taxId,
-    address1: shipperInfo.address1,
-    address2: shipperInfo.address2,
-    cityName: shipperInfo.cityName
-  })
+  // 住所入力に変更があった場合、選択状態をリセット
+  const handleAddressInputChange = (value: string) => {
+    setAddressInput(value)
+    setIsAddressSelected(false)
+  }
 
-  // Zustandストアの値が変更されたときにバリデーションを更新
-  useEffect(() => {
-    asciiValidation.updateValue('contactName', shipperInfo.contactName)
-    asciiValidation.updateValue('companyName', shipperInfo.companyName)
-    asciiValidation.updateValue('taxId', shipperInfo.taxId)
-    asciiValidation.updateValue('address1', shipperInfo.address1)
-    asciiValidation.updateValue('address2', shipperInfo.address2)
-    asciiValidation.updateValue('cityName', shipperInfo.cityName)
-  }, [shipperInfo.contactName, shipperInfo.companyName, shipperInfo.taxId, shipperInfo.address1, shipperInfo.address2, shipperInfo.cityName])
+  // Google Places APIから住所が選択された場合
+  const handleAddressSelect = (data: ParsedAddress) => {
+    console.log('Selected address data:', data)
+    setAddressInput(data.fullAddress)
+    setIsAddressSelected(true)
+    
+    // 荷送人情報を更新
+    updateShipperInfo('countryCode', data.countryCode)
+    updateShipperInfo('postalCode', data.postalCode)
+    updateShipperInfo('cityName', data.cityName)
+    updateShipperInfo('stateCode', data.stateCode)
+    updateShipperInfo('address1', data.street)
+  }
 
-  // フォーム入力値変更ハンドラー
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // 通常の入力フィールドの変更ハンドラー
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    
-    // 国コードが変更された場合、州コードと都市名をリセット
-    if (name === 'countryCode') {
-      updateShipperInfo('countryCode', value)
+    updateShipperInfo(name as keyof typeof shipperInfo, value)
+  }
+
+  // 国が変更された場合、州・県コードをリセット
+  const handleCountryChange = (countryCode: string) => {
+    updateShipperInfo('countryCode', countryCode)
+    if (countryCode !== 'US' && countryCode !== 'CA') {
       updateShipperInfo('stateCode', '')
-      updateShipperInfo('cityName', '')
-      updateShipperInfo('address1', '')
-      updateShipperInfo('address2', '')
-      updateShipperInfo('postalCode', '')
-      // バリデーション状態もリセット
-      asciiValidation.updateValue('cityName', '')
-      asciiValidation.updateValue('address1', '')
-      asciiValidation.updateValue('address2', '')
-    } else {
-      updateShipperInfo(name as keyof ShipperInfo, value)
-      
-      // ASCII文字バリデーションが必要なフィールドの場合、バリデーションを更新
-      if (['contactName', 'companyName', 'taxId', 'address1', 'address2', 'cityName'].includes(name)) {
-        asciiValidation.updateValue(name, value)
-      }
     }
   }
 
-  // 住所選択時のハンドラー（英語版）
-  const handleAddressSelect = (place: google.maps.places.PlaceResult) => {
-    // Google Maps APIから選択された住所を解析して各フィールドに設定
-    const parsed = parseAddressComponents(place, true) // 英語モードで解析
-    
-    if (parsed.postalCode) {
-      updateShipperInfo('postalCode', parsed.postalCode)
-    }
-    
-    // 英語版の住所情報を優先的に使用
-    let addressValue = ''
-    if (parsed.formattedAddressEn) {
-      // 西洋式の住所形式に合わせて設定
-      addressValue = parsed.formattedAddressEn.replace(/^(日本、|Japan,?\s*)/i, '')
-      updateShipperInfo('address1', addressValue)
-    } else if (place.formatted_address) {
-      addressValue = place.formatted_address.replace(/^(日本、|Japan,?\s*)/i, '')
-      updateShipperInfo('address1', addressValue)
-    }
-    
-    // 住所1のバリデーションを更新
-    if (addressValue) {
-      asciiValidation.updateValue('address1', addressValue)
-    }
-    
-    // 都市名の設定（英語版を優先）
-    let cityValue = ''
-    if (parsed.cityEn) {
-      cityValue = parsed.cityEn
-      updateShipperInfo('cityName', cityValue)
-    } else if (parsed.city) {
-      cityValue = parsed.city
-      updateShipperInfo('cityName', cityValue)
-    }
-    
-    // 都市名のバリデーションを更新
-    if (cityValue) {
-      asciiValidation.updateValue('cityName', cityValue)
-    }
-    
-    // 州コードの設定（該当する場合）
-    if (shipperInfo.countryCode === 'JP' && parsed.prefectureEn) {
-      // 日本の都道府県コードマッピング（必要に応じて追加）
-      const prefectureMap: { [key: string]: string } = {
-        'Tokyo': 'TK',
-        'Tokyo Metropolis': 'TK',
-        'Osaka': 'OS',
-        'Osaka Prefecture': 'OS',
-        // 他の都道府県も必要に応じて追加
-      }
-      const stateCode = prefectureMap[parsed.prefectureEn] || ''
-      if (stateCode) {
-        updateShipperInfo('stateCode', stateCode)
-      }
-    }
+  // 州・県の選択肢を取得
+  const getStateOptions = () => {
+    if (shipperInfo.countryCode === 'US') return usStates
+    if (shipperInfo.countryCode === 'CA') return canadianProvinces
+    return []
   }
 
-  // 郵便番号選択時のハンドラー
-  const handlePostalCodeSelect = (place: google.maps.places.PlaceResult) => {
-    const parsed = parseAddressComponents(place, true)
-    if (parsed.postalCode) {
-      updateShipperInfo('postalCode', parsed.postalCode)
+  // バリデーション
+  const validateForm = () => {
+    if (!shipperInfo.contactName.trim()) {
+      setError('担当者名を入力してください')
+      return false
     }
-    // 郵便番号から取得した住所情報も自動設定
-    handleAddressSelect(place)
+
+    if (!shipperInfo.phoneNumber.trim()) {
+      setError('電話番号を入力してください')
+      return false
+    }
+    if (!shipperInfo.countryCode) {
+      setError('国を選択してください')
+      return false
+    }
+    if (!postalCodeNotRequiredCountries.includes(shipperInfo.countryCode) && !shipperInfo.postalCode.trim()) {
+      setError('郵便番号を入力してください')
+      return false
+    }
+    if ((shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && !shipperInfo.stateCode) {
+      setError('州・県を選択してください')
+      return false
+    }
+    if (!shipperInfo.cityName.trim()) {
+      setError('都市名を入力してください')
+      return false
+    }
+    if (!shipperInfo.address1.trim()) {
+      setError('住所を入力してください')
+      return false
+    }
+    return true
   }
 
-  // フォーム送信ハンドラー（次のページへの遷移のみ）
+  // フォーム送信
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    router.push('/shipping/new/recipient')
+    setError('')
+    
+    if (validateForm()) {
+      router.push('/shipping/new/recipient')
+    }
   }
 
+  useEffect(() => {
+    if (shipperInfo.address1) {
+      setAddressInput(shipperInfo.address1)
+      setIsAddressSelected(true)
+    }
+  }, [shipperInfo.address1])
+
   return (
-    <AuthGuard>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">荷送人情報 / Shipper Information</h1>
-          <p className="text-gray-600">荷送人の詳細情報を入力してください / Enter shipper details</p>
-        </div>
-
-        {/* メインフォーム */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
-            <h2 className="text-xl font-semibold">荷送人情報 / Shipper Information</h2>
-            <p className="text-purple-100 text-sm">FedEx APIに送信する情報は英語で入力してください / Please enter information in English for FedEx API</p>
-          </div>
-          
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* 基本情報セクション */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">基本情報 / Basic Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 担当者名 */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    担当者名 / Contact Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="contactName"
-                    value={shipperInfo.contactName}
-                    onChange={handleInputChange}
-                    placeholder="Taro Yamada"
-                    required
-                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('contactName').className}`}
-                  />
-                  {asciiValidation.getValidation('contactName').errorMessage && (
-                    <p className="text-xs text-red-500">{asciiValidation.getValidation('contactName').errorMessage}</p>
-                  )}
-                  <p className="text-xs text-gray-500">※ ローマ字で入力 / Enter in Roman letters</p>
-                </div>
-
-                {/* 会社名 */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    会社名 / Company Name
-                  </label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    value={shipperInfo.companyName}
-                    onChange={handleInputChange}
-                    placeholder="Sample Corporation"
-                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('companyName').className}`}
-                  />
-                  {asciiValidation.getValidation('companyName').errorMessage && (
-                    <p className="text-xs text-red-500">{asciiValidation.getValidation('companyName').errorMessage}</p>
-                  )}
-                  <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 納税者番号 */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    納税者番号 / Tax ID
-                  </label>
-                  <input
-                    type="text"
-                    name="taxId"
-                    value={shipperInfo.taxId}
-                    onChange={handleInputChange}
-                    placeholder="T1234567890123"
-                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('taxId').className}`}
-                  />
-                  {asciiValidation.getValidation('taxId').errorMessage && (
-                    <p className="text-xs text-red-500">{asciiValidation.getValidation('taxId').errorMessage}</p>
-                  )}
-                </div>
-
-                {/* 電話番号 */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    電話番号 / Phone Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={shipperInfo.phoneNumber}
-                    onChange={handleInputChange}
-                    placeholder="+81-3-1234-5678"
-                    required
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <p className="text-xs text-gray-500">※ 国際電話番号形式 / International format</p>
-                </div>
-              </div>
+    <AuthGuard requireAuth={false}>
+      <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">荷送人情報</h1>
+              <p className="text-gray-600">荷送人の詳細情報を入力してください</p>
             </div>
 
-            {/* 住所情報セクション */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">住所情報 / Address Information</h3>
-
-              {/* 国選択 */}
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">
-                  国 / Country <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="countryCode"
-                  value={shipperInfo.countryCode}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full max-w-sm p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="JP">Japan (日本)</option>
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="CN">China</option>
-                  <option value="KR">South Korea</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="HK">Hong Kong</option>
-                  <option value="AE">United Arab Emirates</option>
-                  <option value="SG">Singapore</option>
-                </select>
-              </div>
-
-              {/* 州・県選択（USまたはCAの場合のみ表示） */}
-              {(shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    州・県 / State/Province <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="stateCode"
-                    value={shipperInfo.stateCode}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full max-w-sm p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">-- Select State/Province --</option>
-                    {getStatesByCountry(shipperInfo.countryCode as 'US' | 'CA').map(state => (
-                      <option key={state.code} value={state.code}>
-                        {state.name} ({state.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* 郵便番号と都市名（条件付き表示） */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 郵便番号（郵便番号不要国以外で表示） */}
-                {!postalCodeNotRequiredCountries.includes(shipperInfo.countryCode) && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-bold text-gray-700">
-                      郵便番号 / Postal Code <span className="text-red-500">*</span>
-                    </label>
-                    <AddressAutocomplete
-                      value={shipperInfo.postalCode}
-                      onChange={(value) => updateShipperInfo('postalCode', value)}
-                      onAddressSelect={handlePostalCodeSelect}
-                      placeholder="100-0001"
-                      required
-                      isPostalCodeField={true}
-                      englishMode={true}
-                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+            {/* ハイドレーション待機ローディング（最優先） */}
+            {isLoading && (
+              <Card>
+                <CardContent className="p-12">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="text-gray-600">フォームを準備中...</p>
                   </div>
-                )}
+                </CardContent>
+              </Card>
+            )}
 
-                {/* 都市名（郵便番号不要国で表示、または通常の追加フィールドとして） */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-gray-700">
-                    都市名 / City Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="cityName"
-                    value={shipperInfo.cityName}
-                    onChange={handleInputChange}
-                    placeholder={postalCodeNotRequiredCountries.includes(shipperInfo.countryCode) ? "Hong Kong" : "Chiyoda-ku"}
-                    required
-                    className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('cityName').className}`}
-                  />
-                  {asciiValidation.getValidation('cityName').errorMessage && (
-                    <p className="text-xs text-red-500">{asciiValidation.getValidation('cityName').errorMessage}</p>
+            {/* フォーム本体（ハイドレーション完了後に表示） */}
+            {isReady && (
+            <Card>
+              <CardHeader className="bg-blue-600 text-white">
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  荷送人情報
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* 基本情報 */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="contactName">担当者名 *</Label>
+                        <Input
+                          id="contactName"
+                          name="contactName"
+                          value={shipperInfo.contactName}
+                          onChange={handleInputChange}
+                          placeholder="田中太郎"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="companyName">会社名</Label>
+                        <Input
+                          id="companyName"
+                          name="companyName"
+                          value={shipperInfo.companyName}
+                          onChange={handleInputChange}
+                          placeholder="株式会社サンプル"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="taxId">税務番号（法人番号）</Label>
+                        <Input
+                          id="taxId"
+                          name="taxId"
+                          value={shipperInfo.taxId}
+                          onChange={handleInputChange}
+                          placeholder="1234567890123"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">電話番号 *</Label>
+                        <Input
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={shipperInfo.phoneNumber}
+                          onChange={handleInputChange}
+                          placeholder="03-1234-5678"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 住所情報 */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
+
+                    {/* 国選択 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="countryCode">国 *</Label>
+                      <Select value={shipperInfo.countryCode} onValueChange={handleCountryChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="国を選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryOptions.map((country) => (
+                            <SelectItem key={country.value} value={country.value}>
+                              {country.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 州・県選択（USまたはCAの場合のみ表示） */}
+                    {(shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && (
+                      <div className="space-y-2">
+                        <Label htmlFor="stateCode">州・県 *</Label>
+                        <Select value={shipperInfo.stateCode} onValueChange={(value) => updateShipperInfo('stateCode', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="州・県を選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getStateOptions().map((state) => (
+                              <SelectItem key={state.code} value={state.code}>
+                                {state.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* 住所自動入力 */}
+                    <div className="space-y-2">
+                      <Label>住所検索</Label>
+                      <GooglePlaceAutocomplete
+                        value={addressInput}
+                        onChange={handleAddressInputChange}
+                        onPlaceSelect={handleAddressSelect}
+                        placeholder="住所を入力すると自動補完されます"
+                      />
+                    </div>
+
+                    {/* 詳細住所入力 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">
+                          郵便番号 {!postalCodeNotRequiredCountries.includes(shipperInfo.countryCode) && <span className="text-red-500">*</span>}
+                        </Label>
+                        <Input
+                          id="postalCode"
+                          name="postalCode"
+                          value={shipperInfo.postalCode}
+                          onChange={handleInputChange}
+                          placeholder="100-0001"
+                          required={!postalCodeNotRequiredCountries.includes(shipperInfo.countryCode)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cityName">都市名 *</Label>
+                        <Input
+                          id="cityName"
+                          name="cityName"
+                          value={shipperInfo.cityName}
+                          onChange={handleInputChange}
+                          placeholder="東京"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="address1">住所1 *</Label>
+                      <Input
+                        id="address1"
+                        name="address1"
+                        value={shipperInfo.address1}
+                        onChange={handleInputChange}
+                        placeholder="千代田区丸の内1-1-1"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="address2">住所2（建物名・部屋番号など）</Label>
+                      <Input
+                        id="address2"
+                        name="address2"
+                        value={shipperInfo.address2}
+                        onChange={handleInputChange}
+                        placeholder="○○ビル 5F"
+                      />
+                    </div>
+                  </div>
+
+                  {/* エラーメッセージ */}
+                  {error && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                      <span className="text-red-700">{error}</span>
+                    </div>
                   )}
-                </div>
-              </div>
 
-              {/* 住所1 - AddressAutocompleteコンポーネントを使用（英語モード） */}
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">
-                  住所1 / Address Line 1 <span className="text-red-500">*</span>
-                </label>
-                <AddressAutocomplete
-                  value={shipperInfo.address1}
-                  onChange={(value) => {
-                    updateShipperInfo('address1', value)
-                    asciiValidation.updateValue('address1', value)
-                  }}
-                  onAddressSelect={handleAddressSelect}
-                  placeholder="1-1-1 Marunouchi, Chiyoda-ku, Tokyo"
-                  required
-                  englishMode={true}
-                  className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address1').className}`}
-                  label=""
-                />
-                {asciiValidation.getValidation('address1').errorMessage && (
-                  <p className="text-xs text-red-500">{asciiValidation.getValidation('address1').errorMessage}</p>
-                )}
-                <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
-              </div>
-
-              {/* 住所2 */}
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">
-                  住所2（建物名・部屋番号など）/ Address Line 2 (Building, Room, etc.)
-                </label>
-                <input
-                  type="text"
-                  name="address2"
-                  value={shipperInfo.address2}
-                  onChange={handleInputChange}
-                  placeholder="ABC Building 5F"
-                  className={`w-full p-3 border rounded-md focus:ring-2 ${asciiValidation.getValidation('address2').className}`}
-                />
-                {asciiValidation.getValidation('address2').errorMessage && (
-                  <p className="text-xs text-red-500">{asciiValidation.getValidation('address2').errorMessage}</p>
-                )}
-                <p className="text-xs text-gray-500">※ 英語で入力 / Enter in English</p>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-6">
-              {/* 下書き保存ボタン */}
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={saveDraft}
-                  disabled={isLoading}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  {isLoading ? '保存中...' : '下書きとして保存'}
-                </Button>
-                
-                {/* フィードバックメッセージ */}
-                {message && (
-                  <span className={`text-sm ${
-                    message.includes('失敗') ? 'text-red-600' : 'text-green-600'
-                  }`}>
-                    {message}
-                  </span>
-                )}
-              </div>
-
-              {/* 次へボタン */}
-              <button
-                type="submit"
-                className="px-8 py-3 bg-[#4D148C] hover:bg-[#3D0F6B] text-white rounded-md transition-colors duration-200"
-              >
-                次へ：荷受人情報 / Next: Recipient Information
-              </button>
-            </div>
-          </form>
+                  {/* ボタン */}
+                  <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={() => router.push('/')}>
+                      戻る
+                    </Button>
+                    <Button type="submit">
+                      次へ
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+            )}
+          </div>
         </div>
-      </div>
     </AuthGuard>
   )
 }

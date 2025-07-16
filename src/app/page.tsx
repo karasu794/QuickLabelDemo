@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
 import { usStates, canadianProvinces } from "@/lib/data/locations"
+import { useAuth } from "@/hooks/useAuth"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
 const POLLING_INTERVAL = 2000 // 2秒ごとにポーリング
@@ -34,6 +35,7 @@ interface JobStatus {
 
 
 export default function Home() {
+  const { isAuthenticated } = useAuth()
   const [quoteParams, setQuoteParams] = useState<ExtendedQuoteParams>({
     originCountry: "JP",
     originPostalCode: "",
@@ -435,7 +437,7 @@ export default function Home() {
         onSubmit={handleSubmit}
       />
 
-      {/* Loading Section - Simplified */}
+      {/* Loading Section - Spinner with Simple Text */}
       {isLoading && (
         <div ref={loadingRef} className="max-w-4xl mx-auto mt-8 px-4">
           <div className="bg-white rounded-lg shadow-lg p-8">
@@ -443,10 +445,7 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">見積もり処理中</h3>
-              <p className="text-gray-600">
-                  FedEx APIから料金情報を取得しています...
-                </p>
+                <h3 className="text-lg font-semibold text-gray-900">見積もり処理中</h3>
             </div>
           </div>
         </div>
@@ -466,7 +465,7 @@ export default function Home() {
             rateType: result.rateType
           }))}
           isLoading={false}
-          isUserLoggedIn={false} // TODO: 実際のログイン状態を取得
+          isUserLoggedIn={isAuthenticated}
           quoteParams={{
             originCountry: quoteParams.originCountry,
             originPostalCode: quoteParams.originPostalCode,

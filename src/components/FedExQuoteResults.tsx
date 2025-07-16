@@ -231,7 +231,7 @@ export default function FedExQuoteResults({
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* 未ログイン時の案内 */}
+      {/* 未ログイン時の案内のみ表示 */}
       {!isUserLoggedIn && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-6">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { getPopularCountryOptions } from '@/lib/data/locations'
 
 export default function ApiTestPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ export default function ApiTestPage() {
   const [response, setResponse] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const countryOptions = getPopularCountryOptions()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,17 +69,9 @@ export default function ApiTestPage() {
   }
 
   return (
-    <div style={{ 
-      padding: '2rem', 
-      fontFamily: 'system-ui', 
-      maxWidth: '800px', 
-      margin: '0 auto' 
-    }}>
-      <h1>配送見積もりAPI テストページ</h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>
-        <code>/api/quote</code> エンドポイントをテストできます
-      </p>
-
+    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '1.5rem', color: '#333', textAlign: 'center' }}>FedEx APIテスト</h1>
+      
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <fieldset style={{ 
           border: '1px solid #ddd', 
@@ -123,10 +118,11 @@ export default function ApiTestPage() {
                 boxSizing: 'border-box'
               }}
             >
-              <option value="JP">JP (日本)</option>
-              <option value="US">US (アメリカ)</option>
-              <option value="CN">CN (中国)</option>
-              <option value="KR">KR (韓国)</option>
+              {countryOptions.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.value} ({country.label})
+                </option>
+              ))}
             </select>
           </div>
         </fieldset>
@@ -176,10 +172,11 @@ export default function ApiTestPage() {
                 boxSizing: 'border-box'
               }}
             >
-              <option value="US">US (アメリカ)</option>
-              <option value="JP">JP (日本)</option>
-              <option value="CN">CN (中国)</option>
-              <option value="KR">KR (韓国)</option>
+              {countryOptions.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.value} ({country.label})
+                </option>
+              ))}
             </select>
           </div>
         </fieldset>
@@ -190,7 +187,7 @@ export default function ApiTestPage() {
           padding: '1rem', 
           marginBottom: '1rem' 
         }}>
-          <legend><strong>荷物情報</strong></legend>
+          <legend><strong>パッケージ情報</strong></legend>
           
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
@@ -202,8 +199,8 @@ export default function ApiTestPage() {
               value={formData.weight}
               onChange={handleInputChange}
               placeholder="例: 1.5"
-              min="0.1"
               step="0.1"
+              min="0"
               required
               style={{
                 width: '100%',
@@ -221,71 +218,51 @@ export default function ApiTestPage() {
           disabled={loading}
           style={{
             width: '100%',
-            padding: '1rem',
-            background: loading ? '#ccc' : '#0070f3',
+            padding: '0.75rem',
+            backgroundColor: loading ? '#ccc' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
             fontSize: '1rem',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold'
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
-          {loading ? '処理中...' : 'API呼び出し実行'}
+          {loading ? '処理中...' : '見積もり取得'}
         </button>
       </form>
 
-      {/* エラーメッセージ */}
       {error && (
-        <div style={{
-          background: '#f8d7da',
-          border: '1px solid #f5c6cb',
+        <div style={{ 
+          padding: '1rem', 
+          backgroundColor: '#f8d7da', 
+          border: '1px solid #f5c6cb', 
           borderRadius: '4px',
-          padding: '1rem',
+          color: '#721c24',
           marginBottom: '1rem'
         }}>
-          <strong style={{ color: '#721c24' }}>❌ {error}</strong>
+          {error}
         </div>
       )}
 
-      {/* APIレスポンス */}
       {response && (
-        <div style={{ marginTop: '2rem' }}>
-          <h2>APIレスポンス</h2>
-          <div style={{
-            background: response.success ? '#d4edda' : '#f8d7da',
-            border: `1px solid ${response.success ? '#c3e6cb' : '#f5c6cb'}`,
+        <div style={{ 
+          padding: '1rem', 
+          backgroundColor: '#f9f9f9', 
+          border: '1px solid #ddd', 
+          borderRadius: '4px' 
+        }}>
+          <h3 style={{ marginBottom: '1rem', color: '#333' }}>レスポンス:</h3>
+          <pre style={{ 
+            backgroundColor: '#fff', 
+            padding: '1rem', 
             borderRadius: '4px',
-            padding: '1rem'
+            overflow: 'auto',
+            fontSize: '0.9rem'
           }}>
-            <pre style={{ 
-              margin: 0, 
-              whiteSpace: 'pre-wrap', 
-              fontSize: '0.9rem',
-              color: response.success ? '#155724' : '#721c24'
-            }}>
-              {JSON.stringify(response, null, 2)}
-            </pre>
-          </div>
+            {JSON.stringify(response, null, 2)}
+          </pre>
         </div>
       )}
-
-      <div style={{ marginTop: '3rem' }}>
-        <h2>使用方法</h2>
-        <ol style={{ lineHeight: '1.6' }}>
-          <li>荷送人と荷受人の郵便番号・国コードを入力</li>
-          <li>荷物の重量を入力</li>
-          <li>「API呼び出し実行」ボタンをクリック</li>
-          <li>コンソールでログ出力を確認</li>
-          <li>画面下部でAPIレスポンスを確認</li>
-        </ol>
-        
-        <p style={{ marginTop: '1rem' }}>
-          <a href="/" style={{ color: '#0070f3', textDecoration: 'none' }}>
-            ← ホームページに戻る
-          </a>
-        </p>
-      </div>
     </div>
   )
 } 

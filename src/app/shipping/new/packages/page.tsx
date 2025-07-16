@@ -1,13 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useShippingFormStore, type PackageInfo } from '@/store/shippingFormStore'
+import { useShippingFormStore, type PackageInfo, useWaitForHydration } from '@/store/shippingFormStore'
 import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Loader2 } from 'lucide-react'
 import { useDraftSave } from '@/hooks/useDraftSave'
 
 export default function PackageDetailsForm() {
   const router = useRouter()
+  const { isLoading: isHydrationLoading, isReady } = useWaitForHydration()
   const { saveDraft, isLoading, message } = useDraftSave()
   
   // Zustandストアから直接状態とアクションを取得
@@ -43,6 +46,21 @@ export default function PackageDetailsForm() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">荷物の詳細</h1>
           <p className="text-gray-600">荷物の詳細情報を入力してください</p>
         </div>
+
+        {/* ハイドレーション待機ローディング */}
+        {isHydrationLoading && (
+          <Card>
+            <CardContent className="p-12">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <p className="text-gray-600">データを読み込み中...</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* フォーム本体 */}
+        {isReady && (
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 荷物のリストを.map()でループ処理 */}
@@ -211,6 +229,7 @@ export default function PackageDetailsForm() {
             </div>
           </div>
         </form>
+        )}
       </div>
     </AuthGuard>
   )

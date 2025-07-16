@@ -3,11 +3,14 @@
 import Link from "next/link"
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useShippingFormStore } from '@/store/shippingFormStore'
+import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
 import SquarePaymentForm from '@/components/SquarePaymentForm'
+import { Card, CardContent } from '@/components/ui/card'
+import { Loader2 } from 'lucide-react'
 
 export default function ReviewPage() {
   const router = useRouter()
+  const { isLoading, isReady } = useWaitForHydration()
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [paymentCompleted, setPaymentCompleted] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
@@ -154,6 +157,21 @@ export default function ReviewPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">最終確認</h1>
         <p className="text-gray-600">以下の内容をご確認の上、決済にお進みください</p>
       </div>
+
+      {/* ハイドレーション待機ローディング */}
+      {isLoading && (
+        <Card>
+          <CardContent className="p-12">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <p className="text-gray-600">データを読み込み中...</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* レビュー本体 */}
+      {isReady && (
 
       <div className="space-y-6">
         {/* 荷送人情報 */}
@@ -521,6 +539,7 @@ export default function ReviewPage() {
           </button>
         </div>
       </div>
+      )}
     </div>
   )
 }
