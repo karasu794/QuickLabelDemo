@@ -13,12 +13,161 @@ export interface CountryOption {
   label: string;
 }
 
-// countries-listライブラリを使用した網羅的な国リスト生成関数
-export const getAllCountryOptions = (): CountryOption[] => {
-  return Object.entries(countries).map(([code, country]) => ({
-    value: code,
-    label: country.name
-  })).sort((a, b) => a.label.localeCompare(b.label));
+// 主要国の日本語名マップ
+const japaneseNames: { [key: string]: string } = {
+  'JP': '日本',
+  'US': 'アメリカ合衆国',
+  'CN': '中国',
+  'KR': '韓国',
+  'TW': '台湾',
+  'HK': '香港',
+  'SG': 'シンガポール',
+  'TH': 'タイ',
+  'VN': 'ベトナム',
+  'MY': 'マレーシア',
+  'PH': 'フィリピン',
+  'ID': 'インドネシア',
+  'AU': 'オーストラリア',
+  'NZ': 'ニュージーランド',
+  'GB': 'イギリス',
+  'DE': 'ドイツ',
+  'FR': 'フランス',
+  'IT': 'イタリア',
+  'ES': 'スペイン',
+  'NL': 'オランダ',
+  'BE': 'ベルギー',
+  'CH': 'スイス',
+  'AT': 'オーストリア',
+  'SE': 'スウェーデン',
+  'NO': 'ノルウェー',
+  'DK': 'デンマーク',
+  'FI': 'フィンランド',
+  'CA': 'カナダ',
+  'RU': 'ロシア',
+  'IN': 'インド',
+  'BR': 'ブラジル',
+  'MX': 'メキシコ',
+  'AR': 'アルゼンチン',
+  'CL': 'チリ',
+  'CO': 'コロンビア',
+  'PE': 'ペルー',
+  'VE': 'ベネズエラ',
+  'UY': 'ウルグアイ',
+  'PY': 'パラグアイ',
+  'BO': 'ボリビア',
+  'EC': 'エクアドル',
+  'GY': 'ガイアナ',
+  'SR': 'スリナム',
+  'FK': 'フォークランド諸島',
+  'GF': 'フランス領ギアナ',
+  'ZA': '南アフリカ',
+  'EG': 'エジプト',
+  'MA': 'モロッコ',
+  'NG': 'ナイジェリア',
+  'KE': 'ケニア',
+  'ET': 'エチオピア',
+  'GH': 'ガーナ',
+  'CI': 'コートジボワール',
+  'CM': 'カメルーン',
+  'UG': 'ウガンダ',
+  'TZ': 'タンザニア',
+  'AO': 'アンゴラ',
+  'MG': 'マダガスカル',
+  'MZ': 'モザンビーク',
+  'ZM': 'ザンビア',
+  'ZW': 'ジンバブエ',
+  'BW': 'ボツワナ',
+  'NA': 'ナミビア',
+  'SZ': 'スワジランド',
+  'LS': 'レソト',
+  'MW': 'マラウイ',
+  'TR': 'トルコ',
+  'IL': 'イスラエル',
+  'SA': 'サウジアラビア',
+  'AE': 'アラブ首長国連邦',
+  'QA': 'カタール',
+  'KW': 'クウェート',
+  'BH': 'バーレーン',
+  'OM': 'オマーン',
+  'JO': 'ヨルダン',
+  'LB': 'レバノン',
+  'SY': 'シリア',
+  'IQ': 'イラク',
+  'IR': 'イラン',
+  'AF': 'アフガニスタン',
+  'PK': 'パキスタン',
+  'BD': 'バングラデシュ',
+  'LK': 'スリランカ',
+  'MV': 'モルディブ',
+  'NP': 'ネパール',
+  'BT': 'ブータン',
+  'MM': 'ミャンマー',
+  'LA': 'ラオス',
+  'KH': 'カンボジア',
+  'MN': 'モンゴル',
+  'KZ': 'カザフスタン',
+  'KG': 'キルギス',
+  'TJ': 'タジキスタン',
+  'TM': 'トルクメニスタン',
+  'UZ': 'ウズベキスタン',
+  'GE': 'ジョージア',
+  'AM': 'アルメニア',
+  'AZ': 'アゼルバイジャン',
+  'BY': 'ベラルーシ',
+  'UA': 'ウクライナ',
+  'MD': 'モルドバ',
+  'RO': 'ルーマニア',
+  'BG': 'ブルガリア',
+  'RS': 'セルビア',
+  'ME': 'モンテネグロ',
+  'BA': 'ボスニア・ヘルツェゴビナ',
+  'HR': 'クロアチア',
+  'SI': 'スロベニア',
+  'SK': 'スロバキア',
+  'CZ': 'チェコ',
+  'PL': 'ポーランド',
+  'HU': 'ハンガリー',
+  'LT': 'リトアニア',
+  'LV': 'ラトビア',
+  'EE': 'エストニア',
+  'IE': 'アイルランド',
+  'PT': 'ポルトガル',
+  'GR': 'ギリシャ',
+  'CY': 'キプロス',
+  'MT': 'マルタ',
+  'LU': 'ルクセンブルク',
+  'LI': 'リヒテンシュタイン',
+  'MC': 'モナコ',
+  'AD': 'アンドラ',
+  'SM': 'サンマリノ',
+  'VA': 'バチカン',
+  'IS': 'アイスランド',
+  'AL': 'アルバニア',
+  'MK': '北マケドニア',
+  'XK': 'コソボ'
+};
+
+// 統一された国選択リスト生成関数（日本語名 (国コード) 形式）
+export const getCountryOptions = (): CountryOption[] => {
+  // 人気国を上位に表示
+  const popularCountries = ['JP', 'US', 'CN', 'KR', 'TW', 'HK', 'SG', 'TH', 'VN', 'MY', 'PH', 'ID', 'AU', 'NZ', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'SE', 'NO', 'DK', 'FI', 'CA'];
+  
+  const allCountryOptions = Object.entries(countries).map(([code, country]) => {
+    const name = japaneseNames[code] || country.name; // 日本語名があれば使い、なければ英語名
+    return {
+      value: code,
+      label: `${name} (${code})`,
+    };
+  });
+
+  // 人気国を先頭に配置
+  const popular = allCountryOptions.filter(country => popularCountries.includes(country.value));
+  const others = allCountryOptions.filter(country => !popularCountries.includes(country.value));
+  
+  // 人気国は定義順、その他はアルファベット順
+  others.sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+  
+  return [...popular, ...others];
 };
 
 // 日本語国名を含む国リスト生成関数

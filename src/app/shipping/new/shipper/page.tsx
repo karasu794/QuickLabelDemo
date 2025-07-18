@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useShipperInfo, useWaitForHydration } from '@/store/shippingFormStore'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
-import { usStates, canadianProvinces, getPopularCountryOptions } from '@/lib/data/locations'
+import { usStates, canadianProvinces, getCountryOptions } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Building2, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 
@@ -20,18 +21,10 @@ export default function ShipperInfoPage() {
   const [error, setError] = useState('')
   const [addressInput, setAddressInput] = useState('')
   const [isAddressSelected, setIsAddressSelected] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
-  // const countryOptions = getPopularCountryOptions()
-  
-  // 一時的に静的リストでテスト
-  const countryOptions = [
-    { value: 'JP', label: '日本' },
-    { value: 'US', label: 'アメリカ合衆国' },
-    { value: 'CN', label: '中国' },
-    { value: 'KR', label: '韓国' },
-    { value: 'TW', label: '台湾' }
-  ]
+  const countryOptions = getCountryOptions()
 
   // 住所入力に変更があった場合、選択状態をリセット
   const handleAddressInputChange = (value: string) => {
@@ -118,12 +111,39 @@ export default function ShipperInfoPage() {
     }
   }
 
+  // コンポーネントマウント時およびストアデータ変更時の初期化
   useEffect(() => {
+    // 既に初期化済みで、明示的にリセットが必要でない場合はスキップ
+    if (isInitialized && addressInput) return
+
+    console.log('🔄 Initializing shipper page with store data:', shipperInfo)
+    
+    // ストアに住所データがある場合（見積もりから遷移してきた場合）
     if (shipperInfo.address1) {
+      console.log('📍 Setting initial address from store:', shipperInfo.address1)
       setAddressInput(shipperInfo.address1)
       setIsAddressSelected(true)
+      setIsInitialized(true)
+    } else if (shipperInfo.cityName) {
+      // 都市名がある場合も初期化
+      const fullAddress = [
+        shipperInfo.cityName,
+        shipperInfo.postalCode
+      ].filter(Boolean).join(' ')
+      
+      if (fullAddress) {
+        console.log('🏙️ Setting initial address from city/postal:', fullAddress)
+        setAddressInput(fullAddress)
+        setIsAddressSelected(true)
+        setIsInitialized(true)
+      }
     }
-  }, [shipperInfo.address1])
+    
+    // ストアにデータがない場合も初期化完了とマーク
+    if (!isInitialized) {
+      setIsInitialized(true)
+    }
+  }, [shipperInfo.address1, shipperInfo.cityName, shipperInfo.postalCode, isInitialized, addressInput])
 
   return (
     <AuthGuard requireAuth={false}>
@@ -229,18 +249,14 @@ export default function ShipperInfoPage() {
                     {/* 国選択 */}
                     <div className="space-y-2">
                       <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
-                      <Select value={shipperInfo.countryCode} onValueChange={handleCountryChange}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="国を選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {countryOptions.map((country) => (
-                            <SelectItem key={country.value} value={country.value}>
-                              {country.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Combobox
+                        options={countryOptions}
+                        value={shipperInfo.countryCode}
+                        onSelect={handleCountryChange}
+                        placeholder="国を選択してください"
+                        searchPlaceholder="国名または国コードで検索..."
+                        emptyText="該当する国が見つかりません"
+                      />
                     </div>
 
                     {/* 州・県選択（USまたはCAの場合のみ表示） */}

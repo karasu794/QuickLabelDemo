@@ -466,18 +466,7 @@ export default function Home() {
           }))}
           isLoading={false}
           isUserLoggedIn={isAuthenticated}
-          quoteParams={{
-            originCountry: quoteParams.originCountry,
-            originPostalCode: quoteParams.originPostalCode,
-            originStateCode: quoteParams.originStateCode,
-            originCityName: quoteParams.originCityName,
-            originAddressInput: quoteParams.originAddressInput,
-            destinationCountry: quoteParams.destinationCountry,
-            destinationPostalCode: quoteParams.destinationPostalCode,
-            destinationStateCode: quoteParams.destinationStateCode,
-            destinationCityName: quoteParams.destinationCityName,
-            destinationAddressInput: quoteParams.destinationAddressInput
-          }}
+          quoteParams={quoteParams}
           packages={packages}
         />
         </div>

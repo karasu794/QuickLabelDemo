@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Separator } from "./ui/separator"
 import { Clock, Package, Truck } from "lucide-react"
-import { useShippingFormStore, type QuoteToShippingParams } from "@/store/shippingFormStore"
+import { useShippingFormStore } from "@/store/shippingFormStore"
+import type { ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import { useAuth } from "@/hooks/useAuth"
 
 export interface Rate {
@@ -33,7 +34,7 @@ interface QuoteResultsProps {
   selectedRateId?: string
   onRateSelect?: (rate: Rate) => void
   onContinue?: () => void
-  quoteParams?: QuoteToShippingParams // 見積もりフォームの情報を追加
+  quoteParams?: ExtendedQuoteParams // 見積もりフォームの情報を追加
 }
 
 export default function QuoteResultsComponent({ 

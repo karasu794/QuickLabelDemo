@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getPopularCountryOptions } from '@/lib/data/locations'
+import { getCountryOptions } from '@/lib/data/locations'
 
 export default function ApiTestPage() {
   const [formData, setFormData] = useState({
@@ -15,7 +15,7 @@ export default function ApiTestPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const countryOptions = getPopularCountryOptions()
+  const countryOptions = getCountryOptions()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

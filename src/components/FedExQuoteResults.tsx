@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion"
 import { Clock, Package, Truck, Calendar, ChevronRight } from "lucide-react"
-import { useShippingFormStore, type QuoteToShippingParams } from "@/store/shippingFormStore"
-import type { Package as QuotePackage } from "@/components/QuoteFormComponent"
+import { useShippingFormStore } from "@/store/shippingFormStore"
+import type { Package as QuotePackage, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 
 /**
  * FedExの見積もり結果を表示するコンポーネント
@@ -78,7 +78,7 @@ interface FedExQuoteResultsProps {
   /** ユーザーのログイン状態 */
   isUserLoggedIn?: boolean
   /** 見積もりフォームの情報 */
-  quoteParams?: QuoteToShippingParams
+  quoteParams?: ExtendedQuoteParams
   /** 見積もりフォームの荷物情報 */
   packages?: QuotePackage[]
 }
@@ -226,8 +226,18 @@ export default function FedExQuoteResults({
     
     // 見積もりフォームの情報（住所・荷物）を送り状フォームに変換・保存
     if (quoteParams) {
-      console.log('💾 Saving quote data to store:', { quoteParams, packages })
+      console.log('💾 Saving extended quote data to store:', { 
+        quoteParams, 
+        packages,
+        originAddress: quoteParams.originAddressInput,
+        destinationAddress: quoteParams.destinationAddressInput,
+        isResidential: quoteParams.isResidential,
+        higherInsurance: quoteParams.higherInsurance
+      })
       setInitialShippingInfoFromQuote(quoteParams, packages)
+      console.log('✅ Quote data successfully saved to shipping form store')
+    } else {
+      console.warn('⚠️ No quote params available to save to store')
     }
     
     // 次のページに遷移

@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { useItems, useWaitForHydration, useRecipientInfo } from '@/store/shippingFormStore'
-import { getPopularCountryOptions } from '@/lib/data/locations'
+import { getCountryOptions } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 import HSCodeAutocomplete from '@/components/HSCodeAutocomplete'
 
 import { AlertCircle, Plus, Package, X, Loader2 } from 'lucide-react'
@@ -21,7 +22,7 @@ export default function ContentsPage() {
   const { recipientInfo } = useRecipientInfo()
   const [error, setError] = useState('')
   
-  const countryOptions = getPopularCountryOptions()
+  const countryOptions = getCountryOptions()
 
   const handleItemChange = (index: number, field: keyof typeof items[0], value: string | number) => {
     updateItem(index, field, value)
@@ -196,21 +197,14 @@ export default function ContentsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                         <Label htmlFor={`countryOfManufacture-${index}`}>製造国 <span className="text-red-500">*</span></Label>
-                        <Select 
-                      value={item.countryOfManufacture}
-                          onValueChange={(value) => handleItemChange(index, 'countryOfManufacture', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="製造国を選択" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {countryOptions.map((country) => (
-                              <SelectItem key={country.value} value={country.value}>
-                                {country.label}
-                              </SelectItem>
-                      ))}
-                          </SelectContent>
-                        </Select>
+                                              <Combobox
+                        options={countryOptions}
+                        value={item.countryOfManufacture}
+                        onSelect={(value) => handleItemChange(index, 'countryOfManufacture', value)}
+                        placeholder="製造国を選択してください"
+                        searchPlaceholder="国名または国コードで検索..."
+                        emptyText="該当する国が見つかりません"
+                      />
                   </div>
                   <div className="space-y-2">
                         <Label htmlFor={`quantity-${index}`}>数量 <span className="text-red-500">*</span></Label>

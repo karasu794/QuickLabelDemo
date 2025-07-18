@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
-import type { Package } from '@/components/QuoteFormComponent'
+import type { Package, ExtendedQuoteParams } from '@/components/QuoteFormComponent'
 
 // 型定義
 export interface ShipperInfo {
@@ -67,7 +67,7 @@ export interface SelectedRate {
   serviceType?: string
 }
 
-// 見積もりフォームの情報を送り状フォームに変換する際の型定義
+// 見積もりフォームの情報を送り状フォームに変換する際の型定義（後方互換性のため保持）
 export interface QuoteToShippingParams {
   originCountry: string
   originPostalCode: string
@@ -104,7 +104,7 @@ interface ShippingFormState {
   updateRecipientInfo: (field: keyof RecipientInfo, value: string) => void
 
   // 見積もり情報から送り状情報への変換アクション
-  setInitialShippingInfoFromQuote: (quoteParams: QuoteToShippingParams, packages?: Package[]) => void
+  setInitialShippingInfoFromQuote: (quoteParams: ExtendedQuoteParams, packages?: Package[]) => void
 
   // 部分的な住所情報を更新するアクション
   setAddressPart: (type: 'origin' | 'destination', data: { countryCode: string; stateCode: string; cityName: string; postalCode: string; address1: string }) => void
@@ -227,7 +227,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
 
       // 見積もり情報から送り状情報への変換アクション
       setInitialShippingInfoFromQuote: (quoteParams, packages) => {
-        console.log('📋 Setting initial shipping info from quote:', quoteParams);
+        console.log('📋 Setting initial shipping info from extended quote params:', quoteParams);
         console.log('📦 Setting packages from quote:', packages);
         
         const newShipperInfo: ShipperInfo = {
@@ -238,10 +238,10 @@ export const useShippingFormStore = create<ShippingFormState>()(
           email: '',
           countryCode: quoteParams.originCountry || 'JP',
           stateCode: quoteParams.originStateCode || '',
-          address1: quoteParams.originAddressInput || '',
+          address1: quoteParams.originAddressInput || '', // 日本語の表示用住所
           address2: '',
-          postalCode: quoteParams.originPostalCode || '',
-          cityName: quoteParams.originCityName || ''
+          postalCode: quoteParams.originPostalCode || '', // 英語化された郵便番号
+          cityName: quoteParams.originCityName || '' // 英語化された都市名
         }
 
         const newRecipientInfo: RecipientInfo = {
@@ -251,10 +251,10 @@ export const useShippingFormStore = create<ShippingFormState>()(
           phoneNumber: '',
           email: '',
           countryCode: quoteParams.destinationCountry || 'US',
-          postalCode: quoteParams.destinationPostalCode || '',
-          cityName: quoteParams.destinationCityName || '',
+          postalCode: quoteParams.destinationPostalCode || '', // 英語化された郵便番号
+          cityName: quoteParams.destinationCityName || '', // 英語化された都市名
           stateCode: quoteParams.destinationStateCode || '',
-          address1: quoteParams.destinationAddressInput || '',
+          address1: quoteParams.destinationAddressInput || '', // 日本語の表示用住所
           address2: ''
         }
 
@@ -275,7 +275,10 @@ export const useShippingFormStore = create<ShippingFormState>()(
           state: newShipperInfo.stateCode,
           city: newShipperInfo.cityName,
           address: newShipperInfo.address1,
-          postalCode: newShipperInfo.postalCode
+          postalCode: newShipperInfo.postalCode,
+          addressDisplay: quoteParams.originAddressInput,
+          isResidential: quoteParams.isResidential,
+          higherInsurance: quoteParams.higherInsurance
         });
         
         console.log('📦 Generated recipient info:', {
@@ -283,7 +286,8 @@ export const useShippingFormStore = create<ShippingFormState>()(
           state: newRecipientInfo.stateCode,
           city: newRecipientInfo.cityName,
           address: newRecipientInfo.address1,
-          postalCode: newRecipientInfo.postalCode
+          postalCode: newRecipientInfo.postalCode,
+          addressDisplay: quoteParams.destinationAddressInput
         });
         
         console.log('📋 Generated packages:', newPackages);
