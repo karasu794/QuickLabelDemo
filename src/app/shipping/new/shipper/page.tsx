@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useShipperInfo, useWaitForHydration } from '@/store/shippingFormStore'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
-import { usStates, canadianProvinces, getCountryOptions } from '@/lib/data/locations'
+import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -55,7 +55,7 @@ export default function ShipperInfoPage() {
   // 国が変更された場合、州・県コードをリセット
   const handleCountryChange = (countryCode: string) => {
     updateShipperInfo('countryCode', countryCode)
-    if (countryCode !== 'US' && countryCode !== 'CA') {
+    if (countryCode !== 'US' && countryCode !== 'CA' && countryCode !== 'JP') {
       updateShipperInfo('stateCode', '')
     }
   }
@@ -64,6 +64,7 @@ export default function ShipperInfoPage() {
   const getStateOptions = () => {
     if (shipperInfo.countryCode === 'US') return usStates
     if (shipperInfo.countryCode === 'CA') return canadianProvinces
+    if (shipperInfo.countryCode === 'JP') return japanesePrefectures
     return []
   }
 
@@ -86,7 +87,7 @@ export default function ShipperInfoPage() {
       setError('郵便番号を入力してください')
       return false
     }
-    if ((shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && !shipperInfo.stateCode) {
+    if ((shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA' || shipperInfo.countryCode === 'JP') && !shipperInfo.stateCode) {
       setError('州・県を選択してください')
       return false
     }
@@ -116,24 +117,44 @@ export default function ShipperInfoPage() {
     // 既に初期化済みで、明示的にリセットが必要でない場合はスキップ
     if (isInitialized && addressInput) return
 
-    console.log('🔄 Initializing shipper page with store data:', shipperInfo)
+    console.log('🔄 Initializing shipper page with enhanced store data:', {
+      address1: shipperInfo.address1, // 英語の番地・通り名（API用）
+      cityName: shipperInfo.cityName, // 英語化された都市名
+      postalCode: shipperInfo.postalCode, // 英語化された郵便番号
+      countryCode: shipperInfo.countryCode,
+      stateCode: shipperInfo.stateCode
+    })
     
-    // ストアに住所データがある場合（見積もりから遷移してきた場合）
-    if (shipperInfo.address1) {
-      console.log('📍 Setting initial address from store:', shipperInfo.address1)
-      setAddressInput(shipperInfo.address1)
-      setIsAddressSelected(true)
-      setIsInitialized(true)
-    } else if (shipperInfo.cityName) {
-      // 都市名がある場合も初期化
-      const fullAddress = [
-        shipperInfo.cityName,
-        shipperInfo.postalCode
-      ].filter(Boolean).join(' ')
+    // 見積もりから遷移してきた場合の住所初期化
+    // 日本語表示用の住所は別途保持されているため、ここでは英語データから住所を構築
+    if (shipperInfo.address1 || shipperInfo.cityName) {
+      const addressParts = [];
       
-      if (fullAddress) {
-        console.log('🏙️ Setting initial address from city/postal:', fullAddress)
-        setAddressInput(fullAddress)
+      // 英語の番地・通り名（API用データ）
+      if (shipperInfo.address1) {
+        addressParts.push(shipperInfo.address1);
+      }
+      
+      // 都市名と郵便番号
+      if (shipperInfo.cityName) {
+        addressParts.push(shipperInfo.cityName);
+      }
+      
+      if (shipperInfo.postalCode) {
+        addressParts.push(shipperInfo.postalCode);
+      }
+      
+      const constructedAddress = addressParts.join(', ');
+      
+      if (constructedAddress) {
+        console.log('📍 Setting initial address from enhanced store data:', constructedAddress)
+        console.log('🔧 Address construction details:', {
+          street: shipperInfo.address1,
+          city: shipperInfo.cityName,
+          postal: shipperInfo.postalCode,
+          result: constructedAddress
+        })
+        setAddressInput(constructedAddress)
         setIsAddressSelected(true)
         setIsInitialized(true)
       }
@@ -141,9 +162,10 @@ export default function ShipperInfoPage() {
     
     // ストアにデータがない場合も初期化完了とマーク
     if (!isInitialized) {
+      console.log('✅ Shipper page initialization completed (no store data)')
       setIsInitialized(true)
     }
-  }, [shipperInfo.address1, shipperInfo.cityName, shipperInfo.postalCode, isInitialized, addressInput])
+  }, [shipperInfo.address1, shipperInfo.cityName, shipperInfo.postalCode, shipperInfo.countryCode, shipperInfo.stateCode, isInitialized, addressInput])
 
   return (
     <AuthGuard requireAuth={false}>
@@ -259,8 +281,8 @@ export default function ShipperInfoPage() {
                       />
                     </div>
 
-                    {/* 州・県選択（USまたはCAの場合のみ表示） */}
-                    {(shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && (
+                    {/* 州・県選択（US、CA、または日本の場合のみ表示） */}
+                    {(shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA' || shipperInfo.countryCode === 'JP') && (
                       <div className="space-y-2">
                         <Label htmlFor="stateCode">州・県 <span className="text-red-500">*</span></Label>
                         <Select value={shipperInfo.stateCode} onValueChange={(value) => updateShipperInfo('stateCode', value)}>

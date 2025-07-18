@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
-import { usStates, canadianProvinces } from "@/lib/data/locations"
+import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
 import { useAuth } from "@/hooks/useAuth"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
@@ -42,12 +42,14 @@ export default function Home() {
     originStateCode: "",
     originCityName: "",
     originAddressInput: "",
+    originStreet: "",
     originSelected: false,
     destinationCountry: "US",
     destinationPostalCode: "",
     destinationStateCode: "",
     destinationCityName: "",
     destinationAddressInput: "",
+    destinationStreet: "",
     destinationSelected: false,
     shipDate: new Date().toISOString().split('T')[0],
     isResidential: false,
@@ -414,12 +416,14 @@ export default function Home() {
   const getOriginStateOptions = () => {
     if (quoteParams.originCountry === 'US') return usStates
     if (quoteParams.originCountry === 'CA') return canadianProvinces
+    if (quoteParams.originCountry === 'JP') return japanesePrefectures
     return []
   }
 
   const getDestinationStateOptions = () => {
     if (quoteParams.destinationCountry === 'US') return usStates
     if (quoteParams.destinationCountry === 'CA') return canadianProvinces
+    if (quoteParams.destinationCountry === 'JP') return japanesePrefectures
     return []
   }
 

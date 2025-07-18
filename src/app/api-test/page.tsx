@@ -71,7 +71,7 @@ export default function ApiTestPage() {
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
       <h1 style={{ marginBottom: '1.5rem', color: '#333', textAlign: 'center' }}>FedEx APIテスト</h1>
-      
+
       <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
         <fieldset style={{ 
           border: '1px solid #ddd', 
@@ -232,10 +232,10 @@ export default function ApiTestPage() {
       </form>
 
       {error && (
-        <div style={{ 
+        <div style={{
           padding: '1rem', 
           backgroundColor: '#f8d7da', 
-          border: '1px solid #f5c6cb', 
+          border: '1px solid #f5c6cb',
           borderRadius: '4px',
           color: '#721c24',
           marginBottom: '1rem'
@@ -245,7 +245,7 @@ export default function ApiTestPage() {
       )}
 
       {response && (
-        <div style={{ 
+          <div style={{
           padding: '1rem', 
           backgroundColor: '#f9f9f9', 
           border: '1px solid #ddd', 
@@ -258,9 +258,9 @@ export default function ApiTestPage() {
             borderRadius: '4px',
             overflow: 'auto',
             fontSize: '0.9rem'
-          }}>
-            {JSON.stringify(response, null, 2)}
-          </pre>
+            }}>
+              {JSON.stringify(response, null, 2)}
+            </pre>
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "./ui/checkbox"
 import { Plus, X, Loader2 } from "lucide-react"
 import { GooglePlaceAutocomplete, ParsedAddress } from "./GooglePlaceAutocomplete"
+import { convertEnglishPrefectureToJapanese } from "@/lib/data/locations"
 
 //【重要】このファイルの型定義もシンプルにする
 export interface Package {
@@ -28,12 +29,14 @@ export interface ExtendedQuoteParams {
   originStateCode: string
   originCityName: string
   originAddressInput: string
+  originStreet: string
   originSelected: boolean
   destinationCountry: string
   destinationPostalCode: string
   destinationStateCode: string
   destinationCityName: string
   destinationAddressInput: string
+  destinationStreet: string
   destinationSelected: boolean
   shipDate: string
   isResidential: boolean
@@ -67,20 +70,56 @@ export default function QuoteFormComponent({
 
   // 場所が選択された際のコールバック関数
   const handlePlaceSelect = useCallback((type: 'origin' | 'destination', data: ParsedAddress) => {
-    console.log(`✅ Received final parsed English data for ${type}:`, data);
+    console.log(`✅ QuoteForm: Received final parsed English data for ${type}:`, data);
+    
+    // 住所入力フィールドを先に更新（表示用の日本語住所を保持）
+    onQuoteParamsChange(`${type}AddressInput`, data.fullAddress);
+    
+    // その他のフィールドを更新
     onQuoteParamsChange(`${type}Country`, data.countryCode);
     onQuoteParamsChange(`${type}PostalCode`, data.postalCode);
     onQuoteParamsChange(`${type}StateCode`, data.stateCode);
     onQuoteParamsChange(`${type}CityName`, data.cityName);
-    onQuoteParamsChange(`${type}AddressInput`, data.fullAddress); // 表示用
+    onQuoteParamsChange(`${type}Street`, data.street); // 英語の番地・通り名
     onQuoteParamsChange(`${type}Selected`, true);
+    
+    console.log(`🏠 QuoteForm: Enhanced data mapping for ${type}:`, {
+      addressInput: data.fullAddress,  // 追加：入力フィールド用
+      street: data.street,
+      fullAddress: data.fullAddress,
+      country: data.countryCode,
+      state: data.stateCode,
+      city: data.cityName,
+      postal: data.postalCode,
+      selected: true
+    });
+    
+    console.log(`📋 QuoteForm: Raw data received for ${type}:`, JSON.stringify(data, null, 2));
+    console.log(`🔄 QuoteForm: About to call onQuoteParamsChange for ${type} with:`, {
+      [`${type}AddressInput`]: data.fullAddress,
+      [`${type}Country`]: data.countryCode,
+      [`${type}PostalCode`]: data.postalCode,
+      [`${type}StateCode`]: data.stateCode,
+      [`${type}CityName`]: data.cityName,
+      [`${type}Street`]: data.street,
+      [`${type}Selected`]: true
+    });
   }, [onQuoteParamsChange]);
   
   // 入力値が変更された際のコールバック関数
   const handleInputChange = useCallback((type: 'origin' | 'destination') => {
+      console.log(`📝 QuoteForm: Input changed for ${type}, setting ${type}Selected to false`);
       onQuoteParamsChange(`${type}Selected`, false);
   },[onQuoteParamsChange]);
 
+
+  // 州/県の表示名を取得する関数
+  const getStateName = (countryCode: string, stateCode: string): string => {
+    if (countryCode === 'JP' && stateCode) {
+      return convertEnglishPrefectureToJapanese(stateCode);
+    }
+    return stateCode; // アメリカ・カナダの場合はそのまま
+  };
 
   const getTotalWeight = () => {
     return packages
@@ -109,11 +148,13 @@ export default function QuoteFormComponent({
               <div className="relative">
                 <GooglePlaceAutocomplete
                   value={quoteParams.originAddressInput}
-                  onChange={(value) => onQuoteParamsChange('originAddressInput', value)}
+                  onChange={(value) => {
+                    console.log(`📝 QuoteForm: Origin address input changing to: "${value}"`);
+                    onQuoteParamsChange('originAddressInput', value);
+                  }}
                   onPlaceSelect={(data) => handlePlaceSelect('origin', data)}
                   onInputChange={() => handleInputChange('origin')}
                   placeholder="国、郵便番号、または住所を入力"
-                  customClassName="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               {/* 出荷地の詳細情報表示 */}
@@ -124,7 +165,7 @@ export default function QuoteFormComponent({
                     国: {quoteParams.originCountry} | 
                     郵便番号: {quoteParams.originPostalCode} | 
                     都市: {quoteParams.originCityName}
-                    {quoteParams.originStateCode && ` | 州/県: ${quoteParams.originStateCode}`}
+                    {quoteParams.originStateCode && ` | 州/県: ${getStateName(quoteParams.originCountry, quoteParams.originStateCode)}`}
                   </div>
                 </div>
               )}
@@ -139,11 +180,13 @@ export default function QuoteFormComponent({
               <div className="relative">
                 <GooglePlaceAutocomplete
                   value={quoteParams.destinationAddressInput}
-                  onChange={(value) => onQuoteParamsChange('destinationAddressInput', value)}
+                  onChange={(value) => {
+                    console.log(`📝 QuoteForm: Destination address input changing to: "${value}"`);
+                    onQuoteParamsChange('destinationAddressInput', value);
+                  }}
                   onPlaceSelect={(data) => handlePlaceSelect('destination', data)}
                   onInputChange={() => handleInputChange('destination')}
                   placeholder="国、郵便番号、または住所を入力"
-                  customClassName="border-green-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
               {/* 仕向地の詳細情報表示 */}
@@ -154,7 +197,7 @@ export default function QuoteFormComponent({
                     国: {quoteParams.destinationCountry} | 
                     郵便番号: {quoteParams.destinationPostalCode} | 
                     都市: {quoteParams.destinationCityName}
-                    {quoteParams.destinationStateCode && ` | 州/県: ${quoteParams.destinationStateCode}`}
+                    {quoteParams.destinationStateCode && ` | 州/県: ${getStateName(quoteParams.destinationCountry, quoteParams.destinationStateCode)}`}
                   </div>
                 </div>
               )}

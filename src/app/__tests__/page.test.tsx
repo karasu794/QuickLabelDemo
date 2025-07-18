@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import HomePage from '../page'
 
 // Environment variables mock
-process.env.NEXT_PUBLIC_Maps_API_KEY = 'test-api-key'
+process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = 'test-api-key'
 
 describe('HomePage - 実際の動作確認', () => {
   it('デバッグ: コンポーネントの状態を確認', async () => {

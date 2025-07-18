@@ -393,6 +393,56 @@ export const canadianProvinces: LocationData[] = [
   { name: 'ユーコン準州', code: 'YT' }
 ];
 
+export const japanesePrefectures: LocationData[] = [
+  { name: '北海道', code: 'Hokkaido' },
+  { name: '青森県', code: 'Aomori' },
+  { name: '岩手県', code: 'Iwate' },
+  { name: '宮城県', code: 'Miyagi' },
+  { name: '秋田県', code: 'Akita' },
+  { name: '山形県', code: 'Yamagata' },
+  { name: '福島県', code: 'Fukushima' },
+  { name: '茨城県', code: 'Ibaraki' },
+  { name: '栃木県', code: 'Tochigi' },
+  { name: '群馬県', code: 'Gunma' },
+  { name: '埼玉県', code: 'Saitama' },
+  { name: '千葉県', code: 'Chiba' },
+  { name: '東京都', code: 'Tokyo' },
+  { name: '神奈川県', code: 'Kanagawa' },
+  { name: '新潟県', code: 'Niigata' },
+  { name: '富山県', code: 'Toyama' },
+  { name: '石川県', code: 'Ishikawa' },
+  { name: '福井県', code: 'Fukui' },
+  { name: '山梨県', code: 'Yamanashi' },
+  { name: '長野県', code: 'Nagano' },
+  { name: '岐阜県', code: 'Gifu' },
+  { name: '静岡県', code: 'Shizuoka' },
+  { name: '愛知県', code: 'Aichi' },
+  { name: '三重県', code: 'Mie' },
+  { name: '滋賀県', code: 'Shiga' },
+  { name: '京都府', code: 'Kyoto' },
+  { name: '大阪府', code: 'Osaka' },
+  { name: '兵庫県', code: 'Hyogo' },
+  { name: '奈良県', code: 'Nara' },
+  { name: '和歌山県', code: 'Wakayama' },
+  { name: '鳥取県', code: 'Tottori' },
+  { name: '島根県', code: 'Shimane' },
+  { name: '岡山県', code: 'Okayama' },
+  { name: '広島県', code: 'Hiroshima' },
+  { name: '山口県', code: 'Yamaguchi' },
+  { name: '徳島県', code: 'Tokushima' },
+  { name: '香川県', code: 'Kagawa' },
+  { name: '愛媛県', code: 'Ehime' },
+  { name: '高知県', code: 'Kochi' },
+  { name: '福岡県', code: 'Fukuoka' },
+  { name: '佐賀県', code: 'Saga' },
+  { name: '長崎県', code: 'Nagasaki' },
+  { name: '熊本県', code: 'Kumamoto' },
+  { name: '大分県', code: 'Oita' },
+  { name: '宮崎県', code: 'Miyazaki' },
+  { name: '鹿児島県', code: 'Kagoshima' },
+  { name: '沖縄県', code: 'Okinawa' }
+];
+
 // 英語版も提供
 export const usStatesEnglish: LocationData[] = [
   { name: 'Alabama', code: 'AL' },
@@ -474,16 +524,81 @@ export const allNorthAmericanRegionsEnglish: LocationData[] = [
   ...canadianProvincesEnglish
 ];
 
+// 全ての地域（日本含む）を結合したリスト
+export const allRegions: LocationData[] = [
+  ...usStates,
+  ...canadianProvinces,
+  ...japanesePrefectures
+];
+
+// 英語県コードから日本語県名への変換マップ
+const englishToJapanesePrefectureMap: { [key: string]: string } = {
+  'Hokkaido': '北海道',
+  'Aomori': '青森県',
+  'Iwate': '岩手県',
+  'Miyagi': '宮城県',
+  'Akita': '秋田県',
+  'Yamagata': '山形県',
+  'Fukushima': '福島県',
+  'Ibaraki': '茨城県',
+  'Tochigi': '栃木県',
+  'Gunma': '群馬県',
+  'Saitama': '埼玉県',
+  'Chiba': '千葉県',
+  'Tokyo': '東京都',
+  'Kanagawa': '神奈川県',
+  'Niigata': '新潟県',
+  'Toyama': '富山県',
+  'Ishikawa': '石川県',
+  'Fukui': '福井県',
+  'Yamanashi': '山梨県',
+  'Nagano': '長野県',
+  'Gifu': '岐阜県',
+  'Shizuoka': '静岡県',
+  'Aichi': '愛知県',
+  'Mie': '三重県',
+  'Shiga': '滋賀県',
+  'Kyoto': '京都府',
+  'Osaka': '大阪府',
+  'Hyogo': '兵庫県',
+  'Nara': '奈良県',
+  'Wakayama': '和歌山県',
+  'Tottori': '鳥取県',
+  'Shimane': '島根県',
+  'Okayama': '岡山県',
+  'Hiroshima': '広島県',
+  'Yamaguchi': '山口県',
+  'Tokushima': '徳島県',
+  'Kagawa': '香川県',
+  'Ehime': '愛媛県',
+  'Kochi': '高知県',
+  'Fukuoka': '福岡県',
+  'Saga': '佐賀県',
+  'Nagasaki': '長崎県',
+  'Kumamoto': '熊本県',
+  'Oita': '大分県',
+  'Miyazaki': '宮崎県',
+  'Kagoshima': '鹿児島県',
+  'Okinawa': '沖縄県'
+};
+
+// 英語県コードから日本語県名への変換関数
+export const convertEnglishPrefectureToJapanese = (englishCode: string): string => {
+  return englishToJapanesePrefectureMap[englishCode] || englishCode;
+};
+
 // ユーティリティ関数
 export const findLocationByCode = (code: string, useEnglish: boolean = false): LocationData | undefined => {
   const regions = useEnglish ? allNorthAmericanRegionsEnglish : allNorthAmericanRegions;
   return regions.find(region => region.code === code);
 };
 
-export const getStatesByCountry = (country: 'US' | 'CA', useEnglish: boolean = false): LocationData[] => {
+export const getStatesByCountry = (country: 'US' | 'CA' | 'JP', useEnglish: boolean = false): LocationData[] => {
   if (country === 'US') {
     return useEnglish ? usStatesEnglish : usStates;
-  } else {
+  } else if (country === 'CA') {
     return useEnglish ? canadianProvincesEnglish : canadianProvinces;
+  } else {
+    return japanesePrefectures;
   }
 };

@@ -238,7 +238,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
           email: '',
           countryCode: quoteParams.originCountry || 'JP',
           stateCode: quoteParams.originStateCode || '',
-          address1: quoteParams.originAddressInput || '', // 日本語の表示用住所
+          address1: quoteParams.originStreet || '', // 英語の番地・通り名（API用）
           address2: '',
           postalCode: quoteParams.originPostalCode || '', // 英語化された郵便番号
           cityName: quoteParams.originCityName || '' // 英語化された都市名
@@ -254,7 +254,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
           postalCode: quoteParams.destinationPostalCode || '', // 英語化された郵便番号
           cityName: quoteParams.destinationCityName || '', // 英語化された都市名
           stateCode: quoteParams.destinationStateCode || '',
-          address1: quoteParams.destinationAddressInput || '', // 日本語の表示用住所
+          address1: quoteParams.destinationStreet || '', // 英語の番地・通り名（API用）
           address2: ''
         }
 
@@ -274,9 +274,10 @@ export const useShippingFormStore = create<ShippingFormState>()(
           country: newShipperInfo.countryCode,
           state: newShipperInfo.stateCode,
           city: newShipperInfo.cityName,
-          address: newShipperInfo.address1,
+          address1: newShipperInfo.address1, // 英語の番地・通り名
           postalCode: newShipperInfo.postalCode,
-          addressDisplay: quoteParams.originAddressInput,
+          addressDisplay: quoteParams.originAddressInput, // 日本語表示用
+          streetData: quoteParams.originStreet, // 英語の番地・通り名
           isResidential: quoteParams.isResidential,
           higherInsurance: quoteParams.higherInsurance
         });
@@ -285,9 +286,10 @@ export const useShippingFormStore = create<ShippingFormState>()(
           country: newRecipientInfo.countryCode,
           state: newRecipientInfo.stateCode,
           city: newRecipientInfo.cityName,
-          address: newRecipientInfo.address1,
+          address1: newRecipientInfo.address1, // 英語の番地・通り名
           postalCode: newRecipientInfo.postalCode,
-          addressDisplay: quoteParams.destinationAddressInput
+          addressDisplay: quoteParams.destinationAddressInput, // 日本語表示用
+          streetData: quoteParams.destinationStreet // 英語の番地・通り名
         });
         
         console.log('📋 Generated packages:', newPackages);

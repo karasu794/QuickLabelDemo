@@ -23,6 +23,33 @@ FEDEX_ACCOUNT_NUMBER=your_fedex_account_number
 NEXT_PUBLIC_SITE_URL=https://your-vercel-app.vercel.app
 ```
 
+### 🗺️ Google Maps API関連
+```bash
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+## 🗺️ Google Maps API キー取得手順
+
+### 1. Google Cloud Console にアクセス
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. プロジェクトを選択（または新規作成）
+
+### 2. Maps API の有効化
+1. 「APIとサービス」→「ライブラリ」をクリック
+2. 「Maps JavaScript API」と「Places API」を検索して有効化
+
+### 3. APIキーの作成
+1. 「APIとサービス」→「認証情報」をクリック
+2. 「認証情報を作成」→「APIキー」を選択
+3. 作成されたAPIキーをコピー
+
+### 4. APIキーの制限設定（推奨）
+1. 作成したAPIキーをクリック
+2. 「アプリケーションの制限」で「HTTPリファラー」を選択
+3. 許可するドメインを追加：
+   - `localhost:3000/*` (開発環境)
+   - `your-domain.vercel.app/*` (本番環境)
+
 ## 🛠️ Vercel環境変数設定手順
 
 ### 1. Vercelダッシュボードにアクセス
@@ -48,6 +75,11 @@ NEXT_PUBLIC_SITE_URL=https://your-vercel-app.vercel.app
 #### **SUPABASE_SERVICE_ROLE_KEY** ⚠️ 重要
 - **Name**: `SUPABASE_SERVICE_ROLE_KEY`
 - **Value**: `eyJhbGci...` (Supabaseの service_role key)
+
+#### **NEXT_PUBLIC_GOOGLE_MAPS_API_KEY** 🗺️ 住所検索用
+- **Name**: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- **Value**: `AIzaSy...` (Google Cloud Consoleで取得)
+- **Environment**: `Production, Preview, Development`
 - **Environment**: `Production, Preview, Development`
 
 #### **FEDEX_API_KEY**

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRecipientInfo, useWaitForHydration } from '@/store/shippingFormStore'
-import { usStates, canadianProvinces, getCountryOptions } from '@/lib/data/locations'
+import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions } from '@/lib/data/locations'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -55,7 +55,7 @@ export default function RecipientInfoPage() {
   // 国が変更された場合、州・県コードをリセット
   const handleCountryChange = (countryCode: string) => {
     updateRecipientInfo('countryCode', countryCode)
-    if (countryCode !== 'US' && countryCode !== 'CA') {
+    if (countryCode !== 'US' && countryCode !== 'CA' && countryCode !== 'JP') {
       updateRecipientInfo('stateCode', '')
     }
   }
@@ -64,6 +64,7 @@ export default function RecipientInfoPage() {
   const getStateOptions = () => {
     if (recipientInfo.countryCode === 'US') return usStates
     if (recipientInfo.countryCode === 'CA') return canadianProvinces
+    if (recipientInfo.countryCode === 'JP') return japanesePrefectures
     return []
   }
 
@@ -87,7 +88,7 @@ export default function RecipientInfoPage() {
       setError('郵便番号を入力してください')
       return false
     }
-    if ((recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA') && !recipientInfo.stateCode) {
+    if ((recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA' || recipientInfo.countryCode === 'JP') && !recipientInfo.stateCode) {
       setError('州・県を選択してください')
       return false
     }
@@ -122,24 +123,44 @@ export default function RecipientInfoPage() {
     // 既に初期化済みで、明示的にリセットが必要でない場合はスキップ
     if (isInitialized && addressInput) return
 
-    console.log('🔄 Initializing recipient page with store data:', recipientInfo)
+    console.log('🔄 Initializing recipient page with enhanced store data:', {
+      address1: recipientInfo.address1, // 英語の番地・通り名（API用）
+      cityName: recipientInfo.cityName, // 英語化された都市名
+      postalCode: recipientInfo.postalCode, // 英語化された郵便番号
+      countryCode: recipientInfo.countryCode,
+      stateCode: recipientInfo.stateCode
+    })
     
-    // ストアに住所データがある場合（見積もりから遷移してきた場合）
-    if (recipientInfo.address1) {
-      console.log('📍 Setting initial address from store:', recipientInfo.address1)
-      setAddressInput(recipientInfo.address1)
-      setIsAddressSelected(true)
-      setIsInitialized(true)
-    } else if (recipientInfo.cityName) {
-      // 都市名がある場合も初期化
-      const fullAddress = [
-        recipientInfo.cityName,
-        recipientInfo.postalCode
-      ].filter(Boolean).join(' ')
+    // 見積もりから遷移してきた場合の住所初期化
+    // 日本語表示用の住所は別途保持されているため、ここでは英語データから住所を構築
+    if (recipientInfo.address1 || recipientInfo.cityName) {
+      const addressParts = [];
       
-      if (fullAddress) {
-        console.log('🏙️ Setting initial address from city/postal:', fullAddress)
-        setAddressInput(fullAddress)
+      // 英語の番地・通り名（API用データ）
+      if (recipientInfo.address1) {
+        addressParts.push(recipientInfo.address1);
+      }
+      
+      // 都市名と郵便番号
+      if (recipientInfo.cityName) {
+        addressParts.push(recipientInfo.cityName);
+      }
+      
+      if (recipientInfo.postalCode) {
+        addressParts.push(recipientInfo.postalCode);
+      }
+      
+      const constructedAddress = addressParts.join(', ');
+      
+      if (constructedAddress) {
+        console.log('📍 Setting initial address from enhanced store data:', constructedAddress)
+        console.log('🔧 Address construction details:', {
+          street: recipientInfo.address1,
+          city: recipientInfo.cityName,
+          postal: recipientInfo.postalCode,
+          result: constructedAddress
+        })
+        setAddressInput(constructedAddress)
         setIsAddressSelected(true)
         setIsInitialized(true)
       }
@@ -147,9 +168,10 @@ export default function RecipientInfoPage() {
     
     // ストアにデータがない場合も初期化完了とマーク
     if (!isInitialized) {
+      console.log('✅ Recipient page initialization completed (no store data)')
       setIsInitialized(true)
     }
-  }, [recipientInfo.address1, recipientInfo.cityName, recipientInfo.postalCode, isInitialized, addressInput])
+  }, [recipientInfo.address1, recipientInfo.cityName, recipientInfo.postalCode, recipientInfo.countryCode, recipientInfo.stateCode, isInitialized, addressInput])
 
   return (
     <AuthGuard requireAuth={false}>
@@ -157,8 +179,8 @@ export default function RecipientInfoPage() {
           <div className="max-w-2xl mx-auto">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">荷受人情報</h1>
-              <p className="text-gray-600">荷受人の詳細情報を入力してください</p>
-            </div>
+          <p className="text-gray-600">荷受人の詳細情報を入力してください</p>
+        </div>
 
             {/* ハイドレーション待機ローディング */}
             {isLoading && (
@@ -167,7 +189,7 @@ export default function RecipientInfoPage() {
                   <div className="flex flex-col items-center justify-center space-y-4">
                     <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
                     <p className="text-gray-600">データを読み込み中...</p>
-                  </div>
+          </div>
                 </CardContent>
               </Card>
             )}
@@ -185,80 +207,80 @@ export default function RecipientInfoPage() {
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* 基本情報 */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
                         <Label htmlFor="contactName">担当者名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="contactName"
-                          name="contactName"
-                          value={recipientInfo.contactName}
-                          onChange={handleInputChange}
+                    name="contactName"
+                    value={recipientInfo.contactName}
+                    onChange={handleInputChange}
                           placeholder="田中太郎"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
                         <Label htmlFor="companyName">会社名</Label>
                         <Input
                           id="companyName"
-                          name="companyName"
-                          value={recipientInfo.companyName}
-                          onChange={handleInputChange}
-                          placeholder="株式会社サンプル"
-                        />
-                      </div>
-                    </div>
+                    name="companyName"
+                    value={recipientInfo.companyName}
+                    onChange={handleInputChange}
+                    placeholder="株式会社サンプル" 
+                  />
+                </div>
+              </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
+              <div className="space-y-2">
                         <Label htmlFor="taxNumber">税務番号（法人番号）</Label>
                         <Input
                           id="taxNumber"
-                          name="taxNumber"
-                          value={recipientInfo.taxNumber}
-                          onChange={handleInputChange}
+                  name="taxNumber"
+                  value={recipientInfo.taxNumber}
+                  onChange={handleInputChange}
                           placeholder="1234567890123"
-                        />
-                      </div>
-                      <div className="space-y-2">
+                />
+              </div>
+                <div className="space-y-2">
                         <Label htmlFor="phoneNumber">電話番号 <span className="text-red-500">*</span></Label>
                         <Input
                           id="phoneNumber"
-                          name="phoneNumber"
-                          value={recipientInfo.phoneNumber}
-                          onChange={handleInputChange}
-                          placeholder="03-1234-5678"
-                          required
-                        />
+                    name="phoneNumber"
+                    value={recipientInfo.phoneNumber}
+                    onChange={handleInputChange}
+                    placeholder="03-1234-5678" 
+                    required 
+                  />
                       </div>
-                    </div>
+                </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                       <Label htmlFor="email">メールアドレス</Label>
                       <Input
-                        id="email"
-                        name="email"
+                    id="email" 
+                    name="email"
                         type="email"
-                        value={recipientInfo.email}
-                        onChange={handleInputChange}
+                    value={recipientInfo.email}
+                    onChange={handleInputChange}
                         placeholder="example@email.com"
-                      />
-                    </div>
-                  </div>
+                  />
+              </div>
+            </div>
 
                   {/* 住所情報 */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
 
                     {/* 国選択 */}
-                    <div className="space-y-2">
+                <div className="space-y-2">
                       <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
                       <Combobox
                         options={countryOptions}
-                        value={recipientInfo.countryCode}
+                    value={recipientInfo.countryCode} 
                         onSelect={handleCountryChange}
                         placeholder="国を選択してください"
                         searchPlaceholder="国名または国コードで検索..."
@@ -266,8 +288,8 @@ export default function RecipientInfoPage() {
                       />
                     </div>
 
-                    {/* 州・県選択（USまたはCAの場合のみ表示） */}
-                    {(recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA') && (
+                    {/* 州・県選択（US、CA、または日本の場合のみ表示） */}
+                    {(recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA' || recipientInfo.countryCode === 'JP') && (
                       <div className="space-y-2">
                         <Label htmlFor="stateCode">州・県 <span className="text-red-500">*</span></Label>
                         <Select value={recipientInfo.stateCode} onValueChange={(value) => updateRecipientInfo('stateCode', value)}>
@@ -294,66 +316,66 @@ export default function RecipientInfoPage() {
                         onPlaceSelect={handleAddressSelect}
                         placeholder="住所を入力すると自動補完されます"
                       />
-                    </div>
+                </div>
 
                     {/* 詳細住所入力 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
+                <div className="space-y-2">
                         <Label htmlFor="postalCode">
-                          郵便番号 {!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode) && <span className="text-red-500">*</span>}
+                    郵便番号 {!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode) && <span className="text-red-500">*</span>}
                         </Label>
                         <Input
                           id="postalCode"
-                          name="postalCode"
-                          value={recipientInfo.postalCode}
-                          onChange={handleInputChange}
-                          placeholder="100-0001"
-                          required={!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode)}
-                        />
-                      </div>
-                      <div className="space-y-2">
+                    name="postalCode"
+                    value={recipientInfo.postalCode}
+                    onChange={handleInputChange}
+                    placeholder="100-0001" 
+                    required={!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode)}
+                  />
+                </div>
+                <div className="space-y-2">
                         <Label htmlFor="cityName">都市名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="cityName"
-                          name="cityName"
-                          value={recipientInfo.cityName}
-                          onChange={handleInputChange}
+                    name="cityName"
+                    value={recipientInfo.cityName}
+                    onChange={handleInputChange}
                           placeholder="東京"
-                          required
-                        />
-                      </div>
-                    </div>
+                    required
+                  />
+                </div>
+              </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                       <Label htmlFor="address1">住所1 <span className="text-red-500">*</span></Label>
                       <Input
                         id="address1"
                         name="address1"
-                        value={recipientInfo.address1}
+                    value={recipientInfo.address1}
                         onChange={handleInputChange}
                         placeholder="千代田区丸の内1-1-1"
-                        required
-                      />
-                    </div>
+                    required
+                  />
+                </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                       <Label htmlFor="address2">住所2（建物名・部屋番号など）</Label>
                       <Input
-                        id="address2"
-                        name="address2"
-                        value={recipientInfo.address2}
-                        onChange={handleInputChange}
+                    id="address2" 
+                    name="address2"
+                    value={recipientInfo.address2}
+                    onChange={handleInputChange}
                         placeholder="○○ビル 5F"
-                      />
-                    </div>
-                  </div>
+                  />
+                </div>
+              </div>
 
                   {/* エラーメッセージ */}
                   {error && (
                     <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
                       <AlertCircle className="h-4 w-4 text-red-500" />
                       <span className="text-red-700">{error}</span>
-                    </div>
+            </div>
                   )}
 
                   {/* ボタン */}
@@ -363,14 +385,14 @@ export default function RecipientInfoPage() {
                     </Button>
                     <Button type="submit">
                       次へ
-                    </Button>
+                </Button>
                   </div>
                 </form>
               </CardContent>
             </Card>
             )}
-          </div>
         </div>
+      </div>
     </AuthGuard>
   )
 }

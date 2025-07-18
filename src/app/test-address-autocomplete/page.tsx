@@ -13,7 +13,7 @@ export default function TestAddressAutocompletePage() {
     const logs: string[] = []
     
     // APIキーの確認
-    const apiKey = process.env.NEXT_PUBLIC_Maps_API_KEY
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     logs.push(`APIキー設定: ${apiKey ? `あり（長さ: ${apiKey.length}文字）` : 'なし'}`)
     
     // Google Maps APIの読み込み状態確認

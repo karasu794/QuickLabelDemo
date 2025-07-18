@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useShippingFormStore } from '@/store/shippingFormStore'
+import { useState, useEffect } from 'react'
 
 const steps = [
   { id: 1, name: '荷送人情報', href: '/shipping/new/shipper' },
@@ -20,6 +21,12 @@ export default function ShippingNewLayout({
 }) {
   const pathname = usePathname()
   const isStepCompleted = useShippingFormStore((state) => state.isStepCompleted)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // ハイドレーション完了を待つ
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,7 +62,7 @@ export default function ShippingNewLayout({
           <nav className="space-y-1">
             {steps.map((step) => {
               const isActive = pathname === step.href
-              const isCompleted = isStepCompleted(step.href)
+              const isCompleted = isHydrated ? isStepCompleted(step.href) : false
               
               const stepContent = (
                 <div className={`
@@ -77,7 +84,7 @@ export default function ShippingNewLayout({
                         : 'bg-gray-100 text-gray-500'
                       }
                     `}>
-                      {isCompleted ? (
+                      {isHydrated && isCompleted ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -91,7 +98,7 @@ export default function ShippingNewLayout({
                   </div>
                   
                   {/* 編集ボタン（完了したステップのみ表示） */}
-                  {isCompleted && !isActive && (
+                  {isHydrated && isCompleted && !isActive && (
                     <span className="text-xs text-orange-600 font-medium px-2 py-1 bg-orange-50 rounded-md">
                       編集
                     </span>
@@ -101,7 +108,7 @@ export default function ShippingNewLayout({
               
               return (
                 <div key={step.id}>
-                  {(!isActive && isCompleted) || (!isActive && !isCompleted) ? (
+                  {isHydrated && ((!isActive && isCompleted) || (!isActive && !isCompleted)) ? (
                     <Link href={step.href}>
                       {stepContent}
                     </Link>

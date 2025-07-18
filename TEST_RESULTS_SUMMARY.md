@@ -23,7 +23,7 @@
 ```typescript
 // 詳細なエラーログとAPI状態確認
 console.error('🚨 Google Maps API読み込みエラー詳細:')
-console.error('- APIキー長:', process.env.NEXT_PUBLIC_Maps_API_KEY?.length || 0, '文字')
+console.error('- APIキー長:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.length || 0, '文字')
 ```
 
 #### 🔧 **2. Autocomplete初期化の最適化**
