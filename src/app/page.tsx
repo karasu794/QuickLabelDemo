@@ -478,6 +478,7 @@ export default function Home() {
             destinationCityName: quoteParams.destinationCityName,
             destinationAddressInput: quoteParams.destinationAddressInput
           }}
+          packages={packages}
         />
         </div>
       )}

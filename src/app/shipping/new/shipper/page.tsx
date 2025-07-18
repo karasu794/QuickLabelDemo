@@ -163,7 +163,7 @@ export default function ShipperInfoPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="contactName">担当者名 *</Label>
+                        <Label htmlFor="contactName">担当者名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="contactName"
                           name="contactName"
@@ -197,7 +197,7 @@ export default function ShipperInfoPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phoneNumber">電話番号 *</Label>
+                        <Label htmlFor="phoneNumber">電話番号 <span className="text-red-500">*</span></Label>
                         <Input
                           id="phoneNumber"
                           name="phoneNumber"
@@ -208,6 +208,18 @@ export default function ShipperInfoPage() {
                         />
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">メールアドレス</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={shipperInfo.email}
+                        onChange={handleInputChange}
+                        placeholder="example@email.com"
+                      />
+                    </div>
                   </div>
 
                   {/* 住所情報 */}
@@ -216,7 +228,7 @@ export default function ShipperInfoPage() {
 
                     {/* 国選択 */}
                     <div className="space-y-2">
-                      <Label htmlFor="countryCode">国 *</Label>
+                      <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
                       <Select value={shipperInfo.countryCode} onValueChange={handleCountryChange}>
                         <SelectTrigger>
                           <SelectValue placeholder="国を選択" />
@@ -234,7 +246,7 @@ export default function ShipperInfoPage() {
                     {/* 州・県選択（USまたはCAの場合のみ表示） */}
                     {(shipperInfo.countryCode === 'US' || shipperInfo.countryCode === 'CA') && (
                       <div className="space-y-2">
-                        <Label htmlFor="stateCode">州・県 *</Label>
+                        <Label htmlFor="stateCode">州・県 <span className="text-red-500">*</span></Label>
                         <Select value={shipperInfo.stateCode} onValueChange={(value) => updateShipperInfo('stateCode', value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="州・県を選択" />
@@ -277,7 +289,7 @@ export default function ShipperInfoPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cityName">都市名 *</Label>
+                        <Label htmlFor="cityName">都市名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="cityName"
                           name="cityName"
@@ -290,7 +302,7 @@ export default function ShipperInfoPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address1">住所1 *</Label>
+                      <Label htmlFor="address1">住所1 <span className="text-red-500">*</span></Label>
                       <Input
                         id="address1"
                         name="address1"

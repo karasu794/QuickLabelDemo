@@ -233,7 +233,7 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
             data.shipperInfo.address2
           ].filter(Boolean),
           city: data.shipperInfo.cityName,
-          ...(data.shipperInfo.stateCode && { stateOrProvinceCode: data.shipperInfo.stateCode }),
+          ...(data.shipperInfo.stateCode && ['US', 'CA', 'PR'].includes(data.shipperInfo.countryCode) && { stateOrProvinceCode: data.shipperInfo.stateCode }),
           postalCode: data.shipperInfo.postalCode,
           countryCode: data.shipperInfo.countryCode,
         },
@@ -252,7 +252,7 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
               data.recipientInfo.address2
             ].filter(Boolean),
             city: data.recipientInfo.cityName,
-            ...(data.recipientInfo.stateCode && { stateOrProvinceCode: data.recipientInfo.stateCode }),
+            ...(data.recipientInfo.stateCode && ['US', 'CA', 'PR'].includes(data.recipientInfo.countryCode) && { stateOrProvinceCode: data.recipientInfo.stateCode }),
             postalCode: data.recipientInfo.postalCode,
             countryCode: data.recipientInfo.countryCode,
           },

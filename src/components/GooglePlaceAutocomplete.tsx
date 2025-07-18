@@ -68,7 +68,7 @@ export interface ParsedAddress {
   postalCode: string;
   street: string;
   fullAddress: string;
-}
+      }
 
 // Google Maps API使用版のAutocomplete
 function GoogleMapsAutocomplete({
@@ -97,9 +97,9 @@ function GoogleMapsAutocomplete({
 
         // ユーザーの入力欄には日本語の住所を表示
         onChange(displayAddress);
-
+        
         console.log('🔄 Starting English details fetch for place_id:', placeId);
-
+        
         // place_idを使って英語で詳細情報を再取得
         const placesService = new google.maps.places.PlacesService(document.createElement('div'));
         placesService.getDetails({
@@ -120,7 +120,7 @@ function GoogleMapsAutocomplete({
                 // 国と州はshort_name（コード）、他はlong_nameで英語名を取得
                 if (type === 'country' || type === 'administrative_area_level_1') {
                   components[type] = component.short_name;
-                } else {
+      } else {
                   components[type] = component.long_name;
                 }
             }
@@ -155,23 +155,23 @@ function GoogleMapsAutocomplete({
   }, [onChange, onInputChange]);
 
   return (
-    <Autocomplete
-      onLoad={onLoad}
-      onPlaceChanged={onPlaceChanged}
-      onUnmount={onUnmount}
-      options={{
+      <Autocomplete
+        onLoad={onLoad}
+        onPlaceChanged={onPlaceChanged}
+        onUnmount={onUnmount}
+        options={{
         fields: ['address_components', 'formatted_address', 'name', 'place_id'],
         types: ['geocode', 'establishment'],
-      }}
-    >
-      <input
-        type="text"
-        value={value}
-        onChange={handleInputChange}
-        placeholder={placeholder}
+        }}
+      >
+        <input
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          placeholder={placeholder}
         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 h-12 text-base ${customClassName || 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
-      />
-    </Autocomplete>
+        />
+      </Autocomplete>
   );
 }
 
@@ -238,7 +238,7 @@ function GoogleMapsProviderInternal({ children }: GoogleMapsProviderProps) {
   
   const { setMapsReady } = useGoogleMapsState();
   const googleMapsApiKey = process.env.NEXT_PUBLIC_Maps_API_KEY;
-  
+
   // Google Maps API がすでに読み込まれているかチェック
   useEffect(() => {
     const checkIfAlreadyLoaded = () => {

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
+import type { Package } from '@/components/QuoteFormComponent'
 
 // 型定義
 export interface ShipperInfo {
@@ -8,6 +9,7 @@ export interface ShipperInfo {
   companyName: string
   taxId: string
   phoneNumber: string
+  email: string
   countryCode: string
   stateCode: string
   address1: string
@@ -79,6 +81,8 @@ export interface QuoteToShippingParams {
   destinationAddressInput: string
 }
 
+// Package型はQuoteFormComponentからインポート済み
+
 // ストアの状態とアクションの型定義
 interface ShippingFormState {
   // 状態
@@ -100,7 +104,7 @@ interface ShippingFormState {
   updateRecipientInfo: (field: keyof RecipientInfo, value: string) => void
 
   // 見積もり情報から送り状情報への変換アクション
-  setInitialShippingInfoFromQuote: (quoteParams: QuoteToShippingParams) => void
+  setInitialShippingInfoFromQuote: (quoteParams: QuoteToShippingParams, packages?: Package[]) => void
 
   // 部分的な住所情報を更新するアクション
   setAddressPart: (type: 'origin' | 'destination', data: { countryCode: string; stateCode: string; cityName: string; postalCode: string; address1: string }) => void
@@ -143,6 +147,7 @@ const initialShipperInfo: ShipperInfo = {
   companyName: '',
   taxId: '',
   phoneNumber: '',
+  email: '',
   countryCode: 'JP',
   stateCode: '',
   address1: '',
@@ -221,14 +226,16 @@ export const useShippingFormStore = create<ShippingFormState>()(
         })),
 
       // 見積もり情報から送り状情報への変換アクション
-      setInitialShippingInfoFromQuote: (quoteParams) => {
+      setInitialShippingInfoFromQuote: (quoteParams, packages) => {
         console.log('📋 Setting initial shipping info from quote:', quoteParams);
+        console.log('📦 Setting packages from quote:', packages);
         
         const newShipperInfo: ShipperInfo = {
           contactName: '',
           companyName: '',
           taxId: '',
           phoneNumber: '',
+          email: '',
           countryCode: quoteParams.originCountry || 'JP',
           stateCode: quoteParams.originStateCode || '',
           address1: quoteParams.originAddressInput || '',
@@ -251,7 +258,19 @@ export const useShippingFormStore = create<ShippingFormState>()(
           address2: ''
         }
 
-        console.log('🚚 Generated shipper info (English):', {
+        // 見積もりフォームのPackage型をストアのPackageInfo型に変換
+        let newPackages: PackageInfo[] = [initialPackage]; // デフォルト値
+        if (packages && packages.length > 0) {
+          newPackages = packages.map(pkg => ({
+            type: pkg.packagingType,
+            weight: pkg.weight,
+            length: pkg.length,
+            width: pkg.width,
+            height: pkg.height
+          }));
+        }
+
+        console.log('🚚 Generated shipper info:', {
           country: newShipperInfo.countryCode,
           state: newShipperInfo.stateCode,
           city: newShipperInfo.cityName,
@@ -259,17 +278,20 @@ export const useShippingFormStore = create<ShippingFormState>()(
           postalCode: newShipperInfo.postalCode
         });
         
-        console.log('📦 Generated recipient info (English):', {
+        console.log('📦 Generated recipient info:', {
           country: newRecipientInfo.countryCode,
           state: newRecipientInfo.stateCode,
           city: newRecipientInfo.cityName,
           address: newRecipientInfo.address1,
           postalCode: newRecipientInfo.postalCode
         });
+        
+        console.log('📋 Generated packages:', newPackages);
 
         set({ 
           shipperInfo: newShipperInfo,
-          recipientInfo: newRecipientInfo
+          recipientInfo: newRecipientInfo,
+          packages: newPackages
         })
       },
 

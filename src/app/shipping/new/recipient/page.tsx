@@ -85,10 +85,7 @@ export default function RecipientInfoPage() {
       setError('電話番号を入力してください')
       return false
     }
-    if (!recipientInfo.email.trim()) {
-      setError('メールアドレスを入力してください')
-      return false
-    }
+
     if (!recipientInfo.countryCode) {
       setError('国を選択してください')
       return false
@@ -173,7 +170,7 @@ export default function RecipientInfoPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="contactName">担当者名 *</Label>
+                        <Label htmlFor="contactName">担当者名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="contactName"
                           name="contactName"
@@ -207,7 +204,7 @@ export default function RecipientInfoPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phoneNumber">電話番号 *</Label>
+                        <Label htmlFor="phoneNumber">電話番号 <span className="text-red-500">*</span></Label>
                         <Input
                           id="phoneNumber"
                           name="phoneNumber"
@@ -220,7 +217,7 @@ export default function RecipientInfoPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">メールアドレス *</Label>
+                      <Label htmlFor="email">メールアドレス</Label>
                       <Input
                         id="email"
                         name="email"
@@ -228,7 +225,6 @@ export default function RecipientInfoPage() {
                         value={recipientInfo.email}
                         onChange={handleInputChange}
                         placeholder="example@email.com"
-                        required
                       />
                     </div>
                   </div>
@@ -239,7 +235,7 @@ export default function RecipientInfoPage() {
 
                     {/* 国選択 */}
                     <div className="space-y-2">
-                      <Label htmlFor="countryCode">国 *</Label>
+                      <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
                       <Select value={recipientInfo.countryCode} onValueChange={handleCountryChange}>
                         <SelectTrigger>
                           <SelectValue placeholder="国を選択してください" />
@@ -257,7 +253,7 @@ export default function RecipientInfoPage() {
                     {/* 州・県選択（USまたはCAの場合のみ表示） */}
                     {(recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA') && (
                       <div className="space-y-2">
-                        <Label htmlFor="stateCode">州・県 *</Label>
+                        <Label htmlFor="stateCode">州・県 <span className="text-red-500">*</span></Label>
                         <Select value={recipientInfo.stateCode} onValueChange={(value) => updateRecipientInfo('stateCode', value)}>
                           <SelectTrigger>
                             <SelectValue placeholder="州・県を選択" />
@@ -300,7 +296,7 @@ export default function RecipientInfoPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cityName">都市名 *</Label>
+                        <Label htmlFor="cityName">都市名 <span className="text-red-500">*</span></Label>
                         <Input
                           id="cityName"
                           name="cityName"
@@ -313,7 +309,7 @@ export default function RecipientInfoPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address1">住所1 *</Label>
+                      <Label htmlFor="address1">住所1 <span className="text-red-500">*</span></Label>
                       <Input
                         id="address1"
                         name="address1"

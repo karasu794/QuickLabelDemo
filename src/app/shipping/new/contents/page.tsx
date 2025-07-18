@@ -78,7 +78,7 @@ export default function ContentsPage() {
     
     if (validateForm()) {
       router.push('/shipping/new/review')
-    }
+  }
   }
 
   const handlePrevious = () => {
@@ -103,7 +103,7 @@ export default function ContentsPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">内容品情報</h1>
             <p className="text-gray-600">送る商品の詳細情報を入力してください</p>
-          </div>
+        </div>
 
           {/* ハイドレーション待機ローディング */}
           {isLoading && (
@@ -133,19 +133,19 @@ export default function ContentsPage() {
                   <div key={index} className="border rounded-lg p-4 space-y-4">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold">商品 {index + 1}</h3>
-                      {items.length > 1 && (
+                {items.length > 1 && (
                         <Button
-                          type="button"
+                    type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => handleRemoveItem(index)}
                           className="text-red-600 hover:text-red-700"
-                        >
+                  >
                           <X className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-
+                )}
+              </div>
+              
                     <div className="grid grid-cols-1 gap-4">
                       {/* HSコード自動入力コンポーネント */}
                       {isHSCodeAvailable ? (
@@ -162,24 +162,24 @@ export default function ContentsPage() {
                       ) : (
                         <div className="space-y-4">
                           {/* 通常の入力フィールド（HSコード機能無効時） */}
-                          <div className="space-y-2">
-                            <Label htmlFor={`description-${index}`}>商品説明 *</Label>
-                            <textarea
+                <div className="space-y-2">
+                            <Label htmlFor={`description-${index}`}>商品説明 <span className="text-red-500">*</span></Label>
+                  <textarea
                               id={`description-${index}`}
-                              value={item.description}
+                    value={item.description}
                               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleItemChange(index, 'description', e.target.value)}
                               placeholder="商品の詳細な説明を入力してください"
                               rows={3}
-                              required
+                    required
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                          </div>
-                          <div className="space-y-2">
+                  />
+                </div>
+                <div className="space-y-2">
                             <Label htmlFor={`hsCode-${index}`}>HSコード</Label>
                             <Input
                               id={`hsCode-${index}`}
-                              value={item.hsCode}
-                              onChange={(e) => handleItemChange(index, 'hsCode', e.target.value)}
+                    value={item.hsCode}
+                    onChange={(e) => handleItemChange(index, 'hsCode', e.target.value)}
                               placeholder="例: 1234.56.78"
                             />
                           </div>
@@ -191,13 +191,13 @@ export default function ContentsPage() {
                           </div>
                         </div>
                       )}
-                    </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`countryOfManufacture-${index}`}>製造国 *</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                        <Label htmlFor={`countryOfManufacture-${index}`}>製造国 <span className="text-red-500">*</span></Label>
                         <Select 
-                          value={item.countryOfManufacture} 
+                      value={item.countryOfManufacture}
                           onValueChange={(value) => handleItemChange(index, 'countryOfManufacture', value)}
                         >
                           <SelectTrigger>
@@ -208,47 +208,47 @@ export default function ContentsPage() {
                               <SelectItem key={country.value} value={country.value}>
                                 {country.label}
                               </SelectItem>
-                            ))}
+                      ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`quantity-${index}`}>数量 *</Label>
+                  </div>
+                  <div className="space-y-2">
+                        <Label htmlFor={`quantity-${index}`}>数量 <span className="text-red-500">*</span></Label>
                         <Input
                           id={`quantity-${index}`}
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                          required
-                        />
-                      </div>
-                    </div>
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                      required
+                    />
+                  </div>
+                </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`weight-${index}`}>重量 (kg) *</Label>
+                  <div className="space-y-2">
+                        <Label htmlFor={`weight-${index}`}>重量 (kg) <span className="text-red-500">*</span></Label>
                         <Input
                           id={`weight-${index}`}
-                          type="number"
-                          step="0.1"
-                          min="0.1"
-                          value={item.weight}
-                          onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      value={item.weight}
+                      onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`unitPrice-${index}`}>単価 (JPY) *</Label>
+                        <Label htmlFor={`unitPrice-${index}`}>単価 (JPY) <span className="text-red-500">*</span></Label>
                         <Input
                           id={`unitPrice-${index}`}
                           type="number"
                           min="0"
                           value={item.unitPrice}
                           onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          required
-                        />
-                      </div>
+                      required
+                    />
+                  </div>
                       <div className="space-y-2">
                         <Label htmlFor={`currency-${index}`}>通貨</Label>
                         <Select 
@@ -264,21 +264,21 @@ export default function ContentsPage() {
                             <SelectItem value="EUR">EUR</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    </div>
+                </div>
+              </div>
 
                     <div className="text-right text-sm text-gray-600">
                       合計価格: {(item.unitPrice * item.quantity).toLocaleString()} {item.currency}
                     </div>
-                  </div>
-                ))}
+            </div>
+          ))}
 
                 <Button
-                  type="button"
+              type="button"
                   variant="outline"
                   onClick={handleAddItem}
                   className="w-full"
-                >
+            >
                   <Plus className="h-4 w-4 mr-2" />
                   商品を追加
                 </Button>
@@ -290,9 +290,9 @@ export default function ContentsPage() {
                     </div>
                     <div>
                       <span className="font-medium">総価格:</span> {getTotalValue().toLocaleString()} JPY
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
+          </div>
 
                 {error && (
                   <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -308,8 +308,8 @@ export default function ContentsPage() {
                   <Button type="submit">
                     次へ
                   </Button>
-                </div>
-              </form>
+          </div>
+        </form>
             </CardContent>
           </Card>
           )}

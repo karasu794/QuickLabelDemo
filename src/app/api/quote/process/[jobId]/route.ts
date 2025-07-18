@@ -171,7 +171,8 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
     shipperAddress.postalCode = quoteParams.originPostalCode;
   }
   
-  if (quoteParams.originStateCode) {
+  // 州コードはUS、CA、PRの場合のみ設定
+  if (quoteParams.originStateCode && ['US', 'CA', 'PR'].includes(quoteParams.originCountry)) {
     shipperAddress.stateOrProvinceCode = quoteParams.originStateCode;
   }
   
@@ -196,7 +197,8 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
     recipientAddress.postalCode = '00000';
   }
   
-  if (quoteParams.destinationStateCode) {
+  // 州コードはUS、CA、PRの場合のみ設定
+  if (quoteParams.destinationStateCode && ['US', 'CA', 'PR'].includes(quoteParams.destinationCountry)) {
     recipientAddress.stateOrProvinceCode = quoteParams.destinationStateCode;
   }
   

@@ -8,6 +8,7 @@ import { Badge } from "./ui/badge"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion"
 import { Clock, Package, Truck, Calendar, ChevronRight } from "lucide-react"
 import { useShippingFormStore, type QuoteToShippingParams } from "@/store/shippingFormStore"
+import type { Package as QuotePackage } from "@/components/QuoteFormComponent"
 
 /**
  * FedExの見積もり結果を表示するコンポーネント
@@ -78,6 +79,8 @@ interface FedExQuoteResultsProps {
   isUserLoggedIn?: boolean
   /** 見積もりフォームの情報 */
   quoteParams?: QuoteToShippingParams
+  /** 見積もりフォームの荷物情報 */
+  packages?: QuotePackage[]
 }
 
 export default function FedExQuoteResults({
@@ -85,7 +88,8 @@ export default function FedExQuoteResults({
   isLoading,
   error,
   isUserLoggedIn = false,
-  quoteParams
+  quoteParams,
+  packages
 }: FedExQuoteResultsProps) {
   const router = useRouter()
   const setSelectedRate = useShippingFormStore((state) => state.setSelectedRate)
@@ -220,9 +224,10 @@ export default function FedExQuoteResults({
       serviceType: rate.serviceType
     })
     
-    // 見積もりフォームの情報を送り状フォームに変換・保存
+    // 見積もりフォームの情報（住所・荷物）を送り状フォームに変換・保存
     if (quoteParams) {
-      setInitialShippingInfoFromQuote(quoteParams)
+      console.log('💾 Saving quote data to store:', { quoteParams, packages })
+      setInitialShippingInfoFromQuote(quoteParams, packages)
     }
     
     // 次のページに遷移
