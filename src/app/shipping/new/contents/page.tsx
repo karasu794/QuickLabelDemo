@@ -100,7 +100,7 @@ export default function ContentsPage() {
   return (
     <AuthGuard>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">内容品情報</h1>
             <p className="text-gray-600">送る商品の詳細情報を入力してください</p>

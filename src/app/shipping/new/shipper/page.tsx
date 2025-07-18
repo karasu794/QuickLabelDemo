@@ -268,6 +268,17 @@ export default function ShipperInfoPage() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
 
+                    {/* 住所自動入力 */}
+                    <div className="space-y-2">
+                      <Label>住所検索</Label>
+                      <GooglePlaceAutocomplete
+                        value={addressInput}
+                        onChange={handleAddressInputChange}
+                        onPlaceSelect={handleAddressSelect}
+                        placeholder="住所を入力すると自動補完されます"
+                      />
+                    </div>
+
                     {/* 国選択 */}
                     <div className="space-y-2">
                       <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
@@ -299,17 +310,6 @@ export default function ShipperInfoPage() {
                         </Select>
                       </div>
                     )}
-
-                    {/* 住所自動入力 */}
-                    <div className="space-y-2">
-                      <Label>住所検索</Label>
-                      <GooglePlaceAutocomplete
-                        value={addressInput}
-                        onChange={handleAddressInputChange}
-                        onPlaceSelect={handleAddressSelect}
-                        placeholder="住所を入力すると自動補完されます"
-                      />
-                    </div>
 
                     {/* 詳細住所入力 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

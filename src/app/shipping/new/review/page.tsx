@@ -5,7 +5,8 @@ import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
 import SquarePaymentForm from '@/components/SquarePaymentForm'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 
 export default function ReviewPage() {
@@ -151,12 +152,12 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">最終確認</h1>
-        <p className="text-gray-600">以下の内容をご確認の上、決済にお進みください</p>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">最終確認</h1>
+          <p className="text-gray-600">以下の内容をご確認の上、決済にお進みください</p>
+        </div>
 
       {/* ハイドレーション待機ローディング */}
       {isLoading && (
@@ -175,20 +176,22 @@ export default function ReviewPage() {
 
       <div className="space-y-6">
         {/* 荷送人情報 */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="flex flex-row items-center justify-between space-y-0 p-6 pb-4">
-            <h2 className="text-xl font-semibold">荷送人情報</h2>
-            <Link
-              href="/shipping/new/shipper"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              編集
-            </Link>
-          </div>
-          <div className="p-6 pt-0 space-y-3">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>荷送人情報</CardTitle>
+              <Link
+                href="/shipping/new/shipper"
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                編集
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">会社名</p>
@@ -215,24 +218,26 @@ export default function ReviewPage() {
                 {shipperInfo.address2 && ` ${shipperInfo.address2}`}
               </p>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* 荷受人情報 */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="flex flex-row items-center justify-between space-y-0 p-6 pb-4">
-            <h2 className="text-xl font-semibold">荷受人情報</h2>
-            <Link
-              href="/shipping/new/recipient"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              編集
-            </Link>
-          </div>
-          <div className="p-6 pt-0 space-y-3">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>荷受人情報</CardTitle>
+              <Link
+                href="/shipping/new/recipient"
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                編集
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">会社名</p>
@@ -269,8 +274,8 @@ export default function ReviewPage() {
                 {recipientInfo.address2 && ` ${recipientInfo.address2}`}
               </p>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* 荷物の詳細 */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -529,17 +534,14 @@ export default function ReviewPage() {
         </div>
 
         {/* Navigation */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6">
-          <button
-            type="button"
-            onClick={handlePrevious}
-            className="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent rounded-md transition-colors duration-200"
-          >
-            ← 前へ
-          </button>
+        <div className="flex justify-between pt-6">
+          <Button type="button" variant="outline" onClick={handlePrevious}>
+            戻る
+          </Button>
         </div>
-      </div>
+              </div>
       )}
+      </div>
     </div>
   )
 }
