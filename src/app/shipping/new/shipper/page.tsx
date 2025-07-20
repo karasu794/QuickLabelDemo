@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useShipperInfo, useWaitForHydration } from '@/store/shippingFormStore'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
-import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions } from '@/lib/data/locations'
+import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions, getPrefectureFromPostalCode } from '@/lib/data/locations'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,27 +14,113 @@ import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Building2, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 
+// ストアの値から表示用住所を構築する関数
+const buildDisplayAddress = (shipperInfo: any) => {
+  console.log('🏗️ buildDisplayAddress called with:', shipperInfo);
+  
+  // stateCodeの状態をチェック
+  if (shipperInfo?.stateCode) {
+    console.log('✅ stateCode found:', shipperInfo.stateCode);
+  } else {
+    console.log('❌ stateCode not found or empty');
+  }
+  
+  const addressParts = [];
+  
+  if (shipperInfo?.address1) {
+    console.log('✅ address1 found:', shipperInfo.address1);
+    addressParts.push(shipperInfo.address1);
+  } else {
+    console.log('❌ address1 not found or empty');
+  }
+  
+  if (shipperInfo?.cityName) {
+    console.log('✅ cityName found:', shipperInfo.cityName);
+    addressParts.push(shipperInfo.cityName);
+  } else {
+    console.log('❌ cityName not found or empty');
+  }
+  
+  if (shipperInfo?.postalCode) {
+    console.log('✅ postalCode found:', shipperInfo.postalCode);
+    addressParts.push(shipperInfo.postalCode);
+  } else {
+    console.log('❌ postalCode not found or empty');
+  }
+  
+  const result = addressParts.join(', ');
+  console.log('🏗️ buildDisplayAddress result:', result);
+  return result;
+};
+
 export default function ShipperInfoPage() {
   const router = useRouter()
   const { isLoading, isReady } = useWaitForHydration()
   const { shipperInfo, updateShipperInfo } = useShipperInfo()
+  
+  console.log('🔄 ShipperInfoPage render with shipperInfo:', shipperInfo);
+  
+  // 初期化時にストアから表示用住所を構築
+  const [addressInput, setAddressInput] = useState(() => {
+    const initialAddress = buildDisplayAddress(shipperInfo);
+    console.log('🎯 Initial addressInput set to:', initialAddress);
+    return initialAddress;
+  })
+  const [isAddressSelected, setIsAddressSelected] = useState(() => {
+    const hasAddress = !!(shipperInfo?.address1 || shipperInfo?.cityName);
+    console.log('🎯 Initial isAddressSelected set to:', hasAddress);
+    return hasAddress;
+  })
   const [error, setError] = useState('')
-  const [addressInput, setAddressInput] = useState('')
-  const [isAddressSelected, setIsAddressSelected] = useState(false)
-  const [isInitialized, setIsInitialized] = useState(false)
+  
+  // ハイドレーション完了後に住所フィールドを更新
+  useEffect(() => {
+    if (isReady && shipperInfo) {
+      console.log('🔄 Hydration complete, updating address fields with:', shipperInfo);
+      const newAddress = buildDisplayAddress(shipperInfo);
+      const hasAddress = !!(shipperInfo.address1 || shipperInfo.cityName);
+      
+      if (newAddress && newAddress !== addressInput) {
+        console.log('🔄 Updating addressInput from', addressInput, 'to', newAddress);
+        setAddressInput(newAddress);
+        setIsAddressSelected(hasAddress);
+      }
+    }
+  }, [isReady, shipperInfo.address1, shipperInfo.cityName, shipperInfo.postalCode]);
+
+  // stateCodeが空で郵便番号がある場合、郵便番号から都道府県を自動判定
+  useEffect(() => {
+    if (isReady && shipperInfo && shipperInfo.countryCode === 'JP') {
+      console.log('🏢 StateCode auto-detection check:', {
+        stateCode: shipperInfo.stateCode,
+        postalCode: shipperInfo.postalCode
+      });
+      
+      if (!shipperInfo.stateCode && shipperInfo.postalCode) {
+        const detectedStateCode = getPrefectureFromPostalCode(shipperInfo.postalCode);
+        if (detectedStateCode) {
+          console.log('🏢 Auto-detected stateCode from postal code:', detectedStateCode);
+          updateShipperInfo('stateCode', detectedStateCode);
+        } else {
+          console.log('⚠️ Could not detect stateCode from postal code:', shipperInfo.postalCode);
+        }
+      }
+    }
+  }, [isReady, shipperInfo?.stateCode, shipperInfo?.postalCode, shipperInfo?.countryCode]);
   
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
   const countryOptions = getCountryOptions()
 
   // 住所入力に変更があった場合、選択状態をリセット
   const handleAddressInputChange = (value: string) => {
+    console.log('📝 Address input changed to:', value);
     setAddressInput(value)
     setIsAddressSelected(false)
   }
 
   // Google Places APIから住所が選択された場合
   const handleAddressSelect = (data: ParsedAddress) => {
-    console.log('Selected address data:', data)
+    console.log('📍 Address selected:', data)
     setAddressInput(data.fullAddress)
     setIsAddressSelected(true)
     
@@ -112,61 +198,6 @@ export default function ShipperInfoPage() {
     }
   }
 
-  // コンポーネントマウント時およびストアデータ変更時の初期化
-  useEffect(() => {
-    // 既に初期化済みで、明示的にリセットが必要でない場合はスキップ
-    if (isInitialized && addressInput) return
-
-    console.log('🔄 Initializing shipper page with enhanced store data:', {
-      address1: shipperInfo.address1, // 英語の番地・通り名（API用）
-      cityName: shipperInfo.cityName, // 英語化された都市名
-      postalCode: shipperInfo.postalCode, // 英語化された郵便番号
-      countryCode: shipperInfo.countryCode,
-      stateCode: shipperInfo.stateCode
-    })
-    
-    // 見積もりから遷移してきた場合の住所初期化
-    // 日本語表示用の住所は別途保持されているため、ここでは英語データから住所を構築
-    if (shipperInfo.address1 || shipperInfo.cityName) {
-      const addressParts = [];
-      
-      // 英語の番地・通り名（API用データ）
-      if (shipperInfo.address1) {
-        addressParts.push(shipperInfo.address1);
-      }
-      
-      // 都市名と郵便番号
-      if (shipperInfo.cityName) {
-        addressParts.push(shipperInfo.cityName);
-      }
-      
-      if (shipperInfo.postalCode) {
-        addressParts.push(shipperInfo.postalCode);
-      }
-      
-      const constructedAddress = addressParts.join(', ');
-      
-      if (constructedAddress) {
-        console.log('📍 Setting initial address from enhanced store data:', constructedAddress)
-        console.log('🔧 Address construction details:', {
-          street: shipperInfo.address1,
-          city: shipperInfo.cityName,
-          postal: shipperInfo.postalCode,
-          result: constructedAddress
-        })
-        setAddressInput(constructedAddress)
-        setIsAddressSelected(true)
-        setIsInitialized(true)
-      }
-    }
-    
-    // ストアにデータがない場合も初期化完了とマーク
-    if (!isInitialized) {
-      console.log('✅ Shipper page initialization completed (no store data)')
-      setIsInitialized(true)
-    }
-  }, [shipperInfo.address1, shipperInfo.cityName, shipperInfo.postalCode, shipperInfo.countryCode, shipperInfo.stateCode, isInitialized, addressInput])
-
   return (
     <AuthGuard requireAuth={false}>
       <div className="container mx-auto px-4 py-8">
@@ -176,7 +207,7 @@ export default function ShipperInfoPage() {
               <p className="text-gray-600">荷送人の詳細情報を入力してください</p>
             </div>
 
-            {/* ハイドレーション待機ローディング（最優先） */}
+            {/* ハイドレーション待機ローディング */}
             {isLoading && (
               <Card>
                 <CardContent className="p-12">
@@ -188,7 +219,7 @@ export default function ShipperInfoPage() {
               </Card>
             )}
 
-            {/* フォーム本体（ハイドレーション完了後に表示） */}
+            {/* フォーム本体 */}
             {isReady && (
             <Card>
               <CardHeader className="bg-blue-600 text-white">

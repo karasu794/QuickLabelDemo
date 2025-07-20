@@ -20,6 +20,86 @@ function SuccessContent() {
   const { isLoading, isReady } = useWaitForHydration()
   const [shipmentData, setShipmentData] = useState<ShipmentResult | null>(null)
 
+  // 📄 送り状PDFの直接印刷機能
+  const handlePrintLabel = async () => {
+    if (!shipmentData?.labelUrl) {
+      console.error('ラベルURLが見つかりません')
+      return
+    }
+
+    try {
+      console.log('📄 送り状PDFの印刷を開始...')
+      
+      // 隠しiframeを動的に生成
+      const iframe = document.createElement('iframe')
+      iframe.style.display = 'none'
+      iframe.style.position = 'absolute'
+      iframe.style.left = '-9999px'
+      
+      // PDFのURLを設定（認証が必要なため、APIエンドポイント経由、印刷用）
+      const pdfUrl = `/api/download-label?url=${encodeURIComponent(shipmentData.labelUrl)}&action=print`
+      iframe.src = pdfUrl
+      
+      // iframeをbodyに追加
+      document.body.appendChild(iframe)
+      
+      // PDFの読み込み完了を監視
+      iframe.onload = () => {
+        try {
+          console.log('✅ PDFの読み込み完了、印刷ダイアログを表示...')
+          
+          if (iframe.contentWindow) {
+            // 印刷前後のイベントを監視
+            const cleanupIframe = () => {
+              if (iframe.parentNode) {
+                document.body.removeChild(iframe)
+                console.log('🧹 iframeをクリーンアップしました')
+              }
+            }
+
+            // 印刷ダイアログが閉じられた時のイベントリスナー
+            iframe.contentWindow.addEventListener('afterprint', () => {
+              console.log('📄 印刷ダイアログが閉じられました')
+              cleanupIframe()
+            })
+
+            // 印刷がキャンセルされた場合のフォールバック（10秒後に強制クリーンアップ）
+            const fallbackCleanup = setTimeout(() => {
+              console.log('⏰ タイムアウト: iframeを強制クリーンアップします')
+              cleanupIframe()
+            }, 10000)
+
+            // afterprintイベントでfallbackもクリア
+            iframe.contentWindow.addEventListener('afterprint', () => {
+              clearTimeout(fallbackCleanup)
+            })
+
+            // 印刷ダイアログを表示
+            iframe.contentWindow.print()
+          }
+          
+        } catch (error) {
+          console.error('❌ 印刷処理エラー:', error)
+          // エラーが発生してもiframeは削除
+          if (iframe.parentNode) {
+            document.body.removeChild(iframe)
+          }
+        }
+      }
+      
+      // エラーハンドリング
+      iframe.onerror = () => {
+        console.error('❌ PDFの読み込みに失敗しました')
+        if (iframe.parentNode) {
+          document.body.removeChild(iframe)
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ 印刷機能でエラーが発生しました:', error)
+    }
+  }
+
   useEffect(() => {
     // URLパラメータから送り状データを取得
     const trackingNumber = searchParams.get('trackingNumber')
@@ -135,7 +215,7 @@ function SuccessContent() {
                   <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                       <a
-                        href={shipmentData.labelUrl}
+                        href={`/api/download-label?url=${encodeURIComponent(shipmentData.labelUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1"
@@ -146,7 +226,7 @@ function SuccessContent() {
                       </a>
                       <Button
                         variant="outline"
-                        onClick={() => window.print()}
+                        onClick={handlePrintLabel}
                         className="flex-1"
                       >
                         印刷

@@ -587,6 +587,122 @@ export const convertEnglishPrefectureToJapanese = (englishCode: string): string 
   return englishToJapanesePrefectureMap[englishCode] || englishCode;
 };
 
+// 郵便番号から都道府県を判定する関数
+export function getPrefectureFromPostalCode(postalCode: string): string {
+  if (!postalCode) return '';
+  
+  // 郵便番号の数字部分を抽出（ハイフンなどを除去）
+  const numericCode = postalCode.replace(/[^\d]/g, '');
+  if (numericCode.length < 3) return '';
+  
+  // 上3桁で都道府県を判定
+  const prefix = numericCode.substring(0, 3);
+  const code = parseInt(prefix, 10);
+  
+  // 主要都道府県の郵便番号範囲
+  if (code >= 10 && code <= 20) return 'Tokyo'; // 東京都
+  if (code >= 100 && code <= 112) return 'Tokyo'; // 東京都
+  if (code >= 150 && code <= 155) return 'Tokyo'; // 東京都
+  if (code >= 190 && code <= 202) return 'Tokyo'; // 東京都
+  
+  if (code >= 210 && code <= 215) return 'Kanagawa'; // 神奈川県
+  if (code >= 220 && code <= 259) return 'Kanagawa'; // 神奈川県
+  
+  if (code >= 260 && code <= 299) return 'Chiba'; // 千葉県
+  
+  if (code >= 330 && code <= 369) return 'Saitama'; // 埼玉県
+  
+  if (code >= 300 && code <= 329) return 'Ibaraki'; // 茨城県
+  
+  if (code >= 370 && code <= 379) return 'Gunma'; // 群馬県
+  
+  if (code >= 320 && code <= 329) return 'Tochigi'; // 栃木県
+  
+  if (code >= 400 && code <= 409) return 'Yamanashi'; // 山梨県
+  
+  if (code >= 380 && code <= 399) return 'Nagano'; // 長野県
+  
+  if (code >= 410 && code <= 439) return 'Shizuoka'; // 静岡県
+  
+  if (code >= 440 && code <= 449) return 'Aichi'; // 愛知県 ★豊川市(442)はここ
+  if (code >= 450 && code <= 499) return 'Aichi'; // 愛知県
+  
+  if (code >= 500 && code <= 509) return 'Gifu'; // 岐阜県
+  
+  if (code >= 510 && code <= 529) return 'Mie'; // 三重県
+  
+  if (code >= 520 && code <= 529) return 'Shiga'; // 滋賀県
+  
+  if (code >= 600 && code <= 619) return 'Kyoto'; // 京都府
+  
+  if (code >= 530 && code <= 599) return 'Osaka'; // 大阪府
+  
+  if (code >= 650 && code <= 679) return 'Hyogo'; // 兵庫県
+  
+  if (code >= 630 && code <= 649) return 'Nara'; // 奈良県
+  
+  if (code >= 640 && code <= 649) return 'Wakayama'; // 和歌山県
+  
+  if (code >= 680 && code <= 689) return 'Tottori'; // 鳥取県
+  
+  if (code >= 690 && code <= 699) return 'Shimane'; // 島根県
+  
+  if (code >= 700 && code <= 719) return 'Okayama'; // 岡山県
+  
+  if (code >= 720 && code <= 739) return 'Hiroshima'; // 広島県
+  
+  if (code >= 740 && code <= 759) return 'Yamaguchi'; // 山口県
+  
+  if (code >= 770 && code <= 779) return 'Tokushima'; // 徳島県
+  
+  if (code >= 760 && code <= 769) return 'Kagawa'; // 香川県
+  
+  if (code >= 790 && code <= 799) return 'Ehime'; // 愛媛県
+  
+  if (code >= 780 && code <= 789) return 'Kochi'; // 高知県
+  
+  if (code >= 800 && code <= 819) return 'Fukuoka'; // 福岡県
+  
+  if (code >= 840 && code <= 849) return 'Saga'; // 佐賀県
+  
+  if (code >= 850 && code <= 859) return 'Nagasaki'; // 長崎県
+  
+  if (code >= 860 && code <= 869) return 'Kumamoto'; // 熊本県
+  
+  if (code >= 870 && code <= 879) return 'Oita'; // 大分県
+  
+  if (code >= 880 && code <= 889) return 'Miyazaki'; // 宮崎県
+  
+  if (code >= 890 && code <= 899) return 'Kagoshima'; // 鹿児島県
+  
+  if (code >= 900 && code <= 907) return 'Okinawa'; // 沖縄県
+  
+  if (code >= 10 && code <= 97) return 'Hokkaido'; // 北海道
+  
+  if (code >= 980 && code <= 999) return 'Aomori'; // 青森県
+  if (code >= 30 && code <= 39) return 'Aomori'; // 青森県
+  
+  if (code >= 20 && code <= 29) return 'Iwate'; // 岩手県
+  
+  if (code >= 980 && code <= 989) return 'Miyagi'; // 宮城県
+  
+  if (code >= 10 && code <= 19) return 'Akita'; // 秋田県
+  
+  if (code >= 990 && code <= 999) return 'Yamagata'; // 山形県
+  
+  if (code >= 960 && code <= 979) return 'Fukushima'; // 福島県
+  
+  if (code >= 940 && code <= 959) return 'Niigata'; // 新潟県
+  
+  if (code >= 930 && code <= 939) return 'Toyama'; // 富山県
+  
+  if (code >= 920 && code <= 929) return 'Ishikawa'; // 石川県
+  
+  if (code >= 910 && code <= 919) return 'Fukui'; // 福井県
+  
+  return ''; // 該当なし
+}
+
 // ユーティリティ関数
 export const findLocationByCode = (code: string, useEnglish: boolean = false): LocationData | undefined => {
   const regions = useEnglish ? allNorthAmericanRegionsEnglish : allNorthAmericanRegions;

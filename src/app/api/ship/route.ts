@@ -87,6 +87,7 @@ interface ShipmentRequest {
     cityName: string
     address1: string
     address2?: string
+    isResidential: boolean
   }
   packages: Array<{
     weight: string
@@ -94,6 +95,7 @@ interface ShipmentRequest {
     length?: string
     width?: string
     height?: string
+    declaredValue?: string
   }>
   items: Array<{
     description: string
@@ -202,8 +204,17 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
     console.log('🏘️ 国内発送 - 輸出用アカウントを使用')
   }
 
-  // 荷物の総重量計算
-  const totalWeight = data.packages.reduce((sum, pkg) => sum + parseFloat(pkg.weight), 0)
+  // ★★★ 重量整合性修正: 内容品の重量合計を正として使用 ★★★
+  // 1. 内容品の重量合計を算出する
+  const totalCommodityWeight = data.items.reduce((sum, item) => sum + (item.weight || 0), 0)
+  
+  console.log('⚖️ 重量整合性チェック:')
+  console.log(`  内容品の重量合計: ${totalCommodityWeight} KG`)
+  console.log(`  荷物入力重量: ${data.packages.reduce((sum, pkg) => sum + parseFloat(pkg.weight), 0)} KG`)
+  console.log(`  → FedX送信重量: ${totalCommodityWeight} KG (内容品重量を採用)`)
+  
+  // 荷物の総重量として内容品の重量合計を使用
+  const totalWeight = totalCommodityWeight
 
   // 商品の総価値計算（contentsがある場合はそちらを優先）
   const totalValue = data.contents && data.contents.length > 0
@@ -218,13 +229,21 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
     serviceType = 'FEDEX_GROUND'
   }
 
+  // ★★★ 電話番号の正規化（数字以外を削除）★★★
+  const sanitizedShipperPhone = data.shipperInfo.phoneNumber.replace(/\D/g, '');
+  const sanitizedRecipientPhone = data.recipientInfo.phoneNumber.replace(/\D/g, '');
+  
+  console.log('📞 電話番号正規化:')
+  console.log(`  荷送人: "${data.shipperInfo.phoneNumber}" → "${sanitizedShipperPhone}"`)
+  console.log(`  荷受人: "${data.recipientInfo.phoneNumber}" → "${sanitizedRecipientPhone}"`)
+
   // 基本的な送り状リクエスト構造
   const baseRequest = {
     requestedShipment: {
       shipper: {
         contact: {
           personName: data.shipperInfo.contactName,
-          phoneNumber: data.shipperInfo.phoneNumber,
+          phoneNumber: sanitizedShipperPhone, // 修正後の変数を使用
           companyName: data.shipperInfo.companyName,
         },
         address: {
@@ -242,7 +261,7 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
         {
           contact: {
             personName: data.recipientInfo.contactName,
-            phoneNumber: data.recipientInfo.phoneNumber,
+            phoneNumber: sanitizedRecipientPhone, // 修正後の変数を使用
             emailAddress: data.recipientInfo.email,
             companyName: data.recipientInfo.companyName,
           },
@@ -255,12 +274,13 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
             ...(data.recipientInfo.stateCode && ['US', 'CA', 'PR'].includes(data.recipientInfo.countryCode) && { stateOrProvinceCode: data.recipientInfo.stateCode }),
             postalCode: data.recipientInfo.postalCode,
             countryCode: data.recipientInfo.countryCode,
+            residential: data.recipientInfo.isResidential,
           },
         },
       ],
       shipDatestamp: new Date().toISOString().split('T')[0], // YYYY-MM-DD形式
       serviceType: serviceType,
-      packagingType: data.packages[0]?.type === 'YOUR_PACKAGING' ? 'YOUR_PACKAGING' : 'FEDEX_BOX',
+      packagingType: data.packages[0]?.type || 'YOUR_PACKAGING',
       pickupType: 'USE_SCHEDULED_PICKUP',
       blockInsightVisibility: false,
       shippingChargesPayment: {
@@ -278,7 +298,8 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
         groupPackageCount: 1,
         weight: {
           units: 'KG',
-          value: parseFloat(pkg.weight),
+          // 2. 算出した合計重量で上書きする
+          value: totalCommodityWeight,
         },
         ...(pkg.type === 'YOUR_PACKAGING' && pkg.length && pkg.width && pkg.height && {
           dimensions: {
@@ -287,6 +308,22 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
             height: parseInt(pkg.height),
             units: 'CM',
           }
+        }),
+        // 申告価額が設定されている場合のみ追加（JPYからUSDに変換）
+        ...(pkg.declaredValue && Number(pkg.declaredValue) > 0 && {
+          declaredValue: (() => {
+            // JPYからUSDへの変換（固定レート）
+            const JPY_TO_USD_RATE = 0.0067;
+            const declaredValueJPY = Number(pkg.declaredValue);
+            const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
+            
+            console.log(`📦 送り状: 荷物の申告価額 ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
+            
+            return {
+              amount: parseFloat(declaredValueUSD.toFixed(2)),
+              currency: 'USD'
+            };
+          })()
         }),
       })),
       totalWeight: totalWeight,
@@ -298,99 +335,58 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
 
   // 国際配送の場合は税関情報を追加
   if (isExport || isImport) {
-    const commoditiesData = data.contents && data.contents.length > 0 ? data.contents : data.items
-    
-    // 通貨コードを大文字ISO 4217形式に統一する関数
-    const normalizeCurrency = (currency?: string): string => {
-      if (!currency) return 'USD'
-      const upperCurrency = currency.toUpperCase().trim()
-      
-      // FedXの国際配送では、JPYの代わりにUSDを使用
-      if (upperCurrency === 'JPY') {
-        return 'USD'
-      }
-      
-      return upperCurrency
-    }
-    
-    // JPYからUSDへの変換関数（簡易的な固定レート）
+    // JPYからUSDへの変換関数（固定レート）
     const convertJPYtoUSD = (amountJPY: number): number => {
-      const JPY_TO_USD_RATE = 0.0067 // 1 JPY = 0.0067 USD (概算)
-      const convertedAmount = amountJPY * JPY_TO_USD_RATE
-      
+      const JPY_TO_USD_RATE = 0.0067; // 最新のレートに適宜更新してください
+      const convertedAmount = amountJPY * JPY_TO_USD_RATE;
       // FedXの最小金額制限を考慮（$1.00未満の場合は$1.00とする）
-      return Math.max(convertedAmount, 1.00)
-    }
+      return Math.max(convertedAmount, 1.00);
+    };
+
+    const commoditiesData = data.items;
     
-    // 総申告価額を計算（各商品の変換後金額の合計）
-    const totalCustomsAmount = commoditiesData.reduce((sum: number, item: any) => {
-      // contentsの場合はvalue、itemsの場合はunitPrice * quantityを使用
-      const itemValue = item.value !== undefined ? item.value : (item.unitPrice * item.quantity)
-      const originalCurrency = item.currency || 'JPY'
-      
-      // JPYの場合はUSDに変換
-      const convertedValue = originalCurrency === 'JPY' || !originalCurrency
-        ? convertJPYtoUSD(itemValue)
-        : itemValue
-      
-      return sum + convertedValue
-    }, 0)
-    
-    console.log('💰 通貨変換情報:')
-    console.log(`  総申告価額: ${totalCustomsAmount.toFixed(2)} USD`)
-    console.log(`  商品数: ${commoditiesData.length}件`)
-    
+    // 総申告価額を計算（各商品の変換後USD金額の合計）
+    const totalCustomsAmountUSD = commoditiesData.reduce((sum, item) => {
+      const itemValueJPY = item.unitPrice * item.quantity;
+      return sum + convertJPYtoUSD(itemValueJPY);
+    }, 0);
+
     ;(baseRequest as any).requestedShipment.customsClearanceDetail = {
       commercialInvoice: {
-        purpose: 'SOLD',  // 商用利用として最適な発送目的を設定
+        purpose: 'SOLD',
       },
       dutiesPayment: {
         paymentType: 'RECIPIENT',
       },
       totalCustomsValue: {
-        amount: parseFloat(totalCustomsAmount.toFixed(2)),
-        currency: 'USD',
+        amount: parseFloat(totalCustomsAmountUSD.toFixed(2)),
+        currency: 'USD', // 通貨をUSDに指定
       },
-              commodities: commoditiesData.map((item: any, index: number) => {
-          const originalCurrency = item.currency || 'JPY'
-          const itemCurrency = normalizeCurrency(originalCurrency)
-          const unitPriceAmount = item.value ? item.value / item.quantity : item.unitPrice
-          const customsValueAmount = item.value || (item.unitPrice * item.quantity)
-          
-          // JPYの場合はUSDに変換
-          const convertedUnitPrice = originalCurrency === 'JPY' || !originalCurrency
-            ? convertJPYtoUSD(unitPriceAmount)
-            : unitPriceAmount
-          const convertedCustomsValue = originalCurrency === 'JPY' || !originalCurrency
-            ? convertJPYtoUSD(customsValueAmount)
-            : customsValueAmount
-          
-          console.log(`  商品${index + 1}: ${item.description}`)
-          console.log(`    元の価値: ${customsValueAmount} ${originalCurrency}`)
-          console.log(`    変換後価値: ${convertedCustomsValue.toFixed(2)} USD`)
-          console.log(`    単価: ${convertedUnitPrice.toFixed(2)} USD`)
-          
-          return {
-            description: item.description,
-            countryOfManufacture: item.countryOfOrigin || item.countryOfManufacture,
-            quantity: item.quantity,
-        quantityUnits: 'PCS',
-        unitPrice: {
-              amount: parseFloat(convertedUnitPrice.toFixed(2)),
-              currency: itemCurrency,
-        },
-        customsValue: {
-              amount: parseFloat(convertedCustomsValue.toFixed(2)),
-              currency: itemCurrency,
-        },
-        weight: {
-          units: 'KG',
-              value: item.weight,
-            },
-            ...(item.hsCode && { harmonizedCode: item.hsCode }),
-          }
-        }),
-    }
+      commodities: commoditiesData.map(item => {
+        const unitPriceUSD = convertJPYtoUSD(item.unitPrice);
+        const customsValueUSD = convertJPYtoUSD(item.unitPrice * item.quantity);
+
+        return {
+          description: item.description,
+          countryOfManufacture: item.countryOfManufacture,
+          quantity: item.quantity,
+          quantityUnits: 'PCS',
+          unitPrice: {
+            amount: parseFloat(unitPriceUSD.toFixed(2)),
+            currency: 'USD', // 通貨をUSDに指定
+          },
+          customsValue: {
+            amount: parseFloat(customsValueUSD.toFixed(2)),
+            currency: 'USD', // 通貨をUSDに指定
+          },
+          weight: {
+            units: 'KG',
+            value: item.weight,
+          },
+          ...(item.hsCode && { harmonizedCode: item.hsCode }),
+        };
+      }),
+    };
   }
 
   return baseRequest
@@ -418,12 +414,10 @@ async function validateFedExShipment(accessToken: string, data: ShipmentRequest)
     }
     
     console.log('🔍 FedX Validate Shipment API呼び出し中...')
-    console.log('Validate Request:', JSON.stringify(validateRequest, null, 2))
 
     // デバッグ用：FedXに送信するリクエスト内容をコンソールに出力
-    console.log("--- FedX API Request Body ---");
+    console.log('--- FedEx Validate Request Body ---');
     console.log(JSON.stringify(validateRequest, null, 2));
-    console.log("----------------------------");
 
     const response = await fetch(validateUrl, {
       method: 'POST',

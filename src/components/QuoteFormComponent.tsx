@@ -2,7 +2,7 @@
 
 "use client"
 
-import React, { useCallback } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
@@ -11,7 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "./ui/checkbox"
 import { Plus, X, Loader2 } from "lucide-react"
 import { GooglePlaceAutocomplete, ParsedAddress } from "./GooglePlaceAutocomplete"
-import { convertEnglishPrefectureToJapanese } from "@/lib/data/locations"
+import { getPrefectureFromPostalCode, usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
+
+// 郵便番号不要国の定義
+const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG'];
 
 //【重要】このファイルの型定義もシンプルにする
 export interface Package {
@@ -21,6 +24,7 @@ export interface Package {
   length: string
   width: string
   height: string
+  declaredValue: string
 }
 
 export interface ExtendedQuoteParams {
@@ -31,6 +35,9 @@ export interface ExtendedQuoteParams {
   originAddressInput: string
   originStreet: string
   originSelected: boolean
+  originPostalCodeMissing: boolean
+  originCityNameMissing: boolean
+  originStateCodeMissing: boolean
   destinationCountry: string
   destinationPostalCode: string
   destinationStateCode: string
@@ -38,10 +45,12 @@ export interface ExtendedQuoteParams {
   destinationAddressInput: string
   destinationStreet: string
   destinationSelected: boolean
+  destinationPostalCodeMissing: boolean
+  destinationCityNameMissing: boolean
+  destinationStateCodeMissing: boolean
   shipDate: string
   isResidential: boolean
   higherInsurance: boolean
-  declaredValue: string
 }
 
 interface QuoteFormProps {
@@ -49,6 +58,7 @@ interface QuoteFormProps {
   packages: Package[]
   isLoading: boolean
   error: string
+  packageErrors: { [key: number]: string | null }
   onQuoteParamsChange: (field: keyof ExtendedQuoteParams, value: string | boolean) => void
   onPackageChange: (id: number, field: keyof Package, value: string) => void
   onAddPackage: () => void
@@ -61,6 +71,7 @@ export default function QuoteFormComponent({
   packages,
   isLoading,
   error,
+  packageErrors,
   onQuoteParamsChange,
   onPackageChange,
   onAddPackage,
@@ -68,47 +79,53 @@ export default function QuoteFormComponent({
   onSubmit
 }: QuoteFormProps) {
 
+  // エラーがあるかどうかをチェック
+  const hasValidationErrors = Object.values(packageErrors).some(error => error !== null);
+  
+  // 🔍 State変更監視用useEffect
+  useEffect(() => {
+    console.log(`🎭 QuoteFormComponent再レンダリング:`);
+    console.log(`   originStateCode: "${quoteParams.originStateCode}"`);
+    console.log(`   destinationStateCode: "${quoteParams.destinationStateCode}"`);
+  }, [quoteParams.originStateCode, quoteParams.destinationStateCode]);
+
   // 場所が選択された際のコールバック関数
   const handlePlaceSelect = useCallback((type: 'origin' | 'destination', data: ParsedAddress) => {
-    console.log(`✅ QuoteForm: Received final parsed English data for ${type}:`, data);
-    
-    // 住所入力フィールドを先に更新（表示用の日本語住所を保持）
-    onQuoteParamsChange(`${type}AddressInput`, data.fullAddress);
-    
-    // その他のフィールドを更新
     onQuoteParamsChange(`${type}Country`, data.countryCode);
     onQuoteParamsChange(`${type}PostalCode`, data.postalCode);
-    onQuoteParamsChange(`${type}StateCode`, data.stateCode);
+    
+    // 🇯🇵 日本の場合は郵便番号から県を自動判定
+    let stateCode = data.stateCode;
+    if (data.countryCode === 'JP' && data.postalCode) {
+      const prefectureFromPostal = getPrefectureFromPostalCode(data.postalCode);
+      if (prefectureFromPostal) {
+        stateCode = prefectureFromPostal;
+        console.log(`📮 郵便番号から県を自動判定: ${data.postalCode} → ${stateCode}`);
+        
+        // 判定した県コードがjapanesePrefecturesに存在するか確認
+        const matchingPrefecture = japanesePrefectures.find(p => p.code === stateCode);
+        if (matchingPrefecture) {
+          console.log(`✅ 県選択成功: ${stateCode} (${matchingPrefecture.name})`);
+        } else {
+          console.log(`⚠️ 判定された県コード "${stateCode}" がオプションに存在しません`);
+          stateCode = ''; // 不明な場合は空にする
+        }
+      } else {
+        console.log(`⚠️ 郵便番号 "${data.postalCode}" から県を判定できませんでした`);
+        stateCode = ''; // 判定できない場合は空にする
+      }
+    }
+    
+    onQuoteParamsChange(`${type}StateCode`, stateCode);
     onQuoteParamsChange(`${type}CityName`, data.cityName);
     onQuoteParamsChange(`${type}Street`, data.street); // 英語の番地・通り名
+    onQuoteParamsChange(`${type}AddressInput`, data.fullAddress); // 表示用の日本語住所
     onQuoteParamsChange(`${type}Selected`, true);
-    
-    console.log(`🏠 QuoteForm: Enhanced data mapping for ${type}:`, {
-      addressInput: data.fullAddress,  // 追加：入力フィールド用
-      street: data.street,
-      fullAddress: data.fullAddress,
-      country: data.countryCode,
-      state: data.stateCode,
-      city: data.cityName,
-      postal: data.postalCode,
-      selected: true
-    });
-    
-    console.log(`📋 QuoteForm: Raw data received for ${type}:`, JSON.stringify(data, null, 2));
-    console.log(`🔄 QuoteForm: About to call onQuoteParamsChange for ${type} with:`, {
-      [`${type}AddressInput`]: data.fullAddress,
-      [`${type}Country`]: data.countryCode,
-      [`${type}PostalCode`]: data.postalCode,
-      [`${type}StateCode`]: data.stateCode,
-      [`${type}CityName`]: data.cityName,
-      [`${type}Street`]: data.street,
-      [`${type}Selected`]: true
-    });
+    onQuoteParamsChange(`${type}PostalCodeMissing`, !!data.postalCodeMissing); // 郵便番号不足フラグ
   }, [onQuoteParamsChange]);
   
   // 入力値が変更された際のコールバック関数
   const handleInputChange = useCallback((type: 'origin' | 'destination') => {
-      console.log(`📝 QuoteForm: Input changed for ${type}, setting ${type}Selected to false`);
       onQuoteParamsChange(`${type}Selected`, false);
   },[onQuoteParamsChange]);
 
@@ -116,7 +133,8 @@ export default function QuoteFormComponent({
   // 州/県の表示名を取得する関数
   const getStateName = (countryCode: string, stateCode: string): string => {
     if (countryCode === 'JP' && stateCode) {
-      return convertEnglishPrefectureToJapanese(stateCode);
+      const prefecture = japanesePrefectures.find(p => p.code === stateCode);
+      return prefecture ? prefecture.name : stateCode;
     }
     return stateCode; // アメリカ・カナダの場合はそのまま
   };
@@ -125,6 +143,21 @@ export default function QuoteFormComponent({
     return packages
       .reduce((total, pkg) => total + (Number(pkg.weight) || 0), 0)
       .toFixed(1)
+  }
+
+  // Get state options based on country
+  const getOriginStateOptions = () => {
+    if (quoteParams.originCountry === 'US') return usStates
+    if (quoteParams.originCountry === 'CA') return canadianProvinces
+    if (quoteParams.originCountry === 'JP') return japanesePrefectures
+    return []
+  }
+
+  const getDestinationStateOptions = () => {
+    if (quoteParams.destinationCountry === 'US') return usStates
+    if (quoteParams.destinationCountry === 'CA') return canadianProvinces
+    if (quoteParams.destinationCountry === 'JP') return japanesePrefectures
+    return []
   }
 
   return (
@@ -159,16 +192,96 @@ export default function QuoteFormComponent({
               </div>
               {/* 出荷地の詳細情報表示 */}
               {quoteParams.originSelected && (
-                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="text-sm font-medium text-blue-900">選択された出荷地</div>
-                  <div className="text-sm text-blue-800">
-                    国: {quoteParams.originCountry} | 
-                    郵便番号: {quoteParams.originPostalCode} | 
-                    都市: {quoteParams.originCityName}
-                    {quoteParams.originStateCode && ` | 州/県: ${getStateName(quoteParams.originCountry, quoteParams.originStateCode)}`}
+                <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-md space-y-3">
+                  <div className="text-sm font-medium text-blue-900">出荷地の詳細情報</div>
+                  
+                  {/* 国（表示のみ） */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-blue-800">国</Label>
+                      <div className="text-sm font-medium text-blue-900">{quoteParams.originCountry}</div>
+                    </div>
                   </div>
+                  
+                  {/* 郵便番号 */}
+                  <div>
+                    <Label htmlFor="originPostalCodeDetail" className="text-xs text-blue-800 flex items-center">
+                      郵便番号
+                      {!POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originPostalCode && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                      {POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && (
+                        <span className="text-gray-400 ml-1">(任意)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="originPostalCodeDetail"
+                      type="text"
+                      value={quoteParams.originPostalCode}
+                      onChange={(e) => onQuoteParamsChange('originPostalCode', e.target.value)}
+                      disabled={!!quoteParams.originPostalCode}
+                      placeholder="例: 442-0061, 10001"
+                      className={`mt-1 ${!!quoteParams.originPostalCode ? 'bg-gray-100' : 'bg-white'}`}
+                    />
+                  </div>
+                  
+                  {/* 市区町村 */}
+                  <div>
+                    <Label htmlFor="originCityNameDetail" className="text-xs text-blue-800 flex items-center">
+                      市区町村
+                      {!quoteParams.originCityName && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                      {POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && (
+                        <span className="text-orange-600 ml-1 text-xs">(郵便番号不要国につき必須)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="originCityNameDetail"
+                      type="text"
+                      value={quoteParams.originCityName}
+                      onChange={(e) => onQuoteParamsChange('originCityName', e.target.value)}
+                      disabled={!!quoteParams.originCityName}
+                      placeholder="例: Toyokawa, Shanghai, New York"
+                      className={`mt-1 ${!!quoteParams.originCityName ? 'bg-gray-100' : 'bg-white'}`}
+                    />
+                  </div>
+                  
+                  {/* 州・県（US・CAの場合のみ） */}
+                  {(quoteParams.originCountry === 'US' || quoteParams.originCountry === 'CA') && (
+                    <div>
+                      <Label htmlFor="originStateCodeDetail" className="text-xs text-blue-800 flex items-center">
+                        州・県
+                        {!quoteParams.originStateCode && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                        <span className="text-purple-600 ml-2 text-xs">
+                          (現在値: "{quoteParams.originStateCode}")
+                        </span>
+                      </Label>
+                      <Select 
+                        value={quoteParams.originStateCode} 
+                        onValueChange={(value) => {
+                          console.log(`🔄 出荷地州・県が手動変更: "${quoteParams.originStateCode}" → "${value}"`);
+                          onQuoteParamsChange('originStateCode', value);
+                        }}
+                      >
+                        <SelectTrigger className={`mt-1 bg-white`}>
+                          <SelectValue placeholder="州・県を選択してください" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getOriginStateOptions().map((state) => (
+                            <SelectItem key={state.code} value={state.code}>
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
               )}
+
             </div>
 
             {/* 仕向地 */}
@@ -191,16 +304,96 @@ export default function QuoteFormComponent({
               </div>
               {/* 仕向地の詳細情報表示 */}
               {quoteParams.destinationSelected && (
-                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <div className="text-sm font-medium text-green-900">選択された仕向地</div>
-                  <div className="text-sm text-green-800">
-                    国: {quoteParams.destinationCountry} | 
-                    郵便番号: {quoteParams.destinationPostalCode} | 
-                    都市: {quoteParams.destinationCityName}
-                    {quoteParams.destinationStateCode && ` | 州/県: ${getStateName(quoteParams.destinationCountry, quoteParams.destinationStateCode)}`}
+                <div className="mt-2 p-4 bg-green-50 border border-green-200 rounded-md space-y-3">
+                  <div className="text-sm font-medium text-green-900">仕向地の詳細情報</div>
+                  
+                  {/* 国（表示のみ） */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-green-800">国</Label>
+                      <div className="text-sm font-medium text-green-900">{quoteParams.destinationCountry}</div>
+                    </div>
                   </div>
+                  
+                  {/* 郵便番号 */}
+                  <div>
+                    <Label htmlFor="destinationPostalCodeDetail" className="text-xs text-green-800 flex items-center">
+                      郵便番号
+                      {!POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && !quoteParams.destinationPostalCode && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                      {POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && (
+                        <span className="text-gray-400 ml-1">(任意)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="destinationPostalCodeDetail"
+                      type="text"
+                      value={quoteParams.destinationPostalCode}
+                      onChange={(e) => onQuoteParamsChange('destinationPostalCode', e.target.value)}
+                      disabled={!!quoteParams.destinationPostalCode}
+                      placeholder="例: 442-0061, 10001"
+                      className={`mt-1 ${!!quoteParams.destinationPostalCode ? 'bg-gray-100' : 'bg-white'}`}
+                    />
+                  </div>
+                  
+                  {/* 市区町村 */}
+                  <div>
+                    <Label htmlFor="destinationCityNameDetail" className="text-xs text-green-800 flex items-center">
+                      市区町村
+                      {!quoteParams.destinationCityName && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                      {POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && (
+                        <span className="text-orange-600 ml-1 text-xs">(郵便番号不要国につき必須)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="destinationCityNameDetail"
+                      type="text"
+                      value={quoteParams.destinationCityName}
+                      onChange={(e) => onQuoteParamsChange('destinationCityName', e.target.value)}
+                      disabled={!!quoteParams.destinationCityName}
+                      placeholder="例: Toyokawa, Shanghai, New York"
+                      className={`mt-1 ${!!quoteParams.destinationCityName ? 'bg-gray-100' : 'bg-white'}`}
+                    />
+                  </div>
+                  
+                  {/* 州・県（US・CAの場合のみ） */}
+                  {(quoteParams.destinationCountry === 'US' || quoteParams.destinationCountry === 'CA') && (
+                    <div>
+                      <Label htmlFor="destinationStateCodeDetail" className="text-xs text-green-800 flex items-center">
+                        州・県
+                        {!quoteParams.destinationStateCode && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                        <span className="text-purple-600 ml-2 text-xs">
+                          (現在値: "{quoteParams.destinationStateCode}")
+                        </span>
+                      </Label>
+                      <Select 
+                        value={quoteParams.destinationStateCode} 
+                        onValueChange={(value) => {
+                          console.log(`🔄 仕向地州・県が手動変更: "${quoteParams.destinationStateCode}" → "${value}"`);
+                          onQuoteParamsChange('destinationStateCode', value);
+                        }}
+                      >
+                        <SelectTrigger className={`mt-1 bg-white`}>
+                          <SelectValue placeholder="州・県を選択してください" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getDestinationStateOptions().map((state) => (
+                            <SelectItem key={state.code} value={state.code}>
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
               )}
+
             </div>
 
             {/* 個人宅への配送チェックボックス */}
@@ -230,24 +423,6 @@ export default function QuoteFormComponent({
                   より高額な保険を年額使用する
                 </Label>
               </div>
-
-              {/* 保証金設定 */}
-              {quoteParams.higherInsurance && (
-                <div className="ml-6 space-y-2">
-                  <Label htmlFor="declaredValue" className="text-sm font-medium">保証金額 (JPY)</Label>
-                  <Input
-                    id="declaredValue"
-                    type="number"
-                    min="0"
-                    placeholder="例: 100000"
-                    value={quoteParams.declaredValue}
-                    onChange={(e) => onQuoteParamsChange("declaredValue", e.target.value)}
-                  />
-                  <p className="text-xs text-gray-600">
-                    商品の価値に応じて保証金額を設定してください。
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* パッケージ情報 */}
@@ -271,22 +446,37 @@ export default function QuoteFormComponent({
                   </div>
                   
                   <div className="space-y-4">
-                    {/* 梱包材 */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">梱包材</Label>
-                      <Select value={pkg.packagingType} onValueChange={(value) => onPackageChange(pkg.id, 'packagingType', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="梱包材を選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="YOUR_PACKAGING">お客様ご用意の梱包材</SelectItem>
-                          <SelectItem value="FEDEX_ENVELOPE">FedEx Envelope</SelectItem>
-                          <SelectItem value="FEDEX_PAK">FedEx Pak</SelectItem>
-                          <SelectItem value="FEDEX_BOX">FedEx Box</SelectItem>
-                          <SelectItem value="FEDEX_TUBE">FedEx Tube</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* 梱包材（最初の荷物のみ選択可能） */}
+                    {index === 0 ? (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">梱包材</Label>
+                        <Select value={pkg.packagingType} onValueChange={(value) => onPackageChange(pkg.id, 'packagingType', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="梱包材を選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="YOUR_PACKAGING">お客様ご用意の梱包材</SelectItem>
+                            <SelectItem value="FEDEX_ENVELOPE">FedEx Envelope</SelectItem>
+                            <SelectItem value="FEDEX_PAK">FedEx Pak</SelectItem>
+                            <SelectItem value="FEDEX_BOX">FedEx Box</SelectItem>
+                            <SelectItem value="FEDEX_TUBE">FedEx Tube</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">梱包材</Label>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <span className="text-sm">
+                            {pkg.packagingType === 'YOUR_PACKAGING' && 'お客様ご用意の梱包材'}
+                            {pkg.packagingType === 'FEDEX_ENVELOPE' && 'FedEx Envelope'}
+                            {pkg.packagingType === 'FEDEX_PAK' && 'FedEx Pak'}
+                            {pkg.packagingType === 'FEDEX_BOX' && 'FedEx Box'}
+                            {pkg.packagingType === 'FEDEX_TUBE' && 'FedEx Tube'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* パッケージ重量 */}
                     <div className="space-y-2">
@@ -333,6 +523,30 @@ export default function QuoteFormComponent({
                         </div>
                       </div>
                     )}
+
+                    {/* 申告価額（チェックボックスがONの場合のみ表示） */}
+                    {quoteParams.higherInsurance && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">申告価額（円）</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          placeholder="例: 100000"
+                          value={pkg.declaredValue}
+                          onChange={(e) => onPackageChange(pkg.id, 'declaredValue', e.target.value)}
+                          className={packageErrors[pkg.id] ? "border-red-500" : ""}
+                        />
+                        {packageErrors[pkg.id] && (
+                          <div className="text-red-600 text-xs bg-red-50 border border-red-200 rounded p-2">
+                            <strong>⚠️ 申告価額上限エラー:</strong><br />
+                            {packageErrors[pkg.id]}
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-600">
+                          この荷物の価値を入力してください（保険に使用されます）
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -377,14 +591,14 @@ export default function QuoteFormComponent({
             {/* 料金を表示ボタン */}
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || hasValidationErrors}
               className={`w-full h-12 text-lg text-white ${
-                isLoading 
+                isLoading || hasValidationErrors
                   ? 'bg-orange-300 cursor-not-allowed' 
                   : 'bg-orange-400 hover:bg-orange-500'
               }`}
             >
-              見積もりを表示
+              {hasValidationErrors ? '入力エラーを修正してください' : '見積もりを表示'}
             </Button>
           </form>
         </CardContent>

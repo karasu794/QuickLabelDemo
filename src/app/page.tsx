@@ -1,7 +1,7 @@
 // src/app/page.tsx
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
 import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
@@ -44,6 +44,9 @@ export default function Home() {
     originAddressInput: "",
     originStreet: "",
     originSelected: false,
+    originPostalCodeMissing: false,
+    originCityNameMissing: false,
+    originStateCodeMissing: false,
     destinationCountry: "US",
     destinationPostalCode: "",
     destinationStateCode: "",
@@ -51,10 +54,12 @@ export default function Home() {
     destinationAddressInput: "",
     destinationStreet: "",
     destinationSelected: false,
+    destinationPostalCodeMissing: false,
+    destinationCityNameMissing: false,
+    destinationStateCodeMissing: false,
     shipDate: new Date().toISOString().split('T')[0],
     isResidential: false,
-    higherInsurance: false,
-    declaredValue: ""
+    higherInsurance: false
   })
 
   const [packages, setPackages] = useState<Package[]>([{
@@ -63,12 +68,17 @@ export default function Home() {
     weight: "",
     length: "",
     width: "",
-    height: ""
+    height: "",
+    declaredValue: ""
   }])
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [quoteResults, setQuoteResults] = useState<QuoteResult[]>([])
+  
+  // 為替レートとエラー管理
+  const [usdToJpyRate, setUsdToJpyRate] = useState<number>(150.0) // デフォルト値
+  const [packageErrors, setPackageErrors] = useState<{ [key: number]: string | null }>({})
   
   // 非同期処理のための新しいステート
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
@@ -100,6 +110,75 @@ export default function Home() {
       }))
     }
   }, [quoteParams.destinationCountry, quoteParams.destinationSelected])
+
+  // 為替レート取得（ページロード時に一度だけ）
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        console.log('💱 為替レート取得開始...')
+        const response = await fetch('/api/exchange-rate')
+        
+        if (!response.ok) {
+          throw new Error(`為替レートAPI エラー: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setUsdToJpyRate(data.rate)
+        console.log(`✅ 為替レート取得成功: 1 USD = ${data.rate} JPY (source: ${data.source})`)
+        
+      } catch (error) {
+        console.error('❌ 為替レート取得エラー:', error)
+        // エラー時はデフォルト値を使用（既に150.0が設定済み）
+        console.log('🔄 デフォルト為替レートを使用: 150.0 JPY/USD')
+      }
+    }
+
+    fetchExchangeRate()
+  }, []) // 空依存配列で初回のみ実行
+
+  // 申告価額バリデーション関数
+  const validatePackageDeclaredValue = useCallback((packages: Package[]) => {
+    if (!quoteParams.higherInsurance) {
+      setPackageErrors({})
+      return
+    }
+
+    // 梱包タイプごとのUSD上限額定義
+    const PACKAGING_LIMITS: { [key: string]: number } = {
+      'FEDEX_ENVELOPE': 100,
+      'FEDEX_PAK': 100,
+      'FEDEX_BOX': 1000,
+      'FEDEX_TUBE': 1000,
+    }
+
+    const newErrors: { [key: number]: string | null } = {}
+
+    packages.forEach(pkg => {
+      const limitUSD = PACKAGING_LIMITS[pkg.packagingType]
+      
+      // 制限がある梱包材の場合のみチェック
+      if (limitUSD && pkg.declaredValue && Number(pkg.declaredValue) > 0) {
+        const declaredValueJPY = Number(pkg.declaredValue)
+        const declaredValueUSD = declaredValueJPY / usdToJpyRate
+        
+        if (declaredValueUSD > limitUSD) {
+          const limitJPY = Math.floor(limitUSD * usdToJpyRate)
+          newErrors[pkg.id] = `この梱包材の上限額は約${limitJPY.toLocaleString()}円（$${limitUSD} USD）です。`
+        } else {
+          newErrors[pkg.id] = null
+        }
+      } else {
+        newErrors[pkg.id] = null
+      }
+    })
+
+    setPackageErrors(newErrors)
+  }, [quoteParams.higherInsurance, usdToJpyRate])
+
+  // 保険設定変更時のバリデーション
+  useEffect(() => {
+    validatePackageDeclaredValue(packages)
+  }, [quoteParams.higherInsurance, usdToJpyRate, packages, validatePackageDeclaredValue]) // 保険設定、為替レート、パッケージ変更時
 
   // ポーリングの停止
   const stopPolling = () => {
@@ -234,10 +313,16 @@ export default function Home() {
   }
 
   const handleQuoteParamsChange = (field: keyof ExtendedQuoteParams, value: string | boolean) => {
-    setQuoteParams(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    console.log(`🔄 page.tsx: handleQuoteParamsChange呼び出し - field: "${field}", value: "${value}"`);
+    
+    setQuoteParams(prev => {
+      const newState = {
+        ...prev,
+        [field]: value
+      };
+      console.log(`📊 page.tsx: 新しいstate設定完了 - ${field}: "${newState[field]}"`);
+      return newState;
+    });
 
     // Clear any existing error when user makes changes
     if (error) {
@@ -246,20 +331,42 @@ export default function Home() {
   }
 
   const handlePackageChange = (id: number, field: keyof Package, value: string) => {
-    setPackages(prev => prev.map(pkg => 
-      pkg.id === id ? { ...pkg, [field]: value } : pkg
-    ))
+    setPackages(prev => {
+      let newPackages: Package[]
+      
+      // 最初の荷物の梱包材が変更された場合、全ての荷物を同じ梱包材に更新
+      if (id === 1 && field === 'packagingType') {
+        newPackages = prev.map(pkg => ({ ...pkg, packagingType: value }))
+      } else {
+        // それ以外の場合は指定された荷物のみ更新
+        newPackages = prev.map(pkg => 
+          pkg.id === id ? { ...pkg, [field]: value } : pkg
+        )
+      }
+
+      // 申告価額または梱包材が変更された場合、バリデーションを実行
+      if (field === 'declaredValue' || field === 'packagingType') {
+        validatePackageDeclaredValue(newPackages)
+      }
+
+      return newPackages
+    })
   }
+
+
 
   const handleAddPackage = () => {
     const newId = Math.max(...packages.map(p => p.id)) + 1
+    // 最初の荷物と同じ梱包材を使用
+    const firstPackageType = packages[0]?.packagingType || "YOUR_PACKAGING"
     setPackages(prev => [...prev, {
       id: newId,
-      packagingType: "YOUR_PACKAGING",
+      packagingType: firstPackageType,
       weight: "",
       length: "",
       width: "",
-      height: ""
+      height: "",
+      declaredValue: ""
     }])
   }
 
@@ -294,7 +401,17 @@ export default function Home() {
         throw new Error("仕向地の郵便番号を入力してください")
       }
 
-      // Validate state codes for US and Canada
+      // 📍 見積もり時の住所データ完全性チェック
+      // 市区町村の必須チェック
+      if (!quoteParams.originCityName) {
+        throw new Error("出荷地の市区町村を入力してください")
+      }
+
+      if (!quoteParams.destinationCityName) {
+        throw new Error("仕向地の市区町村を入力してください")
+      }
+
+      // 州・県コードの必須チェック（US・CAの場合のみ）
       if ((quoteParams.originCountry === 'US' || quoteParams.originCountry === 'CA') && !quoteParams.originStateCode) {
         throw new Error("出荷地の州・県を選択してください")
       }
@@ -334,11 +451,33 @@ export default function Home() {
       }
 
       // Validate declared value for higher insurance
-      if (quoteParams.higherInsurance && (!quoteParams.declaredValue || Number(quoteParams.declaredValue) <= 0)) {
-        throw new Error("追加保険に加入する場合は、保証金額を入力してください")
+      if (quoteParams.higherInsurance) {
+        for (const pkg of packages) {
+          if (!pkg.declaredValue || Number(pkg.declaredValue) <= 0) {
+            throw new Error("追加保険に加入する場合は、すべての荷物に申告価額を入力してください")
+          }
+        }
+        
+        // リアルタイムバリデーションでエラーがある場合は実行を停止
+        const hasErrors = Object.values(packageErrors).some(error => error !== null)
+        if (hasErrors) {
+          throw new Error("申告価額の上限エラーを修正してから見積もりを実行してください")
+        }
       }
 
-
+      // 📍 FedEx API送信用の住所データ準備
+      // 郵便番号不要国で郵便番号が空の場合、ダミー値を設定
+      const apiQuoteParams = { ...quoteParams };
+      
+      if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originPostalCode) {
+        apiQuoteParams.originPostalCode = '00000';
+        console.log(`出荷地: 郵便番号不要国(${quoteParams.originCountry})のため、ダミー郵便番号を設定: 00000`);
+      }
+      
+      if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && !quoteParams.destinationPostalCode) {
+        apiQuoteParams.destinationPostalCode = '00000';
+        console.log(`仕向地: 郵便番号不要国(${quoteParams.destinationCountry})のため、ダミー郵便番号を設定: 00000`);
+      }
 
       // 非同期ジョブを開始
       const response = await fetch('/api/quote', {
@@ -347,7 +486,7 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quoteParams,
+          quoteParams: apiQuoteParams,
           packages
         }),
       })
@@ -429,17 +568,18 @@ export default function Home() {
 
   return (
     <main>
-      <QuoteFormComponent
-        quoteParams={quoteParams}
-        packages={packages}
-        isLoading={isLoading}
-        error={error}
-        onQuoteParamsChange={handleQuoteParamsChange}
-        onPackageChange={handlePackageChange}
-        onAddPackage={handleAddPackage}
-        onRemovePackage={handleRemovePackage}
-        onSubmit={handleSubmit}
-      />
+              <QuoteFormComponent
+          quoteParams={quoteParams}
+          packages={packages}
+          isLoading={isLoading}
+          error={error}
+          packageErrors={packageErrors}
+          onQuoteParamsChange={handleQuoteParamsChange}
+          onPackageChange={handlePackageChange}
+          onAddPackage={handleAddPackage}
+          onRemovePackage={handleRemovePackage}
+          onSubmit={handleSubmit}
+        />
 
       {/* Loading Section - Spinner with Simple Text */}
       {isLoading && (

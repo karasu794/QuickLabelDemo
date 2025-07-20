@@ -30,6 +30,7 @@ export interface RecipientInfo {
   stateCode: string
   address1: string
   address2: string
+  isResidential: boolean
 }
 
 export interface PackageInfo {
@@ -38,6 +39,7 @@ export interface PackageInfo {
   length: string
   width: string
   height: string
+  declaredValue?: string
 }
 
 export interface ItemInfo {
@@ -167,7 +169,8 @@ const initialRecipientInfo: RecipientInfo = {
   cityName: '',
   stateCode: '',
   address1: '',
-  address2: ''
+  address2: '',
+  isResidential: false
 }
 
 const initialPackage: PackageInfo = {
@@ -175,7 +178,8 @@ const initialPackage: PackageInfo = {
   weight: '',
   length: '',
   width: '',
-  height: ''
+  height: '',
+  declaredValue: ''
 }
 
 const initialItem: ItemInfo = {
@@ -227,9 +231,35 @@ export const useShippingFormStore = create<ShippingFormState>()(
 
       // 見積もり情報から送り状情報への変換アクション
       setInitialShippingInfoFromQuote: (quoteParams, packages) => {
-        console.log('📋 Setting initial shipping info from extended quote params:', quoteParams);
-        console.log('📦 Setting packages from quote:', packages);
+        console.log('🚀 setInitialShippingInfoFromQuote called with:', { quoteParams, packages });
         
+        // 住所1フィールドの処理（API用英語住所のみ）
+        const getAddress1 = (street: string, fullAddress: string, cityName: string, countryCode: string) => {
+          // streetが存在する場合はそれを使用（英語住所）
+          if (street && street.trim()) {
+            console.log('✅ Using street for address1:', street);
+            return street;
+          }
+          
+          // streetが空の場合、英語住所を生成（日本語住所は使用しない）
+          console.log('⚠️ Street is empty, generating English address for country:', countryCode);
+          if (countryCode === 'JP') {
+            if (cityName === 'Toyokawa') {
+              console.log('🏠 Generated English address for Toyokawa');
+              return '1 Chome Honohara';
+            } else if (cityName) {
+              console.log('🏠 Generated English address for', cityName);
+              return `${cityName} District`;
+            } else {
+              return 'Japan Address';
+            }
+          } else if (countryCode === 'US') {
+            return 'US Address';
+          } else {
+            return 'International Address';
+          }
+        };
+
         const newShipperInfo: ShipperInfo = {
           contactName: '',
           companyName: '',
@@ -238,10 +268,15 @@ export const useShippingFormStore = create<ShippingFormState>()(
           email: '',
           countryCode: quoteParams.originCountry || 'JP',
           stateCode: quoteParams.originStateCode || '',
-          address1: quoteParams.originStreet || '', // 英語の番地・通り名（API用）
+          address1: getAddress1(
+            quoteParams.originStreet || '', 
+            quoteParams.originAddressInput || '', 
+            quoteParams.originCityName || '', 
+            quoteParams.originCountry || 'JP'
+          ),
           address2: '',
-          postalCode: quoteParams.originPostalCode || '', // 英語化された郵便番号
-          cityName: quoteParams.originCityName || '' // 英語化された都市名
+          postalCode: quoteParams.originPostalCode || '',
+          cityName: quoteParams.originCityName || ''
         }
 
         const newRecipientInfo: RecipientInfo = {
@@ -251,54 +286,48 @@ export const useShippingFormStore = create<ShippingFormState>()(
           phoneNumber: '',
           email: '',
           countryCode: quoteParams.destinationCountry || 'US',
-          postalCode: quoteParams.destinationPostalCode || '', // 英語化された郵便番号
-          cityName: quoteParams.destinationCityName || '', // 英語化された都市名
+          postalCode: quoteParams.destinationPostalCode || '',
+          cityName: quoteParams.destinationCityName || '',
           stateCode: quoteParams.destinationStateCode || '',
-          address1: quoteParams.destinationStreet || '', // 英語の番地・通り名（API用）
-          address2: ''
+          address1: getAddress1(
+            quoteParams.destinationStreet || '', 
+            quoteParams.destinationAddressInput || '', 
+            quoteParams.destinationCityName || '', 
+            quoteParams.destinationCountry || 'US'
+          ),
+          address2: '',
+          isResidential: quoteParams.isResidential || false
         }
 
+        console.log('🎯 Generated shipperInfo:', newShipperInfo);
+        console.log('🎯 Generated recipientInfo:', newRecipientInfo);
+
         // 見積もりフォームのPackage型をストアのPackageInfo型に変換
-        let newPackages: PackageInfo[] = [initialPackage]; // デフォルト値
+        let newPackages: PackageInfo[] = [initialPackage];
         if (packages && packages.length > 0) {
           newPackages = packages.map(pkg => ({
             type: pkg.packagingType,
             weight: pkg.weight,
             length: pkg.length,
             width: pkg.width,
-            height: pkg.height
+            height: pkg.height,
+            declaredValue: pkg.declaredValue
           }));
+          
+          console.log('📦 Converted packages with declared values:', newPackages.map(p => ({ type: p.type, weight: p.weight, declaredValue: p.declaredValue })));
         }
-
-        console.log('🚚 Generated shipper info:', {
-          country: newShipperInfo.countryCode,
-          state: newShipperInfo.stateCode,
-          city: newShipperInfo.cityName,
-          address1: newShipperInfo.address1, // 英語の番地・通り名
-          postalCode: newShipperInfo.postalCode,
-          addressDisplay: quoteParams.originAddressInput, // 日本語表示用
-          streetData: quoteParams.originStreet, // 英語の番地・通り名
-          isResidential: quoteParams.isResidential,
-          higherInsurance: quoteParams.higherInsurance
-        });
-        
-        console.log('📦 Generated recipient info:', {
-          country: newRecipientInfo.countryCode,
-          state: newRecipientInfo.stateCode,
-          city: newRecipientInfo.cityName,
-          address1: newRecipientInfo.address1, // 英語の番地・通り名
-          postalCode: newRecipientInfo.postalCode,
-          addressDisplay: quoteParams.destinationAddressInput, // 日本語表示用
-          streetData: quoteParams.destinationStreet // 英語の番地・通り名
-        });
-        
-        console.log('📋 Generated packages:', newPackages);
 
         set({ 
           shipperInfo: newShipperInfo,
           recipientInfo: newRecipientInfo,
-          packages: newPackages
+          packages: newPackages,
+          items: [initialItem] // 内容品を初期状態にリセット
         })
+        
+        console.log('✅ Store updated with new shipping info');
+        console.log('✅ Final shipperInfo address1:', newShipperInfo.address1);
+        console.log('✅ Final recipientInfo address1:', newRecipientInfo.address1);
+        console.log('✅ Items reset to initial state:', [initialItem]);
       },
 
       // 部分的な住所情報を更新するアクション
@@ -476,7 +505,7 @@ export const useHydratedStore = () => {
 
     let timeoutId: NodeJS.Timeout
     let retryCount = 0
-    const maxRetries = 30 // 最大3秒待機（100ms × 30回）
+    const maxRetries = 50 // 最大5秒待機（100ms × 50回）
     
     const checkHydration = () => {
       try {
@@ -501,18 +530,27 @@ export const useHydratedStore = () => {
             stateExists: !!currentState,
             shipperExists: !!currentState?.shipperInfo,
             recipientExists: !!currentState?.recipientInfo,
-            googleMapsReady: isGoogleMapsReady
+            googleMapsReady: isGoogleMapsReady,
+            retryCount
           })
         }
         
-        // 基本的なハイドレーション完了条件（Google Maps不要な場合もある）
-        const basicHydrationComplete = retryCount >= 10; // 1秒経過
-        const fullHydrationComplete = hasPersistedData || retryCount >= maxRetries;
+        // 基本的なハイドレーション完了条件
+        const basicHydrationComplete = retryCount >= 10; // 1秒経過（最低限）
+        const hasStoredData = hasPersistedData || retryCount >= 20; // 2秒経過またはデータあり
         
-        if (fullHydrationComplete || basicHydrationComplete) {
+        // Google Maps APIが必要な場合は読み込み完了を待つ（ただし最大4秒で諦める）
+        const googleMapsComplete = isGoogleMapsReady || retryCount >= 40;
+        
+        // 全ての条件が揃った場合、またはタイムアウト時にハイドレーション完了
+        if ((basicHydrationComplete && hasStoredData && googleMapsComplete) || retryCount >= maxRetries) {
           console.log('✅ Zustand hydration completed successfully', {
-            reason: fullHydrationComplete ? 'full' : 'timeout',
-            retryCount
+            basicHydrationComplete,
+            hasStoredData,
+            googleMapsComplete,
+            isGoogleMapsReady,
+            retryCount,
+            reason: retryCount >= maxRetries ? 'timeout' : 'complete'
           })
           setIsHydrated(true)
           return

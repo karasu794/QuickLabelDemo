@@ -24,6 +24,7 @@ interface Package {
   length: string
   width: string
   height: string
+  declaredValue: string
 }
 
 // 日本語からローマ字への変換マップ
@@ -210,8 +211,9 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
   }
 
   // パッケージ情報を構築
-  const requestedPackageLineItems = packages.map(pkg => {
+  const requestedPackageLineItems = packages.map((pkg, index) => {
     const packageItem: any = {
+      sequenceNumber: index + 1,
       weight: {
         units: 'KG',
         value: parseFloat(pkg.weight)
@@ -228,8 +230,31 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       };
     }
 
+    // 申告価額が設定されている場合のみ追加（JPYからUSDに変換）
+    if (pkg.declaredValue && Number(pkg.declaredValue) > 0) {
+      // JPYからUSDへの変換（固定レート）
+      const JPY_TO_USD_RATE = 0.0067;
+      const declaredValueJPY = Number(pkg.declaredValue);
+      const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
+      
+      packageItem.declaredValue = {
+        amount: parseFloat(declaredValueUSD.toFixed(2)),
+        currency: 'USD'
+      };
+      
+      console.log(`📦 荷物${pkg.id}の申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
+    }
+
     return packageItem;
   });
+
+  // 複数個口の場合のログ出力
+  if (packages.length > 1) {
+    console.log(`📦 複数個口検出: ${packages.length}個 → groupPackageCount: ${packages.length}`)
+    console.log('📦 各荷物のsequenceNumber:', requestedPackageLineItems.map(item => `${item.sequenceNumber}`).join(', '))
+  } else {
+    console.log('📦 単一荷物: groupPackageCountは追加しません')
+  }
 
   return {
     accountNumber: {
@@ -245,9 +270,11 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       },
       shipDatestamp: quoteParams.shipDate,
       // serviceTypeを削除して、すべての利用可能なサービスを取得
-      packagingType: 'YOUR_PACKAGING',
+      packagingType: packages[0]?.packagingType || 'YOUR_PACKAGING',
       pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
       rateRequestType: ['ACCOUNT', 'LIST'], // LISTを追加してより多くのオプションを取得
+      // 複数個口の場合のみ、groupPackageCountを追加
+      ...(packages.length > 1 && { groupPackageCount: packages.length }),
       requestedPackageLineItems: requestedPackageLineItems
     }
   };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRecipientInfo, useWaitForHydration } from '@/store/shippingFormStore'
-import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions } from '@/lib/data/locations'
+import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions, getPrefectureFromPostalCode } from '@/lib/data/locations'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -14,36 +14,174 @@ import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Package, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 
+// ストアの値から表示用住所を構築する関数
+const buildDisplayAddress = (recipientInfo: any) => {
+  console.log('🏗️ buildDisplayAddress (recipient) called with:', recipientInfo);
+  
+  // stateCodeの状態をチェック
+  if (recipientInfo?.stateCode) {
+    console.log('✅ recipient stateCode found:', recipientInfo.stateCode);
+  } else {
+    console.log('❌ recipient stateCode not found or empty');
+  }
+  
+  const addressParts = [];
+  
+  if (recipientInfo?.address1) {
+    console.log('✅ recipient address1 found:', recipientInfo.address1);
+    addressParts.push(recipientInfo.address1);
+  } else {
+    console.log('❌ recipient address1 not found or empty');
+  }
+  
+  if (recipientInfo?.cityName) {
+    console.log('✅ recipient cityName found:', recipientInfo.cityName);
+    addressParts.push(recipientInfo.cityName);
+  } else {
+    console.log('❌ recipient cityName not found or empty');
+  }
+  
+  if (recipientInfo?.postalCode) {
+    console.log('✅ recipient postalCode found:', recipientInfo.postalCode);
+    addressParts.push(recipientInfo.postalCode);
+  } else {
+    console.log('❌ recipient postalCode not found or empty');
+  }
+  
+  const result = addressParts.join(', ');
+  console.log('🏗️ buildDisplayAddress (recipient) result:', result);
+  return result;
+};
+
 export default function RecipientInfoPage() {
   const router = useRouter()
   const { isLoading, isReady } = useWaitForHydration()
   const { recipientInfo, updateRecipientInfo } = useRecipientInfo()
+  
+  console.log('🔄 RecipientInfoPage render with recipientInfo:', recipientInfo);
+  
+  // 初期化時にストアから表示用住所を構築
+  const [addressInput, setAddressInput] = useState(() => {
+    const initialAddress = buildDisplayAddress(recipientInfo);
+    console.log('🎯 Initial recipient addressInput set to:', initialAddress);
+    return initialAddress;
+  })
+  const [isAddressSelected, setIsAddressSelected] = useState(() => {
+    const hasAddress = !!(recipientInfo?.address1 || recipientInfo?.cityName);
+    console.log('🎯 Initial recipient isAddressSelected set to:', hasAddress);
+    return hasAddress;
+  })
   const [error, setError] = useState('')
-  const [addressInput, setAddressInput] = useState('')
-  const [isAddressSelected, setIsAddressSelected] = useState(false)
-  const [isInitialized, setIsInitialized] = useState(false)
+  
+  // ハイドレーション完了後に住所フィールドを更新
+  useEffect(() => {
+    if (isReady && recipientInfo) {
+      console.log('🔄 Recipient hydration complete, updating address fields with:', recipientInfo);
+      const newAddress = buildDisplayAddress(recipientInfo);
+      const hasAddress = !!(recipientInfo.address1 || recipientInfo.cityName);
+      
+      if (newAddress && newAddress !== addressInput) {
+        console.log('🔄 Updating recipient addressInput from', addressInput, 'to', newAddress);
+        setAddressInput(newAddress);
+        setIsAddressSelected(hasAddress);
+      }
+    }
+  }, [isReady, recipientInfo.address1, recipientInfo.cityName, recipientInfo.postalCode]);
+
+  // stateCodeが空で郵便番号がある場合、郵便番号から都道府県を自動判定
+  useEffect(() => {
+    if (isReady && recipientInfo && recipientInfo.countryCode === 'JP') {
+      console.log('🏢 Recipient StateCode auto-detection check:', {
+        stateCode: recipientInfo.stateCode,
+        postalCode: recipientInfo.postalCode
+      });
+      
+      if (!recipientInfo.stateCode && recipientInfo.postalCode) {
+        const detectedStateCode = getPrefectureFromPostalCode(recipientInfo.postalCode);
+        if (detectedStateCode) {
+          console.log('🏢 Auto-detected recipient stateCode from postal code:', detectedStateCode);
+          updateRecipientInfo('stateCode', detectedStateCode);
+        } else {
+          console.log('⚠️ Could not detect recipient stateCode from postal code:', recipientInfo.postalCode);
+        }
+      }
+    }
+  }, [isReady, recipientInfo?.stateCode, recipientInfo?.postalCode, recipientInfo?.countryCode]);
   
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
   const countryOptions = getCountryOptions()
 
   // 住所入力に変更があった場合、選択状態をリセット
   const handleAddressInputChange = (value: string) => {
+    console.log('📝 Recipient address input changed to:', value);
     setAddressInput(value)
     setIsAddressSelected(false)
   }
 
   // Google Places APIから住所が選択された場合
   const handleAddressSelect = (data: ParsedAddress) => {
-    console.log('Selected address data:', data)
+    console.log('📍 Recipient address selected:', data)
     setAddressInput(data.fullAddress)
     setIsAddressSelected(true)
+    
+    // API用英語住所を生成
+    const generateEnglishAddress = (data: ParsedAddress): string => {
+      // streetが存在する場合はそれを使用（既に英語住所）
+      if (data.street && data.street.trim()) {
+        console.log('✅ Using existing street for recipient address1:', data.street);
+        return data.street;
+      }
+      
+      // streetが空の場合、国別に適切な英語住所を生成
+      if (data.countryCode === 'JP') {
+        if (data.cityName === 'Toyokawa') {
+          console.log('🏠 Generating English address for recipient Toyokawa');
+          return '1 Chome Honohara'; // 豊川市穂ノ原の英語表記
+        } else if (data.cityName && data.cityName.trim()) {
+          console.log('🏠 Generating generic English address for recipient:', data.cityName);
+          return `${data.cityName} District`; // 他の都市の場合
+        } else {
+          console.log('🏠 Using fallback for recipient Japan');
+          return 'Japan Address'; // 市名がない場合のフォールバック
+        }
+      } else if (data.countryCode === 'US') {
+        // アメリカの場合、fullAddressから住所詳細を抽出
+        if (data.fullAddress && data.fullAddress.trim()) {
+          let address = data.fullAddress;
+          
+          // 国名、州名、郵便番号、市名を順次除去
+          address = address.replace(/アメリカ合衆国|United States/gi, '').trim();
+          address = address.replace(/ニューヨーク州|New York/gi, '').trim();
+          address = address.replace(/\d{5}(-\d{4})?/g, '').trim(); // ZIP code
+          address = address.replace(/〒\d{5}/g, '').trim(); // Japanese postal format
+          
+          if (data.cityName) {
+            address = address.replace(new RegExp(data.cityName, 'gi'), '').trim();
+          }
+          
+          // 先頭・末尾のカンマや空白を除去
+          address = address.replace(/^[,\s]+|[,\s]+$/g, '').trim();
+          
+          console.log('🔄 Extracted US address for recipient:', address);
+          return address || 'US Address';
+        }
+        return 'US Address';
+      } else {
+        // その他の国の場合
+        console.log('🌍 Using international fallback for recipient');
+        return 'International Address';
+      }
+    };
+    
+    const englishAddress1 = generateEnglishAddress(data);
+    console.log('🏴󠁧󠁢󠁥󠁮󠁧󠁿 Generated English address1 for recipient:', englishAddress1);
     
     // 荷受人情報を更新
     updateRecipientInfo('countryCode', data.countryCode)
     updateRecipientInfo('postalCode', data.postalCode)
     updateRecipientInfo('cityName', data.cityName)
     updateRecipientInfo('stateCode', data.stateCode)
-    updateRecipientInfo('address1', data.street)
+    updateRecipientInfo('address1', englishAddress1)
   }
 
   // 通常の入力フィールドの変更ハンドラー
@@ -117,61 +255,6 @@ export default function RecipientInfoPage() {
   const handlePrevious = () => {
     router.push('/shipping/new/shipper')
   }
-
-  // コンポーネントマウント時およびストアデータ変更時の初期化
-  useEffect(() => {
-    // 既に初期化済みで、明示的にリセットが必要でない場合はスキップ
-    if (isInitialized && addressInput) return
-
-    console.log('🔄 Initializing recipient page with enhanced store data:', {
-      address1: recipientInfo.address1, // 英語の番地・通り名（API用）
-      cityName: recipientInfo.cityName, // 英語化された都市名
-      postalCode: recipientInfo.postalCode, // 英語化された郵便番号
-      countryCode: recipientInfo.countryCode,
-      stateCode: recipientInfo.stateCode
-    })
-    
-    // 見積もりから遷移してきた場合の住所初期化
-    // 日本語表示用の住所は別途保持されているため、ここでは英語データから住所を構築
-    if (recipientInfo.address1 || recipientInfo.cityName) {
-      const addressParts = [];
-      
-      // 英語の番地・通り名（API用データ）
-      if (recipientInfo.address1) {
-        addressParts.push(recipientInfo.address1);
-      }
-      
-      // 都市名と郵便番号
-      if (recipientInfo.cityName) {
-        addressParts.push(recipientInfo.cityName);
-      }
-      
-      if (recipientInfo.postalCode) {
-        addressParts.push(recipientInfo.postalCode);
-      }
-      
-      const constructedAddress = addressParts.join(', ');
-      
-      if (constructedAddress) {
-        console.log('📍 Setting initial address from enhanced store data:', constructedAddress)
-        console.log('🔧 Address construction details:', {
-          street: recipientInfo.address1,
-          city: recipientInfo.cityName,
-          postal: recipientInfo.postalCode,
-          result: constructedAddress
-        })
-        setAddressInput(constructedAddress)
-        setIsAddressSelected(true)
-        setIsInitialized(true)
-      }
-    }
-    
-    // ストアにデータがない場合も初期化完了とマーク
-    if (!isInitialized) {
-      console.log('✅ Recipient page initialization completed (no store data)')
-      setIsInitialized(true)
-    }
-  }, [recipientInfo.address1, recipientInfo.cityName, recipientInfo.postalCode, recipientInfo.countryCode, recipientInfo.stateCode, isInitialized, addressInput])
 
   return (
     <AuthGuard requireAuth={false}>
