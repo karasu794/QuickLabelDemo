@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // ★★★ここからが修正部分★★★
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -34,14 +33,26 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
-  // ★★★ここまでが修正部分★★★
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  // 認証が必要なページ（マイページと発送関連）
+  const protectedPaths = ['/mypage', '/shipping']
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  // 認証が必要なページで未ログインの場合、redirect_toパラメータ付きでログインページにリダイレクト
+  if (isProtectedPath && !user) {
+    const redirectTo = encodeURIComponent(request.nextUrl.pathname)
+    return NextResponse.redirect(new URL(`/login?redirect_to=${redirectTo}`, request.url))
+  }
 
   // /admin配下のページへのアクセスをチェック
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const redirectTo = encodeURIComponent(request.nextUrl.pathname)
+      return NextResponse.redirect(new URL(`/login?redirect_to=${redirectTo}`, request.url))
     }
     
     const { data: profile } = await supabase
@@ -59,5 +70,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/mypage/:path*', '/shipping/:path*'],
 }

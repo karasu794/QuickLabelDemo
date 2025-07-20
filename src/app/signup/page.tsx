@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signUp } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
@@ -10,6 +10,11 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // ログインページへのリンクにredirect_toパラメータを含める
+  const redirectTo = searchParams.get('redirect_to')
+  const loginUrl = redirectTo ? `/login?redirect_to=${encodeURIComponent(redirectTo)}` : '/login'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +65,12 @@ export default function SignUpPage() {
         if (data.user.email_confirmed_at === null) {
           // メール確認が必要な新規ユーザー
           console.log('新規ユーザー登録成功 - 確認メールを送信しました')
-          router.push('/?registration=success')
+          const redirectTo = searchParams.get('redirect_to')
+          if (redirectTo) {
+            router.push(`${decodeURIComponent(redirectTo)}?registration=success`)
+          } else {
+            router.push('/?registration=success')
+          }
         } else {
           // 既に確認済みのユーザー（既存ユーザーの可能性）
           console.log('既存ユーザーまたは既に確認済みのユーザー')
@@ -216,7 +226,7 @@ export default function SignUpPage() {
           既にアカウントをお持ちですか？
         </p>
         <a 
-          href="/login" 
+          href={loginUrl}
           style={{ 
             color: '#0070f3', 
             textDecoration: 'none',

@@ -1,4 +1,7 @@
+'use client'
+
 import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import LoginForm from './LoginForm'
 
 function LoginFallback() {
@@ -9,7 +12,13 @@ function LoginFallback() {
   )
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect_to')
+  
+  // サインアップページへのリンクにredirect_toパラメータを含める
+  const signupUrl = redirectTo ? `/signup?redirect_to=${encodeURIComponent(redirectTo)}` : '/signup'
+
   return (
     <div style={{ 
       padding: '2rem', 
@@ -29,7 +38,7 @@ export default function LoginPage() {
           アカウントをお持ちでない方
         </p>
         <a 
-          href="/signup" 
+          href={signupUrl}
           style={{ 
             color: '#0070f3', 
             textDecoration: 'none',
@@ -57,5 +66,13 @@ export default function LoginPage() {
         </a>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageContent />
+    </Suspense>
   )
 } 

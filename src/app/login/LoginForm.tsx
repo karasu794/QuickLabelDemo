@@ -40,12 +40,12 @@ export default function LoginForm() {
         }
       } else {
         console.log('ログイン成功:', data.user?.email)
-        // ログイン成功時は元のページまたはアカウントページにリダイレクト
-        const returnUrl = searchParams.get('returnUrl')
-        if (returnUrl) {
-          router.push(decodeURIComponent(returnUrl))
+        // ログイン成功時は元のページまたはトップページにリダイレクト
+        const redirectTo = searchParams.get('redirect_to')
+        if (redirectTo) {
+          router.push(decodeURIComponent(redirectTo))
         } else {
-          router.push('/account')
+          router.push('/')
         }
       }
     } catch (error) {

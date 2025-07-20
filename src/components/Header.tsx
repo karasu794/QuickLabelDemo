@@ -85,12 +85,6 @@ export default function Header() {
                   </Link>
                 )}
 
-                <Link
-                  href="/account"
-                  className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
-                >
-                  アカウント
-                </Link>
                 <button
                   onClick={handleLogout}
                   className="bg-white/10 text-white px-4 py-2 rounded-md border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-200 font-medium"
@@ -166,13 +160,6 @@ export default function Header() {
                     </Link>
                   )}
 
-                  <Link
-                    href="/account"
-                    className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    アカウント
-                  </Link>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left bg-white/10 text-white px-3 py-2 rounded-md border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-200 font-medium mt-2"

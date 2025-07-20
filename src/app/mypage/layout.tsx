@@ -4,7 +4,8 @@ import {
   History, 
   Upload, 
   Receipt, 
-  User 
+  User,
+  Settings
 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 
@@ -29,6 +30,12 @@ export default function MypageLayout({ children }: MypageLayoutProps) {
                 </div>
                 
                 <nav className="space-y-2">
+                  <SidebarLink
+                    href="/mypage/profile"
+                    icon={<Settings className="h-5 w-5" />}
+                    label="プロフィール編集"
+                    description="氏名・会社情報の更新"
+                  />
                   <SidebarLink
                     href="/mypage/history"
                     icon={<History className="h-5 w-5" />}

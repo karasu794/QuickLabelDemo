@@ -18,8 +18,8 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   useEffect(() => {
     if (!loading && requireAuth && !isAuthenticated) {
       // 現在のパスをクエリパラメータとして追加してログインページにリダイレクト
-      const returnUrl = encodeURIComponent(pathname)
-      router.push(`/login?returnUrl=${returnUrl}`)
+      const redirectTo = encodeURIComponent(pathname)
+      router.push(`/login?redirect_to=${redirectTo}`)
     }
   }, [isAuthenticated, loading, requireAuth, router, pathname])
 
