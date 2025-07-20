@@ -58,7 +58,7 @@ export const useAuth = (): AuthState => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, email, contact_name, company_name')
+          .select('id, email, contact_name, company_name, role')
           .eq('id', userId)
           .single()
 
@@ -68,14 +68,9 @@ export const useAuth = (): AuthState => {
         }
 
         if (data) {
-          // 管理者判定ロジック（メールアドレスベース）
-          const isAdmin = data.email?.includes('@admin.') || 
-                          data.email === 'admin@quicklabel.com' ||
-                          data.contact_name?.includes('管理者')
-
           setProfile({
-            ...data,
-            role: isAdmin ? 'admin' : 'user'
+            ...(data as any),
+            role: (data as any).role || 'user' // roleがnullの場合のフォールバック
           })
         }
       } catch (error) {
