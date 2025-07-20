@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Papa from 'papaparse'
+import type { AddressBookInsert } from '@/types/supabase'
 
 interface CSVRow {
   contact_name: string
@@ -85,9 +86,9 @@ export async function POST(request: NextRequest) {
 
     // データバリデーション
     const validationErrors: string[] = []
-    const validRows: ParsedRow[] = []
+    const validRows: AddressBookInsert[] = []
 
-    rows.forEach((row, index) => {
+    rows.forEach((row: CSVRow, index: number) => {
       const rowNumber = index + 2 // ヘッダー行を除くため+2
       const errors: string[] = []
 
@@ -113,7 +114,8 @@ export async function POST(request: NextRequest) {
       if (errors.length > 0) {
         validationErrors.push(...errors)
       } else {
-        validRows.push({
+        const addressBookEntry: AddressBookInsert = {
+          user_id: user.id,
           contact_name: row.contact_name.trim(),
           company_name: row.company_name?.trim() || null,
           phone_number: row.phone_number?.trim() || null,
@@ -123,7 +125,8 @@ export async function POST(request: NextRequest) {
           state_code: row.state_code?.trim() || null,
           postal_code: row.postal_code?.trim() || null,
           country_code: row.country_code.trim().toUpperCase()
-        })
+        }
+        validRows.push(addressBookEntry)
       }
     })
 
@@ -138,22 +141,9 @@ export async function POST(request: NextRequest) {
     }
 
     // データベースへの一括挿入
-    const insertData = validRows.map(row => ({
-      user_id: user.id,
-      contact_name: row.contact_name,
-      company_name: row.company_name,
-      phone_number: row.phone_number,
-      address1: row.address1,
-      address2: row.address2,
-      city: row.city,
-      state_code: row.state_code,
-      postal_code: row.postal_code,
-      country_code: row.country_code
-    }))
-
     const { error: insertError } = await supabase
       .from('address_book')
-      .insert(insertData)
+      .insert(validRows)
 
     if (insertError) {
       console.error('データベース挿入エラー:', insertError)

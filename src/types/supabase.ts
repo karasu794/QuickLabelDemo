@@ -9,6 +9,62 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      address_book: {
+        Row: {
+          id: string
+          user_id: string
+          contact_name: string
+          company_name: string | null
+          phone_number: string | null
+          address1: string | null
+          address2: string | null
+          city: string | null
+          state_code: string | null
+          postal_code: string | null
+          country_code: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          contact_name: string
+          company_name?: string | null
+          phone_number?: string | null
+          address1?: string | null
+          address2?: string | null
+          city?: string | null
+          state_code?: string | null
+          postal_code?: string | null
+          country_code: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          contact_name?: string
+          company_name?: string | null
+          phone_number?: string | null
+          address1?: string | null
+          address2?: string | null
+          city?: string | null
+          state_code?: string | null
+          postal_code?: string | null
+          country_code?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "address_book_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           id: string
@@ -184,6 +240,10 @@ export type Database = {
 export type AppSetting = Database['public']['Tables']['app_settings']['Row']
 export type AppSettingInsert = Database['public']['Tables']['app_settings']['Insert']
 export type AppSettingUpdate = Database['public']['Tables']['app_settings']['Update']
+
+export type AddressBook = Database['public']['Tables']['address_book']['Row']
+export type AddressBookInsert = Database['public']['Tables']['address_book']['Insert']
+export type AddressBookUpdate = Database['public']['Tables']['address_book']['Update']
 
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
