@@ -8,6 +8,13 @@ interface UserProfile {
   contact_name: string | null
   company_name: string | null
   role?: string | null
+  full_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  postal_code?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
 }
 
 interface AuthState {
@@ -58,7 +65,7 @@ export const useAuth = (): AuthState => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, email, contact_name, company_name, role')
+          .select('id, email, contact_name, company_name, role, full_name, phone_number, address, postal_code, city, state, country')
           .eq('id', userId)
           .single()
 

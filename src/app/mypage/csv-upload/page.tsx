@@ -34,13 +34,32 @@ export default function CSVUploadPage() {
     }
   }
 
-  const handleTemplateDownload = () => {
-    const link = document.createElement('a')
-    link.href = '/template.csv'
-    link.download = 'template.csv'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleTemplateDownload = async () => {
+    try {
+      const response = await fetch('/api/address-book/template')
+      
+      if (!response.ok) {
+        throw new Error('テンプレートのダウンロードに失敗しました')
+      }
+
+      const blob = await response.blob()
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = 'address_template.csv'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(link.href)
+    } catch (error) {
+      console.error('テンプレートダウンロードエラー:', error)
+      // フォールバック：エラー時は既存の静的ファイルを使用
+      const link = document.createElement('a')
+      link.href = '/template.csv'
+      link.download = 'template.csv'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   }
 
   const handleUpload = async () => {
