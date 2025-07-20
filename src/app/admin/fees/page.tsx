@@ -21,7 +21,8 @@ async function getCurrentFeePercentage(): Promise<{ feePercentage: number; error
 
     const { data, error } = await supabaseAdmin
       .from('app_settings')
-      .select('service_fee_percentage')
+      .select('value')
+      .eq('key', 'service_fee_percentage')
       .single()
 
     if (error) {
@@ -29,9 +30,9 @@ async function getCurrentFeePercentage(): Promise<{ feePercentage: number; error
       throw error
     }
 
-    console.log('📊 取得した手数料率:', data.service_fee_percentage)
+    console.log('📊 取得した手数料率:', data.value)
 
-    return { feePercentage: data.service_fee_percentage || 15 }
+    return { feePercentage: parseFloat(data.value) || 15 }
 
   } catch (error) {
     console.error('❌ 手数料設定取得エラー:', error)
@@ -46,28 +47,29 @@ async function getCurrentFeePercentage(): Promise<{ feePercentage: number; error
 async function updateFeeAction(formData: FormData) {
   'use server'
   
+  const feePercentageStr = formData.get('feePercentage') as string
+  console.log('🔄 手数料率更新開始:', feePercentageStr)
+
+  // バリデーション
+  const feePercentage = parseFloat(feePercentageStr)
+  
+  if (isNaN(feePercentage)) {
+    console.error('❌ バリデーションエラー: 無効な数値')
+    return redirect('/admin/fees?error=invalid_number')
+  }
+
+  if (feePercentage < 0 || feePercentage > 100) {
+    console.error('❌ バリデーションエラー: 範囲外の値')
+    return redirect('/admin/fees?error=out_of_range')
+  }
+
   try {
-    const feePercentageStr = formData.get('feePercentage') as string
-    console.log('🔄 手数料率更新開始:', feePercentageStr)
-
-    // バリデーション
-    const feePercentage = parseFloat(feePercentageStr)
-    
-    if (isNaN(feePercentage)) {
-      console.error('❌ バリデーションエラー: 無効な数値')
-      return redirect('/admin/fees?error=invalid_number')
-    }
-
-    if (feePercentage < 0 || feePercentage > 100) {
-      console.error('❌ バリデーションエラー: 範囲外の値')
-      return redirect('/admin/fees?error=out_of_range')
-    }
-
-    // データベース更新
+    // ★★★ tryブロックはDB操作のみを囲む ★★★
     const { data, error } = await supabaseAdmin
       .from('app_settings')
-      .update({ service_fee_percentage: feePercentage })
-      .select('service_fee_percentage')
+      .update({ value: feePercentage.toString() })
+      .eq('key', 'service_fee_percentage')
+      .select('value')
       .single()
 
     if (error) {
@@ -75,16 +77,16 @@ async function updateFeeAction(formData: FormData) {
       return redirect('/admin/fees?error=update_failed')
     }
 
-    console.log('✅ 手数料率更新成功:', data.service_fee_percentage)
-
-    // ページを再検証して最新データを反映
-    revalidatePath('/admin/fees')
-    return redirect('/admin/fees?success=updated')
+    console.log('✅ 手数料率更新成功:', data.value)
 
   } catch (error) {
-    console.error('❌ Server Action エラー:', error)
+    console.error('❌ Server Action 予期せぬエラー:', error)
     return redirect('/admin/fees?error=server_error')
   }
+
+  // ★★★ 成功時の処理はtryの外側で行う ★★★
+  revalidatePath('/admin/fees')
+  return redirect('/admin/fees?success=updated')
 }
 
 // メッセージ表示コンポーネント

@@ -50,9 +50,12 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       // Server Actionを呼び出し
       const result = await markNotificationAsRead(notificationId)
       
-      if (!result.success) {
+      // statusプロパティをチェックして成功・失敗を判定
+      if (result.status !== 'success') {
         throw new Error(result.error || '更新に失敗しました')
       }
+
+      console.log('✅ 通知が正常に既読になりました')
 
     } catch (error) {
       console.error('通知更新エラー:', error)
@@ -83,9 +86,12 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       // Server Actionを呼び出し
       const result = await markAllNotificationsAsRead()
       
-      if (!result.success) {
+      // statusプロパティをチェックして成功・失敗を判定
+      if (result.status !== 'success') {
         throw new Error(result.error || '一括更新に失敗しました')
       }
+
+      console.log('✅ 全ての通知が正常に既読になりました')
 
     } catch (error) {
       console.error('一括既読処理エラー:', error)

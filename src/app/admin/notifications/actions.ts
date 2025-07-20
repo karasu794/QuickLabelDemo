@@ -16,14 +16,14 @@ const supabaseAdmin = createClient(
 )
 
 // Server Action: 個別通知を既読にする
-export async function markNotificationAsRead(notificationId: string): Promise<{ success: boolean; error?: string }> {
+export async function markNotificationAsRead(notificationId: string): Promise<{ success: boolean; error?: string; status: 'success' | 'error' }> {
   try {
     console.log('🔔 通知既読処理開始:', notificationId)
 
     // バリデーション
     if (!notificationId || typeof notificationId !== 'string') {
       console.error('❌ バリデーションエラー: 無効な通知ID')
-      return { success: false, error: '無効な通知IDです' }
+      return { success: false, error: '無効な通知IDです', status: 'error' }
     }
 
     // 既読状態に更新
@@ -39,12 +39,12 @@ export async function markNotificationAsRead(notificationId: string): Promise<{ 
 
     if (error) {
       console.error('❌ 通知更新エラー:', error)
-      return { success: false, error: 'データベースの更新に失敗しました' }
+      return { success: false, error: 'データベースの更新に失敗しました', status: 'error' }
     }
 
     if (!data) {
       console.error('❌ 通知が見つかりません:', notificationId)
-      return { success: false, error: '通知が見つかりません' }
+      return { success: false, error: '通知が見つかりません', status: 'error' }
     }
 
     console.log('✅ 通知既読処理成功:', data.id)
@@ -52,16 +52,16 @@ export async function markNotificationAsRead(notificationId: string): Promise<{ 
     // ページを再検証して最新データを反映
     revalidatePath('/admin/notifications')
     
-    return { success: true }
+    return { success: true, status: 'success' }
 
   } catch (error) {
     console.error('❌ Server Action エラー:', error)
-    return { success: false, error: 'サーバーエラーが発生しました' }
+    return { success: false, error: 'サーバーエラーが発生しました', status: 'error' }
   }
 }
 
 // Server Action: 全ての未読通知を既読にする
-export async function markAllNotificationsAsRead(): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
+export async function markAllNotificationsAsRead(): Promise<{ success: boolean; error?: string; updatedCount?: number; status: 'success' | 'error' }> {
   try {
     console.log('🔔 一括既読処理開始')
 
@@ -77,7 +77,7 @@ export async function markAllNotificationsAsRead(): Promise<{ success: boolean; 
 
     if (error) {
       console.error('❌ 一括更新エラー:', error)
-      return { success: false, error: 'データベースの更新に失敗しました' }
+      return { success: false, error: 'データベースの更新に失敗しました', status: 'error' }
     }
 
     const updatedCount = data?.length || 0
@@ -86,23 +86,23 @@ export async function markAllNotificationsAsRead(): Promise<{ success: boolean; 
     // ページを再検証して最新データを反映
     revalidatePath('/admin/notifications')
     
-    return { success: true, updatedCount }
+    return { success: true, updatedCount, status: 'success' }
 
   } catch (error) {
     console.error('❌ Server Action エラー:', error)
-    return { success: false, error: 'サーバーエラーが発生しました' }
+    return { success: false, error: 'サーバーエラーが発生しました', status: 'error' }
   }
 }
 
 // Server Action: 通知を削除する（将来の拡張用）
-export async function deleteNotification(notificationId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteNotification(notificationId: string): Promise<{ success: boolean; error?: string; status: 'success' | 'error' }> {
   try {
     console.log('🗑️ 通知削除処理開始:', notificationId)
 
     // バリデーション
     if (!notificationId || typeof notificationId !== 'string') {
       console.error('❌ バリデーションエラー: 無効な通知ID')
-      return { success: false, error: '無効な通知IDです' }
+      return { success: false, error: '無効な通知IDです', status: 'error' }
     }
 
     // 通知を削除
@@ -113,7 +113,7 @@ export async function deleteNotification(notificationId: string): Promise<{ succ
 
     if (error) {
       console.error('❌ 通知削除エラー:', error)
-      return { success: false, error: 'データベースの削除に失敗しました' }
+      return { success: false, error: 'データベースの削除に失敗しました', status: 'error' }
     }
 
     console.log('✅ 通知削除処理成功:', notificationId)
@@ -121,10 +121,10 @@ export async function deleteNotification(notificationId: string): Promise<{ succ
     // ページを再検証して最新データを反映
     revalidatePath('/admin/notifications')
     
-    return { success: true }
+    return { success: true, status: 'success' }
 
   } catch (error) {
     console.error('❌ Server Action エラー:', error)
-    return { success: false, error: 'サーバーエラーが発生しました' }
+    return { success: false, error: 'サーバーエラーが発生しました', status: 'error' }
   }
 } 
