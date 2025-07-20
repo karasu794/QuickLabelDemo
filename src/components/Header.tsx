@@ -1,31 +1,15 @@
 "use client"
 
-import { Menu, X } from "lucide-react"
+import { Menu, X, Shield } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { getCurrentUser } from '@/lib/supabase/client'
+import { useState } from "react"
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { user } = await getCurrentUser()
-        setUser(user)
-      } catch (error) {
-        console.error('ユーザー情報取得エラー:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadUser()
-  }, [])
+  const { user, profile, loading, isAuthenticated, isAdmin } = useAuth()
+  const supabase = createClient()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -33,9 +17,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient()
       await supabase.auth.signOut()
-      setUser(null)
       setIsMenuOpen(false)
       // ページをリロードして状態をリセット
       window.location.href = '/'
@@ -46,46 +28,63 @@ export default function Header() {
 
   if (loading) {
     return (
-          <header className="bg-fedex-purple shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200">
+      <header className="bg-fedex-purple shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link href="/" className="text-white text-xl font-bold">
               QuickLabel
             </Link>
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-8 bg-white/20 rounded animate-pulse"></div>
+              <div className="w-20 h-8 bg-white/20 rounded animate-pulse"></div>
+            </div>
           </div>
-          <div className="text-white">読み込み中...</div>
         </div>
-      </div>
-    </header>
+      </header>
     )
   }
 
   return (
     <header className="bg-fedex-purple shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Site Title */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200">
-              QuickLabel
-            </Link>
-          </div>
+        <div className="flex justify-between items-center py-4">
+          {/* ロゴ */}
+          <Link href="/" className="text-white text-xl font-bold hover:text-gray-200 transition-colors duration-200">
+            QuickLabel
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {user && (
-            <Link
-              href="/shipping/new/shipper"
-              className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
-            >
-              送り状作成
-            </Link>
-            )}
-            
-            {user ? (
-              // ログイン済みの場合: アカウント + ログアウト
+          <nav className="hidden md:flex md:items-center md:space-x-6">
+            {isAuthenticated && (
               <>
+                <Link
+                  href="/shipping/new/shipper"
+                  className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
+                >
+                  送り状作成
+                </Link>
+                <Link
+                  href="/mypage/history"
+                  className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
+                >
+                  マイページ
+                </Link>
+              </>
+            )}
+
+            {isAuthenticated ? (
+              <>
+                {/* 管理者ページリンク（管理者のみ表示） */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 text-yellow-200 hover:text-yellow-100 hover:underline transition-all duration-200 font-medium"
+                  >
+                    <Shield className="h-4 w-4" />
+                    管理者ページ
+                  </Link>
+                )}
+
                 <Link
                   href="/account"
                   className="text-white hover:text-gray-200 hover:underline transition-all duration-200 font-medium"
@@ -134,19 +133,39 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-white/20">
-              {user && (
-              <Link
-                href="/shipping/new/shipper"
-                className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                送り状作成
-              </Link>
+              {isAuthenticated && (
+                <>
+                  <Link
+                    href="/shipping/new/shipper"
+                    className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    送り状作成
+                  </Link>
+                  <Link
+                    href="/mypage/history"
+                    className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    マイページ
+                  </Link>
+                </>
               )}
               
-              {user ? (
-                // ログイン済みの場合: アカウント + ログアウト
+              {isAuthenticated ? (
                 <>
+                  {/* 管理者ページリンク（管理者のみ表示） */}
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 text-yellow-200 hover:text-yellow-100 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Shield className="h-4 w-4" />
+                      管理者ページ
+                    </Link>
+                  )}
+
                   <Link
                     href="/account"
                     className="block text-white hover:text-gray-200 hover:bg-white/10 px-3 py-2 rounded-md transition-all duration-200 font-medium"

@@ -1,59 +1,117 @@
 import { useState, useEffect } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
+
+interface UserProfile {
+  id: string
+  email: string | null
+  contact_name: string | null
+  company_name: string | null
+  role?: string | null
+}
 
 interface AuthState {
   user: User | null
-  session: Session | null
+  profile: UserProfile | null
   loading: boolean
+  isAuthenticated: boolean
+  isAdmin: boolean
 }
 
-export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    session: null,
-    loading: true
-  })
+export const useAuth = (): AuthState => {
+  const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createClient()
 
   useEffect(() => {
-    // 初期セッション取得
-    const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      if (!error) {
-        setAuthState({
-          user: session?.user ?? null,
-          session,
-          loading: false
-        })
-      } else {
-        setAuthState({
-          user: null,
-          session: null,
-          loading: false
-        })
+    // 初期認証状態を取得
+    const getInitialAuth = async () => {
+      try {
+        const { data: { user: initialUser }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          console.error('認証状態取得エラー:', error)
+          setUser(null)
+          setProfile(null)
+          return
+        }
+
+        setUser(initialUser)
+
+        // ユーザーが存在する場合、プロフィール情報を取得
+        if (initialUser) {
+          await fetchUserProfile(initialUser.id)
+        }
+      } catch (error) {
+        console.error('初期認証状態取得エラー:', error)
+        setUser(null)
+        setProfile(null)
+      } finally {
+        setLoading(false)
       }
     }
 
-    getInitialSession()
+    // プロフィール情報を取得する関数
+    const fetchUserProfile = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, email, contact_name, company_name')
+          .eq('id', userId)
+          .single()
+
+        if (error && error.code !== 'PGRST116') { // データが見つからない場合は無視
+          console.error('プロフィール取得エラー:', error)
+          return
+        }
+
+        if (data) {
+          // 管理者判定ロジック（メールアドレスベース）
+          const isAdmin = data.email?.includes('@admin.') || 
+                          data.email === 'admin@quicklabel.com' ||
+                          data.contact_name?.includes('管理者')
+
+          setProfile({
+            ...data,
+            role: isAdmin ? 'admin' : 'user'
+          })
+        }
+      } catch (error) {
+        console.error('プロフィール取得例外:', error)
+      }
+    }
+
+    getInitialAuth()
 
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setAuthState({
-          user: session?.user ?? null,
-          session,
-          loading: false
-        })
+        console.log('認証状態変更:', event)
+        
+        if (session?.user) {
+          setUser(session.user)
+          await fetchUserProfile(session.user.id)
+        } else {
+          setUser(null)
+          setProfile(null)
+        }
+        
+        setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return {
-    user: authState.user,
-    session: authState.session,
-    loading: authState.loading,
-    isAuthenticated: !!authState.user
+    user,
+    profile,
+    loading,
+    isAuthenticated: !!user,
+    isAdmin: profile?.role === 'admin'
   }
 } 
