@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useOptimistic } from 'react'
-import { markNotificationAsRead, markAllNotificationsAsRead } from './actions.js'
+import { markNotificationAsRead, markAllNotificationsAsRead } from './actions'
 
 // 通知データの型定義
 export interface Notification {
