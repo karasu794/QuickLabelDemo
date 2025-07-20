@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest, { params }: { params: { jobId: string } }) {
   try {
     const { jobId } = params;
-    console.log(`デバッグ: ジョブID ${jobId} の詳細情報を取得`);
+    console.log(`デバッグ: ジョブ詳細取得 - ジョブID: ${jobId}`);
 
-    // Service Role Keyを使用してSupabaseクライアントを作成
-    const supabase = createServiceRoleClient();
+    const supabase = createClient();
+    
+    // ユーザー認証状態を確認
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    console.log('ユーザー認証状態:', {
+      authenticated: !!user,
+      userId: user?.id || 'null'
+    });
 
-    // ジョブの詳細を取得
-    const { data: job, error: fetchError } = await supabase
+    // ジョブを取得（user_id条件も含めてセキュリティチェック）
+    let query = supabase
       .from('quote_jobs')
       .select('*')
-      .eq('id', jobId)
-      .single();
+      .eq('id', jobId);
 
-    if (fetchError) {
-      console.error('ジョブ取得エラー:', fetchError);
-      return NextResponse.json(
-        { error: 'ジョブが見つかりません', details: fetchError },
-        { status: 404 }
-      );
+    // ログインユーザーの場合は自分のジョブのみ、未ログインの場合はuser_idがnullのジョブのみ
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
     }
 
-    if (!job) {
+    const { data: job, error: fetchError } = await query.single();
+
+    if (fetchError || !job) {
+      console.error('ジョブ取得エラー:', fetchError);
       return NextResponse.json(
-        { error: 'ジョブが見つかりません' },
+        { error: 'ジョブが見つからないか、アクセス権限がありません' },
         { status: 404 }
       );
     }

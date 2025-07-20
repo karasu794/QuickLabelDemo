@@ -57,6 +57,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ユーザー認証チェック（user_id取得のため）
+    const supabase = createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    console.log('ユーザー認証状態:', {
+      authenticated: !!user,
+      userId: user?.id || 'null',
+      userError: userError?.message || 'none'
+    });
+
     const body: QuoteRequest = await request.json();
     console.log('見積もりジョブリクエスト受信:', JSON.stringify(body, null, 2));
 
@@ -87,8 +97,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Supabaseクライアントを作成（Service Role Key使用）
-    const supabase = createClient();
     console.log('Supabaseクライアント作成完了');
 
     // Service Role Keyでのクライアント作成も試す
@@ -145,14 +153,24 @@ export async function POST(request: NextRequest) {
 
     console.log('リクエストペイロード準備完了:', JSON.stringify(requestPayload, null, 2));
 
-    // quote_jobsテーブルにジョブを作成
+    // quote_jobsテーブルにジョブを作成（user_idを追加）
     console.log('quote_jobsテーブルへの書き込みを開始...');
+    const insertData: any = {
+      status: 'pending',
+      request_payload: requestPayload
+    };
+
+    // ユーザーがログインしている場合はuser_idを追加
+    if (user) {
+      insertData.user_id = user.id;
+      console.log('ユーザーID追加:', user.id);
+    } else {
+      console.log('未ログインユーザー - user_idはnull');
+    }
+
     const { data: jobData, error: insertError } = await activeSupabase
       .from('quote_jobs')
-      .insert({
-        status: 'pending',
-        request_payload: requestPayload as any
-      })
+      .insert(insertData)
       .select('id')
       .single();
 

@@ -641,10 +641,13 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       );
     }
 
-    // 既に処理済みかチェック
-    if (job.status === 'completed') {
-      console.log('ジョブは既に完了しています');
-      return NextResponse.json({ success: true, message: 'ジョブは既に完了しています' });
+    // ジョブのステータスチェック
+    if (job.status !== 'pending') {
+      console.log(`ジョブ${jobId}は既に処理済みです (ステータス: ${job.status})`);
+      return NextResponse.json(
+        { error: 'このジョブは既に処理済みです' },
+        { status: 400 }
+      );
     }
 
     // タイムアウト処理を設定

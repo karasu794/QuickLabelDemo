@@ -9,17 +9,32 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
     // Supabaseクライアントを作成
     const supabase = createClient();
 
-    // ジョブを取得
-    const { data: job, error: fetchError } = await supabase
+    // ユーザー認証状態を確認
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    console.log('ユーザー認証状態:', {
+      authenticated: !!user,
+      userId: user?.id || 'null'
+    });
+
+    // ジョブを取得（user_id条件も含めてセキュリティチェック）
+    let query = supabase
       .from('quote_jobs')
       .select('*')
-      .eq('id', jobId)
-      .single();
+      .eq('id', jobId);
+
+    // ログインユーザーの場合は自分のジョブのみ、未ログインの場合はuser_idがnullのジョブのみ
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data: job, error: fetchError } = await query.single();
 
     if (fetchError || !job) {
       console.error('ジョブ取得エラー:', fetchError);
       return NextResponse.json(
-        { error: 'ジョブが見つかりません' },
+        { error: 'ジョブが見つからないか、アクセス権限がありません' },
         { status: 404 }
       );
     }

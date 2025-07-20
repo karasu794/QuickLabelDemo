@@ -92,25 +92,27 @@ export default function MypageHistoryPage() {
 
       console.log('📊 履歴データ取得開始:', user.id)
 
-      // 発送履歴を取得
+      // 発送履歴を取得（最新50件）
       const { data: shipmentData, error: shipmentError } = await (supabase as any)
         .from('shipments')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+        .limit(50)
 
       if (shipmentError) {
         console.error('❌ 発送履歴取得エラー:', shipmentError)
         throw shipmentError
       }
 
-      // 見積もり履歴を取得（過去30日分）
+      // 見積もり履歴を取得（過去30日分、user_id条件追加）
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
       const { data: quoteData, error: quoteError } = await supabase
         .from('quote_jobs')
         .select('*')
+        .eq('user_id', user.id)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(50)
@@ -178,6 +180,33 @@ export default function MypageHistoryPage() {
     } catch (err) {
       console.error('❌ 送り状再利用エラー:', err)
       alert('送り状の再利用に失敗しました。もう一度お試しください。')
+    }
+  }
+
+  // 見積もり履歴から見積もりページに遷移
+  const handleReuseQuote = async (quote: QuoteHistory) => {
+    try {
+      console.log('🔄 見積もり履歴から再利用開始:', quote.id)
+
+      const request = quote.request_payload
+      if (!request?.quoteParams) {
+        throw new Error('見積もりデータが不正です')
+      }
+
+      // Zustandストアをリセット
+      resetForm()
+
+      // 見積もりデータをセット
+      setInitialShippingInfoFromQuote(request.quoteParams, request.packages || [])
+
+      console.log('✅ 見積もりデータをストアに設定完了 - トップページに遷移')
+
+      // トップページに遷移（見積もりフォーム）
+      router.push('/')
+
+    } catch (err) {
+      console.error('❌ 見積もり再利用エラー:', err)
+      alert('見積もりの再利用に失敗しました。もう一度お試しください。')
     }
   }
 
@@ -402,6 +431,7 @@ export default function MypageHistoryPage() {
                         <th className="text-left p-4">荷物数</th>
                         <th className="text-left p-4">ステータス</th>
                         <th className="text-left p-4">料金数</th>
+                        <th className="text-left p-4">操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -444,6 +474,17 @@ export default function MypageHistoryPage() {
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )}
+                            </td>
+                            <td className="p-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReuseQuote(quote)}
+                                className="flex items-center gap-2"
+                              >
+                                <Repeat className="h-4 w-4" />
+                                この内容で見積もり
+                              </Button>
                             </td>
                           </tr>
                         )

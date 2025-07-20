@@ -131,6 +131,7 @@ export type Database = {
       quote_jobs: {
         Row: {
           id: string
+          user_id: string | null
           status: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
           request_payload: Json
           response_payload: Json | null
@@ -141,6 +142,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          user_id?: string | null
           status?: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
           request_payload: Json
           response_payload?: Json | null
@@ -151,6 +153,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          user_id?: string | null
           status?: 'pending' | 'processing_auth' | 'processing_rate_request' | 'completed' | 'failed'
           request_payload?: Json
           response_payload?: Json | null
