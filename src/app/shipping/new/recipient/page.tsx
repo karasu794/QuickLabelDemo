@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRecipientInfo, useWaitForHydration } from '@/store/shippingFormStore'
+import { useState, useEffect, useCallback } from 'react'
+import { useRecipientInfo, useWaitForHydration, useShippingFormStore } from '@/store/shippingFormStore'
 import { usStates, canadianProvinces, japanesePrefectures, getCountryOptions, getPrefectureFromPostalCode } from '@/lib/data/locations'
 import { GooglePlaceAutocomplete, ParsedAddress } from '@/components/GooglePlaceAutocomplete'
 import { useRouter } from 'next/navigation'
@@ -57,8 +57,10 @@ export default function RecipientInfoPage() {
   const router = useRouter()
   const { isLoading, isReady } = useWaitForHydration()
   const { recipientInfo, updateRecipientInfo } = useRecipientInfo()
+  const { phoenixMode, setPhoenixMode } = useShippingFormStore()
   
   console.log('🔄 RecipientInfoPage render with recipientInfo:', recipientInfo);
+  console.log('🔄 Current phoenixMode:', phoenixMode);
   
   // 初期化時にストアから表示用住所を構築
   const [addressInput, setAddressInput] = useState(() => {
@@ -116,7 +118,95 @@ export default function RecipientInfoPage() {
     console.log('📝 Recipient address input changed to:', value);
     setAddressInput(value)
     setIsAddressSelected(false)
+    
+    // フェニックスモードのリセット処理
+    if (phoenixMode !== 'none') {
+      console.log(`🔄 Recipient page: フェニックスモード "${phoenixMode}" → "none" にリセット`)
+      
+      // フェニックスモードをリセット
+      setPhoenixMode('none')
+      
+      // 荷受人基本情報をクリア（フェニックス情報をリセット）
+      updateRecipientInfo('contactName', '')
+      updateRecipientInfo('companyName', '')
+      updateRecipientInfo('phoneNumber', '')
+      
+      // 荷受人住所情報をクリア
+      updateRecipientInfo('countryCode', 'JP')
+      updateRecipientInfo('postalCode', '')
+      updateRecipientInfo('stateCode', '')
+      updateRecipientInfo('cityName', '')
+      updateRecipientInfo('address1', '')
+      updateRecipientInfo('address2', '')
+      
+      console.log(`✅ 荷受人の基本情報・住所情報をクリア完了`)
+    }
   }
+
+  // フェニックス住所を取得してフォームに自動入力する関数
+  const handlePhoenixAddressClick = useCallback(async () => {
+    try {
+      console.log('🏢 荷受人: フェニックス住所取得開始')
+      
+      const response = await fetch('/api/company-info')
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '自社住所情報の取得に失敗しました')
+      }
+      
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.error || '自社住所情報の取得に失敗しました')
+      }
+      
+      const companyInfo = data.data
+      console.log('✅ 荷受人: フェニックス住所取得成功:', companyInfo)
+      
+      // フェニックス基本情報を荷受人情報に自動入力
+      updateRecipientInfo('contactName', companyInfo.contactName || '')
+      updateRecipientInfo('companyName', companyInfo.companyName || '')
+      updateRecipientInfo('phoneNumber', companyInfo.phoneNumber || '')
+      
+      // フェニックス住所を荷受人情報に自動入力
+      updateRecipientInfo('countryCode', 'JP')
+      updateRecipientInfo('postalCode', companyInfo.postalCode)
+      updateRecipientInfo('cityName', companyInfo.address1) // 都道府県・市区町村
+      updateRecipientInfo('address1', companyInfo.address2 || companyInfo.address1) // 番地・建物名
+      updateRecipientInfo('address2', '')
+      
+      // 日本の場合、郵便番号から県を自動判定
+      let stateCode = ''
+      if (companyInfo.postalCode) {
+        const prefectureFromPostal = getPrefectureFromPostalCode(companyInfo.postalCode)
+        if (prefectureFromPostal) {
+          stateCode = prefectureFromPostal
+          console.log(`📮 荷受人: 郵便番号から県を自動判定: ${companyInfo.postalCode} → ${stateCode}`)
+        }
+      }
+      updateRecipientInfo('stateCode', stateCode)
+      
+      // 表示用の住所文字列を作成
+      const displayAddress = `${companyInfo.postalCode} ${companyInfo.address1}${companyInfo.address2 ? ' ' + companyInfo.address2 : ''}`
+      setAddressInput(displayAddress)
+      setIsAddressSelected(true)
+      
+      // フェニックス送受取フラグを設定
+      setPhoenixMode('to')
+      
+      console.log('🎯 荷受人にフェニックス情報を設定完了（モード: to）', {
+        contactName: companyInfo.contactName,
+        companyName: companyInfo.companyName,
+        phoneNumber: companyInfo.phoneNumber,
+        address: displayAddress
+      })
+      
+    } catch (error) {
+      console.error('❌ 荷受人: フェニックス住所取得エラー:', error)
+      alert(`フェニックス住所の取得に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`)
+    }
+  }, [updateRecipientInfo, setPhoenixMode])
 
   // Google Places APIから住所が選択された場合
   const handleAddressSelect = (data: ParsedAddress) => {
@@ -360,7 +450,23 @@ export default function RecipientInfoPage() {
 
                     {/* 住所自動入力 */}
                     <div className="space-y-2">
-                      <Label>住所検索</Label>
+                      <div className="flex items-center gap-4">
+                        <Label>住所検索</Label>
+                        
+                        {/* フェニックス住所自動入力ボタン（fromモードでない場合のみ表示） */}
+                        {phoenixMode !== 'from' && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePhoenixAddressClick}
+                            className="text-green-600 border-green-300 hover:bg-green-50 text-xs"
+                          >
+                            🏢 フェニックスへ送る
+                          </Button>
+                        )}
+                      </div>
+                      
                       <GooglePlaceAutocomplete
                         value={addressInput}
                         onChange={handleAddressInputChange}

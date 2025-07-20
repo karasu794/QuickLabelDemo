@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceRoleClient } from '@supabase/supabase-js'
+
+// サービスロールキーを使用したSupabase client（管理者権限）
+const supabaseAdmin = createServiceRoleClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
 
 // 新しいリクエストボディの型定義
 interface QuoteParams {
@@ -25,6 +38,115 @@ interface Package {
   width: string
   height: string
   declaredValue: string
+}
+
+// 特別オファー検知とnotification作成の関数
+async function detectAndNotifySpecialOffers(jobId: string, rateReplyDetails: any[], destinationCountry: string) {
+  try {
+    console.log('🔍 特別オファー検知開始...', { jobId, rateCount: rateReplyDetails.length, destinationCountry });
+    
+    // サービス名でグループ化
+    const serviceGroups: { [serviceName: string]: any[] } = {};
+    
+    rateReplyDetails.forEach(detail => {
+      const serviceName = detail.serviceName;
+      if (!serviceGroups[serviceName]) {
+        serviceGroups[serviceName] = [];
+      }
+      serviceGroups[serviceName].push(detail);
+    });
+    
+    console.log('📊 サービスグループ:', Object.keys(serviceGroups));
+    
+    // 各サービスで特別オファーをチェック
+    for (const [serviceName, rates] of Object.entries(serviceGroups)) {
+      let accountRate: number | null = null;
+      let listRate: number | null = null;
+      
+      // 各レートタイプをチェック
+      rates.forEach(rate => {
+        const ratedShipment = rate.ratedShipmentDetails?.[0];
+        if (!ratedShipment) return;
+        
+        const totalCharge = ratedShipment.totalNetCharge;
+        const rateType = ratedShipment.rateType;
+        
+        console.log(`📋 ${serviceName} - Rate Type: ${rateType}, Amount: ${totalCharge}`);
+        
+        if (rateType === 'PAYOR_ACCOUNT_SHIPMENT') {
+          accountRate = totalCharge;
+        } else if (rateType === 'PAYOR_LIST_SHIPMENT') {
+          listRate = totalCharge;
+        }
+      });
+      
+      // 特別オファーの条件チェック
+      if (accountRate !== null && listRate !== null && accountRate < listRate) {
+        const savings = listRate - accountRate;
+        console.log(`💰 特別オファー検知! ${serviceName}: 通常¥${listRate} → アカウント¥${accountRate} (¥${savings}お得)`);
+        
+        // 24時間ルール: 重複チェック
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        
+        console.log(`🔍 重複チェック開始: ${serviceName} × ${destinationCountry} (24時間以内)`);
+        
+        const { data: existingNotifications, error: selectError } = await supabaseAdmin
+          .from('notifications')
+          .select('id, created_at, metadata')
+          .eq('type', 'special_offer')
+          .gte('created_at', twentyFourHoursAgo)
+          .contains('metadata', { serviceName, destinationCountry });
+        
+        if (selectError) {
+          console.error('❌ 重複チェッククエリエラー:', selectError);
+          continue;
+        }
+        
+        if (existingNotifications && existingNotifications.length > 0) {
+          console.log(`⚠️ 24時間以内に同じ特別オファー通知が存在します (${existingNotifications.length}件)`, {
+            serviceName,
+            destinationCountry,
+            lastNotification: existingNotifications[0].created_at
+          });
+          continue; // 重複があるため、新しい通知は作成しない
+        }
+        
+        console.log(`✅ 重複なし - 新しい特別オファー通知を作成します`);
+        
+        // 通知メッセージを作成
+        const message = `「${serviceName}」で通常料金より¥${Math.round(savings)}安い、特別オファーが提示されました。`;
+        
+        // メタデータを作成（destinationCountryを追加）
+        const metadata = {
+          jobId,
+          serviceName,
+          destinationCountry,
+          listRate,
+          accountRate,
+          savings: Math.round(savings)
+        };
+        
+        // notificationsテーブルに保存
+        const { error } = await supabaseAdmin
+          .from('notifications')
+          .insert({
+            type: 'special_offer',
+            message,
+            metadata,
+            created_at: new Date().toISOString()
+          });
+        
+        if (error) {
+          console.error('❌ 特別オファー通知の保存エラー:', error);
+        } else {
+          console.log('✅ 特別オファー通知を保存しました:', { serviceName, destinationCountry, savings: Math.round(savings) });
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ 特別オファー検知処理エラー:', error);
+  }
 }
 
 // 日本語からローマ字への変換マップ
@@ -573,6 +695,12 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       // FedX Rate APIを呼び出し（タイムアウト付き）
       const fedexResponse = await getAllServiceRates(accessToken, fedexRequest, quoteParams);
       console.log('FedX APIレスポンス取得完了');
+
+      // 特別オファー検知・通知処理（バックグラウンドで実行）
+      if (fedexResponse.output?.rateReplyDetails) {
+        detectAndNotifySpecialOffers(jobId, fedexResponse.output.rateReplyDetails, quoteParams.destinationCountry)
+          .catch(error => console.error('特別オファー検知でエラー:', error));
+      }
 
       // レスポンスを変換
       const rates = fedexResponse.output.rateReplyDetails.map((detail: any) => {

@@ -51,6 +51,8 @@ export interface ExtendedQuoteParams {
   shipDate: string
   isResidential: boolean
   higherInsurance: boolean
+  isPhoenixShipment: boolean
+  phoenixMode: 'none' | 'from' | 'to'
 }
 
 interface QuoteFormProps {
@@ -126,8 +128,92 @@ export default function QuoteFormComponent({
   
   // 入力値が変更された際のコールバック関数
   const handleInputChange = useCallback((type: 'origin' | 'destination') => {
-      onQuoteParamsChange(`${type}Selected`, false);
-  },[onQuoteParamsChange]);
+    console.log(`📝 手動入力開始: ${type} - フェニックスモードをリセット`)
+    
+    // 選択状態をリセット
+    onQuoteParamsChange(`${type}Selected`, false);
+    
+    // フェニックスモードのリセット処理
+    if (quoteParams.phoenixMode !== 'none') {
+      console.log(`🔄 フェニックスモード "${quoteParams.phoenixMode}" → "none" にリセット`)
+      
+      // フェニックスモードをリセット
+      onQuoteParamsChange('phoenixMode', 'none')
+      onQuoteParamsChange('isPhoenixShipment', false)
+      
+      // 該当する住所情報をクリア
+      onQuoteParamsChange(`${type}Country`, '')
+      onQuoteParamsChange(`${type}PostalCode`, '')
+      onQuoteParamsChange(`${type}StateCode`, '')
+      onQuoteParamsChange(`${type}CityName`, '')
+      onQuoteParamsChange(`${type}Street`, '')
+      onQuoteParamsChange(`${type}PostalCodeMissing`, false)
+      onQuoteParamsChange(`${type}CityNameMissing`, false)
+      onQuoteParamsChange(`${type}StateCodeMissing`, false)
+      
+      console.log(`✅ ${type}の住所情報をクリア完了`)
+    }
+  }, [onQuoteParamsChange, quoteParams.phoenixMode])
+
+  // フェニックス住所を取得してフォームに自動入力する関数
+  const handlePhoenixAddressClick = useCallback(async (type: 'origin' | 'destination') => {
+    try {
+      console.log(`🏢 フェニックス住所取得開始: ${type}`)
+      
+      const response = await fetch('/api/company-info')
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '自社住所情報の取得に失敗しました')
+      }
+      
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.error || '自社住所情報の取得に失敗しました')
+      }
+      
+      const companyInfo = data.data
+      console.log('✅ フェニックス住所取得成功:', companyInfo)
+      
+      // フェニックス住所をフォームに自動入力
+      onQuoteParamsChange(`${type}Country`, 'JP')
+      onQuoteParamsChange(`${type}PostalCode`, companyInfo.postalCode)
+      onQuoteParamsChange(`${type}CityName`, companyInfo.address1) // 都道府県・市区町村
+      onQuoteParamsChange(`${type}Street`, companyInfo.address2 || '') // 番地・建物名
+      
+      // 日本の場合、郵便番号から県を自動判定
+      let stateCode = ''
+      if (companyInfo.postalCode) {
+        const prefectureFromPostal = getPrefectureFromPostalCode(companyInfo.postalCode)
+        if (prefectureFromPostal) {
+          stateCode = prefectureFromPostal
+          console.log(`📮 フェニックス住所: 郵便番号から県を自動判定: ${companyInfo.postalCode} → ${stateCode}`)
+        }
+      }
+      onQuoteParamsChange(`${type}StateCode`, stateCode)
+      
+      // 表示用の住所文字列を作成
+      const displayAddress = `${companyInfo.postalCode} ${companyInfo.address1}${companyInfo.address2 ? ' ' + companyInfo.address2 : ''}`
+      onQuoteParamsChange(`${type}AddressInput`, displayAddress)
+      
+      // 選択済みフラグを設定
+      onQuoteParamsChange(`${type}Selected`, true)
+      onQuoteParamsChange(`${type}PostalCodeMissing`, false)
+      onQuoteParamsChange(`${type}CityNameMissing`, false)
+      onQuoteParamsChange(`${type}StateCodeMissing`, false)
+      
+      // フェニックス送受取フラグとモードを設定
+      onQuoteParamsChange('isPhoenixShipment', true)
+      onQuoteParamsChange('phoenixMode', type === 'origin' ? 'from' : 'to')
+      
+      console.log(`🎯 ${type}にフェニックス住所を設定完了（モード: ${type === 'origin' ? 'from' : 'to'}）`)
+      
+    } catch (error) {
+      console.error('❌ フェニックス住所取得エラー:', error)
+      alert(`フェニックス住所の取得に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`)
+    }
+  }, [onQuoteParamsChange])
 
 
   // 州/県の表示名を取得する関数
@@ -174,10 +260,26 @@ export default function QuoteFormComponent({
 
             {/* 出荷地 */}
             <div className="space-y-2">
-              <Label className="text-base font-medium flex items-center">
-                <span className="text-blue-600 mr-2">📍</span>
-                出荷地
-              </Label>
+              <div className="flex items-center gap-4">
+                <Label className="text-base font-medium flex items-center">
+                  <span className="text-blue-600 mr-2">📍</span>
+                  出荷地
+                </Label>
+                
+                {/* フェニックス住所自動入力ボタン（出荷地が空の場合のみ表示） */}
+                {!quoteParams.originAddressInput && quoteParams.phoenixMode !== 'to' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePhoenixAddressClick('origin')}
+                    className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs"
+                  >
+                    🏢 フェニックスから送る
+                  </Button>
+                )}
+              </div>
+              
               <div className="relative">
                 <GooglePlaceAutocomplete
                   value={quoteParams.originAddressInput}
@@ -190,6 +292,7 @@ export default function QuoteFormComponent({
                   placeholder="国、郵便番号、または住所を入力"
                 />
               </div>
+              
               {/* 出荷地の詳細情報表示 */}
               {quoteParams.originSelected && (
                 <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-md space-y-3">
@@ -286,10 +389,26 @@ export default function QuoteFormComponent({
 
             {/* 仕向地 */}
             <div className="space-y-2">
-              <Label className="text-base font-medium flex items-center">
-                <span className="text-green-600 mr-2">📍</span>
-                仕向地
-              </Label>
+              <div className="flex items-center gap-4">
+                <Label className="text-base font-medium flex items-center">
+                  <span className="text-green-600 mr-2">📍</span>
+                  仕向地
+                </Label>
+                
+                {/* フェニックス住所自動入力ボタン（仕向地が空の場合のみ表示） */}
+                {!quoteParams.destinationAddressInput && quoteParams.phoenixMode !== 'from' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePhoenixAddressClick('destination')}
+                    className="text-green-600 border-green-300 hover:bg-green-50 text-xs"
+                  >
+                    🏢 フェニックスへ送る
+                  </Button>
+                )}
+              </div>
+              
               <div className="relative">
                 <GooglePlaceAutocomplete
                   value={quoteParams.destinationAddressInput}
@@ -302,6 +421,7 @@ export default function QuoteFormComponent({
                   placeholder="国、郵便番号、または住所を入力"
                 />
               </div>
+              
               {/* 仕向地の詳細情報表示 */}
               {quoteParams.destinationSelected && (
                 <div className="mt-2 p-4 bg-green-50 border border-green-200 rounded-md space-y-3">

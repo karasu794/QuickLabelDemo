@@ -59,7 +59,9 @@ export default function Home() {
     destinationStateCodeMissing: false,
     shipDate: new Date().toISOString().split('T')[0],
     isResidential: false,
-    higherInsurance: false
+    higherInsurance: false,
+    isPhoenixShipment: false,
+    phoenixMode: 'none'
   })
 
   const [packages, setPackages] = useState<Package[]>([{

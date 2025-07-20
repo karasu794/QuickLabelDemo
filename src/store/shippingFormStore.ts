@@ -96,6 +96,7 @@ interface ShippingFormState {
   shippingPurpose: string
   selectedRate: SelectedRate | null
   completedSteps: string[]
+  phoenixMode: 'none' | 'from' | 'to'
 
   // 荷送人情報のアクション
   setShipperInfo: (info: ShipperInfo) => void
@@ -138,6 +139,9 @@ interface ShippingFormState {
   // 完了ステップのアクション
   markStepCompleted: (stepPath: string) => void
   isStepCompleted: (stepPath: string) => boolean
+
+  // フェニックスモードのアクション
+  setPhoenixMode: (mode: 'none' | 'from' | 'to') => void
 
   // リセット機能
   resetForm: () => void
@@ -214,6 +218,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
       shippingPurpose: '',
       selectedRate: null,
       completedSteps: [],
+      phoenixMode: 'none',
 
       // 荷送人情報のアクション
       setShipperInfo: (info) => set({ shipperInfo: info }),
@@ -321,13 +326,15 @@ export const useShippingFormStore = create<ShippingFormState>()(
           shipperInfo: newShipperInfo,
           recipientInfo: newRecipientInfo,
           packages: newPackages,
-          items: [initialItem] // 内容品を初期状態にリセット
+          items: [initialItem], // 内容品を初期状態にリセット
+          phoenixMode: quoteParams.phoenixMode || 'none' // 見積もり時のフェニックスモードを引き継ぐ
         })
         
         console.log('✅ Store updated with new shipping info');
         console.log('✅ Final shipperInfo address1:', newShipperInfo.address1);
         console.log('✅ Final recipientInfo address1:', newRecipientInfo.address1);
         console.log('✅ Items reset to initial state:', [initialItem]);
+        console.log('✅ Phoenix mode inherited:', quoteParams.phoenixMode || 'none');
       },
 
       // 部分的な住所情報を更新するアクション
@@ -413,6 +420,9 @@ export const useShippingFormStore = create<ShippingFormState>()(
         return state.completedSteps.includes(stepPath)
       },
 
+      // フェニックスモードのアクション
+      setPhoenixMode: (mode) => set({ phoenixMode: mode }),
+
       // リセット機能
       resetForm: () => 
         set({
@@ -423,7 +433,8 @@ export const useShippingFormStore = create<ShippingFormState>()(
           contents: [initialContent],
           shippingPurpose: '',
           selectedRate: null,
-          completedSteps: []
+          completedSteps: [],
+          phoenixMode: 'none'
         })
     }),
     {
@@ -436,7 +447,8 @@ export const useShippingFormStore = create<ShippingFormState>()(
         contents: state.contents,
         shippingPurpose: state.shippingPurpose,
         selectedRate: state.selectedRate,
-        completedSteps: state.completedSteps
+        completedSteps: state.completedSteps,
+        phoenixMode: state.phoenixMode
       })
     }
   )
