@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// 動的レンダリングを強制（Vercelビルドエラー対策）
+export const dynamic = 'force-dynamic'
+
 // FedX認証トークン取得（/api/shipと同じ実装）
 async function getFedExAccessToken(): Promise<string> {
   const authUrl = process.env.NODE_ENV === 'production' 
