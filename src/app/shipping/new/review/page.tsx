@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
 import SquarePaymentForm from '@/components/SquarePaymentForm'
@@ -51,116 +51,120 @@ export default function ReviewPage() {
   }, [])
 
   // 実際の配送料金を取得（パッケージ数に応じて自動判定）
-  useEffect(() => {
-    const fetchActualRates = async () => {
-      // ハイドレーション完了を待つ
-      if (!isReady || isLoading) {
-        console.log(`⏳ Waiting for hydration... isReady: ${isReady}, isLoading: ${isLoading}`)
-        return
-      }
-
-      // データの有効性をチェック
-      if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
-        console.log(`❌ Required data missing:`, {
-          shipperCountry: shipperInfo.countryCode,
-          recipientCountry: recipientInfo.countryCode,
-          packagesCount: packages.length
-        })
-        return
-      }
-
-      console.log(`🔍 Data check:`, {
-        shipperInfo: shipperInfo,
-        recipientInfo: recipientInfo,
-        packagesCount: packages.length
-      })
-
-      setRatesLoading(true)
-      setRatesError(null)
-
-      try {
-        console.log(`💰 ${packages.length}個パッケージの実際の料金を取得中...`)
-        
-        const requestData = {
-          shipperInfo: {
-            countryCode: shipperInfo.countryCode,
-            postalCode: shipperInfo.postalCode,
-            stateCode: shipperInfo.stateCode,
-            cityName: shipperInfo.cityName
-          },
-          recipientInfo: {
-            countryCode: recipientInfo.countryCode,
-            postalCode: recipientInfo.postalCode,
-            stateCode: recipientInfo.stateCode,
-            cityName: recipientInfo.cityName,
-            isResidential: recipientInfo.isResidential
-          },
-          packages: packages.map(pkg => ({
-            weight: parseFloat(pkg.weight || '0'),
-            type: pkg.type || 'YOUR_PACKAGING',
-            length: parseFloat(pkg.length || '0'),
-            width: parseFloat(pkg.width || '0'),
-            height: parseFloat(pkg.height || '0'),
-            declaredValue: parseFloat(pkg.declaredValue || '0')
-          })),
-          shipDate: new Date().toISOString().split('T')[0]
-        }
-
-        // パッケージ数に応じてAPIを選択
-        const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
-        console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
-
-        const response = await fetch(apiEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(packages.length >= 2 ? requestData : {
-            quoteParams: {
-              originCountry: shipperInfo.countryCode,
-              originPostalCode: shipperInfo.postalCode,
-              originStateCode: shipperInfo.stateCode,
-              originCityName: shipperInfo.cityName,
-              originSelected: true,
-              destinationCountry: recipientInfo.countryCode,
-              destinationPostalCode: recipientInfo.postalCode,
-              destinationStateCode: recipientInfo.stateCode,
-              destinationCityName: recipientInfo.cityName,
-              destinationSelected: true,
-              isResidential: recipientInfo.isResidential,
-              shipDate: new Date().toISOString().split('T')[0]
-            },
-            packages: packages.map((pkg, index) => ({
-              id: index + 1,
-              packagingType: pkg.type || 'YOUR_PACKAGING',
-              weight: pkg.weight || '0',
-              length: pkg.length || '0',
-              width: pkg.width || '0',
-              height: pkg.height || '0',
-              declaredValue: pkg.declaredValue || '0'
-            }))
-          }),
-        })
-
-        if (!response.ok) {
-          throw new Error('料金の取得に失敗しました')
-        }
-
-        const ratesData = await response.json()
-        console.log(`✅ 料金取得成功:`, ratesData)
-        
-        setActualShippingRates(ratesData)
-
-      } catch (error) {
-        console.error('❌ 料金取得エラー:', error)
-        setRatesError(error instanceof Error ? error.message : '料金の取得に失敗しました')
-      } finally {
-        setRatesLoading(false)
-      }
+  const fetchActualRates = useCallback(async () => {
+    // ハイドレーション完了を待つ
+    if (!isReady || isLoading) {
+      console.log(`⏳ Waiting for hydration... isReady: ${isReady}, isLoading: ${isLoading}`)
+      return
     }
 
-    fetchActualRates()
+    // データの有効性をチェック
+    if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
+      console.log(`❌ Required data missing:`, {
+        shipperCountry: shipperInfo.countryCode,
+        recipientCountry: recipientInfo.countryCode,
+        packagesCount: packages.length
+      })
+      return
+    }
+
+    console.log(`🔍 Data check:`, {
+      shipperInfo: shipperInfo,
+      recipientInfo: recipientInfo,
+      packagesCount: packages.length
+    })
+
+    setRatesLoading(true)
+    setRatesError(null)
+
+    try {
+      console.log(`💰 ${packages.length}個パッケージの実際の料金を取得中...`)
+      
+      const requestData = {
+        shipperInfo: {
+          countryCode: shipperInfo.countryCode,
+          postalCode: shipperInfo.postalCode,
+          stateCode: shipperInfo.stateCode,
+          cityName: shipperInfo.cityName
+        },
+        recipientInfo: {
+          countryCode: recipientInfo.countryCode,
+          postalCode: recipientInfo.postalCode,
+          stateCode: recipientInfo.stateCode,
+          cityName: recipientInfo.cityName,
+          isResidential: recipientInfo.isResidential
+        },
+        packages: packages.map(pkg => ({
+          weight: parseFloat(pkg.weight || '0'),
+          type: pkg.type || 'YOUR_PACKAGING',
+          length: parseFloat(pkg.length || '0'),
+          width: parseFloat(pkg.width || '0'),
+          height: parseFloat(pkg.height || '0'),
+          declaredValue: parseFloat(pkg.declaredValue || '0')
+        })),
+        shipDate: new Date().toISOString().split('T')[0]
+      }
+
+      // パッケージ数に応じてAPIを選択
+      const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
+      console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
+
+      const requestBody = packages.length >= 2 ? requestData : {
+        quoteParams: {
+          originCountry: shipperInfo.countryCode,
+          originPostalCode: shipperInfo.postalCode,
+          originStateCode: shipperInfo.stateCode,
+          originCityName: shipperInfo.cityName,
+          originSelected: true,
+          destinationCountry: recipientInfo.countryCode,
+          destinationPostalCode: recipientInfo.postalCode,
+          destinationStateCode: recipientInfo.stateCode,
+          destinationCityName: recipientInfo.cityName,
+          destinationSelected: true,
+          isResidential: recipientInfo.isResidential,
+          shipDate: new Date().toISOString().split('T')[0]
+        },
+        packages: packages.map((pkg, index) => ({
+          id: index + 1,
+          packagingType: pkg.type || 'YOUR_PACKAGING',
+          weight: pkg.weight || '0',
+          length: pkg.length || '0',
+          width: pkg.width || '0',
+          height: pkg.height || '0',
+          declaredValue: pkg.declaredValue || '0'
+        }))
+      }
+
+      console.log(`📤 Request body for ${apiEndpoint}:`, JSON.stringify(requestBody, null, 2))
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+
+      if (!response.ok) {
+        throw new Error('料金の取得に失敗しました')
+      }
+
+      const ratesData = await response.json()
+      console.log(`✅ 料金取得成功:`, ratesData)
+      
+      setActualShippingRates(ratesData)
+
+    } catch (error) {
+      console.error('❌ 料金取得エラー:', error)
+      setRatesError(error instanceof Error ? error.message : '料金の取得に失敗しました')
+    } finally {
+      setRatesLoading(false)
+    }
   }, [shipperInfo, recipientInfo, packages, isReady, isLoading])
+
+  useEffect(() => {
+    fetchActualRates()
+  }, [fetchActualRates])
 
   // 料金計算ロジック（統合版）
   const calculations = useMemo(() => {
