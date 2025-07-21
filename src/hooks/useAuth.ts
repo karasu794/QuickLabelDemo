@@ -49,14 +49,20 @@ export const useAuth = (): AuthState => {
 
         // ユーザーが存在する場合、プロフィール情報を取得
         if (initialUser) {
-          await fetchUserProfile(initialUser.id)
+          try {
+            await fetchUserProfile(initialUser.id)
+          } catch (profileError) {
+            console.error('初期プロフィール取得エラー:', profileError)
+            // プロフィール取得に失敗してもユーザー認証は有効
+            setProfile(null)
+          }
         }
       } catch (error) {
         console.error('初期認証状態取得エラー:', error)
         setUser(null)
         setProfile(null)
       } finally {
-        setLoading(false)
+        setLoading(false) // 必ずローディング状態を解除
       }
     }
 
@@ -71,6 +77,8 @@ export const useAuth = (): AuthState => {
 
         if (error && error.code !== 'PGRST116') { // データが見つからない場合は無視
           console.error('プロフィール取得エラー:', error)
+          // エラーでもプロフィールをnullに設定して処理を継続
+          setProfile(null)
           return
         }
 
@@ -79,9 +87,14 @@ export const useAuth = (): AuthState => {
             ...(data as any),
             role: (data as any).role || 'user' // roleがnullの場合のフォールバック
           })
+        } else {
+          // データが存在しない場合
+          setProfile(null)
         }
       } catch (error) {
         console.error('プロフィール取得例外:', error)
+        // 例外が発生してもプロフィールをnullに設定
+        setProfile(null)
       }
     }
 
@@ -92,15 +105,21 @@ export const useAuth = (): AuthState => {
       async (event, session) => {
         console.log('認証状態変更:', event)
         
-        if (session?.user) {
-          setUser(session.user)
-          await fetchUserProfile(session.user.id)
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
+        setLoading(true) // ローディング開始
         
-        setLoading(false)
+        try {
+          if (session?.user) {
+            setUser(session.user)
+            await fetchUserProfile(session.user.id)
+          } else {
+            setUser(null)
+            setProfile(null)
+          }
+        } catch (error) {
+          console.error('認証状態変更処理エラー:', error)
+        } finally {
+          setLoading(false) // 必ずローディング終了
+        }
       }
     )
 

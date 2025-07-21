@@ -11,8 +11,11 @@ import { Loader2, CheckCircle, Package } from 'lucide-react'
 interface ShipmentResult {
   trackingNumber: string
   labelUrl?: string
+  labelUrls?: string[] // MPS用複数ラベル
   paymentId: string
   shipmentId: string
+  type?: string // 'standard' | 'mps'
+  packageCount?: number
 }
 
 function SuccessContent() {
@@ -20,9 +23,9 @@ function SuccessContent() {
   const { isLoading, isReady } = useWaitForHydration()
   const [shipmentData, setShipmentData] = useState<ShipmentResult | null>(null)
 
-  // 📄 送り状PDFの直接印刷機能
-  const handlePrintLabel = async () => {
-    if (!shipmentData?.labelUrl) {
+  // 📄 送り状PDFの直接印刷機能（単一ラベル）
+  const handlePrintLabel = async (labelUrl: string) => {
+    if (!labelUrl) {
       console.error('ラベルURLが見つかりません')
       return
     }
@@ -37,7 +40,7 @@ function SuccessContent() {
       iframe.style.left = '-9999px'
       
       // PDFのURLを設定（認証が必要なため、APIエンドポイント経由、印刷用）
-      const pdfUrl = `/api/download-label?url=${encodeURIComponent(shipmentData.labelUrl)}&action=print`
+      const pdfUrl = `/api/download-label?url=${encodeURIComponent(labelUrl)}&action=print`
       iframe.src = pdfUrl
       
       // iframeをbodyに追加
@@ -100,19 +103,64 @@ function SuccessContent() {
     }
   }
 
+  // 📄 すべてのラベルを一括ダウンロード（MPS用）
+  const handleDownloadAllLabels = async () => {
+    if (!shipmentData?.labelUrls || shipmentData.labelUrls.length === 0) {
+      console.error('ラベルURLが見つかりません')
+      return
+    }
+
+    try {
+      console.log('📦 すべてのラベルをダウンロード中...')
+      
+      for (let index = 0; index < shipmentData.labelUrls.length; index++) {
+        const labelUrl = shipmentData.labelUrls[index]
+        const response = await fetch('/api/download-label', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ labelUrl }),
+        })
+
+        if (response.ok) {
+          const blob = await response.blob()
+          const downloadUrl = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = downloadUrl
+          a.download = `mps-label-${shipmentData.trackingNumber}-pkg${index + 1}.pdf`
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(downloadUrl)
+          document.body.removeChild(a)
+        }
+      }
+      
+      console.log('✅ すべてのラベルダウンロード完了')
+    } catch (error) {
+      console.error('❌ ラベルダウンロードエラー:', error)
+    }
+  }
+
   useEffect(() => {
     // URLパラメータから送り状データを取得
     const trackingNumber = searchParams.get('trackingNumber')
     const labelUrl = searchParams.get('labelUrl')
+    const labelUrls = searchParams.get('labelUrls')?.split(',') || [] // 複数ラベルの場合
     const paymentId = searchParams.get('paymentId')
     const shipmentId = searchParams.get('shipmentId')
+    const type = searchParams.get('type')
+    const packageCount = searchParams.get('packageCount')
 
     if (trackingNumber && paymentId && shipmentId) {
       setShipmentData({
         trackingNumber,
-        labelUrl: labelUrl || undefined,
+        labelUrl: labelUrl ?? undefined,
+        labelUrls: labelUrls, // 複数ラベルの場合
         paymentId,
-        shipmentId
+        shipmentId,
+        type: type ?? undefined,
+        packageCount: packageCount ? parseInt(packageCount, 10) : undefined
       })
     }
   }, [searchParams])
@@ -171,14 +219,40 @@ function SuccessContent() {
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
                   送り状詳細
+                  {shipmentData.type === 'mps' && shipmentData.packageCount && (
+                    <span className="ml-auto text-sm bg-green-500 px-2 py-1 rounded-full">
+                      MPS {shipmentData.packageCount}個口
+                    </span>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
+                {/* MPSの説明バナー */}
+                {shipmentData.type === 'mps' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="text-blue-800 text-sm font-medium">
+                        複数パッケージ配送（MPS）- 最適化された配送システムで処理されました
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* 追跡番号 */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-600">追跡番号</p>
+                    <p className="text-sm text-gray-600">
+                      {shipmentData.type === 'mps' ? 'マスター追跡番号' : '追跡番号'}
+                    </p>
                     <p className="text-lg font-bold text-gray-900">{shipmentData.trackingNumber}</p>
+                    {shipmentData.type === 'mps' && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        個別パッケージの追跡番号はラベルに記載されています
+                      </p>
+                    )}
                   </div>
                   <Button
                     variant="outline"
@@ -188,6 +262,22 @@ function SuccessContent() {
                   >
                     コピー
                   </Button>
+                </div>
+
+                {/* パッケージ数（MPS用） */}
+                {shipmentData.type === 'mps' && shipmentData.packageCount && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-700">パッケージ数</span>
+                    <span className="font-medium text-blue-600">{shipmentData.packageCount}個口</span>
+                  </div>
+                )}
+
+                {/* 配送タイプ */}
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">配送タイプ</span>
+                  <span className="font-medium">
+                    {shipmentData.type === 'mps' ? 'MPS配送' : '通常配送'}
+                  </span>
                 </div>
 
                 {/* 決済ID */}
@@ -226,12 +316,30 @@ function SuccessContent() {
                       </a>
                       <Button
                         variant="outline"
-                        onClick={handlePrintLabel}
+                        onClick={() => handlePrintLabel(shipmentData.labelUrl!)}
                         className="flex-1"
                       >
                         印刷
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* すべてのラベルを一括ダウンロード（MPS用） */}
+              {shipmentData.labelUrls && shipmentData.labelUrls.length > 0 && (
+                <Card>
+                  <CardHeader className="bg-gray-50">
+                    <CardTitle className="text-lg">すべてのラベルをダウンロード</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadAllLabels}
+                      className="w-full"
+                    >
+                      すべてのラベルをダウンロード
+                    </Button>
                   </CardContent>
                 </Card>
               )}

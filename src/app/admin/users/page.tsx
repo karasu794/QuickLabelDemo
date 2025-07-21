@@ -10,7 +10,7 @@ export default async function UsersPage() {
     // profilesテーブルから全ユーザーを取得
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id, email, contact_name, company_name, created_at')
+      .select('id, email, full_name, company_name, created_at')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -70,7 +70,7 @@ export default async function UsersPage() {
                       {profile.email || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {profile.contact_name || '-'}
+                      {profile.full_name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {profile.company_name || '-'}

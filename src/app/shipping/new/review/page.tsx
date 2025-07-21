@@ -28,6 +28,9 @@ export default function ReviewPage() {
 
   // 動的手数料率の状態
   const [serviceFeePercentage, setServiceFeePercentage] = useState(15) // デフォルト15%
+  const [actualShippingRates, setActualShippingRates] = useState<any>(null)
+  const [ratesLoading, setRatesLoading] = useState(false)
+  const [ratesError, setRatesError] = useState<string | null>(null)
 
   // 手数料率を取得
   useEffect(() => {
@@ -47,13 +50,96 @@ export default function ReviewPage() {
     fetchServiceFeePercentage()
   }, [])
 
-  // 料金計算ロジック
+  // 実際の配送料金を取得（パッケージ数に応じて自動判定）
+  useEffect(() => {
+    const fetchActualRates = async () => {
+      if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
+        return
+      }
+
+      setRatesLoading(true)
+      setRatesError(null)
+
+      try {
+        console.log(`💰 ${packages.length}個パッケージの実際の料金を取得中...`)
+        
+        const requestData = {
+          shipperInfo: {
+            countryCode: shipperInfo.countryCode,
+            postalCode: shipperInfo.postalCode,
+            stateCode: shipperInfo.stateCode,
+            cityName: shipperInfo.cityName
+          },
+          recipientInfo: {
+            countryCode: recipientInfo.countryCode,
+            postalCode: recipientInfo.postalCode,
+            stateCode: recipientInfo.stateCode,
+            cityName: recipientInfo.cityName,
+            isResidential: recipientInfo.isResidential
+          },
+          packages: packages.map(pkg => ({
+            weight: parseFloat(pkg.weight || '0'),
+            type: pkg.type || 'YOUR_PACKAGING',
+            length: parseFloat(pkg.length || '0'),
+            width: parseFloat(pkg.width || '0'),
+            height: parseFloat(pkg.height || '0'),
+            declaredValue: parseFloat(pkg.declaredValue || '0')
+          })),
+          shipDate: new Date().toISOString().split('T')[0]
+        }
+
+        const response = await fetch('/api/quote/mps', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        })
+
+        if (!response.ok) {
+          throw new Error('料金の取得に失敗しました')
+        }
+
+        const ratesData = await response.json()
+        console.log(`✅ 料金取得成功:`, ratesData)
+        
+        setActualShippingRates(ratesData)
+
+      } catch (error) {
+        console.error('❌ 料金取得エラー:', error)
+        setRatesError(error instanceof Error ? error.message : '料金の取得に失敗しました')
+      } finally {
+        setRatesLoading(false)
+      }
+    }
+
+    fetchActualRates()
+  }, [shipperInfo, recipientInfo, packages])
+
+  // 料金計算ロジック（統合版）
   const calculations = useMemo(() => {
     // 荷物の総重量を計算
     const totalWeight = packages.reduce((sum, pkg) => sum + parseFloat(pkg.weight || '0'), 0)
     
-    // 選択された料金を使用（selectedRateがない場合はデフォルト値）
-    const shippingFee = selectedRate ? Math.round(selectedRate.amount) : 0
+    let shippingFee = 0
+    let selectedService = '見積もり中...'
+    let serviceType = 'standard'
+
+    // 実際の料金が取得できている場合
+    if (actualShippingRates && actualShippingRates.rates && actualShippingRates.rates.length > 0) {
+      // 最も安い料金を選択（または指定されたサービス）
+      const bestRate = selectedRate 
+        ? actualShippingRates.rates.find((r: any) => r.serviceType === selectedRate.serviceType) || actualShippingRates.rates[0]
+        : actualShippingRates.rates[0]
+      
+      shippingFee = Math.round(bestRate.amount)
+      selectedService = bestRate.serviceName
+      serviceType = actualShippingRates.type // 'standard' or 'mps'
+    } else if (selectedRate) {
+      // フォールバック：選択された料金を使用
+      shippingFee = Math.round(selectedRate.amount)
+      selectedService = selectedRate.serviceName
+    }
     
     // サービス手数料（動的な手数料率を使用）
     const serviceFee = Math.round(shippingFee * (serviceFeePercentage / 100))
@@ -73,9 +159,13 @@ export default function ReviewPage() {
       total,
       totalWeight,
       serviceFeePercentage,
-      selectedService: selectedRate?.serviceName || '未選択'
+      selectedService,
+      serviceType,
+      packageCount: packages.length,
+      isLoading: ratesLoading,
+      error: ratesError
     }
-  }, [packages, serviceFeePercentage, selectedRate])
+  }, [packages, serviceFeePercentage, selectedRate, actualShippingRates, ratesLoading, ratesError])
 
   // 戻るボタンハンドラー
   const handlePrevious = () => {
@@ -85,12 +175,13 @@ export default function ReviewPage() {
   // トークン受信時の処理（決済と送り状作成を統合）
   const handleTokenReceived = async (token: string) => {
     console.log('決済トークン受信:', token)
+    
     setIsProcessingPayment(true)
     setPaymentCompleted(false)
     setPaymentError(null)
     
     try {
-      // 送り状データと決済情報を統合してAPIに送信
+      // 統合送り状データを準備
       const shippingData = {
         sourceId: token,
         finalCharge: calculations.total,
@@ -101,8 +192,11 @@ export default function ReviewPage() {
         contents,
         shippingPurpose
       }
+
+      console.log(`🚀 ${packages.length}個口の送り状作成処理開始 (${calculations.serviceType})`)
       
-      const response = await fetch('/api/ship', {
+      // 統合APIエンドポイントを使用（パッケージ数に応じて自動判定）
+      const response = await fetch('/api/ship-unified', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +210,7 @@ export default function ReviewPage() {
       }
       
       const result = await response.json()
-      console.log('決済・送り状作成成功:', result)
+      console.log(`✅ ${result.type}送り状作成成功:`, result)
       
       // 確認画面ステップを完了としてマーク
       markStepCompleted('/shipping/new/review')
@@ -128,7 +222,12 @@ export default function ReviewPage() {
       successUrl.searchParams.set('trackingNumber', result.trackingNumber)
       successUrl.searchParams.set('paymentId', result.paymentId)
       successUrl.searchParams.set('shipmentId', result.shipmentId)
-      if (result.labelUrl) {
+      successUrl.searchParams.set('type', result.type)
+      successUrl.searchParams.set('packageCount', result.packageCount.toString())
+      
+      if (result.labelUrls && result.labelUrls.length > 0) {
+        successUrl.searchParams.set('labelUrls', JSON.stringify(result.labelUrls))
+      } else if (result.labelUrl) {
         successUrl.searchParams.set('labelUrl', result.labelUrl)
       }
       
@@ -410,11 +509,45 @@ export default function ReviewPage() {
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
           <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
             <h2 className="text-xl font-semibold">料金詳細</h2>
-            <p className="text-purple-100 text-sm">配送料とサービス料の内訳</p>
+            <p className="text-purple-100 text-sm">
+              {calculations.packageCount > 1 
+                ? `複数パッケージ（${calculations.packageCount}個口）最適化料金` 
+                : '配送料とサービス料の内訳'}
+            </p>
           </div>
           <div className="p-6">
+            {/* 料金計算中ローディング */}
+            {calculations.isLoading && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4D148C] mx-auto mb-4"></div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  最適料金を計算中...
+                </h3>
+                <p className="text-gray-600">
+                  {calculations.packageCount > 1 
+                    ? `${calculations.packageCount}個口の最適化されたMPS料金を取得しています`
+                    : '最新の配送料金を取得しています'}
+                </p>
+              </div>
+            )}
+
+            {/* 料金計算エラー */}
+            {calculations.error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                  <svg className="h-5 w-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <div>
+                    <p className="text-red-700 text-sm font-medium">料金計算エラー</p>
+                    <p className="text-red-600 text-sm">{calculations.error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 料金が選択されていない場合の警告 */}
-            {!selectedRate && (
+            {!selectedRate && !actualShippingRates && !calculations.isLoading && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">
                   <svg className="h-5 w-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,33 +563,51 @@ export default function ReviewPage() {
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* 選択されたサービス表示 */}
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-gray-700">選択されたサービス</span>
-                <span className="font-medium text-blue-600">{calculations.selectedService}</span>
+            {/* 料金詳細表示 */}
+            {!calculations.isLoading && (
+              <div className="space-y-4">
+                {/* パッケージ情報サマリー */}
+                {calculations.packageCount > 1 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="text-blue-800 text-sm font-medium">
+                        複数パッケージ配送（MPS）- 最適化された料金体系
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 選択されたサービス表示 */}
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">選択されたサービス</span>
+                  <span className="font-medium text-blue-600">{calculations.selectedService}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">配送料金</span>
+                  <span className="font-medium">
+                    {calculations.shippingFee > 0 ? `¥${calculations.shippingFee.toLocaleString()}` : '計算中...'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">サービス手数料 ({calculations.serviceFeePercentage}%)</span>
+                  <span className="font-medium">¥{calculations.serviceFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">消費税（10%）</span>
+                  <span className="font-medium">¥{calculations.tax.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-t-2 border-[#4D148C]">
+                  <span className="text-lg font-semibold text-gray-900">最終請求額</span>
+                  <span className="text-2xl font-bold text-[#4D148C]">
+                    {calculations.total > 0 ? `¥${calculations.total.toLocaleString()}` : '計算中...'}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-gray-700">配送料金</span>
-                <span className="font-medium">
-                  {selectedRate ? `¥${calculations.shippingFee.toLocaleString()}` : '未選択'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-gray-700">サービス手数料 ({calculations.serviceFeePercentage}%)</span>
-                <span className="font-medium">¥{calculations.serviceFee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-gray-700">消費税（10%）</span>
-                <span className="font-medium">¥{calculations.tax.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-3 border-t-2 border-[#4D148C]">
-                <span className="text-lg font-semibold text-gray-900">最終請求額</span>
-                <span className="text-2xl font-bold text-[#4D148C]">
-                  {selectedRate ? `¥${calculations.total.toLocaleString()}` : '未算出'}
-                </span>
-              </div>
-            </div>
+            )}
+            
             <p className="text-sm text-gray-500 mt-4">※ 関税・諸税は含まれておりません</p>
           </div>
         </div>
@@ -468,29 +619,43 @@ export default function ReviewPage() {
             <p className="text-purple-100 text-sm">安全で確実な決済システム</p>
           </div>
           <div className="p-6">
-            {/* 料金が選択されていない場合の案内 */}
-            {!selectedRate && (
+            {/* 料金計算中またはエラー時の案内 */}
+            {(calculations.isLoading || calculations.error || (!selectedRate && !actualShippingRates)) && (
               <div className="text-center py-8">
                 <div className="mb-4">
-                  <svg className="h-16 w-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
+                  {calculations.isLoading ? (
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4D148C] mx-auto"></div>
+                  ) : (
+                    <svg className="h-16 w-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                  )}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">配送サービスを選択してください</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {calculations.isLoading ? '料金計算中...' : 
+                   calculations.error ? '料金計算エラー' : 
+                   '配送サービスを選択してください'}
+                </h3>
                 <p className="text-gray-600 mb-6">
-                  決済を進めるには、まずホームページで料金を見積もり、配送サービスを選択してください。
+                  {calculations.isLoading ? 
+                    `${calculations.packageCount}個口の最適な配送料金を計算しています。しばらくお待ちください。` :
+                   calculations.error ? 
+                    '料金の計算に失敗しました。ページを更新してやり直してください。' :
+                   '決済を進めるには、まずホームページで料金を見積もり、配送サービスを選択してください。'}
                 </p>
-                <Link
-                  href="/"
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
-                >
-                  ← ホームページに戻る
-                </Link>
+                {!calculations.isLoading && !calculations.error && (
+                  <Link
+                    href="/"
+                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    ← ホームページに戻る
+                  </Link>
+                )}
               </div>
             )}
 
-            {/* 料金が選択されている場合の決済フォーム */}
-            {selectedRate && (
+            {/* 料金が確定している場合の決済フォーム */}
+            {!calculations.isLoading && !calculations.error && calculations.total > 0 && (
               <>
                 {/* エラーメッセージ */}
                 {paymentError && (

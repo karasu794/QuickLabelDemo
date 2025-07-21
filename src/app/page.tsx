@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
 import { useAuth } from "@/hooks/useAuth"
-import { useMPSStore } from "@/store/mpsStore"
 import { Package as PackageIcon, Zap, Clock, Users, ArrowRight } from "lucide-react"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
@@ -38,14 +37,10 @@ interface JobStatus {
   error?: string
 }
 
-type ShippingMode = 'traditional' | 'mps'
-
 export default function Home() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
-  const { importFromQuote, resetAll } = useMPSStore()
   
-  const [shippingMode, setShippingMode] = useState<ShippingMode>('traditional')
   const [quoteParams, setQuoteParams] = useState<ExtendedQuoteParams>({
     originCountry: "JP",
     originPostalCode: "",
@@ -102,30 +97,6 @@ export default function Home() {
   // 自動スクロール用のref
   const loadingRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
-
-  // MPS配送を開始する関数
-  const startMPSShipping = () => {
-    // 見積もりデータが入力されている場合はMPSストアにインポート
-    if (quoteParams.originSelected && quoteParams.destinationSelected && packages.some(pkg => pkg.weight)) {
-      // 内容品の仮データを作成
-      const mockItems = [{
-        description: '商品',
-        countryOfManufacture: 'JP',
-        quantity: 1,
-        weight: parseFloat(packages[0].weight) || 1,
-        unitPrice: 10000,
-        currency: 'JPY'
-      }]
-      
-      importFromQuote(quoteParams, packages, mockItems)
-      console.log('✅ 見積もりデータをMPSにインポートしました')
-    } else {
-      // データが不十分な場合はリセット
-      resetAll()
-    }
-    
-    router.push('/shipping/mps/setup')
-  }
 
   // Reset dependent fields when origin country changes
   useEffect(() => {
@@ -411,178 +382,57 @@ export default function Home() {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
-        {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            国際配送サービス
-          </h1>
-          <p className="text-lg text-gray-600">
-            FedExを使った信頼できる国際配送で、世界中にお荷物をお届けします
-          </p>
-        </div>
+        {/* 見積もりフォーム */}
+        <QuoteFormComponent
+          quoteParams={quoteParams}
+          packages={packages}
+          isLoading={isLoading}
+          error={error}
+          packageErrors={packageErrors}
+          onQuoteParamsChange={handleQuoteParamsChange}
+          onPackageChange={handlePackageChange}
+          onAddPackage={handleAddPackage}
+          onRemovePackage={handleRemovePackage}
+          onSubmit={handleSubmit}
+        />
 
-        {/* 配送モード選択 */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-center">配送方法を選択してください</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 従来の配送 */}
-              <Card 
-                className={`cursor-pointer transition-all hover:shadow-lg ${
-                  shippingMode === 'traditional' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setShippingMode('traditional')}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="flex justify-center mb-4">
-                    <div className={`p-3 rounded-full ${
-                      shippingMode === 'traditional' ? 'bg-blue-100' : 'bg-gray-100'
-                    }`}>
-                      <Zap className={`h-8 w-8 ${
-                        shippingMode === 'traditional' ? 'text-blue-600' : 'text-gray-600'
-                      }`} />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">従来の配送</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    見積もり→送り状作成→決済の流れ<br />
-                    少数パッケージに最適
-                  </p>
-                  <div className="space-y-2 text-xs text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <Clock className="h-3 w-3" />
-                      <span>即座に料金確定</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <PackageIcon className="h-3 w-3" />
-                      <span>1〜10個程度のパッケージ</span>
-                    </div>
-                  </div>
-                  {shippingMode === 'traditional' && (
-                    <Badge className="mt-3 bg-blue-100 text-blue-800">選択中</Badge>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* MPS配送 */}
-              <Card 
-                className={`cursor-pointer transition-all hover:shadow-lg ${
-                  shippingMode === 'mps' 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setShippingMode('mps')}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="flex justify-center mb-4">
-                    <div className={`p-3 rounded-full ${
-                      shippingMode === 'mps' ? 'bg-green-100' : 'bg-gray-100'
-                    }`}>
-                      <Users className={`h-8 w-8 ${
-                        shippingMode === 'mps' ? 'text-green-600' : 'text-gray-600'
-                      }`} />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">MPS配送</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    段階的パッケージ追加対応<br />
-                    大量パッケージに最適
-                  </p>
-                  <div className="space-y-2 text-xs text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <Clock className="h-3 w-3" />
-                      <span>5日間で段階的追加</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <PackageIcon className="h-3 w-3" />
-                      <span>最大300個のパッケージ</span>
-                    </div>
-                  </div>
-                  {shippingMode === 'mps' && (
-                    <Badge className="mt-3 bg-green-100 text-green-800">選択中</Badge>
-                  )}
-                </CardContent>
-              </Card>
+        {/* Loading Section */}
+        {isLoading && (
+          <div ref={loadingRef} className="text-center py-8">
+            <div className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              見積もり計算中です...
+              {currentJobId && (
+                <span className="ml-2 text-sm">
+                  (ジョブID: {currentJobId.substring(0, 8)}...)
+                </span>
+              )}
             </div>
+          </div>
+        )}
 
-            {/* MPSモード選択時のアクション */}
-            {shippingMode === 'mps' && (
-              <div className="mt-6 text-center">
-                <Button
-                  onClick={startMPSShipping}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
-                >
-                  MPS配送を開始
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <p className="text-sm text-gray-600 mt-2">
-                  ※ 下記の見積もりデータがある場合は自動で引き継がれます
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 従来の見積もりフォーム（traditionalモードの場合のみ表示） */}
-        {shippingMode === 'traditional' && (
-          <>
-            {/* Quote Form */}
-            <QuoteFormComponent
+        {/* Results Section - Unified FedEx Quote Results Component */}
+        {quoteResults.length > 0 && !isLoading && (
+          <div ref={resultsRef}>
+            <FedExQuoteResults 
+              rates={quoteResults.map(result => ({
+                serviceType: result.serviceType,
+                totalNetFedExCharge: result.totalNetFedExCharge,
+                estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
+                deliveryDate: result.deliveryDate,
+                deliveryDayOfWeek: result.deliveryDayOfWeek,
+                packagingType: result.packagingType,
+                rateType: result.rateType
+              }))}
+              isLoading={false}
+              isUserLoggedIn={isAuthenticated}
               quoteParams={quoteParams}
               packages={packages}
-              isLoading={isLoading}
-              error={error}
-              packageErrors={packageErrors}
-              onQuoteParamsChange={handleQuoteParamsChange}
-              onPackageChange={handlePackageChange}
-              onAddPackage={handleAddPackage}
-              onRemovePackage={handleRemovePackage}
-              onSubmit={handleSubmit}
             />
-
-            {/* Loading Section */}
-            {isLoading && (
-              <div ref={loadingRef} className="text-center py-8">
-                <div className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  見積もり計算中です...
-                  {currentJobId && (
-                    <span className="ml-2 text-sm">
-                      (ジョブID: {currentJobId.substring(0, 8)}...)
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Results Section - New FedX Quote Results Component */}
-            {quoteResults.length > 0 && !isLoading && (
-              <div ref={resultsRef}>
-                <FedExQuoteResults 
-                  rates={quoteResults.map(result => ({
-                    serviceType: result.serviceType,
-                    totalNetFedExCharge: result.totalNetFedExCharge,
-                    estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
-                    deliveryDate: result.deliveryDate,
-                    deliveryDayOfWeek: result.deliveryDayOfWeek,
-                    packagingType: result.packagingType,
-                    rateType: result.rateType
-                  }))}
-                  isLoading={false}
-                  isUserLoggedIn={isAuthenticated}
-                  quoteParams={quoteParams}
-                  packages={packages}
-                />
-              </div>
-            )}
-          </>
+          </div>
         )}
       </div>
     </main>

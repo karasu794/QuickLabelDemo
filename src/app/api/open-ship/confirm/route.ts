@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
       .update({
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
-        label_urls: labelUrls,
+        label_urls: labelUrls.filter((url): url is string => url !== undefined),
         tracking_numbers: confirmResult.packageResponses.map(p => p.trackingNumber),
         ...(paymentId && { payment_id: paymentId }),
         updated_at: new Date().toISOString()
@@ -281,7 +281,7 @@ export async function GET(request: NextRequest) {
       .from('open_shipments')
       .update({
         status: 'confirmed',
-        label_urls: labelUrls,
+        label_urls: labelUrls.filter((url): url is string => url !== undefined),
         tracking_numbers: results.packageResponses.map(p => p.trackingNumber),
         updated_at: new Date().toISOString()
       })
