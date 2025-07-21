@@ -2,10 +2,16 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
 import { useAuth } from "@/hooks/useAuth"
+import { useMPSStore } from "@/store/mpsStore"
+import { Package as PackageIcon, Zap, Clock, Users, ArrowRight } from "lucide-react"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
 const POLLING_INTERVAL = 2000 // 2秒ごとにポーリング
@@ -32,10 +38,14 @@ interface JobStatus {
   error?: string
 }
 
-
+type ShippingMode = 'traditional' | 'mps'
 
 export default function Home() {
+  const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const { importFromQuote, resetAll } = useMPSStore()
+  
+  const [shippingMode, setShippingMode] = useState<ShippingMode>('traditional')
   const [quoteParams, setQuoteParams] = useState<ExtendedQuoteParams>({
     originCountry: "JP",
     originPostalCode: "",
@@ -93,6 +103,30 @@ export default function Home() {
   const loadingRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
+  // MPS配送を開始する関数
+  const startMPSShipping = () => {
+    // 見積もりデータが入力されている場合はMPSストアにインポート
+    if (quoteParams.originSelected && quoteParams.destinationSelected && packages.some(pkg => pkg.weight)) {
+      // 内容品の仮データを作成
+      const mockItems = [{
+        description: '商品',
+        countryOfManufacture: 'JP',
+        quantity: 1,
+        weight: parseFloat(packages[0].weight) || 1,
+        unitPrice: 10000,
+        currency: 'JPY'
+      }]
+      
+      importFromQuote(quoteParams, packages, mockItems)
+      console.log('✅ 見積もりデータをMPSにインポートしました')
+    } else {
+      // データが不十分な場合はリセット
+      resetAll()
+    }
+    
+    router.push('/shipping/mps/setup')
+  }
+
   // Reset dependent fields when origin country changes
   useEffect(() => {
     if (quoteParams.originSelected && quoteParams.originCountry !== 'US' && quoteParams.originCountry !== 'CA') {
@@ -113,77 +147,50 @@ export default function Home() {
     }
   }, [quoteParams.destinationCountry, quoteParams.destinationSelected])
 
-  // 為替レート取得（ページロード時に一度だけ）
+  // 為替レート取得
   useEffect(() => {
     const fetchExchangeRate = async () => {
       try {
-        console.log('💱 為替レート取得開始...')
         const response = await fetch('/api/exchange-rate')
-        
-        if (!response.ok) {
-          throw new Error(`為替レートAPI エラー: ${response.status}`)
+        if (response.ok) {
+          const data = await response.json()
+          setUsdToJpyRate(data.rate)
         }
-
-        const data = await response.json()
-        setUsdToJpyRate(data.rate)
-        console.log(`✅ 為替レート取得成功: 1 USD = ${data.rate} JPY (source: ${data.source})`)
-        
       } catch (error) {
-        console.error('❌ 為替レート取得エラー:', error)
-        // エラー時はデフォルト値を使用（既に150.0が設定済み）
-        console.log('🔄 デフォルト為替レートを使用: 150.0 JPY/USD')
+        console.error('為替レート取得エラー:', error)
       }
     }
 
     fetchExchangeRate()
-  }, []) // 空依存配列で初回のみ実行
+  }, [])
 
-  // 申告価額バリデーション関数
-  const validatePackageDeclaredValue = useCallback((packages: Package[]) => {
+  // 申告価額のバリデーション（リアルタイム）
+  useEffect(() => {
     if (!quoteParams.higherInsurance) {
       setPackageErrors({})
       return
     }
 
-    // 梱包タイプごとのUSD上限額定義
-    const PACKAGING_LIMITS: { [key: string]: number } = {
-      'FEDEX_ENVELOPE': 100,
-      'FEDEX_PAK': 100,
-      'FEDEX_BOX': 1000,
-      'FEDEX_TUBE': 1000,
-    }
-
-    const newErrors: { [key: number]: string | null } = {}
-
+    const errors: { [key: number]: string | null } = {}
+    
     packages.forEach(pkg => {
-      const limitUSD = PACKAGING_LIMITS[pkg.packagingType]
-      
-      // 制限がある梱包材の場合のみチェック
-      if (limitUSD && pkg.declaredValue && Number(pkg.declaredValue) > 0) {
-        const declaredValueJPY = Number(pkg.declaredValue)
-        const declaredValueUSD = declaredValueJPY / usdToJpyRate
+      const declaredValue = Number(pkg.declaredValue)
+      if (declaredValue > 0) {
+        const declaredValueUSD = declaredValue / usdToJpyRate
         
-        if (declaredValueUSD > limitUSD) {
-          const limitJPY = Math.floor(limitUSD * usdToJpyRate)
-          newErrors[pkg.id] = `この梱包材の上限額は約${limitJPY.toLocaleString()}円（$${limitUSD} USD）です。`
+        if (declaredValueUSD > 100000) {
+          errors[pkg.id] = `申告価額が上限を超えています（上限: $100,000 ≈ ¥${Math.floor(100000 * usdToJpyRate).toLocaleString()}）`
         } else {
-          newErrors[pkg.id] = null
+          errors[pkg.id] = null
         }
-      } else {
-        newErrors[pkg.id] = null
       }
     })
+    
+    setPackageErrors(errors)
+  }, [packages, quoteParams.higherInsurance, usdToJpyRate])
 
-    setPackageErrors(newErrors)
-  }, [quoteParams.higherInsurance, usdToJpyRate])
-
-  // 保険設定変更時のバリデーション
-  useEffect(() => {
-    validatePackageDeclaredValue(packages)
-  }, [quoteParams.higherInsurance, usdToJpyRate, packages, validatePackageDeclaredValue]) // 保険設定、為替レート、パッケージ変更時
-
-  // ポーリングの停止
-  const stopPolling = () => {
+  // ポーリングのクリーンアップ
+  const clearPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current)
       pollingIntervalRef.current = null
@@ -192,182 +199,89 @@ export default function Home() {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
     }
-  }
+  }, [])
 
-  // ジョブステータスのチェック
-  const checkJobStatus = async (jobId: string): Promise<JobStatus> => {
-    console.log(`ジョブステータス確認開始: ${jobId}`)
-    
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒でタイムアウト
-      
-      const response = await fetch(`/api/quote/${jobId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      console.log(`レスポンス受信: ${response.status} ${response.statusText}`)
-      
-      if (!response.ok) {
-        let errorMessage = `ジョブステータスの確認に失敗しました (${response.status}: ${response.statusText})`
-        
-        try {
-          const errorData = await response.json()
-          if (errorData.error) {
-            errorMessage = errorData.error
-          }
-        } catch (parseError) {
-          console.error('レスポンス解析エラー:', parseError)
-        }
-        
-        throw new Error(errorMessage)
-      }
-      
-      const data = await response.json()
-      console.log('ジョブステータス取得成功:', data)
-      return data
-      
-    } catch (error) {
-      console.error('checkJobStatus内部エラー:', error)
-      
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error('ジョブステータスの確認がタイムアウトしました')
-        }
-        if (error.message.includes('fetch')) {
-          throw new Error(`ネットワークエラー: ${error.message}`)
-        }
-        throw error
-      }
-      
-      throw new Error('ジョブステータスの確認中に不明なエラーが発生しました')
-    }
-  }
-
-  // ポーリング開始
-  const startPolling = (jobId: string) => {
-    let checks = 0
-
-    const poll = async () => {
-      try {
-        checks++
-        console.log(`ジョブステータスチェック中 (${checks}回目): ${jobId}`)
-        
-        const status = await checkJobStatus(jobId)
-        console.log('取得したステータス:', status.status)
-        
-        console.log(`ステータス更新: ${status.status}`)
-
-        switch (status.status) {
-          case 'completed':
-            // 成功時の処理
-            if (status.data?.rates) {
-              setQuoteResults(status.data.rates)
-            } else {
-              throw new Error('見積もり結果が見つかりません')
-            }
-            setIsLoading(false)
-            setCurrentJobId(null)
-            stopPolling()
-            break
-
-          case 'failed':
-            // エラー時の処理
-            throw new Error(status.error || '見積もりの取得に失敗しました')
-
-          case 'pending':
-          case 'processing_auth':
-          case 'processing_rate_request':
-            // 継続してポーリング
-            console.log(`ジョブ進行中: ${status.status}`)
-            break
-
-          default:
-            throw new Error('不明なジョブステータスです')
-        }
-      } catch (error) {
-        console.error('ポーリングエラー:', error)
-        setError(error instanceof Error ? error.message : 'ジョブの確認中にエラーが発生しました')
-        setIsLoading(false)
-        setCurrentJobId(null)
-        stopPolling()
-      }
-    }
-
-    // 初回即座にチェック
-    poll()
-
-    // 定期的なポーリングを開始（より頻繁にチェック）
-    pollingIntervalRef.current = setInterval(poll, 1000) // 1秒ごとに変更
+  // ジョブステータスのポーリング
+  const pollJobStatus = useCallback((jobId: string) => {
+    console.log(`ジョブ${jobId}の状況をポーリング開始`)
 
     // タイムアウト設定
     timeoutRef.current = setTimeout(() => {
-      setError('見積もりの取得がタイムアウトしました。もう一度お試しください。')
+      clearPolling()
       setIsLoading(false)
-      setCurrentJobId(null)
-      stopPolling()
+      setError('処理がタイムアウトしました。しばらく待ってから再度お試しください。')
     }, TIMEOUT_DURATION)
-  }
+
+    // ポーリング開始
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        console.log(`ジョブ${jobId}の状況を確認中...`)
+        const response = await fetch(`/api/quote/${jobId}`)
+        
+        if (!response.ok) {
+          throw new Error(`ジョブ状況確認失敗: ${response.status}`)
+        }
+
+        const jobStatus: JobStatus = await response.json()
+        console.log(`ジョブ${jobId}の現在の状況:`, jobStatus.status)
+
+        if (jobStatus.status === 'completed') {
+          clearPolling()
+          setIsLoading(false)
+
+          if (jobStatus.data && jobStatus.data.success) {
+            setQuoteResults(jobStatus.data.rates)
+            setError("")
+            // 結果セクションにスクロール
+            setTimeout(() => {
+              resultsRef.current?.scrollIntoView({ behavior: 'smooth' })
+            }, 100)
+          } else {
+            setError('見積もり取得に失敗しました。再度お試しください。')
+          }
+        } else if (jobStatus.status === 'failed') {
+          clearPolling()
+          setIsLoading(false)
+          setError(jobStatus.error || '見積もり処理に失敗しました。再度お試しください。')
+        }
+      } catch (error) {
+        console.error('ジョブ状況確認エラー:', error)
+        clearPolling()
+        setIsLoading(false)
+        setError('見積もり状況の確認に失敗しました。再度お試しください。')
+      }
+    }, POLLING_INTERVAL)
+  }, [clearPolling, resultsRef])
+
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      clearPolling()
+    }
+  }, [clearPolling])
 
   const handleQuoteParamsChange = (field: keyof ExtendedQuoteParams, value: string | boolean) => {
-    console.log(`🔄 page.tsx: handleQuoteParamsChange呼び出し - field: "${field}", value: "${value}"`);
-    
-    setQuoteParams(prev => {
-      const newState = {
-        ...prev,
-        [field]: value
-      };
-      console.log(`📊 page.tsx: 新しいstate設定完了 - ${field}: "${newState[field]}"`);
-      return newState;
-    });
-
-    // Clear any existing error when user makes changes
-    if (error) {
-      setError("")
-    }
+    setQuoteParams(prev => ({ ...prev, [field]: value }))
   }
 
   const handlePackageChange = (id: number, field: keyof Package, value: string) => {
-    setPackages(prev => {
-      let newPackages: Package[]
-      
-      // 最初の荷物の梱包材が変更された場合、全ての荷物を同じ梱包材に更新
-      if (id === 1 && field === 'packagingType') {
-        newPackages = prev.map(pkg => ({ ...pkg, packagingType: value }))
-      } else {
-        // それ以外の場合は指定された荷物のみ更新
-        newPackages = prev.map(pkg => 
-          pkg.id === id ? { ...pkg, [field]: value } : pkg
-        )
-      }
-
-      // 申告価額または梱包材が変更された場合、バリデーションを実行
-      if (field === 'declaredValue' || field === 'packagingType') {
-        validatePackageDeclaredValue(newPackages)
-      }
-
-      return newPackages
-    })
+    setPackages(prev => 
+      prev.map(pkg => 
+        pkg.id === id ? { ...pkg, [field]: value } : pkg
+      )
+    )
   }
-
-
 
   const handleAddPackage = () => {
     const newId = Math.max(...packages.map(p => p.id)) + 1
-    // 最初の荷物と同じ梱包材を使用
-    const firstPackageType = packages[0]?.packagingType || "YOUR_PACKAGING"
+    const firstPackage = packages[0]
     setPackages(prev => [...prev, {
       id: newId,
-      packagingType: firstPackageType,
+      packagingType: firstPackage?.packagingType || "YOUR_PACKAGING",
       weight: "",
-      length: "",
-      width: "",
-      height: "",
+      length: firstPackage?.length || "",
+      width: firstPackage?.width || "",
+      height: firstPackage?.height || "",
       declaredValue: ""
     }])
   }
@@ -378,78 +292,47 @@ export default function Home() {
     }
   }
 
+  // 住所部分情報を設定する関数
+  const setAddressPart = (type: 'origin' | 'destination', data: { countryCode: string; stateCode: string; cityName: string; postalCode: string; address1: string }) => {
+    const prefix = type === 'origin' ? 'origin' : 'destination'
+    setQuoteParams(prev => ({
+      ...prev,
+      [`${prefix}CountryCode`]: data.countryCode,
+      [`${prefix}StateCode`]: data.stateCode,
+      [`${prefix}CityName`]: data.cityName,
+      [`${prefix}PostalCode`]: data.postalCode,
+      [`${prefix}Address1`]: data.address1,
+      [`${prefix}Selected`]: true
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     setIsLoading(true)
     setError("")
     setQuoteResults([])
+    setCurrentJobId(null)
 
     try {
-      // Validate required fields (same as before)
-      if (!quoteParams.originSelected || !quoteParams.destinationSelected) {
-        throw new Error("出荷地と仕向地の両方を選択してください")
-      }
+      console.log('📤 見積もりリクエスト送信開始')
 
+      // 必須フィールドの確認
       if (!quoteParams.originCountry || !quoteParams.destinationCountry) {
-        throw new Error("出荷地と仕向地の国を選択してください")
+        throw new Error("出荷元と出荷先の国を選択してください")
       }
 
-      // Validate postal codes for countries that require them
-      if (!POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originPostalCode) {
-        throw new Error("出荷地の郵便番号を入力してください")
+      if (!quoteParams.originSelected) {
+        throw new Error("出荷元の住所を選択してください")
       }
 
-      if (!POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && !quoteParams.destinationPostalCode) {
-        throw new Error("仕向地の郵便番号を入力してください")
+      if (!quoteParams.destinationSelected) {
+        throw new Error("出荷先の住所を選択してください")
       }
 
-      // 📍 見積もり時の住所データ完全性チェック
-      // 市区町村の必須チェック
-      if (!quoteParams.originCityName) {
-        throw new Error("出荷地の市区町村を入力してください")
-      }
-
-      if (!quoteParams.destinationCityName) {
-        throw new Error("仕向地の市区町村を入力してください")
-      }
-
-      // 州・県コードの必須チェック（US・CAの場合のみ）
-      if ((quoteParams.originCountry === 'US' || quoteParams.originCountry === 'CA') && !quoteParams.originStateCode) {
-        throw new Error("出荷地の州・県を選択してください")
-      }
-
-      if ((quoteParams.destinationCountry === 'US' || quoteParams.destinationCountry === 'CA') && !quoteParams.destinationStateCode) {
-        throw new Error("仕向地の州・県を選択してください")
-      }
-
-      // Validate city names for postal code not required countries
-      if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originCityName) {
-        throw new Error("出荷地の都市名を入力してください")
-      }
-
-      if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && !quoteParams.destinationCityName) {
-        throw new Error("仕向地の都市名を入力してください")
-      }
-
-      // Validate packages
-      for (const pkg of packages) {
-        if (!pkg.weight || Number.parseFloat(pkg.weight) <= 0) {
-          throw new Error("すべてのパッケージの重量を入力してください")
-        }
-
-        if (pkg.packagingType === "customer") {
-          if (!pkg.length || !pkg.width || !pkg.height || 
-              Number.parseFloat(pkg.length) <= 0 || 
-              Number.parseFloat(pkg.width) <= 0 || 
-              Number.parseFloat(pkg.height) <= 0) {
-            throw new Error("お客様ご用意の梱包材を選択した場合は、すべての寸法を入力してください")
-          }
-        }
-      }
-
-      // Validate ship date
-      if (!quoteParams.shipDate) {
-        throw new Error("出荷日を選択してください")
+      const hasValidPackage = packages.some(pkg => pkg.weight && parseFloat(pkg.weight) > 0)
+      if (!hasValidPackage) {
+        throw new Error("少なくとも1つの荷物の重量を入力してください")
       }
 
       // Validate declared value for higher insurance
@@ -497,126 +380,211 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('ジョブ作成エラーレスポンス:', errorData)
-        throw new Error(errorData.error || `APIエラー: ${response.status}`)
+        throw new Error(errorData.error || `HTTP ${response.status}: リクエストに失敗しました`)
       }
 
-      const data = await response.json()
-      console.log('ジョブ作成成功:', data)
-      
-      if (data.error) {
-        throw new Error(data.error)
+      const result = await response.json()
+      console.log('ジョブ作成成功:', result)
+
+      if (result.success && result.jobId) {
+        setCurrentJobId(result.jobId)
+        console.log(`✅ ジョブ作成成功: ${result.jobId}`)
+        
+        // ローディングセクションにスクロール
+        setTimeout(() => {
+          loadingRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+
+        // ポーリング開始
+        pollJobStatus(result.jobId)
+      } else {
+        throw new Error('ジョブ作成に失敗しました')
       }
 
-      if (!data.jobId) {
-        throw new Error('ジョブIDが返されませんでした')
-      }
-
-      // ジョブIDを保存してポーリング開始
-      console.log(`ポーリング開始: ジョブID ${data.jobId}`)
-      setCurrentJobId(data.jobId)
-      
-      // ローディング部分まで自動スクロール
-      setTimeout(() => {
-        loadingRef.current?.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'center'
-        })
-      }, 100)
-      
-      startPolling(data.jobId)
-
-    } catch (err) {
-      console.error('Quote request failed:', err)
-      setError(err instanceof Error ? err.message : '見積もりの取得に失敗しました')
+    } catch (error) {
+      console.error('見積もりエラー:', error)
       setIsLoading(false)
+      setError(error instanceof Error ? error.message : '見積もりの取得に失敗しました')
     }
-  }
-
-  // コンポーネントアンマウント時にポーリングを停止
-  useEffect(() => {
-    return () => {
-      stopPolling()
-    }
-  }, [])
-
-  // 結果表示時の自動スクロール
-  useEffect(() => {
-    if (quoteResults.length > 0 && !isLoading && resultsRef.current) {
-      // 結果が表示されたら結果セクションまでスクロール
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        })
-      }, 100) // 少し遅延を入れてDOMの更新を待つ
-    }
-  }, [quoteResults.length, isLoading])
-
-  // Get state options based on country
-  const getOriginStateOptions = () => {
-    if (quoteParams.originCountry === 'US') return usStates
-    if (quoteParams.originCountry === 'CA') return canadianProvinces
-    if (quoteParams.originCountry === 'JP') return japanesePrefectures
-    return []
-  }
-
-  const getDestinationStateOptions = () => {
-    if (quoteParams.destinationCountry === 'US') return usStates
-    if (quoteParams.destinationCountry === 'CA') return canadianProvinces
-    if (quoteParams.destinationCountry === 'JP') return japanesePrefectures
-    return []
   }
 
   return (
-    <main>
-              <QuoteFormComponent
-          quoteParams={quoteParams}
-          packages={packages}
-          isLoading={isLoading}
-          error={error}
-          packageErrors={packageErrors}
-          onQuoteParamsChange={handleQuoteParamsChange}
-          onPackageChange={handlePackageChange}
-          onAddPackage={handleAddPackage}
-          onRemovePackage={handleRemovePackage}
-          onSubmit={handleSubmit}
-        />
+    <main className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        {/* ヘッダー */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            国際配送サービス
+          </h1>
+          <p className="text-lg text-gray-600">
+            FedExを使った信頼できる国際配送で、世界中にお荷物をお届けします
+          </p>
+        </div>
 
-      {/* Loading Section - Spinner with Simple Text */}
-      {isLoading && (
-        <div ref={loadingRef} className="max-w-4xl mx-auto mt-8 px-4">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">見積もり処理中</h3>
+        {/* 配送モード選択 */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-center">配送方法を選択してください</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 従来の配送 */}
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  shippingMode === 'traditional' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setShippingMode('traditional')}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-3 rounded-full ${
+                      shippingMode === 'traditional' ? 'bg-blue-100' : 'bg-gray-100'
+                    }`}>
+                      <Zap className={`h-8 w-8 ${
+                        shippingMode === 'traditional' ? 'text-blue-600' : 'text-gray-600'
+                      }`} />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">従来の配送</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    見積もり→送り状作成→決済の流れ<br />
+                    少数パッケージに最適
+                  </p>
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      <span>即座に料金確定</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <PackageIcon className="h-3 w-3" />
+                      <span>1〜10個程度のパッケージ</span>
+                    </div>
+                  </div>
+                  {shippingMode === 'traditional' && (
+                    <Badge className="mt-3 bg-blue-100 text-blue-800">選択中</Badge>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* MPS配送 */}
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  shippingMode === 'mps' 
+                    ? 'border-green-500 bg-green-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setShippingMode('mps')}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-3 rounded-full ${
+                      shippingMode === 'mps' ? 'bg-green-100' : 'bg-gray-100'
+                    }`}>
+                      <Users className={`h-8 w-8 ${
+                        shippingMode === 'mps' ? 'text-green-600' : 'text-gray-600'
+                      }`} />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">MPS配送</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    段階的パッケージ追加対応<br />
+                    大量パッケージに最適
+                  </p>
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      <span>5日間で段階的追加</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <PackageIcon className="h-3 w-3" />
+                      <span>最大300個のパッケージ</span>
+                    </div>
+                  </div>
+                  {shippingMode === 'mps' && (
+                    <Badge className="mt-3 bg-green-100 text-green-800">選択中</Badge>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Results Section - New FedX Quote Results Component */}
-      {quoteResults.length > 0 && !isLoading && (
-        <div ref={resultsRef}>
-        <FedExQuoteResults 
-          rates={quoteResults.map(result => ({
-            serviceType: result.serviceType,
-            totalNetFedExCharge: result.totalNetFedExCharge,
-            estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
-            deliveryDate: result.deliveryDate,
-            deliveryDayOfWeek: result.deliveryDayOfWeek,
-            packagingType: result.packagingType,
-            rateType: result.rateType
-          }))}
-          isLoading={false}
-          isUserLoggedIn={isAuthenticated}
-          quoteParams={quoteParams}
-          packages={packages}
-        />
-        </div>
-      )}
+            {/* MPSモード選択時のアクション */}
+            {shippingMode === 'mps' && (
+              <div className="mt-6 text-center">
+                <Button
+                  onClick={startMPSShipping}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                >
+                  MPS配送を開始
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <p className="text-sm text-gray-600 mt-2">
+                  ※ 下記の見積もりデータがある場合は自動で引き継がれます
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 従来の見積もりフォーム（traditionalモードの場合のみ表示） */}
+        {shippingMode === 'traditional' && (
+          <>
+            {/* Quote Form */}
+            <QuoteFormComponent
+              quoteParams={quoteParams}
+              packages={packages}
+              isLoading={isLoading}
+              error={error}
+              packageErrors={packageErrors}
+              onQuoteParamsChange={handleQuoteParamsChange}
+              onPackageChange={handlePackageChange}
+              onAddPackage={handleAddPackage}
+              onRemovePackage={handleRemovePackage}
+              onSubmit={handleSubmit}
+            />
+
+            {/* Loading Section */}
+            {isLoading && (
+              <div ref={loadingRef} className="text-center py-8">
+                <div className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  見積もり計算中です...
+                  {currentJobId && (
+                    <span className="ml-2 text-sm">
+                      (ジョブID: {currentJobId.substring(0, 8)}...)
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Results Section - New FedX Quote Results Component */}
+            {quoteResults.length > 0 && !isLoading && (
+              <div ref={resultsRef}>
+                <FedExQuoteResults 
+                  rates={quoteResults.map(result => ({
+                    serviceType: result.serviceType,
+                    totalNetFedExCharge: result.totalNetFedExCharge,
+                    estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
+                    deliveryDate: result.deliveryDate,
+                    deliveryDayOfWeek: result.deliveryDayOfWeek,
+                    packagingType: result.packagingType,
+                    rateType: result.rateType
+                  }))}
+                  isLoading={false}
+                  isUserLoggedIn={isAuthenticated}
+                  quoteParams={quoteParams}
+                  packages={packages}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </main>
   )
 }
