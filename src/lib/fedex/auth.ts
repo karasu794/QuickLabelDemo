@@ -235,7 +235,7 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
         address: {
           postalCode: rateInfo.shipperPostalCode,
           countryCode: rateInfo.shipperCountryCode,
-          ...(rateInfo.shipperStateCode && { stateOrProvinceCode: rateInfo.shipperStateCode }),
+          ...(rateInfo.shipperStateCode && ['US', 'CA'].includes(rateInfo.shipperCountryCode) && { stateOrProvinceCode: rateInfo.shipperStateCode }),
           city: rateInfo.shipperCityName
         }
       },
@@ -243,7 +243,7 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
         address: {
           postalCode: rateInfo.recipientPostalCode,
           countryCode: rateInfo.recipientCountryCode,
-          ...(rateInfo.recipientStateCode && { stateOrProvinceCode: rateInfo.recipientStateCode }),
+          ...(rateInfo.recipientStateCode && ['US', 'CA'].includes(rateInfo.recipientCountryCode) && { stateOrProvinceCode: rateInfo.recipientStateCode }),
           city: rateInfo.recipientCityName,
           residential: rateInfo.isResidential
         }
