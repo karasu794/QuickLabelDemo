@@ -80,6 +80,11 @@ export default function ReviewPage() {
     try {
       console.log(`💰 ${packages.length}個パッケージの実際の料金を取得中...`)
       
+      // パッケージ数に応じてAPIを選択
+      const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
+      console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
+
+      // 送信データを構築
       const requestData = {
         shipperInfo: {
           countryCode: shipperInfo.countryCode,
@@ -104,10 +109,6 @@ export default function ReviewPage() {
         })),
         shipDate: new Date().toISOString().split('T')[0]
       }
-
-      // パッケージ数に応じてAPIを選択
-      const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
-      console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
 
       const requestBody = packages.length >= 2 ? requestData : {
         quoteParams: {
@@ -146,6 +147,7 @@ export default function ReviewPage() {
       })
 
       if (!response.ok) {
+        console.error(`❌ API Error ${response.status}:`, await response.text())
         throw new Error('料金の取得に失敗しました')
       }
 
@@ -160,7 +162,20 @@ export default function ReviewPage() {
     } finally {
       setRatesLoading(false)
     }
-  }, [shipperInfo, recipientInfo, packages, isReady, isLoading])
+  }, [
+    shipperInfo.countryCode,
+    shipperInfo.postalCode,
+    shipperInfo.stateCode,
+    shipperInfo.cityName,
+    recipientInfo.countryCode,
+    recipientInfo.postalCode,
+    recipientInfo.stateCode,
+    recipientInfo.cityName,
+    recipientInfo.isResidential,
+    packages,
+    isReady,
+    isLoading
+  ])
 
   useEffect(() => {
     fetchActualRates()

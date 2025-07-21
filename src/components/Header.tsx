@@ -2,14 +2,20 @@
 
 import { Menu, X, Shield } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const { user, profile, loading, isAuthenticated, isAdmin } = useAuth()
   const supabase = createClient()
+
+  // クライアントサイドマウント検知
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -26,7 +32,8 @@ export default function Header() {
     }
   }
 
-  if (loading) {
+  // ハイドレーション完了前またはローディング中は共通のプレースホルダーを表示
+  if (!isMounted || loading) {
     return (
       <header className="bg-fedex-purple shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
