@@ -55,15 +55,7 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "address_book_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       app_settings: {
         Row: {
@@ -125,54 +117,105 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      open_shipments: {
         Row: {
           id: string
-          email: string | null
-          contact_name: string | null
-          contact_name_kana: string | null
-          company_name: string | null
-          department: string | null
-          title: string | null
-          phone_number: string | null
-          postal_code: string | null
-          address_prefecture: string | null
-          address_city: string | null
-          address_line1: string | null
-          address_line2: string | null
+          user_id: string | null
+          master_tracking_number: string | null
+          fedex_index: string | null
+          fedex_job_id: string | null
+          status: 'created' | 'in_progress' | 'processing' | 'confirmed' | 'cancelled'
+          total_packages: number
+          packages_added: number
+          shipper_info: Json
+          recipient_info: Json
+          service_type: string
+          payment_id: string | null
+          total_amount: number | null
+          tracking_numbers: string[] | null
+          label_urls: string[] | null
           created_at: string | null
+          updated_at: string | null
+          confirmed_at: string | null
         }
         Insert: {
-          id: string
-          email?: string | null
-          contact_name?: string | null
-          contact_name_kana?: string | null
-          company_name?: string | null
-          department?: string | null
-          title?: string | null
-          phone_number?: string | null
-          postal_code?: string | null
-          address_prefecture?: string | null
-          address_city?: string | null
-          address_line1?: string | null
-          address_line2?: string | null
+          id?: string
+          user_id?: string | null
+          master_tracking_number?: string | null
+          fedex_index?: string | null
+          fedex_job_id?: string | null
+          status?: 'created' | 'in_progress' | 'processing' | 'confirmed' | 'cancelled'
+          total_packages?: number
+          packages_added?: number
+          shipper_info: Json
+          recipient_info: Json
+          service_type: string
+          payment_id?: string | null
+          total_amount?: number | null
+          tracking_numbers?: string[] | null
+          label_urls?: string[] | null
           created_at?: string | null
+          updated_at?: string | null
+          confirmed_at?: string | null
         }
         Update: {
           id?: string
-          email?: string | null
-          contact_name?: string | null
-          contact_name_kana?: string | null
-          company_name?: string | null
-          department?: string | null
-          title?: string | null
-          phone_number?: string | null
-          postal_code?: string | null
-          address_prefecture?: string | null
-          address_city?: string | null
-          address_line1?: string | null
-          address_line2?: string | null
+          user_id?: string | null
+          master_tracking_number?: string | null
+          fedex_index?: string | null
+          fedex_job_id?: string | null
+          status?: 'created' | 'in_progress' | 'processing' | 'confirmed' | 'cancelled'
+          total_packages?: number
+          packages_added?: number
+          shipper_info?: Json
+          recipient_info?: Json
+          service_type?: string
+          payment_id?: string | null
+          total_amount?: number | null
+          tracking_numbers?: string[] | null
+          label_urls?: string[] | null
           created_at?: string | null
+          updated_at?: string | null
+          confirmed_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          avatar_url: string | null
+          email: string | null
+          role: string | null
+          company_name: string | null
+          phone_number: string | null
+          address: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          avatar_url?: string | null
+          email?: string | null
+          role?: string | null
+          company_name?: string | null
+          phone_number?: string | null
+          address?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          email?: string | null
+          role?: string | null
+          company_name?: string | null
+          phone_number?: string | null
+          address?: string | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -181,7 +224,7 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       quote_jobs: {
@@ -248,6 +291,10 @@ export type AddressBookUpdate = Database['public']['Tables']['address_book']['Up
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
 export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+
+export type OpenShipment = Database['public']['Tables']['open_shipments']['Row']
+export type OpenShipmentInsert = Database['public']['Tables']['open_shipments']['Insert']
+export type OpenShipmentUpdate = Database['public']['Tables']['open_shipments']['Update']
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
