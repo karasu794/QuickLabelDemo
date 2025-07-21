@@ -250,6 +250,7 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
       },
       shipDatestamp: rateInfo.shipDate,
       rateRequestType: ["ACCOUNT", "LIST"],
+      pickupType: "DROPOFF_AT_FEDEX_LOCATION",
       requestedPackageLineItems: rateInfo.packages.map((pkg, index) => ({
         sequenceNumber: index + 1,
         groupPackageCount: 1,

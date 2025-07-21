@@ -88,12 +88,40 @@ export default function ReviewPage() {
           shipDate: new Date().toISOString().split('T')[0]
         }
 
-        const response = await fetch('/api/quote/mps', {
+        // パッケージ数に応じてAPIを選択
+        const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
+        console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
+
+        const response = await fetch(apiEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(requestData),
+          body: JSON.stringify(packages.length >= 2 ? requestData : {
+            quoteParams: {
+              originCountry: shipperInfo.countryCode,
+              originPostalCode: shipperInfo.postalCode,
+              originStateCode: shipperInfo.stateCode,
+              originCityName: shipperInfo.cityName,
+              originSelected: true,
+              destinationCountry: recipientInfo.countryCode,
+              destinationPostalCode: recipientInfo.postalCode,
+              destinationStateCode: recipientInfo.stateCode,
+              destinationCityName: recipientInfo.cityName,
+              destinationSelected: true,
+              isResidential: recipientInfo.isResidential,
+              shipDate: new Date().toISOString().split('T')[0]
+            },
+            packages: packages.map((pkg, index) => ({
+              id: index + 1,
+              packagingType: pkg.type || 'YOUR_PACKAGING',
+              weight: pkg.weight || '0',
+              length: pkg.length || '0',
+              width: pkg.width || '0',
+              height: pkg.height || '0',
+              declaredValue: pkg.declaredValue || '0'
+            }))
+          }),
         })
 
         if (!response.ok) {
