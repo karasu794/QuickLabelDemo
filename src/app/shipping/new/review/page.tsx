@@ -53,9 +53,27 @@ export default function ReviewPage() {
   // 実際の配送料金を取得（パッケージ数に応じて自動判定）
   useEffect(() => {
     const fetchActualRates = async () => {
-      if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
+      // ハイドレーション完了を待つ
+      if (!isReady || isLoading) {
+        console.log(`⏳ Waiting for hydration... isReady: ${isReady}, isLoading: ${isLoading}`)
         return
       }
+
+      // データの有効性をチェック
+      if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
+        console.log(`❌ Required data missing:`, {
+          shipperCountry: shipperInfo.countryCode,
+          recipientCountry: recipientInfo.countryCode,
+          packagesCount: packages.length
+        })
+        return
+      }
+
+      console.log(`🔍 Data check:`, {
+        shipperInfo: shipperInfo,
+        recipientInfo: recipientInfo,
+        packagesCount: packages.length
+      })
 
       setRatesLoading(true)
       setRatesError(null)
@@ -142,7 +160,7 @@ export default function ReviewPage() {
     }
 
     fetchActualRates()
-  }, [shipperInfo, recipientInfo, packages])
+  }, [shipperInfo, recipientInfo, packages, isReady, isLoading])
 
   // 料金計算ロジック（統合版）
   const calculations = useMemo(() => {
