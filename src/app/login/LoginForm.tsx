@@ -7,6 +7,7 @@ import { signIn } from '@/lib/supabase/client'
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [persistSession, setPersistSession] = useState(true) // 新機能：ログイン状態保持フラグ
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
@@ -18,7 +19,8 @@ export default function LoginForm() {
     setErrorMessage('')
 
     try {
-      const { data, error } = await signIn(email, password)
+      console.log('🔐 ログイン試行:', { email, persistSession })
+      const { data, error } = await signIn(email, password, persistSession)
 
       if (error) {
         console.error('ログインエラー:', error.message)
@@ -39,7 +41,11 @@ export default function LoginForm() {
           setErrorMessage(`ログインエラー: ${error.message}`)
         }
       } else {
-        console.log('ログイン成功:', data.user?.email)
+        console.log('✅ ログイン成功:', { 
+          email: data.user?.email,
+          persistSession,
+          storageType: persistSession ? 'localStorage' : 'sessionStorage'
+        })
         // ログイン成功時は元のページまたはトップページにリダイレクト
         const redirectTo = searchParams.get('redirect_to')
         if (redirectTo) {
@@ -128,6 +134,58 @@ export default function LoginForm() {
               boxSizing: 'border-box'
             }}
           />
+        </div>
+
+        {/* ログイン状態保持チェックボックス */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          padding: '0.5rem 0'
+        }}>
+          <input
+            id="persistSession"
+            type="checkbox"
+            checked={persistSession}
+            onChange={(e) => setPersistSession(e.target.checked)}
+            style={{
+              width: '18px',
+              height: '18px',
+              cursor: 'pointer'
+            }}
+          />
+          <label 
+            htmlFor="persistSession" 
+            style={{ 
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              color: '#374151',
+              userSelect: 'none'
+            }}
+          >
+            ログイン状態を保持する
+          </label>
+        </div>
+
+        {/* 説明テキスト */}
+        <div style={{
+          fontSize: '0.8rem',
+          color: '#6b7280',
+          marginTop: '-0.5rem',
+          padding: '0.5rem',
+          backgroundColor: '#f9fafb',
+          borderRadius: '4px',
+          border: '1px solid #e5e7eb'
+        }}>
+          {persistSession ? (
+            <>
+              <strong>🔒 ログイン状態を保持:</strong> ブラウザを閉じても次回自動的にログインされます
+            </>
+          ) : (
+            <>
+              <strong>🚪 一時的なログイン:</strong> ブラウザを閉じるとログアウトされます
+            </>
+          )}
         </div>
 
         <button

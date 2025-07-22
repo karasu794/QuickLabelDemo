@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { TrackingNumber, PaymentIdButton } from './TransactionActions'
+import TransactionTableSwitcher from './TransactionTableSwitcher'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(
@@ -15,7 +16,7 @@ const supabaseAdmin = createClient(
 )
 
 // 取引データの型定義
-interface Transaction {
+export interface Transaction {
   id: string
   created_at: string
   user_email: string | null
@@ -246,122 +247,6 @@ function StatsDashboard({ stats }: { stats: Stats }) {
   )
 }
 
-// 取引一覧テーブルコンポーネント
-function TransactionsTable({ transactions }: { transactions: Transaction[] }) {
-  if (transactions.length === 0) {
-    return (
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">取引一覧</h2>
-          <p className="mt-1 text-sm text-gray-600">最新の取引から順に表示されています</p>
-        </div>
-        <div className="px-6 py-12 text-center">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">取引がありません</h3>
-          <p className="mt-1 text-sm text-gray-500">まだ取引が記録されていません。</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-medium text-gray-900">取引一覧</h2>
-        <p className="mt-1 text-sm text-gray-600">最新の取引から順に表示されています</p>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                作成日時
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ユーザー
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                請求額
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                追跡番号
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                決済ステータス
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                配送先
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {transactions.map((transaction) => (
-              <tr key={transaction.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(transaction.created_at)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm">
-                    <div className="font-medium text-gray-900">
-                      {transaction.user_name || 'ゲストユーザー'}
-                    </div>
-                    <div className="text-gray-500">
-                      {transaction.user_email || '未登録'}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {formatCurrency(transaction.total_amount)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <TrackingNumber trackingNumber={transaction.tracking_number} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(transaction.status)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded mr-2">
-                      {transaction.recipient_country}
-                    </span>
-                    {transaction.recipient_city}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <a
-                    href={`https://www.fedex.com/fedextrack/?trknbr=${transaction.tracking_number}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    追跡
-                  </a>
-                  {transaction.label_url && (
-                    <a
-                      href={transaction.label_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      ラベル
-                    </a>
-                  )}
-                  <PaymentIdButton paymentId={transaction.payment_id} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
 // メインページコンポーネント（サーバーコンポーネント）
 export default async function TransactionsPage() {
   const { transactions, stats, error } = await fetchTransactions()
@@ -381,8 +266,8 @@ export default async function TransactionsPage() {
       {/* 統計ダッシュボード */}
       <StatsDashboard stats={stats} />
 
-      {/* 取引一覧テーブル */}
-      <TransactionsTable transactions={transactions} />
+      {/* 切り替え可能な取引一覧テーブル */}
+      <TransactionTableSwitcher transactions={transactions} />
     </div>
   )
 } 

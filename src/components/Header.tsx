@@ -3,19 +3,35 @@
 import { Menu, X, Shield } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const { user, profile, loading, isAuthenticated, isAdmin } = useAuth()
-  const supabase = createClient()
 
   // クライアントサイドマウント検知
   useEffect(() => {
     setIsMounted(true)
+    console.log('🎭 Header: マウント完了')
   }, [])
+
+  // デバッグログ: 認証状態の変化を追跡（詳細な値を表示）
+  useEffect(() => {
+    console.log('🎭 Header認証状態更新:', {
+      isMounted,
+      loading,
+      isAuthenticated,
+      isAdmin,
+      userEmail: user?.email || '未ログイン',
+      profileRole: profile?.role || '未設定',
+      profileId: profile?.id || 'なし',
+      userId: user?.id || 'なし',
+      hasUser: !!user,
+      hasProfile: !!profile
+    })
+  }, [isMounted, loading, isAuthenticated, isAdmin, user, profile])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -23,17 +39,31 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
+      console.log('🚪 ログアウト開始')
       await supabase.auth.signOut()
       setIsMenuOpen(false)
-      // ページをリロードして状態をリセット
+      console.log('✅ ログアウト完了')
+      // 認証状態の変更は onAuthStateChange で自動的に処理される
       window.location.href = '/'
     } catch (error) {
-      console.error('ログアウトエラー:', error)
+      console.error('❌ ログアウトエラー:', error)
     }
   }
 
-  // ハイドレーション完了前またはローディング中は共通のプレースホルダーを表示
-  if (!isMounted || loading) {
+  // レンダリング状態をログ出力
+  console.log('🎭 Header レンダリング状態:', {
+    isMounted,
+    loading,
+    isAuthenticated,
+    isAdmin,
+    userEmail: user?.email || '未ログイン',
+    willShowAuth: isMounted && !loading && isAuthenticated,
+    willShowLogin: isMounted && !loading && !isAuthenticated
+  })
+
+  // ハイドレーション完了前は何も表示しない（フラッシュ防止）
+  if (!isMounted) {
+    console.log('⏳ Header: ハイドレーション待機中')
     return (
       <header className="bg-fedex-purple shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,6 +79,37 @@ export default function Header() {
         </div>
       </header>
     )
+  }
+
+  // ローディング中の表示（短時間のみ）
+  if (loading) {
+    console.log('⏳ Header: 認証状態ローディング中')
+    return (
+      <header className="bg-fedex-purple shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link href="/" className="text-white text-xl font-bold hover:text-gray-200 transition-colors duration-200">
+              QuickLabel
+            </Link>
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-8 bg-white/20 rounded animate-pulse"></div>
+              <div className="w-20 h-8 bg-white/20 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+    )
+  }
+
+  // 最終的な表示ログ
+  if (isAuthenticated) {
+    console.log('✅ Header: 認証済みユーザー表示:', {
+      userEmail: user?.email,
+      isAdmin,
+      showAdminMenu: isAdmin
+    })
+  } else {
+    console.log('🔓 Header: 未ログインユーザー表示 - ログイン/新規登録ボタンを表示')
   }
 
   return (

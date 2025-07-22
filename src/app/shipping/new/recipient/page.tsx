@@ -348,238 +348,274 @@ export default function RecipientInfoPage() {
 
   return (
     <AuthGuard requireAuth={false}>
-      <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">荷受人情報</h1>
-          <p className="text-gray-600">荷受人の詳細情報を入力してください</p>
-        </div>
-
-            {/* ハイドレーション待機ローディング */}
-            {isLoading && (
-              <Card>
-                <CardContent className="p-12">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                    <p className="text-gray-600">データを読み込み中...</p>
+      <div className="p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">荷受人情報</h1>
+            <p className="text-sm md:text-base text-gray-600">荷受人の詳細情報を入力してください</p>
           </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* フォーム本体 */}
-            {isReady && (
-
+          {/* ハイドレーション待機ローディング */}
+          {isLoading && (
             <Card>
-              <CardHeader className="bg-purple-600 text-white">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  荷受人情報
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* 基本情報 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                        <Label htmlFor="contactName">担当者名 <span className="text-red-500">*</span></Label>
-                        <Input
-                          id="contactName"
-                    name="contactName"
-                    value={recipientInfo.contactName}
-                    onChange={handleInputChange}
-                          placeholder="田中太郎"
-                    required 
-                  />
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                  <p className="text-sm md:text-base text-gray-600">データを読み込み中...</p>
                 </div>
-                <div className="space-y-2">
-                        <Label htmlFor="companyName">会社名</Label>
-                        <Input
-                          id="companyName"
-                    name="companyName"
-                    value={recipientInfo.companyName}
-                    onChange={handleInputChange}
-                    placeholder="株式会社サンプル" 
-                  />
-                </div>
-              </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                        <Label htmlFor="taxNumber">税務番号（法人番号）</Label>
-                        <Input
-                          id="taxNumber"
-                  name="taxNumber"
-                  value={recipientInfo.taxNumber}
-                  onChange={handleInputChange}
-                          placeholder="1234567890123"
-                />
-              </div>
-                <div className="space-y-2">
-                        <Label htmlFor="phoneNumber">電話番号 <span className="text-red-500">*</span></Label>
-                        <Input
-                          id="phoneNumber"
-                    name="phoneNumber"
-                    value={recipientInfo.phoneNumber}
-                    onChange={handleInputChange}
-                    placeholder="03-1234-5678" 
-                    required 
-                  />
-                      </div>
-                </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="email">メールアドレス</Label>
-                      <Input
-                    id="email" 
-                    name="email"
-                        type="email"
-                    value={recipientInfo.email}
-                    onChange={handleInputChange}
-                        placeholder="example@email.com"
-                  />
-              </div>
-            </div>
-
-                  {/* 住所情報 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">住所情報</h3>
-
-                    {/* 住所自動入力 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                        <Label>住所検索</Label>
-                        
-                        {/* フェニックス住所自動入力ボタン（fromモードでない場合のみ表示） */}
-                        {phoenixMode !== 'from' && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handlePhoenixAddressClick}
-                            className="text-green-600 border-green-300 hover:bg-green-50 text-xs"
-                          >
-                            🏢 フェニックスへ送る
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <GooglePlaceAutocomplete
-                        value={addressInput}
-                        onChange={handleAddressInputChange}
-                        onPlaceSelect={handleAddressSelect}
-                        placeholder="住所を入力すると自動補完されます"
-                      />
-                </div>
-
-                    {/* 国選択 */}
-                <div className="space-y-2">
-                      <Label htmlFor="countryCode">国 <span className="text-red-500">*</span></Label>
-                      <Combobox
-                        options={countryOptions}
-                    value={recipientInfo.countryCode} 
-                        onSelect={handleCountryChange}
-                        placeholder="国を選択してください"
-                        searchPlaceholder="国名または国コードで検索..."
-                        emptyText="該当する国が見つかりません"
-                      />
-                    </div>
-
-                    {/* 州・県選択（US、CA、または日本の場合のみ表示） */}
-                    {(recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA' || recipientInfo.countryCode === 'JP') && (
-                      <div className="space-y-2">
-                        <Label htmlFor="stateCode">州・県 <span className="text-red-500">*</span></Label>
-                        <Select value={recipientInfo.stateCode} onValueChange={(value) => updateRecipientInfo('stateCode', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="州・県を選択" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getStateOptions().map((state) => (
-                              <SelectItem key={state.code} value={state.code}>
-                                {state.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {/* 詳細住所入力 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                        <Label htmlFor="postalCode">
-                    郵便番号 {!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode) && <span className="text-red-500">*</span>}
-                        </Label>
-                        <Input
-                          id="postalCode"
-                    name="postalCode"
-                    value={recipientInfo.postalCode}
-                    onChange={handleInputChange}
-                    placeholder="100-0001" 
-                    required={!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode)}
-                  />
-                </div>
-                <div className="space-y-2">
-                        <Label htmlFor="cityName">都市名 <span className="text-red-500">*</span></Label>
-                        <Input
-                          id="cityName"
-                    name="cityName"
-                    value={recipientInfo.cityName}
-                    onChange={handleInputChange}
-                          placeholder="東京"
-                    required
-                  />
-                </div>
-              </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="address1">住所1 <span className="text-red-500">*</span></Label>
-                      <Input
-                        id="address1"
-                        name="address1"
-                    value={recipientInfo.address1}
-                        onChange={handleInputChange}
-                        placeholder="千代田区丸の内1-1-1"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="address2">住所2（建物名・部屋番号など）</Label>
-                      <Input
-                    id="address2" 
-                    name="address2"
-                    value={recipientInfo.address2}
-                    onChange={handleInputChange}
-                        placeholder="○○ビル 5F"
-                  />
-                </div>
-              </div>
-
-                  {/* エラーメッセージ */}
-                  {error && (
-                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-red-700">{error}</span>
-            </div>
-                  )}
-
-                  {/* ボタン */}
-                  <div className="flex justify-between">
-                    <Button type="button" variant="outline" onClick={handlePrevious}>
-                      戻る
-                    </Button>
-                    <Button type="submit">
-                      次へ
-                </Button>
-                  </div>
-                </form>
               </CardContent>
             </Card>
-            )}
+          )}
+
+          {/* フォーム本体 */}
+          {isReady && (
+          <Card>
+            <CardHeader className="bg-purple-600 text-white p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <Package className="h-5 w-5 md:h-6 md:w-6" />
+                荷受人情報
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+                {/* 基本情報 */}
+                <div className="space-y-4">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900">基本情報</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactName" className="text-sm md:text-base">
+                        担当者名 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="contactName"
+                        name="contactName"
+                        value={recipientInfo.contactName}
+                        onChange={handleInputChange}
+                        placeholder="田中太郎"
+                        required
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName" className="text-sm md:text-base">
+                        会社名
+                      </Label>
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        value={recipientInfo.companyName}
+                        onChange={handleInputChange}
+                        placeholder="株式会社サンプル"
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="taxNumber" className="text-sm md:text-base">
+                        税務番号（法人番号）
+                      </Label>
+                      <Input
+                        id="taxNumber"
+                        name="taxNumber"
+                        value={recipientInfo.taxNumber}
+                        onChange={handleInputChange}
+                        placeholder="1234567890123"
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber" className="text-sm md:text-base">
+                        電話番号 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={recipientInfo.phoneNumber}
+                        onChange={handleInputChange}
+                        placeholder="03-1234-5678"
+                        required
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm md:text-base">
+                      メールアドレス
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={recipientInfo.email}
+                      onChange={handleInputChange}
+                      placeholder="example@email.com"
+                      className="h-11 md:h-10 text-base"
+                    />
+                  </div>
+                </div>
+
+                {/* 住所情報 */}
+                <div className="space-y-4">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900">住所情報</h3>
+
+                  {/* 住所自動入力 */}
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <Label className="text-sm md:text-base">住所検索</Label>
+                      
+                      {/* フェニックス住所自動入力ボタン（fromモードでない場合のみ表示） */}
+                      {phoenixMode !== 'from' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handlePhoenixAddressClick}
+                          className="text-green-600 border-green-300 hover:bg-green-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+                        >
+                          🏢 フェニックスへ送る
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <GooglePlaceAutocomplete
+                      value={addressInput}
+                      onChange={handleAddressInputChange}
+                      onPlaceSelect={handleAddressSelect}
+                      placeholder="住所を入力すると自動補完されます"
+                    />
+                  </div>
+
+                  {/* 国選択 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="countryCode" className="text-sm md:text-base">
+                      国 <span className="text-red-500">*</span>
+                    </Label>
+                    <Combobox
+                      options={countryOptions}
+                      value={recipientInfo.countryCode}
+                      onSelect={handleCountryChange}
+                      placeholder="国を選択してください"
+                      searchPlaceholder="国名または国コードで検索..."
+                      emptyText="該当する国が見つかりません"
+                    />
+                  </div>
+
+                  {/* 州・県選択（US、CA、または日本の場合のみ表示） */}
+                  {(recipientInfo.countryCode === 'US' || recipientInfo.countryCode === 'CA' || recipientInfo.countryCode === 'JP') && (
+                    <div className="space-y-2">
+                      <Label htmlFor="stateCode" className="text-sm md:text-base">
+                        州・県 <span className="text-red-500">*</span>
+                      </Label>
+                      <Select value={recipientInfo.stateCode} onValueChange={(value) => updateRecipientInfo('stateCode', value)}>
+                        <SelectTrigger className="h-11 md:h-10">
+                          <SelectValue placeholder="州・県を選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getStateOptions().map((state) => (
+                            <SelectItem key={state.code} value={state.code}>
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* 詳細住所入力 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode" className="text-sm md:text-base">
+                        郵便番号 {!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode) && <span className="text-red-500">*</span>}
+                      </Label>
+                      <Input
+                        id="postalCode"
+                        name="postalCode"
+                        value={recipientInfo.postalCode}
+                        onChange={handleInputChange}
+                        placeholder="100-0001"
+                        required={!postalCodeNotRequiredCountries.includes(recipientInfo.countryCode)}
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cityName" className="text-sm md:text-base">
+                        都市名 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="cityName"
+                        name="cityName"
+                        value={recipientInfo.cityName}
+                        onChange={handleInputChange}
+                        placeholder="東京"
+                        required
+                        className="h-11 md:h-10 text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address1" className="text-sm md:text-base">
+                      住所1 <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="address1"
+                      name="address1"
+                      value={recipientInfo.address1}
+                      onChange={handleInputChange}
+                      placeholder="千代田区丸の内1-1-1"
+                      required
+                      className="h-11 md:h-10 text-base"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address2" className="text-sm md:text-base">
+                      住所2（建物名・部屋番号など）
+                    </Label>
+                    <Input
+                      id="address2"
+                      name="address2"
+                      value={recipientInfo.address2}
+                      onChange={handleInputChange}
+                      placeholder="○○ビル 5F"
+                      className="h-11 md:h-10 text-base"
+                    />
+                  </div>
+                </div>
+
+                {/* エラーメッセージ */}
+                {error && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base text-red-700">{error}</span>
+                  </div>
+                )}
+
+                {/* ボタン */}
+                <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handlePrevious}
+                    className="h-11 md:h-10 text-sm md:text-base font-medium order-2 sm:order-1"
+                  >
+                    戻る
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="h-11 md:h-10 text-sm md:text-base font-medium bg-purple-600 hover:bg-purple-700 order-1 sm:order-2"
+                  >
+                    次へ
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+          )}
         </div>
       </div>
     </AuthGuard>

@@ -1,4 +1,14 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import UserTableSwitcher from './UserTableSwitcher'
+
+// ユーザーデータの型定義
+export interface UserProfile {
+  id: string
+  email: string | null
+  full_name: string | null
+  company_name: string | null
+  created_at: string | null
+}
 
 export default async function UsersPage() {
   // Service Role Keyクライアントを使用して全ユーザーデータにアクセス
@@ -25,94 +35,36 @@ export default async function UsersPage() {
 
     console.log(`管理者ページ: ${profiles?.length || 0}件のユーザー情報を取得`)
 
+    // データを型安全にキャスト
+    const users: UserProfile[] = profiles || []
+
     return (
       <div className="space-y-6">
         {/* ヘッダー */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">会員管理</h1>
-          <div className="text-sm text-gray-500">
-            総会員数: {profiles?.length || 0}名
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">会員管理</h1>
+            <p className="mt-2 text-gray-600">登録済み会員の情報を管理できます</p>
+          </div>
+          <div className="bg-white rounded-lg shadow px-4 py-2">
+            <div className="text-right">
+              <p className="text-sm text-gray-500">総会員数</p>
+              <p className="text-2xl font-bold text-purple-600">{users.length}名</p>
+            </div>
           </div>
         </div>
 
         {/* サーバーサイド接続確認メッセージ */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="text-green-800 text-sm">
-            ✅ Service Role Key経由でSupabaseに接続済み ({profiles?.length || 0}件のプロフィールを取得)
+            ✅ Service Role Key経由でSupabaseに接続済み ({users.length}件のプロフィールを取得)
           </p>
         </div>
 
-      {/* ユーザーテーブル */}
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  メールアドレス
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  担当者名
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  会社名
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  登録日
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {profiles && profiles.length > 0 ? (
-                profiles.map((profile) => (
-                  <tr key={profile.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {profile.email || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {profile.full_name || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {profile.company_name || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {profile.created_at ? new Date(profile.created_at).toLocaleDateString('ja-JP') : '-'}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                    登録済みのユーザーはありません
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* 切り替え可能なユーザーテーブル */}
+        <UserTableSwitcher users={users} />
       </div>
-
-      {/* 統計情報 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">総会員数</h3>
-          <p className="text-3xl font-bold text-purple-600">{profiles?.length || 0}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">企業会員</h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {profiles?.filter(p => p.company_name).length || 0}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">個人会員</h3>
-          <p className="text-3xl font-bold text-green-600">
-            {profiles?.filter(p => !p.company_name).length || 0}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
+    )
   } catch (error) {
     console.error('管理者ページでのエラー:', error)
     return (

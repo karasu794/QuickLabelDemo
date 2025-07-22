@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAdminAuth } from '@/lib/auth/admin-protection'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(
@@ -14,6 +15,10 @@ const supabaseAdmin = createClient(
 )
 
 export async function GET(request: NextRequest) {
+  // 🔐 管理者認証チェック
+  const authError = await requireAdminAuth()
+  if (authError) return authError
+
   try {
     console.log('🏢 自社住所情報取得API開始')
 

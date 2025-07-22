@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 interface UserProfile {
@@ -25,114 +25,177 @@ interface AuthState {
   isAdmin: boolean
 }
 
-export const useAuth = (): AuthState => {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
+// シンプルなプロフィール取得関数
+const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  try {
+    console.log('📋 プロフィール取得開始:', userId)
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
 
-  const supabase = createClient()
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log('📋 プロフィールが見つかりません（新規ユーザー）:', userId)
+        return null
+      }
+      console.error('📋 プロフィール取得エラー:', error)
+      return null
+    }
+
+    if (data) {
+      // データベースから返される実際のデータを安全に取り扱う
+      const rawData = data as any
+      
+      const profile: UserProfile = {
+        id: rawData.id || userId,
+        email: rawData.email || null,
+        contact_name: rawData.contact_name || rawData.full_name || null,
+        company_name: rawData.company_name || null,
+        role: rawData.role || 'user',
+        full_name: rawData.full_name || null,
+        phone_number: rawData.phone_number || null,
+        address: rawData.address || null,
+        postal_code: rawData.postal_code || null,
+        city: rawData.city || null,
+        state: rawData.state || null,
+        country: rawData.country || null
+      }
+
+      console.log('✅ プロフィール取得成功:', { 
+        userId, 
+        role: profile.role,
+        email: profile.email,
+        fullName: profile.full_name,
+        isAdmin: profile.role === 'admin'
+      })
+      return profile
+    }
+
+    return null
+  } catch (error) {
+    console.error('📋 プロフィール取得例外:', error)
+    return null
+  }
+}
+
+export const useAuth = (): AuthState => {
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    profile: null,
+    loading: true,
+    isAuthenticated: false,
+    isAdmin: false
+  })
+
+  // 認証状態を更新する関数
+  const updateAuthState = async (user: User | null) => {
+    console.log('🔄 認証状態更新開始:', user ? user.email : 'ログアウト')
+
+    if (user) {
+      // ユーザーがいる場合、プロフィールを取得
+      const profile = await fetchUserProfile(user.id)
+      const isAdmin = profile?.role === 'admin'
+
+      console.log('✅ 認証状態更新完了:', {
+        userEmail: user.email,
+        role: profile?.role,
+        isAdmin,
+        profileId: profile?.id
+      })
+
+      setAuthState({
+        user,
+        profile,
+        loading: false,
+        isAuthenticated: true,
+        isAdmin
+      })
+    } else {
+      // ユーザーがいない場合
+      console.log('🚫 認証状態更新: ログアウト状態')
+      setAuthState({
+        user: null,
+        profile: null,
+        loading: false,
+        isAuthenticated: false,
+        isAdmin: false
+      })
+    }
+  }
 
   useEffect(() => {
-    // 初期認証状態を取得
-    const getInitialAuth = async () => {
+    let isMounted = true
+    let authSubscription: any = null
+
+    const initializeAuth = async () => {
       try {
-        const { data: { user: initialUser }, error } = await supabase.auth.getUser()
+        console.log('🎯 認証状態初期化開始')
+
+        // 現在のセッションを取得
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('認証状態取得エラー:', error)
-          setUser(null)
-          setProfile(null)
-          return
+          console.error('❌ セッション取得エラー:', error)
         }
 
-        setUser(initialUser)
+        console.log('📡 初期セッション状態:', {
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id
+        })
 
-        // ユーザーが存在する場合、プロフィール情報を取得
-        if (initialUser) {
-          try {
-            await fetchUserProfile(initialUser.id)
-          } catch (profileError) {
-            console.error('初期プロフィール取得エラー:', profileError)
-            // プロフィール取得に失敗してもユーザー認証は有効
-            setProfile(null)
-          }
+        // マウント済みの場合のみ状態を更新
+        if (isMounted) {
+          await updateAuthState(session?.user || null)
         }
       } catch (error) {
-        console.error('初期認証状態取得エラー:', error)
-        setUser(null)
-        setProfile(null)
-      } finally {
-        setLoading(false) // 必ずローディング状態を解除
+        console.error('❌ 認証初期化エラー:', error)
+        if (isMounted) {
+          setAuthState(prev => ({ ...prev, loading: false }))
+        }
       }
     }
 
-    // プロフィール情報を取得する関数
-    const fetchUserProfile = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, email, contact_name, company_name, role, full_name, phone_number, address, postal_code, city, state, country')
-          .eq('id', userId)
-          .single()
-
-        if (error && error.code !== 'PGRST116') { // データが見つからない場合は無視
-          console.error('プロフィール取得エラー:', error)
-          // エラーでもプロフィールをnullに設定して処理を継続
-          setProfile(null)
-          return
-        }
-
-        if (data) {
-          setProfile({
-            ...(data as any),
-            role: (data as any).role || 'user' // roleがnullの場合のフォールバック
-          })
-        } else {
-          // データが存在しない場合
-          setProfile(null)
-        }
-      } catch (error) {
-        console.error('プロフィール取得例外:', error)
-        // 例外が発生してもプロフィールをnullに設定
-        setProfile(null)
+    // 認証状態変更を監視
+    authSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('📡 認証状態変更検出:', {
+        event,
+        userEmail: session?.user?.email || 'ユーザーなし',
+        userId: session?.user?.id || 'なし'
+      })
+      
+      if (isMounted) {
+        await updateAuthState(session?.user || null)
       }
-    }
+    })
 
-    getInitialAuth()
+    // 初期化実行
+    initializeAuth()
 
-    // 認証状態の変更を監視
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('認証状態変更:', event)
-        
-        setLoading(true) // ローディング開始
-        
-        try {
-          if (session?.user) {
-            setUser(session.user)
-            await fetchUserProfile(session.user.id)
-          } else {
-            setUser(null)
-            setProfile(null)
-          }
-        } catch (error) {
-          console.error('認証状態変更処理エラー:', error)
-        } finally {
-          setLoading(false) // 必ずローディング終了
-        }
-      }
-    )
-
+    // クリーンアップ
     return () => {
-      subscription.unsubscribe()
+      console.log('🧹 useAuth クリーンアップ実行')
+      isMounted = false
+      if (authSubscription?.data?.subscription) {
+        authSubscription.data.subscription.unsubscribe()
+      }
     }
-  }, [])
+  }, []) // 空の依存配列で一度だけ実行
 
-  return {
-    user,
-    profile,
-    loading,
-    isAuthenticated: !!user,
-    isAdmin: profile?.role === 'admin'
-  }
+  // デバッグログ（詳細な値を表示）
+  useEffect(() => {
+    console.log('🎭 useAuth状態変更:', {
+      loading: authState.loading,
+      isAuthenticated: authState.isAuthenticated,
+      isAdmin: authState.isAdmin,
+      userEmail: authState.user?.email || '未ログイン',
+      profileRole: authState.profile?.role || '未設定',
+      profileId: authState.profile?.id || 'なし'
+    })
+  }, [authState])
+
+  return authState
 } 
