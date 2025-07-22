@@ -359,7 +359,7 @@ export default function QuoteFormComponent({
                           <span className="text-red-500 ml-1">*</span>
                         )}
                         <span className="text-purple-600 ml-2 text-xs">
-                          (現在値: "{quoteParams.originStateCode}")
+                          (現在値: &quot;{quoteParams.originStateCode}&quot;)
                         </span>
                       </Label>
                       <Select 
@@ -488,7 +488,7 @@ export default function QuoteFormComponent({
                           <span className="text-red-500 ml-1">*</span>
                         )}
                         <span className="text-purple-600 ml-2 text-xs">
-                          (現在値: "{quoteParams.destinationStateCode}")
+                          (現在値: &quot;{quoteParams.destinationStateCode}&quot;)
                         </span>
                       </Label>
                       <Select 

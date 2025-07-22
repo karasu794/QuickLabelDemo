@@ -97,7 +97,7 @@ export default function AdminDebugPage() {
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-yellow-100 text-yellow-800'
                 }`}>
-                  "{profile.role || 'null'}"
+                  &quot;{profile.role || 'null'}&quot;
                 </span>
               </div>
               
