@@ -193,7 +193,7 @@ export default function RecipientInfoPage() {
       setIsAddressSelected(true)
       
       // フェニックス送受取フラグを設定
-      setPhoenixMode('to')
+      setPhoenixMode('recipient')
       
       console.log('🎯 荷受人にフェニックス情報を設定完了（モード: to）', {
         contactName: companyInfo.contactName,
@@ -468,7 +468,7 @@ export default function RecipientInfoPage() {
                       <Label className="text-sm md:text-base">住所検索</Label>
                       
                       {/* フェニックス住所自動入力ボタン（fromモードでない場合のみ表示） */}
-                      {phoenixMode !== 'from' && (
+                      {phoenixMode !== 'shipper' && (
                         <Button
                           type="button"
                           variant="outline"

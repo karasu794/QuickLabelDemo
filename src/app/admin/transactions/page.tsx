@@ -97,7 +97,7 @@ async function fetchTransactions(): Promise<{ transactions: Transaction[], stats
         label_url,
         profiles:user_id (
           email,
-          contact_name
+          full_name
         )
       `)
       .order('created_at', { ascending: false })
@@ -114,7 +114,7 @@ async function fetchTransactions(): Promise<{ transactions: Transaction[], stats
       id: item.id,
       created_at: item.created_at,
       user_email: item.profiles?.email || null,
-      user_name: item.profiles?.contact_name || null,
+              user_name: item.profiles?.full_name || null,
       total_amount: item.total_amount || 0,
       currency: 'JPY', // 現在はJPY固定
       tracking_number: item.tracking_number,

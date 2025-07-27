@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
-import type { Package, ExtendedQuoteParams } from '@/components/QuoteFormComponent'
+import type { Package, ExtendedQuoteParams } from '@/types/quote'
 
 // 型定義
 export interface ShipperInfo {
@@ -96,7 +96,7 @@ interface ShippingFormState {
   shippingPurpose: string
   selectedRate: SelectedRate | null
   completedSteps: string[]
-  phoenixMode: 'none' | 'from' | 'to'
+  phoenixMode: 'none' | 'shipper' | 'recipient'
 
   // 荷送人情報のアクション
   setShipperInfo: (info: ShipperInfo) => void
@@ -141,7 +141,7 @@ interface ShippingFormState {
   isStepCompleted: (stepPath: string) => boolean
 
   // フェニックスモードのアクション
-  setPhoenixMode: (mode: 'none' | 'from' | 'to') => void
+  setPhoenixMode: (mode: 'none' | 'shipper' | 'recipient') => void
 
   // リセット機能
   resetForm: () => void

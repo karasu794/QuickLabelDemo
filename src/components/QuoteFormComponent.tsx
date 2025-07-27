@@ -12,48 +12,10 @@ import { Checkbox } from "./ui/checkbox"
 import { Plus, X, Loader2 } from "lucide-react"
 import { GooglePlaceAutocomplete, ParsedAddress } from "./GooglePlaceAutocomplete"
 import { getPrefectureFromPostalCode, usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
+import type { Package, ExtendedQuoteParams } from "@/types/quote"
 
 // 郵便番号不要国の定義
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG'];
-
-//【重要】このファイルの型定義もシンプルにする
-export interface Package {
-  id: number
-  packagingType: string
-  weight: string
-  length: string
-  width: string
-  height: string
-  declaredValue: string
-}
-
-export interface ExtendedQuoteParams {
-  originCountry: string
-  originPostalCode: string
-  originStateCode: string
-  originCityName: string
-  originAddressInput: string
-  originStreet: string
-  originSelected: boolean
-  originPostalCodeMissing: boolean
-  originCityNameMissing: boolean
-  originStateCodeMissing: boolean
-  destinationCountry: string
-  destinationPostalCode: string
-  destinationStateCode: string
-  destinationCityName: string
-  destinationAddressInput: string
-  destinationStreet: string
-  destinationSelected: boolean
-  destinationPostalCodeMissing: boolean
-  destinationCityNameMissing: boolean
-  destinationStateCodeMissing: boolean
-  shipDate: string
-  isResidential: boolean
-  higherInsurance: boolean
-  isPhoenixShipment: boolean
-  phoenixMode: 'none' | 'from' | 'to'
-}
 
 interface QuoteFormProps {
   quoteParams: ExtendedQuoteParams
@@ -205,9 +167,9 @@ export default function QuoteFormComponent({
       
       // フェニックス送受取フラグとモードを設定
       onQuoteParamsChange('isPhoenixShipment', true)
-      onQuoteParamsChange('phoenixMode', type === 'origin' ? 'from' : 'to')
+      onQuoteParamsChange('phoenixMode', type === 'origin' ? 'shipper' : 'recipient')
       
-      console.log(`🎯 ${type}にフェニックス住所を設定完了（モード: ${type === 'origin' ? 'from' : 'to'}）`)
+      console.log(`🎯 ${type}にフェニックス住所を設定完了（モード: ${type === 'origin' ? 'shipper' : 'recipient'}）`)
       
     } catch (error) {
       console.error('❌ フェニックス住所取得エラー:', error)
@@ -267,7 +229,7 @@ export default function QuoteFormComponent({
                 </Label>
                 
                 {/* フェニックス住所自動入力ボタン（出荷地が空の場合のみ表示） */}
-                {!quoteParams.originAddressInput && quoteParams.phoenixMode !== 'to' && (
+                {!quoteParams.originAddressInput && quoteParams.phoenixMode !== 'recipient' && (
                   <Button
                     type="button"
                     variant="outline"
@@ -396,7 +358,7 @@ export default function QuoteFormComponent({
                 </Label>
                 
                 {/* フェニックス住所自動入力ボタン（仕向地が空の場合のみ表示） */}
-                {!quoteParams.destinationAddressInput && quoteParams.phoenixMode !== 'from' && (
+                {!quoteParams.destinationAddressInput && quoteParams.phoenixMode !== 'shipper' && (
                   <Button
                     type="button"
                     variant="outline"

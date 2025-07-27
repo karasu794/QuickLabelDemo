@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import QuoteFormComponent, { Package, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
+import QuoteFormComponent from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
 import { useAuth } from "@/hooks/useAuth"
 import { Package as PackageIcon, Zap, Clock, Users, ArrowRight } from "lucide-react"
+import type { Package, ExtendedQuoteParams } from "@/types/quote"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
 const POLLING_INTERVAL = 2000 // 2秒ごとにポーリング
