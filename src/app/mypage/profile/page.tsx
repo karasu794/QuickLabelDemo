@@ -27,7 +27,7 @@ export default function ProfilePage() {
     postal_code: '',
     city: '',
     state: '',
-    country: ''
+    country: 'JP'
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
