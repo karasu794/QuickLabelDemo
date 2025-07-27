@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
-import type { Package, ExtendedQuoteParams } from '@/components/QuoteFormComponent'
+import type { Package, ExtendedQuoteParams } from '@/types/quote'
 
 // 型定義
 export interface ShipperInfo {

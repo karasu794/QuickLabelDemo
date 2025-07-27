@@ -8,7 +8,7 @@ import { Badge } from "./ui/badge"
 import { Separator } from "./ui/separator"
 import { Clock, Package, Truck } from "lucide-react"
 import { useShippingFormStore } from "@/store/shippingFormStore"
-import type { ExtendedQuoteParams } from "@/components/QuoteFormComponent"
+import type { ExtendedQuoteParams } from "@/types/quote"
 import { useAuth } from "@/hooks/useAuth"
 
 export interface Rate {

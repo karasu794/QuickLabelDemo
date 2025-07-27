@@ -103,7 +103,7 @@ export default function AdminDebugPage() {
               
               <div>
                 <span className="font-medium text-gray-700">氏名:</span>
-                <span className="ml-2">{profile.full_name || profile.contact_name || '未設定'}</span>
+                <span className="ml-2">{profile.full_name || '未設定'}</span>
               </div>
               
               <div>

@@ -8,7 +8,7 @@ import { Badge } from "./ui/badge"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion"
 import { Clock, Package, Truck, Calendar, ChevronRight } from "lucide-react"
 import { useShippingFormStore } from "@/store/shippingFormStore"
-import type { Package as QuotePackage, ExtendedQuoteParams } from "@/components/QuoteFormComponent"
+import type { Package as QuotePackage, ExtendedQuoteParams } from "@/types/quote"
 
 /**
  * FedExの見積もり結果を表示するコンポーネント

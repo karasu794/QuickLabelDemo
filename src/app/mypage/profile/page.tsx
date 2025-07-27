@@ -27,7 +27,7 @@ export default function ProfilePage() {
     postal_code: '',
     city: '',
     state: '',
-    country: ''
+    country: 'JP'
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -40,10 +40,10 @@ export default function ProfilePage() {
         company_name: profile.company_name || '',
         phone_number: profile.phone_number || '',
         address: profile.address || '',
-        postal_code: profile.postal_code || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        country: profile.country || 'JP'
+        postal_code: '',
+        city: '',
+        state: '',
+        country: 'JP'
       })
     }
   }, [profile])
