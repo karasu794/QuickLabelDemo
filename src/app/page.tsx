@@ -88,6 +88,21 @@ export default function Home() {
   const [usdToJpyRate, setUsdToJpyRate] = useState<number>(150.0) // デフォルト値
   const [packageErrors, setPackageErrors] = useState<{ [key: number]: string | null }>({})
   
+  // 保険金額検証（パッケージごと）
+  const [insuranceValidation, setInsuranceValidation] = useState<{
+    hasAnyOverLimit: boolean
+    isValidating: boolean
+    packageValidations: { [packageId: number]: {
+      isOverLimit: boolean
+      limitYen: number
+      errorMessage: string | null
+    }}
+  }>({
+    hasAnyOverLimit: false,
+    isValidating: false,
+    packageValidations: {}
+  })
+  
   // 非同期処理のための新しいステート
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
   
@@ -136,30 +151,95 @@ export default function Home() {
     fetchExchangeRate()
   }, [])
 
-  // 申告価額のバリデーション（リアルタイム）
-  useEffect(() => {
+  // 保険金額検証関数
+  const validateInsurance = useCallback(async () => {
     if (!quoteParams.higherInsurance) {
+      setInsuranceValidation({
+        hasAnyOverLimit: false,
+        isValidating: false,
+        packageValidations: {}
+      })
       setPackageErrors({})
       return
     }
 
-    const errors: { [key: number]: string | null } = {}
+    // 申告価額が設定されたパッケージのみ検証
+    const packagesWithValue = packages.filter(pkg => pkg.declaredValue && Number(pkg.declaredValue) > 0)
     
-    packages.forEach(pkg => {
-      const declaredValue = Number(pkg.declaredValue)
-      if (declaredValue > 0) {
-        const declaredValueUSD = declaredValue / usdToJpyRate
-        
-        if (declaredValueUSD > 100000) {
-          errors[pkg.id] = `申告価額が上限を超えています（上限: $100,000 ≈ ¥${Math.floor(100000 * usdToJpyRate).toLocaleString()}）`
-        } else {
-          errors[pkg.id] = null
-        }
+    if (packagesWithValue.length === 0) {
+      setInsuranceValidation({
+        hasAnyOverLimit: false,
+        isValidating: false,
+        packageValidations: {}
+      })
+      return
+    }
+
+    try {
+      setInsuranceValidation(prev => ({ ...prev, isValidating: true }))
+      
+      const response = await fetch('/api/validate-insurance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          packages: packages.map(pkg => ({
+            id: pkg.id,
+            packagingType: pkg.packagingType,
+            declaredValue: pkg.declaredValue
+          }))
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('検証APIエラー')
       }
-    })
-    
-    setPackageErrors(errors)
-  }, [packages, quoteParams.higherInsurance, usdToJpyRate])
+
+      const result = await response.json()
+      
+      // パッケージごとの検証結果を整理
+      const packageValidations: { [packageId: number]: {
+        isOverLimit: boolean
+        limitYen: number
+        errorMessage: string | null
+      }} = {}
+
+      result.packageValidations.forEach((validation: any) => {
+        packageValidations[validation.packageId] = {
+          isOverLimit: validation.isOverLimit,
+          limitYen: validation.limitYen,
+          errorMessage: validation.errorMessage
+        }
+      })
+
+      setInsuranceValidation({
+        hasAnyOverLimit: result.hasAnyOverLimit,
+        isValidating: false,
+        packageValidations
+      })
+
+      // 個別パッケージのエラーもクリア
+      setPackageErrors({})
+
+    } catch (error) {
+      console.error('保険金額検証エラー:', error)
+      setInsuranceValidation({
+        hasAnyOverLimit: false,
+        isValidating: false,
+        packageValidations: {}
+      })
+    }
+  }, [packages, quoteParams.higherInsurance])
+
+  // 保険金額が変更された時の検証実行
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      validateInsurance()
+    }, 500) // 0.5秒のデバウンス
+
+    return () => clearTimeout(timeoutId)
+  }, [validateInsurance])
 
   // ポーリングのクリーンアップ
   const clearPolling = useCallback(() => {
@@ -315,7 +395,11 @@ export default function Home() {
           }
         }
         
-        // リアルタイムバリデーションでエラーがある場合は実行を停止
+        // 保険金額検証でエラーがある場合は実行を停止
+        if (insuranceValidation.hasAnyOverLimit) {
+          throw new Error("保険金額が上限を超えています。金額を修正してから見積もりを実行してください")
+        }
+        
         const hasErrors = Object.values(packageErrors).some(error => error !== null)
         if (hasErrors) {
           throw new Error("申告価額の上限エラーを修正してから見積もりを実行してください")
@@ -390,6 +474,7 @@ export default function Home() {
           isLoading={isLoading}
           error={error}
           packageErrors={packageErrors}
+          insuranceValidation={insuranceValidation}
           onQuoteParamsChange={handleQuoteParamsChange}
           onPackageChange={handlePackageChange}
           onAddPackage={handleAddPackage}

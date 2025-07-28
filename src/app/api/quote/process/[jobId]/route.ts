@@ -378,6 +378,24 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
     console.log('📦 単一荷物: groupPackageCountは追加しません')
   }
 
+  // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue計算
+  let totalInsuredValue = null;
+  if (quoteParams.higherInsurance) {
+    const totalDeclaredValueJPY = packages.reduce((sum, pkg) => {
+      return sum + (pkg.declaredValue ? Number(pkg.declaredValue) : 0);
+    }, 0);
+    
+    if (totalDeclaredValueJPY > 0) {
+      // JPYをそのまま使用（FedX APIはJPYもサポート）
+      totalInsuredValue = {
+        amount: totalDeclaredValueJPY,
+        currency: 'JPY'
+      };
+      
+      console.log(`💰 高額保険設定: 総申告価額 ¥${totalDeclaredValueJPY.toLocaleString()}`);
+    }
+  }
+
   return {
     accountNumber: {
       value: process.env.FEDEX_ACCOUNT_NUMBER
@@ -397,6 +415,8 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       rateRequestType: ['ACCOUNT', 'LIST'], // LISTを追加してより多くのオプションを取得
       // 複数個口の場合のみ、groupPackageCountを追加
       ...(packages.length > 1 && { groupPackageCount: packages.length }),
+      // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue
+      ...(totalInsuredValue && { totalInsuredValue }),
       requestedPackageLineItems: requestedPackageLineItems
     }
   };

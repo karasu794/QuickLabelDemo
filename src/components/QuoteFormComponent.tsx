@@ -23,6 +23,15 @@ interface QuoteFormProps {
   isLoading: boolean
   error: string
   packageErrors: { [key: number]: string | null }
+  insuranceValidation: {
+    hasAnyOverLimit: boolean
+    isValidating: boolean
+    packageValidations: { [packageId: number]: {
+      isOverLimit: boolean
+      limitYen: number
+      errorMessage: string | null
+    }}
+  }
   onQuoteParamsChange: (field: keyof ExtendedQuoteParams, value: string | boolean) => void
   onPackageChange: (id: number, field: keyof Package, value: string) => void
   onAddPackage: () => void
@@ -36,6 +45,7 @@ export default function QuoteFormComponent({
   isLoading,
   error,
   packageErrors,
+  insuranceValidation,
   onQuoteParamsChange,
   onPackageChange,
   onAddPackage,
@@ -44,7 +54,9 @@ export default function QuoteFormComponent({
 }: QuoteFormProps) {
 
   // エラーがあるかどうかをチェック
-  const hasValidationErrors = Object.values(packageErrors).some(error => error !== null);
+  const hasValidationErrors = Object.values(packageErrors).some(error => error !== null) ||
+    insuranceValidation.hasAnyOverLimit ||
+    insuranceValidation.isValidating;
   
   // 🔍 State変更監視用useEffect
   useEffect(() => {
@@ -517,15 +529,30 @@ export default function QuoteFormComponent({
               <h2 className="text-xl font-semibold">お客様の貨物詳細を教えてください</h2>
               
               {/* より高額な保険を年額使用する */}
-              <div className="flex items-center space-x-3">
-                <Checkbox
-                  id="higherInsurance"
-                  checked={quoteParams.higherInsurance}
-                  onCheckedChange={(checked) => onQuoteParamsChange("higherInsurance", !!checked)}
-                />
-                <Label htmlFor="higherInsurance" className="text-sm font-medium">
-                  より高額な保険を年額使用する
-                </Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="higherInsurance"
+                    checked={quoteParams.higherInsurance}
+                    onCheckedChange={(checked) => onQuoteParamsChange("higherInsurance", !!checked)}
+                  />
+                  <Label htmlFor="higherInsurance" className="text-sm font-medium">
+                    より高額な保険を年額使用する
+                  </Label>
+                </div>
+                
+                {/* 検証中の表示 */}
+                {quoteParams.higherInsurance && insuranceValidation.isValidating && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex items-center">
+                      <svg className="animate-spin w-4 h-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 818-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="text-sm text-blue-700">保険金額を検証中...</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -640,6 +667,17 @@ export default function QuoteFormComponent({
                           onChange={(e) => onPackageChange(pkg.id, 'declaredValue', e.target.value)}
                           className={packageErrors[pkg.id] ? "border-red-500" : ""}
                         />
+                        {/* パッケージごとの保険金額警告 */}
+                        {insuranceValidation.packageValidations[pkg.id]?.isOverLimit && (
+                          <div className="text-red-600 text-xs bg-red-50 border border-red-200 rounded px-2 py-1">
+                            <div className="flex items-center">
+                              <svg className="w-3 h-3 text-red-500 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                              </svg>
+                              <span>{insuranceValidation.packageValidations[pkg.id]?.errorMessage}</span>
+                            </div>
+                          </div>
+                        )}
                         {packageErrors[pkg.id] && (
                           <div className="text-red-600 text-xs bg-red-50 border border-red-200 rounded p-2">
                             <strong>⚠️ 申告価額上限エラー:</strong><br />
