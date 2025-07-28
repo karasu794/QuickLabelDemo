@@ -122,7 +122,7 @@ export default function QuoteFormComponent({
     try {
       console.log(`🏢 フェニックス住所取得開始: ${type}`)
       
-      const response = await fetch('/api/company-info')
+      const response = await fetch('/api/phoenix-address')
       
       if (!response.ok) {
         const errorData = await response.json()

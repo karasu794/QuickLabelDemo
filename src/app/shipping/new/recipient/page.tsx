@@ -148,7 +148,7 @@ export default function RecipientInfoPage() {
     try {
       console.log('🏢 荷受人: フェニックス住所取得開始')
       
-      const response = await fetch('/api/company-info')
+      const response = await fetch('/api/phoenix-address')
       
       if (!response.ok) {
         const errorData = await response.json()
