@@ -238,6 +238,25 @@ export const useShippingFormStore = create<ShippingFormState>()(
       setInitialShippingInfoFromQuote: (quoteParams, packages) => {
         console.log('🚀 setInitialShippingInfoFromQuote called with:', { quoteParams, packages });
         
+        // フェニックス住所の分割処理関数
+        const splitPhoenixAddress = (cityName: string, isPhoenixMode: boolean) => {
+          if (!isPhoenixMode || !cityName) {
+            return cityName;
+          }
+          
+          // address1の形式（例: "Toyokawa City Aichi"）を分割
+          const lastSpaceIndex = cityName.lastIndexOf(' ');
+          if (lastSpaceIndex !== -1) {
+            const splitCity = cityName.substring(0, lastSpaceIndex); // "Toyokawa City"
+            const prefecture = cityName.substring(lastSpaceIndex + 1); // "Aichi"
+            
+            console.log(`📍 見積もり→送り状: フェニックス住所を分割: "${cityName}" → City: "${splitCity}", Prefecture: "${prefecture}"`);
+            return splitCity;
+          }
+          
+          return cityName;
+        };
+        
         // 住所1フィールドの処理（API用英語住所のみ）
         const getAddress1 = (street: string, fullAddress: string, cityName: string, countryCode: string) => {
           // streetが存在する場合はそれを使用（英語住所）
@@ -265,6 +284,9 @@ export const useShippingFormStore = create<ShippingFormState>()(
           }
         };
 
+        // フェニックスモードかどうかを判定
+        const isPhoenixShipment = quoteParams.isPhoenixShipment || false;
+        
         const newShipperInfo: ShipperInfo = {
           contactName: '',
           companyName: '',
@@ -281,7 +303,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
           ),
           address2: '',
           postalCode: quoteParams.originPostalCode || '',
-          cityName: quoteParams.originCityName || ''
+          cityName: splitPhoenixAddress(quoteParams.originCityName || '', isPhoenixShipment && quoteParams.phoenixMode === 'shipper')
         }
 
         const newRecipientInfo: RecipientInfo = {
@@ -292,7 +314,7 @@ export const useShippingFormStore = create<ShippingFormState>()(
           email: '',
           countryCode: quoteParams.destinationCountry || 'US',
           postalCode: quoteParams.destinationPostalCode || '',
-          cityName: quoteParams.destinationCityName || '',
+          cityName: splitPhoenixAddress(quoteParams.destinationCityName || '', isPhoenixShipment && quoteParams.phoenixMode === 'recipient'),
           stateCode: quoteParams.destinationStateCode || '',
           address1: getAddress1(
             quoteParams.destinationStreet || '', 
@@ -322,19 +344,23 @@ export const useShippingFormStore = create<ShippingFormState>()(
           console.log('📦 Converted packages with declared values:', newPackages.map(p => ({ type: p.type, weight: p.weight, declaredValue: p.declaredValue })));
         }
 
+        const inheritedPhoenixMode = quoteParams.phoenixMode || 'none';
+        
         set({ 
           shipperInfo: newShipperInfo,
           recipientInfo: newRecipientInfo,
           packages: newPackages,
           items: [initialItem], // 内容品を初期状態にリセット
-          phoenixMode: quoteParams.phoenixMode || 'none' // 見積もり時のフェニックスモードを引き継ぐ
+          phoenixMode: inheritedPhoenixMode // 見積もり時のフェニックスモードを引き継ぐ
         })
         
         console.log('✅ Store updated with new shipping info');
-        console.log('✅ Final shipperInfo address1:', newShipperInfo.address1);
-        console.log('✅ Final recipientInfo address1:', newRecipientInfo.address1);
+        console.log('✅ Final shipperInfo:', { contactName: newShipperInfo.contactName, companyName: newShipperInfo.companyName });
+        console.log('✅ Final recipientInfo:', { contactName: newRecipientInfo.contactName, companyName: newRecipientInfo.companyName });
         console.log('✅ Items reset to initial state:', [initialItem]);
-        console.log('✅ Phoenix mode inherited:', quoteParams.phoenixMode || 'none');
+        console.log('✅ Phoenix mode inherited:', inheritedPhoenixMode);
+        console.log('🔍 Quote params phoenix mode:', quoteParams.phoenixMode);
+        console.log('🔍 Quote params isPhoenixShipment:', quoteParams.isPhoenixShipment);
       },
 
       // 部分的な住所情報を更新するアクション

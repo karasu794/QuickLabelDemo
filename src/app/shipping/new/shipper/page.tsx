@@ -109,6 +109,26 @@ export default function ShipperInfoPage() {
       }
     }
   }, [isReady, shipperInfo?.stateCode, shipperInfo?.postalCode, shipperInfo?.countryCode]);
+
+  // フェニックスモードで遷移してきた場合、連絡先情報を自動設定
+  useEffect(() => {
+    console.log('🔥 フェニックスモード useEffect実行:', {
+      isReady,
+      phoenixMode,
+      hasShipperInfo: !!shipperInfo,
+      contactName: shipperInfo?.contactName,
+      companyName: shipperInfo?.companyName
+    });
+    
+    if (isReady && phoenixMode === 'shipper' && shipperInfo && 
+        !shipperInfo.contactName && !shipperInfo.companyName) {
+      console.log('🔥 フェニックスモード（荷送人）: 見積もりページから遷移、連絡先情報を自動取得します');
+      // 少し遅延してから実行（他のuseEffectの完了を待つ）
+      setTimeout(() => {
+        handlePhoenixAddressClick();
+      }, 100);
+    }
+  }, [isReady, phoenixMode, shipperInfo?.contactName, shipperInfo?.companyName]);
   
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG']
   const countryOptions = getCountryOptions()
@@ -129,7 +149,9 @@ export default function ShipperInfoPage() {
       // 荷送人基本情報をクリア（フェニックス情報をリセット）
       updateShipperInfo('contactName', '')
       updateShipperInfo('companyName', '')
+      updateShipperInfo('taxId', '')
       updateShipperInfo('phoneNumber', '')
+      updateShipperInfo('email', '')
       
       // 荷送人住所情報をクリア
       updateShipperInfo('countryCode', 'JP')
@@ -167,17 +189,37 @@ export default function ShipperInfoPage() {
       // フェニックス基本情報を荷送人情報に自動入力
       updateShipperInfo('contactName', companyInfo.contactName || '')
       updateShipperInfo('companyName', companyInfo.companyName || '')
+      updateShipperInfo('taxId', companyInfo.taxId || '')
       updateShipperInfo('phoneNumber', companyInfo.phoneNumber || '')
+      updateShipperInfo('email', companyInfo.email || '')
       
       // フェニックス住所を荷送人情報に自動入力
       updateShipperInfo('countryCode', 'JP')
       updateShipperInfo('postalCode', companyInfo.postalCode)
-      updateShipperInfo('cityName', companyInfo.address1) // 都道府県・市区町村
-      updateShipperInfo('address1', companyInfo.address2 || companyInfo.address1) // 番地・建物名
+      
+      // address1を City と Prefecture に分割
+      let cityName = companyInfo.address1
+      let stateCode = ''
+      
+      if (companyInfo.address1) {
+        const lastSpaceIndex = companyInfo.address1.lastIndexOf(' ')
+        if (lastSpaceIndex !== -1) {
+          // 最後のスペースで分割
+          cityName = companyInfo.address1.substring(0, lastSpaceIndex) // "Toyokawa City"
+          const prefecture = companyInfo.address1.substring(lastSpaceIndex + 1) // "Aichi"
+          
+          console.log(`📍 荷送人: address1を分割: "${companyInfo.address1}" → City: "${cityName}", Prefecture: "${prefecture}"`)
+          
+          // 県名から県コードを取得（必要に応じて）
+          // ここでは簡単のため、郵便番号からの県判定を優先します
+        }
+      }
+      
+      updateShipperInfo('cityName', cityName)
+      updateShipperInfo('address1', companyInfo.address2 || '') // 番地・建物名
       updateShipperInfo('address2', '')
       
-      // 日本の場合、郵便番号から県を自動判定
-      let stateCode = ''
+      // 日本の場合、郵便番号から県を自動判定（これが正確）
       if (companyInfo.postalCode) {
         const prefectureFromPostal = getPrefectureFromPostalCode(companyInfo.postalCode)
         if (prefectureFromPostal) {

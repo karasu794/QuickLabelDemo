@@ -18,6 +18,7 @@ const supabaseAdmin = createClient(
 interface CompanyInfo {
   contactName: string
   companyName: string
+  taxId: string // 税務番号（法人番号）
   postalCode: string
   address1: string
   address2: string
@@ -44,6 +45,7 @@ async function getCurrentCompanyInfo(): Promise<{ companyInfo: CompanyInfo; erro
           companyInfo: {
             contactName: '',
             companyName: '',
+            taxId: '',
             postalCode: '',
             address1: '',
             address2: '',
@@ -65,6 +67,7 @@ async function getCurrentCompanyInfo(): Promise<{ companyInfo: CompanyInfo; erro
       companyInfo = {
         contactName: '',
         companyName: '',
+        taxId: '',
         postalCode: '',
         address1: '',
         address2: '',
@@ -81,6 +84,7 @@ async function getCurrentCompanyInfo(): Promise<{ companyInfo: CompanyInfo; erro
       companyInfo: {
         contactName: '',
         companyName: '',
+        taxId: '',
         postalCode: '',
         address1: '',
         address2: '',
@@ -131,6 +135,7 @@ async function updateCompanyInfoAction(formData: FormData) {
   const companyInfo: CompanyInfo = {
     contactName: contactName.trim(),
     companyName: companyName.trim(),
+    taxId: (formData.get('taxId') as string || '').trim(),
     postalCode: postalCode.trim(),
     address1: address1.trim(),
     address2: address2.trim(),
@@ -270,6 +275,10 @@ function CurrentInfoDisplay({ companyInfo }: { companyInfo: CompanyInfo }) {
             <p className="text-lg font-medium text-gray-900">{companyInfo.companyName || '未設定'}</p>
           </div>
           <div>
+            <p className="text-sm text-gray-600">税務番号（法人番号）</p>
+            <p className="text-lg font-medium text-gray-900">{companyInfo.taxId || '未設定'}</p>
+          </div>
+          <div>
             <p className="text-sm text-gray-600">郵便番号</p>
             <p className="text-lg font-medium text-gray-900">{companyInfo.postalCode || '未設定'}</p>
           </div>
@@ -333,6 +342,21 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
               defaultValue={currentCompanyInfo.companyName}
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
               placeholder="例: 株式会社サンプル"
+            />
+          </div>
+
+          {/* 税務番号（法人番号） */}
+          <div>
+            <label htmlFor="taxId" className="block text-sm font-medium text-gray-700 mb-2">
+              税務番号（法人番号）
+            </label>
+            <input
+              type="text"
+              id="taxId"
+              name="taxId"
+              defaultValue={currentCompanyInfo.taxId}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+              placeholder="例: 1234567890123"
             />
           </div>
 

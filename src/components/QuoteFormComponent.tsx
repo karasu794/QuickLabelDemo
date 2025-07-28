@@ -90,18 +90,26 @@ export default function QuoteFormComponent({
   
   // 入力値が変更された際のコールバック関数
   const handleInputChange = useCallback((type: 'origin' | 'destination') => {
-    console.log(`📝 手動入力開始: ${type} - フェニックスモードをリセット`)
+    console.log(`📝 手動入力開始: ${type}`)
     
     // 選択状態をリセット
     onQuoteParamsChange(`${type}Selected`, false);
     
-    // フェニックスモードのリセット処理
+    // フェニックスモードの部分的リセット処理
     if (quoteParams.phoenixMode !== 'none') {
-      console.log(`🔄 フェニックスモード "${quoteParams.phoenixMode}" → "none" にリセット`)
+      const currentMode = quoteParams.phoenixMode;
       
-      // フェニックスモードをリセット
-      onQuoteParamsChange('phoenixMode', 'none')
-      onQuoteParamsChange('isPhoenixShipment', false)
+      // 該当する場所の手動入力の場合のみフラグをリセット
+      if ((type === 'origin' && currentMode === 'shipper') || 
+          (type === 'destination' && currentMode === 'recipient')) {
+        console.log(`🔄 ${type}の手動入力により、フェニックスモード "${currentMode}" → "none" にリセット`)
+        
+        // フェニックスモードをリセット
+        onQuoteParamsChange('phoenixMode', 'none')
+        onQuoteParamsChange('isPhoenixShipment', false)
+      } else {
+        console.log(`📝 ${type}の手動入力: フェニックスモード "${currentMode}" は影響を受けません`)
+      }
       
       // 該当する住所情報をクリア
       onQuoteParamsChange(`${type}Country`, '')
@@ -141,7 +149,21 @@ export default function QuoteFormComponent({
       // フェニックス住所をフォームに自動入力
       onQuoteParamsChange(`${type}Country`, 'JP')
       onQuoteParamsChange(`${type}PostalCode`, companyInfo.postalCode)
-      onQuoteParamsChange(`${type}CityName`, companyInfo.address1) // 都道府県・市区町村
+      
+      // address1を City と Prefecture に分割
+      let cityName = companyInfo.address1
+      if (companyInfo.address1) {
+        const lastSpaceIndex = companyInfo.address1.lastIndexOf(' ')
+        if (lastSpaceIndex !== -1) {
+          // 最後のスペースで分割
+          cityName = companyInfo.address1.substring(0, lastSpaceIndex) // "Toyokawa City"
+          const prefecture = companyInfo.address1.substring(lastSpaceIndex + 1) // "Aichi"
+          
+          console.log(`📍 見積もりページ: address1を分割: "${companyInfo.address1}" → City: "${cityName}", Prefecture: "${prefecture}"`)
+        }
+      }
+      
+      onQuoteParamsChange(`${type}CityName`, cityName) // 分割されたCity部分
       onQuoteParamsChange(`${type}Street`, companyInfo.address2 || '') // 番地・建物名
       
       // 日本の場合、郵便番号から県を自動判定
