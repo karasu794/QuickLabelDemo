@@ -184,16 +184,27 @@ export function parseGooglePlaceResult(
   placeDetails: google.maps.places.PlaceResult,
   displayAddress: string // 表示用の日本語住所
 ): ParsedAddress {
+  // 🔍 デバッグ: Google Place APIのレスポンス内容を確認
+  console.log('🔍 Google Place API response - address_components:', placeDetails.address_components);
+  console.log('🔍 Display address:', displayAddress);
+  console.log('🔍 Full place details response:', placeDetails);
+  
   const components: { [key: string]: { long_name: string, short_name: string } } = {};
   if (placeDetails.address_components) {
     for (const component of placeDetails.address_components) {
-      const type = component.types[0];
-      components[type] = {
-        long_name: component.long_name,
-        short_name: component.short_name
-      };
+      // 🔧 修正: types配列の全ての要素をチェック
+      for (const type of component.types) {
+        components[type] = {
+          long_name: component.long_name,
+          short_name: component.short_name
+        };
+      }
     }
   }
+  
+  // 🔍 デバッグ: 解析されたcomponentsオブジェクトの内容を確認
+  console.log('🔍 Parsed components object:', components);
+  console.log('🔍 Available component types:', Object.keys(components));
 
   // 'street_number' (番地) と 'route' (通り名) を結合して 'street' を作成
   const streetNumber = components.street_number?.long_name || '';
@@ -202,6 +213,12 @@ export function parseGooglePlaceResult(
   
   // streetが空の場合、国と都市に応じて英語住所を生成
   const countryCode = components.country?.short_name || '';
+  
+  // 🔍 デバッグ: 国コードの取得結果を確認
+  console.log('🔍 Country component:', components.country);
+  console.log('🔍 Final countryCode:', countryCode);
+  console.log('🔍 Country short_name:', components.country?.short_name);
+  console.log('🔍 Country long_name:', components.country?.long_name);
   
   // cityNameの堅牢な取得処理
   let cityName = components.locality?.long_name || 
@@ -537,7 +554,7 @@ export function parseGooglePlaceResult(
     }
   }
 
-  return {
+  const result = {
     countryCode: countryCode,
     stateCode: components.administrative_area_level_1?.short_name || '',
     cityName: cityName,
@@ -545,6 +562,11 @@ export function parseGooglePlaceResult(
     street: street, // 生成または抽出した英語住所
     fullAddress: displayAddress,
   };
+  
+  // 🔍 デバッグ: 最終的な解析結果を確認
+  console.log('🔍 Final parsed result:', result);
+  
+  return result;
 }
 
 interface GooglePlaceAutocompleteProps {
@@ -620,7 +642,7 @@ export function GooglePlaceAutocomplete({
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
     placesService.getDetails({
       placeId,
-      fields: ['address_components'],
+      fields: ['address_components', 'formatted_address', 'geometry', 'name', 'types'], // より多くのフィールドを要求
       language: 'en', // 英語で詳細情報を取得
       region: regionParam, // 動的にregionを設定
     }, (placeDetails, status) => {

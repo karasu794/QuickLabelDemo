@@ -8,7 +8,7 @@ function getSquareClient() {
   console.log('🔧 Square SDK設定:')
   console.log(`  NODE_ENV: ${process.env.NODE_ENV}`)
   console.log(`  SQUARE_ACCESS_TOKEN: ${process.env.SQUARE_ACCESS_TOKEN ? '設定済み' : '未設定'}`)
-  console.log(`  SQUARE_APPLICATION_ID: ${process.env.SQUARE_APPLICATION_ID ? '設定済み' : '未設定'}`)
+  console.log(`  SQUARE_LOCATION_ID: ${process.env.SQUARE_LOCATION_ID ? '設定済み' : '未設定'}`)
   
   // アクセストークンの詳細チェック
   const accessToken = process.env.SQUARE_ACCESS_TOKEN!
@@ -229,13 +229,13 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
     serviceType = 'FEDEX_GROUND'
   }
 
-  // ★★★ 電話番号の正規化（数字以外を削除）★★★
-  const sanitizedShipperPhone = data.shipperInfo.phoneNumber.replace(/\D/g, '');
-  const sanitizedRecipientPhone = data.recipientInfo.phoneNumber.replace(/\D/g, '');
+  // ★★★ 電話番号の正規化（数字以外を削除・15文字制限）★★★
+  const sanitizedShipperPhone = data.shipperInfo.phoneNumber.replace(/\D/g, '').substring(0, 15);
+  const sanitizedRecipientPhone = data.recipientInfo.phoneNumber.replace(/\D/g, '').substring(0, 15);
   
   console.log('📞 電話番号正規化:')
-  console.log(`  荷送人: "${data.shipperInfo.phoneNumber}" → "${sanitizedShipperPhone}"`)
-  console.log(`  荷受人: "${data.recipientInfo.phoneNumber}" → "${sanitizedRecipientPhone}"`)
+  console.log(`  荷送人: "${data.shipperInfo.phoneNumber}" → "${sanitizedShipperPhone}" (${sanitizedShipperPhone.length}文字)`)
+  console.log(`  荷受人: "${data.recipientInfo.phoneNumber}" → "${sanitizedRecipientPhone}" (${sanitizedRecipientPhone.length}文字)`)
 
   // 基本的な送り状リクエスト構造
   const baseRequest = {
@@ -280,7 +280,28 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
       ],
       shipDatestamp: new Date().toISOString().split('T')[0], // YYYY-MM-DD形式
       serviceType: serviceType,
-      packagingType: data.packages[0]?.type || 'YOUR_PACKAGING',
+      packagingType: (() => {
+        const requestedType = data.packages[0]?.type;
+        console.log(`📦 パッケージタイプ: ユーザー選択=${requestedType}, 総重量=${totalCommodityWeight}KG`);
+        
+        // ユーザーが選択したパッケージタイプを優先して使用
+        if (requestedType && requestedType !== '') {
+          console.log(`➡️ ユーザー選択タイプを使用: ${requestedType}`);
+          return requestedType;
+        }
+        
+        // フォールバック: 重量ベースでの判定
+        if (totalCommodityWeight <= 0.5) {
+          console.log('➡️ フォールバック: FEDEX_ENVELOPE選択（軽量）');
+          return 'FEDEX_ENVELOPE';
+        } else if (totalCommodityWeight <= 2.0) {
+          console.log('➡️ フォールバック: FEDEX_PAK選択（中軽量）');
+          return 'FEDEX_PAK';
+        } else {
+          console.log('➡️ フォールバック: FEDEX_BOX選択（重量）');
+          return 'FEDEX_BOX';
+        }
+      })(),
       pickupType: 'USE_SCHEDULED_PICKUP',
       blockInsightVisibility: false,
       shippingChargesPayment: {
@@ -293,40 +314,61 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
           },
         },
       },
-      requestedPackageLineItems: data.packages.map((pkg, index) => ({
-        sequenceNumber: index + 1,
-        groupPackageCount: 1,
-        weight: {
-          units: 'KG',
-          // 2. 算出した合計重量で上書きする
-          value: totalCommodityWeight,
-        },
-        ...(pkg.type === 'YOUR_PACKAGING' && pkg.length && pkg.width && pkg.height && {
-          dimensions: {
-            length: parseInt(pkg.length),
-            width: parseInt(pkg.width),
-            height: parseInt(pkg.height),
-            units: 'CM',
-          }
-        }),
-        // 申告価額が設定されている場合のみ追加（JPYからUSDに変換）
-        ...(pkg.declaredValue && Number(pkg.declaredValue) > 0 && {
-          declaredValue: (() => {
-            // JPYからUSDへの変換（固定レート）
-            const JPY_TO_USD_RATE = 0.0067;
-            const declaredValueJPY = Number(pkg.declaredValue);
-            const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
-            
-            console.log(`📦 送り状: 荷物の申告価額 ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
-            
-            return {
-              amount: parseFloat(declaredValueUSD.toFixed(2)),
-              currency: 'USD'
+      requestedPackageLineItems: data.packages.map((pkg, index) => {
+        console.log(`📦 パッケージ${index + 1}処理: タイプ=${pkg.type}, 入力重量=${pkg.weight}KG`);
+        
+        // パッケージの重量を内容品重量合計に基づいて設定
+        const packageWeight = data.packages.length === 1 
+          ? totalCommodityWeight  // 単一パッケージの場合は総重量
+          : parseFloat(pkg.weight) || (totalCommodityWeight / data.packages.length); // 複数パッケージの場合は分割
+        
+        console.log(`📦 パッケージ${index + 1}の最終重量: ${packageWeight}KG`);
+        
+        const packageItem: any = {
+          sequenceNumber: index + 1,
+          groupPackageCount: 1,
+          weight: {
+            units: 'KG',
+            value: packageWeight,
+          },
+        };
+
+        // YOUR_PACKAGINGの場合は寸法を追加
+        if (pkg.type === 'YOUR_PACKAGING') {
+          if (pkg.length && pkg.width && pkg.height) {
+            packageItem.dimensions = {
+              length: parseInt(pkg.length),
+              width: parseInt(pkg.width),
+              height: parseInt(pkg.height),
+              units: 'CM',
             };
-          })()
-        }),
-      })),
-      totalWeight: totalWeight,
+            console.log(`📏 カスタム寸法設定: ${pkg.length}×${pkg.width}×${pkg.height}cm`);
+          } else {
+            // デフォルト寸法を設定
+            packageItem.dimensions = {
+              length: 30,
+              width: 20,
+              height: 10,
+              units: 'CM',
+            };
+            console.log(`📏 デフォルト寸法設定: 30×20×10cm`);
+          }
+        }
+
+        // 申告価額を設定（JPYからUSDに変換）
+        const JPY_TO_USD_RATE = 0.0067;
+        const declaredValueJPY = Number(pkg.declaredValue) || 1000; // デフォルト1000円
+        const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
+        
+        packageItem.declaredValue = {
+          amount: parseFloat(declaredValueUSD.toFixed(2)),
+          currency: 'USD'
+        };
+        
+        console.log(`💰 申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
+        
+        return packageItem;
+      }),
     },
     accountNumber: {
       value: accountNumber,
@@ -499,6 +541,12 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
     }
     
     console.log('📦 FedX Ship API呼び出し中...')
+    console.log('📍 リクエスト先URL:', shipUrl)
+    console.log('🔍 リクエスト詳細検証:')
+    console.log('  - 荷送人電話番号:', shipmentRequest.requestedShipment.shipper.contact.phoneNumber)
+    console.log('  - 荷受人電話番号:', shipmentRequest.requestedShipment.recipients[0].contact.phoneNumber)
+    console.log('  - パッケージ重量:', shipmentRequest.requestedShipment.requestedPackageLineItems[0].weight.value)
+    console.log('  - 輸出判定:', data.shipperInfo.countryCode === 'JP' && data.recipientInfo.countryCode !== 'JP')
     console.log('Ship Request:', JSON.stringify(shipmentRequest, null, 2))
 
     // デバッグ用：FedXに送信するリクエスト内容をコンソールに出力
@@ -564,80 +612,53 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  let paymentId: string | null = null
-  let shipmentId: string | null = null
+  let paymentId: string | null = null;
+  let shipmentId: string | null = null;
 
   try {
-    const data: ShipmentRequest = await request.json()
-    
-    console.log('🚀 === Step 1: リクエストの受付とデータ準備 ===')
-    console.log('送り状作成処理を開始:', { 
-      sourceId: data.sourceId, 
-      finalCharge: data.finalCharge,
-      isExport: data.shipperInfo.countryCode === 'JP' && data.recipientInfo.countryCode !== 'JP'
-    })
+    const data: ShipmentRequest = await request.json();
+    console.log('🚀 === Step 1: リクエスト受信とHSコード検証 ===');
+    console.log('リクエストボディ:', {
+      shipperCountry: data.shipperInfo.countryCode,
+      recipientCountry: data.recipientInfo.countryCode,
+      packageCount: data.packages.length,
+      itemCount: data.items.length,
+    });
 
-    // Step 1: 入力データのバリデーション
-    if (!data.sourceId || !data.finalCharge || !data.shipperInfo || !data.recipientInfo) {
-      return NextResponse.json(
-        { 
-          error: '必須データが不足しています',
-          step: 'validation',
-          details: {
-            sourceId: !!data.sourceId,
-            finalCharge: !!data.finalCharge,
-            shipperInfo: !!data.shipperInfo,
-            recipientInfo: !!data.recipientInfo
-          }
-        },
-        { status: 400 }
-      )
+    // HSコードの必須チェック (国際配送の場合)
+    const isExport = data.shipperInfo.countryCode === 'JP' && data.recipientInfo.countryCode !== 'JP';
+    const isImport = data.shipperInfo.countryCode !== 'JP' && data.recipientInfo.countryCode === 'JP';
+
+    if (isExport || isImport) {
+      const itemsMissingHSCode = data.items.filter(item => !item.hsCode || item.hsCode.trim() === '');
+      if (itemsMissingHSCode.length > 0) {
+        const missingItemsDesc = itemsMissingHSCode.map(item => `"${item.description}"`).join(', ');
+        const errorMessage = `HSコードはすべての内容品に必須です。次の商品でHSコードが指定されていません: ${missingItemsDesc}`;
+        console.error(`❌ HSコード検証エラー: ${errorMessage}`);
+        return NextResponse.json(
+          { 
+            error: errorMessage,
+            step: 'validation',
+          },
+          { status: 400 }
+        );
+      }
+      console.log('✅ HSコード検証完了');
     }
-
-    // 環境変数の確認
-    const requiredEnvVars = [
-      'SQUARE_ACCESS_TOKEN',
-      'SQUARE_APPLICATION_ID',
-      'FEDEX_API_KEY',
-      'FEDEX_SECRET_KEY',
-      'FEDEX_EXPORT_ACCOUNT_NUMBER',
-      'FEDEX_IMPORT_ACCOUNT_NUMBER',
-      'NEXT_PUBLIC_SUPABASE_URL',
-      'SUPABASE_SERVICE_ROLE_KEY'
-    ]
-
-    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
-    if (missingEnvVars.length > 0) {
-      console.error('Missing environment variables:', missingEnvVars)
-      return NextResponse.json(
-        { 
-          error: '必要な環境変数が設定されていません',
-          step: 'env_check',
-          missingVars: missingEnvVars
-        },
-        { status: 500 }
-      )
-    }
-
-    // Square環境変数の詳細チェック
-    console.log('🔍 Square環境変数チェック:')
-    console.log(`  SQUARE_APPLICATION_ID: ${process.env.SQUARE_APPLICATION_ID ? '設定済み' : '未設定'}`)
-    console.log(`  SQUARE_ACCESS_TOKEN: ${process.env.SQUARE_ACCESS_TOKEN ? '設定済み' : '未設定'}`)
-    console.log(`  NEXT_PUBLIC_SQUARE_APPLICATION_ID: ${process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID ? '設定済み' : '未設定'}`)
-    console.log(`  NEXT_PUBLIC_SQUARE_LOCATION_ID: ${process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID ? '設定済み' : '未設定'}`)
 
     // ユーザー認証情報の取得（任意）
-    const userId = await getUserFromRequest(request)
-    console.log('👤 ユーザー認証:', userId ? '認証済み' : 'ゲストユーザー')
+    // ★★★ この部分はDB保存直前に移動するため、ここでは不要 ★★★
+    // const user = await getUserFromRequest(request);
+    // console.log('👤 ユーザー認証:', user ? '認証済み' : 'ゲストユーザー');
 
     // FedX認証とアクセストークン取得
-    console.log('🔐 FedX認証中...')
-    let fedexAccessToken: string
+    console.log('🔐 FedX認証中...');
+    let fedexAccessToken: string;
     try {
-      fedexAccessToken = await getFedExAccessToken()
-      console.log('✅ FedX認証完了')
+      fedexAccessToken = await getFedExAccessToken();
+      console.log('✅ FedX認証完了');
     } catch (error) {
-      console.error('FedX認証エラー:', error)
+      console.error('FedX認証エラー:', error);
       return NextResponse.json(
         { 
           error: 'FedX認証に失敗しました',
@@ -645,39 +666,27 @@ export async function POST(request: NextRequest) {
           details: error instanceof Error ? error.message : '不明なエラー'
         },
         { status: 500 }
-      )
+      );
     }
 
-    console.log('🚀 === Step 2: FedXによる事前検証 (Validate Shipment) ===')
+    console.log('🚀 === Step 2: FedXによる事前検証 (Validate Shipment) ===');
     
     // Step 2: FedX Validate Shipment API呼び出し
     try {
-      await validateFedExShipment(fedexAccessToken, data)
-      console.log('✅ FedX事前検証完了 - 入力データに問題なし')
+      await validateFedExShipment(fedexAccessToken, data);
     } catch (error) {
-      console.error('❌ FedX事前検証でエラー:', error)
-      
-      // より詳細なエラー情報を提供
-      let errorDetails = '不明なエラー'
-      if (error instanceof Error) {
-        errorDetails = error.message
-      }
-      
+      console.error('❌ FedX事前検証でエラー:', error);
       return NextResponse.json(
-        {
+        { 
           error: 'FedX事前検証でエラーが発生しました',
           step: 'fedex_validation',
-          details: errorDetails,
-          debugInfo: {
-            errorType: error?.constructor?.name || 'Unknown',
-            errorMessage: error instanceof Error ? error.message : String(error)
-          }
+          details: error instanceof Error ? error.message : '不明なエラー'
         },
         { status: 400 }
-      )
+      );
     }
 
-    console.log('🚀 === Step 3: Squareによる決済処理 ===')
+    console.log('🚀 === Step 3: Squareによる決済処理 ===');
     
     // Step 3: Square決済の実行
     try {
@@ -710,10 +719,18 @@ export async function POST(request: NextRequest) {
       
       const squareClient = getSquareClient()
       
+      // 🏠 Location IDの確認と設定
+      const locationId = process.env.SQUARE_LOCATION_ID;
+      if (!locationId) {
+        throw new Error('SQUARE_LOCATION_ID環境変数が設定されていません');
+      }
+      console.log(`  🏠 Location ID: ${locationId}`);
+      
       console.log('💳 Square決済実行中...')
       const paymentResponse = await squareClient.payments.create({
         sourceId: sourceId,
         idempotencyKey: idempotencyKey,
+        locationId: locationId, // 🔧 Location IDを追加
         amountMoney: {
           amount: BigInt(data.finalCharge),
           currency: 'JPY'
@@ -754,55 +771,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🚀 === Step 4: 取引記録の初期保存 ===')
+    console.log('🚀 === Step 4: 取引記録の初期保存 ===');
     
     // Step 4: 取引記録をDBに初期保存（tracking_number、label_urlはnull）
     try {
-      console.log('💾 取引記録をDBに初期保存中...')
+      console.log('💾 取引記録をDBに初期保存中...');
+      
+      const user = await getUserFromRequest(request);
+      console.log('👤 ユーザー認証:', user ? `認証済み (${user})` : 'ゲストユーザー');
       
       const shipmentRecord = {
-        // id: randomUUID(), // データベース側の自動生成に任せる
-        user_id: userId,
+        user_id: user, // ゲストの場合はnullになる
         payment_id: paymentId,
         status: 'payment_completed',
-        total_amount: data.finalCharge,
-        currency: 'JPY',
         
-        // 荷送人情報
-        shipper_company: data.shipperInfo.companyName,
-        shipper_contact: data.shipperInfo.contactName,
-        shipper_phone: data.shipperInfo.phoneNumber,
-        shipper_postal_code: data.shipperInfo.postalCode,
-        shipper_city: data.shipperInfo.cityName,
-        shipper_address1: data.shipperInfo.address1,
-        shipper_address2: data.shipperInfo.address2,
-        shipper_country: data.shipperInfo.countryCode,
-        shipper_state: data.shipperInfo.stateCode,
+        // 🔧 荷送人情報（個別カラム）
+        shipper_company: data.shipperInfo.companyName || '',
+        shipper_contact: data.shipperInfo.contactName || '',
+        shipper_phone: data.shipperInfo.phoneNumber || '',
+        shipper_city: data.shipperInfo.cityName || '',
+        shipper_country: data.shipperInfo.countryCode || '',
+        shipper_postal_code: data.shipperInfo.postalCode || '',
+        shipper_address1: data.shipperInfo.address1 || '',
+        shipper_address2: data.shipperInfo.address2 || '',
+        shipper_state: data.shipperInfo.stateCode || '',
         
-        // 荷受人情報
-        recipient_company: data.recipientInfo.companyName,
-        recipient_contact: data.recipientInfo.contactName,
-        recipient_phone: data.recipientInfo.phoneNumber,
-        recipient_email: data.recipientInfo.email,
-        recipient_country: data.recipientInfo.countryCode,
-        recipient_postal_code: data.recipientInfo.postalCode,
-        recipient_city: data.recipientInfo.cityName,
-        recipient_address1: data.recipientInfo.address1,
-        recipient_address2: data.recipientInfo.address2,
-        recipient_state: data.recipientInfo.stateCode,
+        // 🔧 荷受人情報（個別カラム）
+        recipient_company: data.recipientInfo.companyName || '',
+        recipient_contact: data.recipientInfo.contactName || '',
+        recipient_phone: data.recipientInfo.phoneNumber || '',
+        recipient_city: data.recipientInfo.cityName || '',
+        recipient_country: data.recipientInfo.countryCode || '',
+        recipient_email: data.recipientInfo.email || '',
+        recipient_postal_code: data.recipientInfo.postalCode || '',
+        recipient_address1: data.recipientInfo.address1 || '',
+        recipient_address2: data.recipientInfo.address2 || '',
+        recipient_state: data.recipientInfo.stateCode || '',
         
-        // 荷物・商品情報
         packages: data.packages,
         items: data.items,
-        contents: data.contents,
         shipping_purpose: data.shippingPurpose,
-        
-        // 追跡番号とラベルURLは後で更新
-        tracking_number: null,
-        label_url: null
-        
-        // created_at, updated_at: データベース側のDEFAULT値に任せる
-      }
+        total_amount: data.finalCharge,
+      };
 
       const { data: insertedRecord, error: insertError } = await supabase
         .from('shipments')
@@ -834,11 +844,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🚀 === Step 5: FedXによる送り状の本発行 ===')
+    console.log('🚀 === Step 5: FedXによる送り状の本発行 ===');
     
     // Step 5: FedX Ship APIで送り状を本発行
-    let trackingNumber: string | null = null
-    let labelUrl: string | null = null
+    let trackingNumber: string | null = null;
+    let labelUrl: string | null = null;
     
     try {
       const fedexResult = await createFedExShipment(fedexAccessToken, data)
@@ -871,7 +881,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🚀 === Step 6: 取引記録の最終更新とレスポンス ===')
+    console.log('🚀 === Step 6: 取引記録の最終更新とレスポンス ===');
     
     // Step 6: 取引記録の最終更新
     try {
