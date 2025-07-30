@@ -259,7 +259,9 @@ export default function FedExQuoteResults({
         <h2 className="text-2xl font-semibold text-gray-900">配送オプション</h2>
         
         <Accordion type="multiple" collapsible className="space-y-3">
-          {rates.map((rate, index) => {
+          {rates
+            .filter(rate => rate.serviceType !== 'INTERNATIONAL_FIRST') // FedEx International Firstを除外
+            .map((rate, index) => {
             const { baseRate, discountAmount, discountPercentage } = calculateDiscount(rate)
             const deliveryInfo = formatDeliveryInfo(rate)
             const isFirst = index === 0

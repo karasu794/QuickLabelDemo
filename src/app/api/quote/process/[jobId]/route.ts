@@ -460,7 +460,7 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
     serviceTypes = [
       'INTERNATIONAL_PRIORITY',
       'INTERNATIONAL_ECONOMY',
-      'INTERNATIONAL_FIRST',
+      // 'INTERNATIONAL_FIRST', // FedEx International Firstを除外
       'FEDEX_INTERNATIONAL_PRIORITY'
     ];
   }

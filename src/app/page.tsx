@@ -491,11 +491,6 @@ export default function Home() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               見積もり計算中です...
-              {currentJobId && (
-                <span className="ml-2 text-sm">
-                  (ジョブID: {currentJobId.substring(0, 8)}...)
-                </span>
-              )}
             </div>
           </div>
         )}
@@ -530,7 +525,7 @@ function getServiceDescription(serviceType: string): string {
   const descriptions: { [key: string]: string } = {
     'INTERNATIONAL_PRIORITY': '国際優先配送 - 最速の国際配送サービス',
     'INTERNATIONAL_ECONOMY': '国際エコノミー配送 - 経済的な国際配送サービス', 
-    'INTERNATIONAL_FIRST': '国際ファースト配送 - プレミアム国際配送サービス',
+    // 'INTERNATIONAL_FIRST': '国際ファースト配送 - プレミアム国際配送サービス', // 除外済み
     'INTERNATIONAL_PRIORITY_EXPRESS': '国際優先エクスプレス - 超高速国際配送',
     'FEDEX_INTERNATIONAL_PRIORITY': 'FedEx国際優先配送 - 信頼性の高い国際配送',
     'FEDEX_INTERNATIONAL_ECONOMY': 'FedEx国際エコノミー - コスト効率の良い国際配送',
