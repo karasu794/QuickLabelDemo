@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/auth/AuthProvider'
+import { useAuth } from '@/hooks/useAuth'
 import AdminSidebar from './components/AdminSidebar'
 
 interface AdminLayoutProps {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ExchangeRateService } from '@/lib/services/exchangeRateService'
-import { requireAdminAuth } from '@/lib/auth/admin-protection'
+import { requireAdminAuth } from '@/lib/auth/server-auth'
 
 // 為替レート履歴を取得
 export async function GET(request: NextRequest) {

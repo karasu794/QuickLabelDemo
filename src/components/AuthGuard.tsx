@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
 interface AuthGuardProps {
@@ -11,34 +9,28 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
-  const { isAuthenticated, loading } = useAuth()
-  const router = useRouter()
-  const pathname = usePathname()
+  const { isAuthenticated, loading, user } = useAuth()
 
-  useEffect(() => {
-    if (!loading && requireAuth && !isAuthenticated) {
-      // 現在のパスをクエリパラメータとして追加してログインページにリダイレクト
-      const redirectTo = encodeURIComponent(pathname)
-      router.push(`/login?redirect_to=${redirectTo}`)
-    }
-  }, [isAuthenticated, loading, requireAuth, router, pathname])
+  // ▼▼▼ ログ6: AuthGuardの状態確認 ▼▼▼
+  console.log(`[CLIENT] AuthGuard status - Loading: ${loading}, Authenticated: ${isAuthenticated}, User:`, user);
 
-  // ローディング中の表示
+  // 認証状態を確認中はローディング画面を表示
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex items-center space-x-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-          <p className="text-gray-600">認証状態を確認中...</p>
+          <p className="text-gray-600 font-medium">認証状態を確認中...</p>
         </div>
       </div>
     )
   }
 
-  // 認証が必要で未ログインの場合は何も表示しない（リダイレクト処理中）
+  // 認証が必要で未認証の場合は何も表示しない（middleware.tsがリダイレクトを処理）
   if (requireAuth && !isAuthenticated) {
     return null
   }
 
+  // 認証済みまたは認証不要の場合、子要素（実際のページ内容）を表示
   return <>{children}</>
 } 

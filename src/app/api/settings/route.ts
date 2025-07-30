@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { requireAdminAuth } from '@/lib/auth/admin-protection'
+import { requireAdminAuth } from '@/lib/auth/server-auth'
 
 // Service Role Key用のSupabaseクライアント
 const getSupabaseServiceClient = () => {
@@ -8,10 +8,6 @@ const getSupabaseServiceClient = () => {
 }
 
 export async function GET() {
-  // 🔐 管理者認証チェック
-  const authError = await requireAdminAuth()
-  if (authError) return authError
-
   try {
     console.log('設定API: Service Role Keyクライアント使用開始')
     

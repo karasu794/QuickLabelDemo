@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { requireAdminAuth } from '@/lib/auth/admin-protection'
+import { requireAdminAuth } from '@/lib/auth/server-auth'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(

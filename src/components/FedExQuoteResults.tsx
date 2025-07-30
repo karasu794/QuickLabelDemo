@@ -246,7 +246,14 @@ export default function FedExQuoteResults({
                   最大55%割引が適用されました。アカウントを登録して出荷すると、この料金をご利用いただけます。
                 </p>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 whitespace-nowrap">
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 whitespace-nowrap"
+                onClick={() => {
+                  // 現在の見積もり内容がストアに保存されていることを確認し、
+                  // サインアップページへ遷移する
+                  router.push('/signup');
+                }}
+              >
                 アカウントを登録
               </Button>
             </div>

@@ -29,22 +29,31 @@ export async function POST(request: NextRequest) {
     console.log(`📦 パッケージ数: ${packageCount}個`)
 
     if (packageCount === 1) {
-      console.log('➡️ 通常の送り状作成処理を実行')
+      console.log('➡️ 通常の送り状作成処理を実行');
       
-      // 通常の /api/ship に転送
+      // 通常の /api/ship に転送 (ヘッダー情報を引き継ぐ)
       const shipResponse = await fetch(`${request.nextUrl.origin}/api/ship`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // オリジナルのリクエストからCookieを転送
+          'Cookie': request.headers.get('Cookie') || '',
         },
         body: JSON.stringify(body),
-      })
+      });
 
-      const shipResult = await shipResponse.json()
+      const responseBody = await shipResponse.text();
       
       if (!shipResponse.ok) {
-        throw new Error(shipResult.error || '通常送り状作成に失敗しました')
+        try {
+          const shipResult = JSON.parse(responseBody);
+          throw new Error(shipResult.error || '通常送り状作成に失敗しました');
+        } catch (e) {
+          throw new Error(`通常送り状作成で予期せぬエラーが発生しました: ${responseBody}`);
+        }
       }
+
+      const shipResult = JSON.parse(responseBody);
 
       return NextResponse.json({
         success: true,

@@ -58,15 +58,8 @@ export default function SignUpForm() {
       // 成功の場合
       console.log('登録成功:', data)
       
-      // 確認メール送信メッセージを表示（自動リダイレクトは行わない）
+      // 確認メール送信メッセージを表示
       alert('確認メールを送信しました。メールを確認してアカウントを有効化してください。')
-      
-      // redirectToがある場合は、ログインページにリダイレクト
-      if (redirectTo) {
-        router.push(`/login?redirect_to=${encodeURIComponent(redirectTo)}`)
-      } else {
-        router.push('/login')
-      }
 
     } catch (error) {
       console.error('予期しないエラー:', error)

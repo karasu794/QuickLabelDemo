@@ -1,19 +1,63 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuth } from '@/components/auth/AuthProvider'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
 import { ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 export default function Header() {
   const { isAuthenticated, isAdmin, loading } = useAuth()
+  const router = useRouter()
 
   const handleLogout = async () => {
     try {
+      console.log('[CLIENT] Logout initiated')
+      
+      // 1. Supabase のセッションを削除
+      console.log('[CLIENT] Calling supabase.auth.signOut()')
       await supabase.auth.signOut()
+      console.log('[CLIENT] Supabase sign out completed')
+      
+      // 2. Cookie を手動で削除（確実にクリアするため）
+      if (typeof window !== 'undefined') {
+        console.log('[CLIENT] Clearing cookies and localStorage')
+        document.cookie = 'quicklabel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        document.cookie = 'sb-quicklabel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        localStorage.removeItem('quicklabel-auth-token')
+        localStorage.removeItem('sb-quicklabel-auth-token')
+      }
+      
+      // 3. 少し待ってからリダイレクト（認証状態の更新を待つ）
+      console.log('[CLIENT] Waiting for auth state to update...')
+      setTimeout(() => {
+        console.log('[CLIENT] Redirecting to home page')
+        
+        // router.push() と window.location.href の両方を試行
+        router.push('/')
+        
+        // フォールバック：router.push が動作しない場合のためのハードリダイレクト
+        setTimeout(() => {
+          console.log('[CLIENT] Fallback: using window.location.href')
+          if (typeof window !== 'undefined') {
+            window.location.href = '/'
+          }
+        }, 500)
+      }, 100)
+      
     } catch (error) {
       console.error('ログアウトエラー:', error)
+      // エラーが発生した場合も確実にリダイレクト
+      console.log('[CLIENT] Error occurred, forcing redirect')
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
     }
+  }
+
+  // 認証状態確認中は何も表示しない
+  if (loading) {
+    return null
   }
 
   return (
@@ -29,58 +73,56 @@ export default function Header() {
           </Link>
 
           {/* ナビゲーションリンク */}
-          {!loading && (
-            <div className="flex items-center space-x-8">
-              {isAuthenticated ? (
-                <>
-                  <Link 
-                    href="/shipping/new/shipper" 
-                    className="text-white hover:opacity-80 transition-opacity"
-                  >
-                    送り状作成
-                  </Link>
-                  <Link 
-                    href="/mypage/profile" 
-                    className="text-white hover:opacity-80 transition-opacity"
-                  >
-                    マイページ
-                  </Link>
-                  {isAdmin && (
-                    <div className="flex items-center space-x-2">
-                      <ShieldCheckIcon className="w-5 h-5 text-white" />
-                      <Link 
-                        href="/admin" 
-                        className="text-white hover:opacity-80 transition-opacity"
-                      >
-                        管理者ページ
-                      </Link>
-                    </div>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors"
-                  >
-                    ログアウト
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link 
-                    href="/login" 
-                    className="text-white hover:opacity-80 transition-opacity"
-                  >
-                    ログイン
-                  </Link>
-                  <Link 
-                    href="/signup" 
-                    className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors"
-                  >
-                    新規登録
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
+          <div className="flex items-center space-x-8">
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  href="/shipping/new/shipper" 
+                  className="text-white hover:opacity-80 transition-opacity"
+                >
+                  送り状作成
+                </Link>
+                <Link 
+                  href="/mypage/profile" 
+                  className="text-white hover:opacity-80 transition-opacity"
+                >
+                  マイページ
+                </Link>
+                {isAdmin && (
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheckIcon className="w-5 h-5 text-white" />
+                    <Link 
+                      href="/admin" 
+                      className="text-white hover:opacity-80 transition-opacity"
+                    >
+                      管理者ページ
+                    </Link>
+                  </div>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors"
+                >
+                  ログアウト
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/login" 
+                  className="text-white hover:opacity-80 transition-opacity"
+                >
+                  ログイン
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors"
+                >
+                  新規登録
+                </Link>
+              </>
+            )}
+          </div>
         </nav>
       </div>
     </header>

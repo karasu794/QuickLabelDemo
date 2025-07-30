@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { verifyAdminAccess } from '@/lib/auth/admin-protection'
+import { verifyAdminAccess } from '@/lib/auth/server-auth'
 
 /**
  * 管理者権限の再検証API

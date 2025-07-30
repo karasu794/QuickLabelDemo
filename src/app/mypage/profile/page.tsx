@@ -18,7 +18,7 @@ interface ProfileData {
 }
 
 export default function ProfilePage() {
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user } = useAuth()
   const [profileData, setProfileData] = useState<ProfileData>({
     full_name: '',
     company_name: '',
@@ -34,19 +34,41 @@ export default function ProfilePage() {
 
   // プロフィールデータを読み込む
   useEffect(() => {
-    if (profile) {
-      setProfileData({
-        full_name: profile.full_name || '',
-        company_name: profile.company_name || '',
-        phone_number: profile.phone_number || '',
-        address: profile.address || '',
-        postal_code: '',
-        city: '',
-        state: '',
-        country: 'JP'
-      })
+    const fetchProfile = async () => {
+      if (!user) return
+
+      try {
+        const supabase = createClient()
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (error) {
+          console.error('プロフィール取得エラー:', error)
+          return
+        }
+
+        if (profile) {
+          setProfileData({
+            full_name: profile.full_name || '',
+            company_name: profile.company_name || '',
+            phone_number: profile.phone_number || '',
+            address: profile.address || '',
+            postal_code: '',
+            city: '',
+            state: '',
+            country: 'JP'
+          })
+        }
+      } catch (error) {
+        console.error('プロフィール取得エラー:', error)
+      }
     }
-  }, [profile])
+
+    fetchProfile()
+  }, [user])
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     setProfileData(prev => ({
@@ -78,25 +100,8 @@ export default function ProfilePage() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">
-          ログインが必要です
-        </div>
-      </div>
-    )
-  }
+  // AuthGuardによる認証チェックに任せる
+  // 個別ページでの認証チェックは削除
 
   return (
     <div className="p-6">
