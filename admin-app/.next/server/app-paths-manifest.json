@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/company-info/page": "app/company-info/page.js",
+  "/debug/page": "app/debug/page.js",
+  "/fees/page": "app/fees/page.js",
+  "/notifications/page": "app/notifications/page.js",
+  "/page": "app/page.js",
+  "/users/page": "app/users/page.js",
+  "/transactions/page": "app/transactions/page.js"
+}
