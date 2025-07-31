@@ -1,10 +1,50 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
 import { User, Shield, Database, AlertCircle } from 'lucide-react'
 
+interface Profile {
+  id: string
+  role: string | null
+  full_name: string | null
+  company_name: string | null
+}
+
 export default function AdminDebugPage() {
-  const { user, profile, loading, isAuthenticated, isAdmin } = useAuth()
+  const { user, loading, isAuthenticated, isAdmin } = useAuth()
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+
+  // プロフィール情報を取得
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      setProfileLoading(true)
+      const fetchProfile = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, role, full_name, company_name')
+            .eq('id', user.id)
+            .single()
+          
+          if (error) {
+            console.error('Profile fetch error:', error)
+          } else {
+            setProfile(data)
+          }
+        } catch (error) {
+          console.error('Profile fetch error:', error)
+        } finally {
+          setProfileLoading(false)
+        }
+      }
+      fetchProfile()
+    } else {
+      setProfile(null)
+    }
+  }, [user, isAuthenticated])
 
   if (loading) {
     return (
@@ -85,32 +125,43 @@ export default function AdminDebugPage() {
         )}
 
         {/* プロフィール情報 */}
-        {profile && (
+        {user && (
           <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">プロフィール情報</h2>
             
-            <div className="space-y-3">
-              <div>
-                <span className="font-medium text-gray-700">role列の値:</span>
-                <span className={`ml-2 px-2 py-1 rounded-full text-sm font-mono ${
-                  profile.role === 'admin' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  &quot;{profile.role || 'null'}&quot;
-                </span>
+            {profileLoading ? (
+              <div className="flex items-center justify-center h-20">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">プロフィール情報を取得中...</span>
               </div>
-              
-              <div>
-                <span className="font-medium text-gray-700">氏名:</span>
-                <span className="ml-2">{profile.full_name || '未設定'}</span>
+            ) : profile ? (
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-gray-700">role列の値:</span>
+                  <span className={`ml-2 px-2 py-1 rounded-full text-sm font-mono ${
+                    profile.role === 'admin' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    &quot;{profile.role || 'null'}&quot;
+                  </span>
+                </div>
+                
+                <div>
+                  <span className="font-medium text-gray-700">氏名:</span>
+                  <span className="ml-2">{profile.full_name || '未設定'}</span>
+                </div>
+                
+                <div>
+                  <span className="font-medium text-gray-700">会社名:</span>
+                  <span className="ml-2">{profile.company_name || '未設定'}</span>
+                </div>
               </div>
-              
-              <div>
-                <span className="font-medium text-gray-700">会社名:</span>
-                <span className="ml-2">{profile.company_name || '未設定'}</span>
+            ) : (
+              <div className="text-gray-500">
+                プロフィール情報の取得に失敗しました
               </div>
-            </div>
+            )}
           </div>
         )}
 
