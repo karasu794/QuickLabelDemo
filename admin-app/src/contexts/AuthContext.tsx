@@ -11,7 +11,7 @@ interface AuthContextType {
   isAdmin: boolean
   hasMFA: boolean
   mfaLoading: boolean
-  refreshMFAStatus: () => Promise<void>
+  refreshMFAStatus: () => Promise<boolean | undefined>
   signOut: () => Promise<void>
 }
 
