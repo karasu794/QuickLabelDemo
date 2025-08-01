@@ -2,39 +2,44 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import {
   Users,
   PercentCircle,
   History,
   Bell,
-  Building2
+  Building2,
+  LayoutDashboard
 } from 'lucide-react'
 
 const navigationItems = [
   {
-    name: '通知管理',
-    href: '/admin/notifications',
-    icon: Bell
+    name: 'ダッシュボード',
+    href: '/',
+    icon: LayoutDashboard
   },
   {
     name: 'ユーザー管理',
-    href: '/admin/users',
+    href: '/users',
     icon: Users
   },
   {
-    name: '手数料設定',
-    href: '/admin/fees',
-    icon: PercentCircle
-  },
-  {
     name: '取引履歴',
-    href: '/admin/transactions',
+    href: '/transactions',
     icon: History
   },
   {
+    name: '手数料設定',
+    href: '/fees',
+    icon: PercentCircle
+  },
+  {
+    name: '通知管理',
+    href: '/notifications',
+    icon: Bell
+  },
+  {
     name: '会社情報',
-    href: '/admin/company-info',
+    href: '/company-info',
     icon: Building2
   }
 ]
@@ -43,10 +48,10 @@ export default function AdminSidebar() {
   const pathname = usePathname()
 
   const isActive = (href: string) => {
-    if (href === '/admin') {
-      return pathname === '/admin'
+    if (href === '/') {
+      return pathname === '/'
     }
-    return pathname.startsWith(href)
+    return pathname && pathname.startsWith(href)
   }
 
   return (
@@ -67,17 +72,15 @@ export default function AdminSidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={cn(
-                  "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200",
+                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                   active
                     ? "bg-blue-100 text-blue-700 border-r-2 border-blue-700"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )}
+                }`}
               >
-                <Icon className={cn(
-                  "mr-3 h-5 w-5 flex-shrink-0",
+                <Icon className={`mr-3 h-5 w-5 flex-shrink-0 ${
                   active ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"
-                )} />
+                }`} />
                 {item.name}
               </Link>
             )

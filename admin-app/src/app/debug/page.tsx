@@ -13,16 +13,18 @@ interface Profile {
 }
 
 export default function AdminDebugPage() {
-  const { user, loading, isAuthenticated, isAdmin } = useAuth()
+  const { user, loading, isAuthenticated, isAdmin, hasMFA, mfaLoading } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
+  const [mfaFactors, setMfaFactors] = useState<any[]>([])
 
-  // プロフィール情報を取得
+  // プロフィール情報とMFAファクターを取得
   useEffect(() => {
     if (user && isAuthenticated) {
       setProfileLoading(true)
-      const fetchProfile = async () => {
+      const fetchData = async () => {
         try {
+          // プロフィール取得
           const { data, error } = await supabase
             .from('profiles')
             .select('id, role, full_name, company_name')
@@ -34,17 +36,24 @@ export default function AdminDebugPage() {
           } else {
             setProfile(data)
           }
+
+          // MFAファクター取得
+          if (isAdmin) {
+            const { data: factors } = await supabase.auth.mfa.listFactors()
+            setMfaFactors(factors?.totp || [])
+          }
         } catch (error) {
-          console.error('Profile fetch error:', error)
+          console.error('Data fetch error:', error)
         } finally {
           setProfileLoading(false)
         }
       }
-      fetchProfile()
+      fetchData()
     } else {
       setProfile(null)
+      setMfaFactors([])
     }
-  }, [user, isAuthenticated])
+  }, [user, isAuthenticated, isAdmin])
 
   if (loading) {
     return (
@@ -91,6 +100,17 @@ export default function AdminDebugPage() {
                   : 'bg-red-100 text-red-800'
               }`}>
                 {isAdmin ? '✅ 管理者' : '❌ 一般ユーザー'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="font-medium text-gray-700">MFA設定:</span>
+              <span className={`px-2 py-1 rounded-full text-sm ${
+                hasMFA 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {mfaLoading ? '🔄 確認中...' : hasMFA ? '✅ 有効' : '⚠️ 未設定'}
               </span>
             </div>
           </div>
@@ -165,6 +185,52 @@ export default function AdminDebugPage() {
           </div>
         )}
 
+        {/* MFAファクター情報 */}
+        {isAdmin && (
+          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">MFAファクター情報</h2>
+            
+            {mfaFactors.length > 0 ? (
+              <div className="space-y-3">
+                {mfaFactors.map((factor, index) => (
+                  <div key={factor.id} className="border rounded-lg p-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-700">ファクターID:</span>
+                        <span className="ml-2 font-mono bg-gray-100 px-2 py-1 rounded text-xs">
+                          {factor.id}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">ステータス:</span>
+                        <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                          factor.status === 'verified' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {factor.status}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">フレンドリー名:</span>
+                        <span className="ml-2">{factor.friendly_name}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">作成日時:</span>
+                        <span className="ml-2">{new Date(factor.created_at).toLocaleString('ja-JP')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-gray-500 text-center py-4">
+                MFAファクターが登録されていません
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 管理者設定手順 */}
         {!isAdmin && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -206,15 +272,34 @@ export default function AdminDebugPage() {
         )}
 
         {/* 成功メッセージ */}
-        {isAdmin && (
+        {isAdmin && hasMFA && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-green-900 mb-2 flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              管理者権限が正常に設定されています
+              管理者権限とMFAが正常に設定されています
             </h2>
             <p className="text-green-800">
-              ヘッダーに「管理者ページ」リンクが表示され、管理機能にアクセスできます。
+              セキュアな管理画面に完全にアクセス可能です。全ての管理機能を利用できます。
             </p>
+          </div>
+        )}
+
+        {/* MFA未設定の警告 */}
+        {isAdmin && !hasMFA && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-orange-900 mb-2 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              MFAの設定が必要です
+            </h2>
+            <p className="text-orange-800 mb-4">
+              管理者アカウントにはセキュリティ強化のためMFA（二要素認証）の設定が必須です。
+            </p>
+            <button
+              onClick={() => window.location.href = '/mfa-setup'}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+            >
+              MFAを設定する
+            </button>
           </div>
         )}
       </div>

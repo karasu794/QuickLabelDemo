@@ -113,22 +113,22 @@ async function updateCompanyInfoAction(formData: FormData) {
   // バリデーション
   if (!contactName.trim()) {
     console.error('❌ バリデーションエラー: 担当者名が入力されていません')
-    return redirect('/admin/company-info?error=contact_name_required')
+    return redirect('/company-info?error=contact_name_required')
   }
 
   if (!postalCode.trim()) {
     console.error('❌ バリデーションエラー: 郵便番号が入力されていません')
-    return redirect('/admin/company-info?error=postal_code_required')
+    return redirect('/company-info?error=postal_code_required')
   }
 
   if (!address1.trim()) {
     console.error('❌ バリデーションエラー: 住所1が入力されていません')
-    return redirect('/admin/company-info?error=address1_required')
+    return redirect('/company-info?error=address1_required')
   }
 
   if (!phoneNumber.trim()) {
     console.error('❌ バリデーションエラー: 電話番号が入力されていません')
-    return redirect('/admin/company-info?error=phone_number_required')
+    return redirect('/company-info?error=phone_number_required')
   }
 
   // 更新データを作成
@@ -156,19 +156,19 @@ async function updateCompanyInfoAction(formData: FormData) {
 
     if (error) {
       console.error('❌ 自社情報更新エラー:', error)
-      return redirect('/admin/company-info?error=update_failed')
+      return redirect('/company-info?error=update_failed')
     }
 
     console.log('✅ 自社情報更新成功:', data.value)
 
   } catch (error) {
     console.error('❌ Server Action 予期せぬエラー:', error)
-    return redirect('/admin/company-info?error=server_error')
+    return redirect('/company-info?error=server_error')
   }
 
   // ★★★ 成功時の処理はtryの外側で行う ★★★
-  revalidatePath('/admin/company-info')
-  return redirect('/admin/company-info?success=updated')
+  revalidatePath('/company-info')
+  return redirect('/company-info?success=updated')
 }
 
 // メッセージ表示コンポーネント

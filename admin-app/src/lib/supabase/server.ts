@@ -48,117 +48,71 @@ export const createServiceRoleClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Supabase URL または Service Role Key が設定されていません');
+    throw new Error('Missing Supabase environment variables for Service Role Key');
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-};
-
-/**
- * Route Handler用のSupabaseクライアントを作成
- * Cookie操作が可能なコンテキストで使用
- */
-export const createRouteHandlerClient = () => {
-  const cookieStore = cookies()
-
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  return createSupabaseClient<Database>(
+    supabaseUrl,
+    serviceRoleKey,
     {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options })
-        },
-      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     }
-  )
+  );
 }
 
 /**
- * ユーザー情報を取得するヘルパー関数
+ * プロフィール情報を取得（サーバーサイド版）
+ * Service Role Keyを使用してRLSをバイパス
+ * @param userId ユーザーID
  */
-export const getUser = async () => {
-  const supabase = createClient()
+export const getUserProfileServer = async (userId: string) => {
+  const supabase = createServiceRoleClient()
   
-  try {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
 
-    if (error) {
-      console.error('Error getting user:', error)
-      return null
-    }
-
-    return user
-  } catch (error) {
-    console.error('Error in getUser:', error)
-    return null
-  }
+  return { profile: data, error }
 }
 
 /**
- * プロフィール情報を取得するヘルパー関数
+ * 全プロフィール情報を取得（管理者用）
+ * Service Role Keyを使用してRLSをバイパス
  */
-export const getUserProfile = async () => {
-  const supabase = createClient()
-  const user = await getUser()
-
-  if (!user) {
-    return null
-  }
-
-  try {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (error) {
-      console.error('Error getting profile:', error)
-      return null
-    }
-
-    return profile
-  } catch (error) {
-    console.error('Error in getUserProfile:', error)
-    return null
-  }
-}
-
-/**
- * セッションを取得するヘルパー関数
- */
-export const getSession = async () => {
-  const supabase = createClient()
+export const getAllProfilesServer = async () => {
+  const supabase = createServiceRoleClient()
   
-  try {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error getting session:', error)
-      return null
-    }
+  return { profiles: data, error }
+}
 
-    return session
-  } catch (error) {
-    console.error('Error in getSession:', error)
-    return null
-  }
-} 
+/**
+ * プロフィール情報を更新（サーバーサイド版）
+ * Service Role Keyを使用してRLSをバイパス
+ * @param userId ユーザーID
+ * @param updates 更新するプロフィール情報
+ */
+export const updateUserProfileServer = async (
+  userId: string, 
+  updates: Partial<Database['public']['Tables']['profiles']['Update']>
+) => {
+  const supabase = createServiceRoleClient()
+  
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single()
+
+  return { profile: data, error }
+}

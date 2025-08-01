@@ -55,12 +55,12 @@ async function updateFeeAction(formData: FormData) {
   
   if (isNaN(feePercentage)) {
     console.error('❌ バリデーションエラー: 無効な数値')
-    return redirect('/admin/fees?error=invalid_number')
+    return redirect('/fees?error=invalid_number')
   }
 
   if (feePercentage < 0 || feePercentage > 100) {
     console.error('❌ バリデーションエラー: 範囲外の値')
-    return redirect('/admin/fees?error=out_of_range')
+    return redirect('/fees?error=out_of_range')
   }
 
   try {
@@ -74,19 +74,19 @@ async function updateFeeAction(formData: FormData) {
 
     if (error) {
       console.error('❌ 手数料率更新エラー:', error)
-      return redirect('/admin/fees?error=update_failed')
+      return redirect('/fees?error=update_failed')
     }
 
     console.log('✅ 手数料率更新成功:', data.value)
 
   } catch (error) {
     console.error('❌ Server Action 予期せぬエラー:', error)
-    return redirect('/admin/fees?error=server_error')
+    return redirect('/fees?error=server_error')
   }
 
   // ★★★ 成功時の処理はtryの外側で行う ★★★
-  revalidatePath('/admin/fees')
-  return redirect('/admin/fees?success=updated')
+  revalidatePath('/fees')
+  return redirect('/fees?success=updated')
 }
 
 // メッセージ表示コンポーネント

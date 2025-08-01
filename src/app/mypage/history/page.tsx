@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useShippingFormStore } from '@/store/shippingFormStore'
+import CancelShipmentButton from '@/components/CancelShipmentButton'
 
 // 型定義
 interface ShipmentHistory {
@@ -383,15 +384,31 @@ export default function MypageHistoryPage() {
                             </Badge>
                           </td>
                           <td className="p-4">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleReuseShipment(shipment)}
-                              className="flex items-center gap-2"
-                            >
-                              <Repeat className="h-4 w-4" />
-                              再度発送
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReuseShipment(shipment)}
+                                className="flex items-center gap-2"
+                              >
+                                <Repeat className="h-4 w-4" />
+                                再度発送
+                              </Button>
+                              
+                              {/* キャンセルボタン */}
+                              {shipment.tracking_number && shipment.payment_id && (
+                                <CancelShipmentButton
+                                  trackingNumber={shipment.tracking_number}
+                                  squarePaymentId={shipment.payment_id}
+                                  currentStatus={shipment.status}
+                                  onSuccess={() => {
+                                    // キャンセル成功時にデータを再取得
+                                    fetchHistoryData()
+                                  }}
+                                  className="ml-2"
+                                />
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
