@@ -101,11 +101,13 @@ export default function AdminLoginPage() {
       if (totpFactor) {
         console.log('🔐 MFA有効 - チャレンジページへリダイレクト')
         // MFAが有効な場合はチャレンジページにリダイレクト
-        router.push('/mfa-challenge')
+        // router.push('/mfa-challenge') // TEMPORARY: Disabled
+        window.location.href = '/mfa-challenge' // TEMPORARY: Use native redirect
       } else {
         console.log('⚠️ MFA未設定 - 設定ページへリダイレクト')
         // MFAが未設定の場合は強制的に設定ページにリダイレクト
-        router.push('/mfa-setup?required=true')
+        // router.push('/mfa-setup?required=true') // TEMPORARY: Disabled
+        window.location.href = '/mfa-setup?required=true' // TEMPORARY: Use native redirect
       }
 
     } catch (error) {
