@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation' // TEMPORARY: Disabled
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
 import { Shield, Eye, EyeOff, AlertCircle } from 'lucide-react'

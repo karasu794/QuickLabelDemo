@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation' // TEMPORARY: Disabled
 import { useAuth } from '@/hooks/useAuth'
 
 interface AdminAuthGuardProps {

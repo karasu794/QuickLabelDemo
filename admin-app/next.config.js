@@ -9,6 +9,9 @@ const nextConfig = {
     unoptimized: true,
   },
   
+  // App Routerのみを使用してPages Routerを完全無効化
+  pageExtensions: ['tsx', 'ts'],
+  
   // 実験的機能でSupabaseの最適化設定
   experimental: {
     // SSGを完全に無効化する追加設定
@@ -19,6 +22,13 @@ const nextConfig = {
     workerThreads: false,
     // usePathnameエラー対策
     scrollRestoration: false,
+    // App Routerのみを強制 (Pages Router無効化)
+    appDir: true,
+    typedRoutes: false,
+    // キャッシュを完全に無効化
+    turbo: false,
+    // 静的最適化を無効化
+    staticPageGenerationTimeout: 0,
   },
   
   // SWCミニ化を無効化してSSG問題を回避
@@ -43,9 +53,9 @@ const nextConfig = {
     ]
   },
   
-  // 全てのページで動的レンダリングを強制
+  // App Routerのみを強制するビルドID
   async generateBuildId() {
-    return `dynamic-${Date.now()}`
+    return `app-router-${Date.now()}`
   },
   
   // ランタイム設定でSSGを阻止
