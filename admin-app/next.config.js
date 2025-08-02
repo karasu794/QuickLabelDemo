@@ -10,7 +10,9 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
     // スタンドアロンモードでもSSGを強制無効化
-    outputFileTracingExcludes: ['**/*'],
+    outputFileTracingExcludes: {
+      '**/*': true
+    },
   },
   
   // Pages Routerを完全に無効化
@@ -42,41 +44,14 @@ const nextConfig = {
       punycode: false,
     };
     
-    // Pages Routerの自動生成を完全に防止
+    // 静的生成を無効化しつつPages Router依存性は保持
     if (isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'next/dist/pages/_document': false,
-        'next/dist/pages/_app': false,
-        'next/dist/pages/_error': false,
-        'next/dist/pages/404': false,
-        'next/dist/pages/500': false,
-        'next/dist/shared/lib/router/router': 'next/dist/client/router',
-      };
-      
-      // 静的生成プラグインを無効化
+      // 静的生成プラグインのみを無効化
       config.plugins = config.plugins.filter(plugin => {
         const name = plugin.constructor.name;
         return !name.includes('StaticGeneration') &&
-               !name.includes('NextJsSSGPlugin') &&
-               !name.includes('PagesPlugin') &&
-               !name.includes('ErrorPlugin');
+               !name.includes('NextJsSSGPlugin');
       });
-      
-      // Pages Router関連のentryを除去
-      if (config.entry) {
-        const originalEntry = config.entry;
-        config.entry = async () => {
-          const entries = await (typeof originalEntry === 'function' ? originalEntry() : originalEntry);
-          // Pages Router関連エントリを除去
-          Object.keys(entries).forEach(key => {
-            if (key.includes('pages/') || key.includes('_error') || key.includes('_document') || key.includes('_app')) {
-              delete entries[key];
-            }
-          });
-          return entries;
-        };
-      }
     }
     
     return config;
