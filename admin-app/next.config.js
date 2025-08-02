@@ -9,9 +9,8 @@ const nextConfig = {
     unoptimized: true,
   },
   
-  // 実験的機能でSupabaseを外部パッケージとして扱う
+  // 実験的機能でSupabaseの最適化設定
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
     // SSGを完全に無効化する追加設定
     optimizePackageImports: ['@supabase/supabase-js'],
     esmExternals: true,
