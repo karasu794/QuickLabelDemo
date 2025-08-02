@@ -129,87 +129,8 @@ async function getCurrentCompanyInfo(): Promise<{ companyInfo: CompanyInfo; erro
   }
 }
 
-// Server Action: 自社情報更新
-async function updateCompanyInfoAction(formData: FormData) {
-  'use server'
-  
-  const contactName = formData.get('contactName') as string
-  const companyName = formData.get('companyName') as string
-  const postalCode = formData.get('postalCode') as string
-  const address1 = formData.get('address1') as string
-  const address2 = formData.get('address2') as string
-  const phoneNumber = formData.get('phoneNumber') as string
-  const email = formData.get('email') as string
-
-  console.log('🔄 自社情報更新開始')
-
-  // バリデーション
-  if (!contactName.trim()) {
-    console.error('❌ バリデーションエラー: 担当者名が入力されていません')
-    return redirect('/company-info?error=contact_name_required')
-  }
-
-  if (!postalCode.trim()) {
-    console.error('❌ バリデーションエラー: 郵便番号が入力されていません')
-    return redirect('/company-info?error=postal_code_required')
-  }
-
-  if (!address1.trim()) {
-    console.error('❌ バリデーションエラー: 住所1が入力されていません')
-    return redirect('/company-info?error=address1_required')
-  }
-
-  if (!phoneNumber.trim()) {
-    console.error('❌ バリデーションエラー: 電話番号が入力されていません')
-    return redirect('/company-info?error=phone_number_required')
-  }
-
-  // 更新データを作成
-  const companyInfo: CompanyInfo = {
-    contactName: contactName.trim(),
-    companyName: companyName.trim(),
-    taxId: (formData.get('taxId') as string || '').trim(),
-    postalCode: postalCode.trim(),
-    address1: address1.trim(),
-    address2: address2.trim(),
-    phoneNumber: phoneNumber.trim(),
-    email: email.trim()
-  }
-
-  try {
-    // 環境変数チェック
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('❌ Supabase環境変数が設定されていません')
-      return redirect('/company-info?error=env_variables_missing')
-    }
-
-    // ★★★ tryブロックはDB操作のみを囲む ★★★
-    const supabaseAdmin = createSupabaseAdmin()
-    const { data, error } = await supabaseAdmin
-      .from('app_settings')
-      .upsert({
-        key: 'phoenix_address',
-        value: JSON.stringify(companyInfo)
-      })
-      .select('value')
-      .single()
-
-    if (error) {
-      console.error('❌ 自社情報更新エラー:', error)
-      return redirect('/company-info?error=update_failed')
-    }
-
-    console.log('✅ 自社情報更新成功:', data.value)
-
-  } catch (error) {
-    console.error('❌ Server Action 予期せぬエラー:', error)
-    return redirect('/company-info?error=server_error')
-  }
-
-  // ★★★ 成功時の処理はtryの外側で行う ★★★
-  revalidatePath('/company-info')
-  return redirect('/company-info?success=updated')
-}
+// TODO: Client Component用の更新機能実装が必要
+// Server Actionは Client Component では使用できないため削除
 
 // メッセージ表示コンポーネント
 function MessageDisplay({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
@@ -358,7 +279,7 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
         <p className="text-sm text-gray-600 mt-1">送り状に記載される自社情報を設定してください</p>
       </div>
       <div className="p-6">
-        <form action={updateCompanyInfoAction} className="space-y-6">
+        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('更新機能は一時的に無効化されています'); }}>
           {/* 担当者名 */}
           <div>
             <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">

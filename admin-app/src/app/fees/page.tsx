@@ -67,58 +67,8 @@ async function getCurrentFeePercentage(): Promise<{ feePercentage: number; error
   }
 }
 
-// Server Action: 手数料率更新
-async function updateFeeAction(formData: FormData) {
-  'use server'
-  
-  const feePercentageStr = formData.get('feePercentage') as string
-  console.log('🔄 手数料率更新開始:', feePercentageStr)
-
-  // バリデーション
-  const feePercentage = parseFloat(feePercentageStr)
-  
-  if (isNaN(feePercentage)) {
-    console.error('❌ バリデーションエラー: 無効な数値')
-    return redirect('/fees?error=invalid_number')
-  }
-
-  if (feePercentage < 0 || feePercentage > 100) {
-    console.error('❌ バリデーションエラー: 範囲外の値')
-    return redirect('/fees?error=out_of_range')
-  }
-
-  try {
-    // 環境変数チェック
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('❌ Supabase環境変数が設定されていません')
-      return redirect('/fees?error=env_variables_missing')
-    }
-
-    // ★★★ tryブロックはDB操作のみを囲む ★★★
-    const supabaseAdmin = createSupabaseAdmin()
-    const { data, error } = await supabaseAdmin
-      .from('app_settings')
-      .update({ value: feePercentage.toString() })
-      .eq('key', 'service_fee_percentage')
-      .select('value')
-      .single()
-
-    if (error) {
-      console.error('❌ 手数料率更新エラー:', error)
-      return redirect('/fees?error=update_failed')
-    }
-
-    console.log('✅ 手数料率更新成功:', data.value)
-
-  } catch (error) {
-    console.error('❌ Server Action 予期せぬエラー:', error)
-    return redirect('/fees?error=server_error')
-  }
-
-  // ★★★ 成功時の処理はtryの外側で行う ★★★
-  revalidatePath('/fees')
-  return redirect('/fees?success=updated')
-}
+// TODO: Client Component用の更新機能実装が必要
+// Server Actionは Client Component では使用できないため削除
 
 // メッセージ表示コンポーネント
 function MessageDisplay({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
@@ -235,7 +185,7 @@ function FeeUpdateForm({ currentFeePercentage }: { currentFeePercentage: number 
         <p className="text-sm text-gray-600 mt-1">新しいサービス手数料率を設定してください</p>
       </div>
       <div className="p-6">
-        <form action={updateFeeAction} className="space-y-6">
+        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('更新機能は一時的に無効化されています'); }}>
           {/* 手数料率入力 */}
           <div>
             <label htmlFor="feePercentage" className="block text-sm font-medium text-gray-700 mb-2">
