@@ -3,16 +3,25 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+const createSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase environment variables')
   }
-)
+  
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
 
 // 自社情報の型定義
 interface CompanyInfo {
@@ -31,6 +40,25 @@ async function getCurrentCompanyInfo(): Promise<{ companyInfo: CompanyInfo; erro
   try {
     console.log('🔐 管理者自社情報取得開始')
 
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('⚠️ Supabase環境変数が設定されていません（ビルド時など）')
+      return {
+        companyInfo: {
+          contactName: '',
+          companyName: '',
+          taxId: '',
+          postalCode: '',
+          address1: '',
+          address2: '',
+          phoneNumber: '',
+          email: ''
+        },
+        error: 'Supabase環境変数が設定されていません'
+      }
+    }
+
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('app_settings')
       .select('value')
@@ -144,7 +172,14 @@ async function updateCompanyInfoAction(formData: FormData) {
   }
 
   try {
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Supabase環境変数が設定されていません')
+      return redirect('/company-info?error=env_variables_missing')
+    }
+
     // ★★★ tryブロックはDB操作のみを囲む ★★★
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('app_settings')
       .upsert({
@@ -211,6 +246,11 @@ function MessageDisplay({ searchParams }: { searchParams: { [key: string]: strin
         return {
           type: 'error' as const,
           text: 'データベースの更新に失敗しました'
+        }
+      case 'env_variables_missing':
+        return {
+          type: 'error' as const,
+          text: 'システム設定が不完全です。管理者にお問い合わせください'
         }
       case 'server_error':
         return {

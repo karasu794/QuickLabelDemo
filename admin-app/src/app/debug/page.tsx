@@ -13,10 +13,12 @@ interface Profile {
 }
 
 export default function AdminDebugPage() {
-  const { user, loading, isAuthenticated, isAdmin, hasMFA, mfaLoading } = useAuth()
+  const { user, loading, isAuthenticated, isAdmin } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
   const [mfaFactors, setMfaFactors] = useState<any[]>([])
+  const [hasMFA, setHasMFA] = useState(false)
+  const [mfaLoading, setMfaLoading] = useState(false)
 
   // プロフィール情報とMFAファクターを取得
   useEffect(() => {
@@ -39,8 +41,26 @@ export default function AdminDebugPage() {
 
           // MFAファクター取得
           if (isAdmin) {
-            const { data: factors } = await supabase.auth.mfa.listFactors()
-            setMfaFactors(factors?.totp || [])
+            setMfaLoading(true)
+            try {
+              const { data: factors } = await supabase.auth.mfa.listFactors()
+              const totpFactors = factors?.totp || []
+              setMfaFactors(totpFactors)
+              
+              // MFA設定状況を確認
+              const hasTotpFactor = totpFactors.some(factor => 
+                factor.factor_type === 'totp' && factor.status === 'verified'
+              )
+              setHasMFA(hasTotpFactor)
+            } catch (mfaError) {
+              console.error('MFA fetch error:', mfaError)
+              setHasMFA(false)
+            } finally {
+              setMfaLoading(false)
+            }
+          } else {
+            setHasMFA(false)
+            setMfaFactors([])
           }
         } catch (error) {
           console.error('Data fetch error:', error)
@@ -52,6 +72,7 @@ export default function AdminDebugPage() {
     } else {
       setProfile(null)
       setMfaFactors([])
+      setHasMFA(false)
     }
   }, [user, isAuthenticated, isAdmin])
 
