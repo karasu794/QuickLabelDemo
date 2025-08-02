@@ -9,10 +9,6 @@ const nextConfig = {
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
-    // スタンドアロンモードでもSSGを強制無効化
-    outputFileTracingExcludes: {
-      '**/*': true
-    },
   },
   
   // Pages Routerを完全に無効化
