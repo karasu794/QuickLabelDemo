@@ -50,7 +50,7 @@ export default function MFASetupPage() {
       setupStartedRef.current = true
       setupMFA()
     }
-  }, [isAuthenticated, isAdmin, router, searchParams])
+  }, [isAuthenticated, isAdmin]) // router, searchParams removed from deps
 
   // MFA設定を開始する関数
   const setupMFA = async () => {

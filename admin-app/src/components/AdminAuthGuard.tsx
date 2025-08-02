@@ -111,7 +111,7 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
     
     // 認証状態を記録
     lastAuthState.current = currentAuthState
-  }, [loading, mfaLoading, isAuthenticated, isAdmin, hasMFA, router])
+  }, [loading, mfaLoading, isAuthenticated, isAdmin, hasMFA]) // router removed from deps
 
   // ローディング中の表示
   if (loading || mfaLoading) {
