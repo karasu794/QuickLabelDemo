@@ -24,8 +24,6 @@ const nextConfig = {
     scrollRestoration: false,
     // App Routerのみを強制 (Pages Router無効化)
     typedRoutes: false,
-    // CRITICAL: 全ページを動的にする
-    isrMemoryCacheSize: 0,
     // CRITICAL: SSG完全無効化
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
@@ -57,10 +55,7 @@ const nextConfig = {
     return `dynamic-ssr-${Date.now()}-${Math.random().toString(36).substring(7)}`
   },
 
-  // CRITICAL: SSG完全無効化設定
-  async exportPathMap(defaultPathMap) {
-    return {}
-  },
+  // CRITICAL: App Routerでは exportPathMap 不要（全ページに export const dynamic = 'force-dynamic' 設定済み）
   
   // ランタイム設定でSSGを阻止
   async rewrites() {
