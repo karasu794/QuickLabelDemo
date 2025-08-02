@@ -6,6 +6,27 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import UserTableSwitcher from './UserTableSwitcher'
 
+// サービスロールキーを使用したSupabase client（サーバーサイド専用）
+const createSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
+
 // ユーザーデータの型定義
 export interface UserProfile {
   id: string
@@ -27,7 +48,7 @@ export default async function UsersPage() {
   }
 
   // Service Role Keyクライアントを使用して全ユーザーデータにアクセス
-  const supabase = createServiceRoleClient()
+  const supabase = createSupabaseAdmin()
   
   console.log('管理者ページ: Service Role Keyクライアント使用開始')
 
