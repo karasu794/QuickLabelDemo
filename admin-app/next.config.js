@@ -3,8 +3,11 @@ const nextConfig = {
   // 完全に動的レンダリングを強制
   output: 'standalone',
   
-  // プリレンダリングを完全に無効化
+  // プリレンダリングを完全に無効化  
   trailingSlash: false,
+  
+  // ビルドキャッシュを強制的にクリア
+  distDir: '.next-clean',
   
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
