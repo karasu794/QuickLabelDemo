@@ -1,5 +1,7 @@
 // 動的レンダリングを強制してSSGの問題を回避
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+export const revalidate = 0
 
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import UserTableSwitcher from './UserTableSwitcher'

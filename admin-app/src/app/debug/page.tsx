@@ -2,6 +2,8 @@
 
 // 動的レンダリングを強制してSSGの問題を回避
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+export const revalidate = 0
 
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
