@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path')
+
 const nextConfig = {
   // Server Component対応のため standalone に戻す
   output: 'standalone',
@@ -10,7 +12,14 @@ const nextConfig = {
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
+    // SSGを完全に無効化する追加設定
+    optimizePackageImports: false,
+    esmExternals: false,
+    forceSwcTransforms: true,
   },
+  
+  // SWCミニ化を無効化してSSG問題を回避
+  swcMinify: false,
   
   // Pages Routerを完全に無効化
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
@@ -36,15 +45,30 @@ const nextConfig = {
       punycode: false,
     };
     
-    // 静的生成を無効化しつつPages Router依存性は保持
+    // SSGと静的最適化を完全に無効化
     if (isServer) {
-      // 静的生成プラグインのみを無効化
+      // 静的生成関連の全プラグインを除去
       config.plugins = config.plugins.filter(plugin => {
         const name = plugin.constructor.name;
         return !name.includes('StaticGeneration') &&
-               !name.includes('NextJsSSGPlugin');
+               !name.includes('NextJsSSGPlugin') &&
+               !name.includes('StaticOptimization') &&
+               !name.includes('BuildManifestPlugin');
       });
+      
+      // モジュールの強制的な動的解決
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, 'src'),
+      };
     }
+    
+    // Client-sideレンダリングを強制
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: false,
+      minimize: false,
+    };
     
     return config;
   },
