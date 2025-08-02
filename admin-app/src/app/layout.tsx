@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic'
 
 import { ReactNode } from 'react'
-import { usePathname } from 'next/navigation'
+// import { usePathname } from 'next/navigation' // TEMPORARY: Disabled
 import { AuthProvider } from '@/contexts/AuthContext'
 import AdminAuthGuard from '@/components/AdminAuthGuard'
 import AdminSidebar from '@/app/components/AdminSidebar'
@@ -15,23 +15,11 @@ interface RootLayoutProps {
 }
 
 function LayoutContent({ children }: { children: ReactNode }) {
-  let pathname = '';
+  // TEMPORARY: Disable usePathname to fix static generation errors
+  const pathname = '';
   
-  try {
-    pathname = usePathname() || '';
-  } catch (error) {
-    console.warn('usePathname failed in layout, defaulting to empty string');
-    pathname = '';
-  }
-  
-  // MFA関連ページかどうかの判定を安全に行う
-  let isMFAPage = false
-  try {
-    isMFAPage = pathname && (pathname.startsWith('/mfa-') || pathname === '/login')
-  } catch (error) {
-    console.error('Pathname check error:', error)
-    isMFAPage = false
-  }
+  // MFA関連ページかどうかの判定を一時的に無効化
+  const isMFAPage = false
   
   // MFA関連ページではレイアウトを簡素化
   if (isMFAPage) {

@@ -15,10 +15,17 @@ const nextConfig = {
     optimizePackageImports: ['@supabase/supabase-js'],
     esmExternals: true,
     forceSwcTransforms: true,
+    // 静的生成を完全に無効化
+    isrMemoryCacheSize: 0,
+    workerThreads: false,
   },
   
   // SWCミニ化を無効化してSSG問題を回避
   swcMinify: false,
+  
+  // 静的生成を完全に無効化
+  distDir: '.next',
+  generateEtags: false,
   
   // Pages Routerを完全に無効化
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],

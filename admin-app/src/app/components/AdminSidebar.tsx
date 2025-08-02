@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+// import { usePathname } from 'next/navigation' // TEMPORARY: Disabled
 import {
   Users,
   PercentCircle,
@@ -45,21 +45,12 @@ const navigationItems = [
 ]
 
 export default function AdminSidebar() {
-  let pathname = '';
-  
-  try {
-    pathname = usePathname() || '';
-  } catch (error) {
-    console.warn('usePathname failed, defaulting to empty string');
-    pathname = '';
-  }
+  // TEMPORARY: Disable usePathname to fix static generation errors
+  const pathname = '';
 
   const isActive = (href: string) => {
-    if (!pathname) return false;
-    if (href === '/') {
-      return pathname === '/'
-    }
-    return pathname.startsWith(href)
+    // TEMPORARY: Return false for all navigation items
+    return false;
   }
 
   return (
