@@ -1,20 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js 14: 静的生成を完全に無効化
+  // Next.js 14: 動的レンダリングを強制
   output: 'standalone',
   
   // プリレンダリングを完全に無効化  
   trailingSlash: false,
   
-  // 静的最適化を完全に無効化
-  generateStaticParams: false,
-  
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
-    // 静的最適化を無効化
-    isrMemoryCacheSize: 0,
-    // Next.js 14では appDir は不要（デフォルトで有効）
   },
   
   // Pages Routerを完全に無効化
@@ -47,19 +41,7 @@ const nextConfig = {
       };
     }
     
-    // 静的最適化を無効化
-    config.optimization = {
-      ...config.optimization,
-      usedExports: false,
-      sideEffects: false,
-    };
-    
     return config;
-  },
-  
-  // 環境変数でSSGを無効化
-  env: {
-    NEXT_RUNTIME: 'nodejs',
   },
 }
 
