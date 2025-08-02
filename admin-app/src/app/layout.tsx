@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic'
 
 import { ReactNode } from 'react'
 // import { usePathname } from 'next/navigation' // TEMPORARY: Disabled
-import { AuthProvider } from '@/contexts/AuthContext'
-import AdminAuthGuard from '@/components/AdminAuthGuard'
-import AdminSidebar from '@/app/components/AdminSidebar'
+// import { AuthProvider } from '@/contexts/AuthContext' // TEMPORARY: Disabled
+// import AdminAuthGuard from '@/components/AdminAuthGuard' // TEMPORARY: Disabled
+// import AdminSidebar from '@/app/components/AdminSidebar' // TEMPORARY: Disabled
 import './globals.css'
 
 interface RootLayoutProps {
@@ -46,10 +46,10 @@ function LayoutContent({ children }: { children: ReactNode }) {
       </header>
 
       {/* サイドバー */}
-      <AdminSidebar />
+      {/* <AdminSidebar /> TEMPORARY: Disabled */}
 
       {/* メインコンテンツ */}
-      <main className="ml-64 mt-16 min-h-screen">
+      <main className="ml-0 mt-16 min-h-screen"> {/* TEMPORARY: Remove sidebar margin */}
         <div className="p-6">
           {children}
         </div>
@@ -62,13 +62,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="ja">
       <body className="bg-gray-50">
-        <AuthProvider>
-          <AdminAuthGuard>
+        {/* <AuthProvider> TEMPORARY: Disabled */}
+          {/* <AdminAuthGuard> TEMPORARY: Disabled */}
             <LayoutContent>
               {children}
             </LayoutContent>
-          </AdminAuthGuard>
-        </AuthProvider>
+          {/* </AdminAuthGuard> */}
+        {/* </AuthProvider> */}
       </body>
     </html>
   )
