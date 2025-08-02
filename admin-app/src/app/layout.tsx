@@ -65,12 +65,16 @@ function LayoutContent({ children }: { children: ReactNode }) {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <AuthProvider>
-      <AdminAuthGuard>
-        <LayoutContent>
-          {children}
-        </LayoutContent>
-      </AdminAuthGuard>
-    </AuthProvider>
+    <html lang="ja">
+      <body className="bg-gray-50">
+        <AuthProvider>
+          <AdminAuthGuard>
+            <LayoutContent>
+              {children}
+            </LayoutContent>
+          </AdminAuthGuard>
+        </AuthProvider>
+      </body>
+    </html>
   )
 }

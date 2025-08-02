@@ -9,10 +9,14 @@ const nextConfig = {
   // ビルドキャッシュを強制的にクリア
   distDir: '.next-clean',
   
-  // 実験的機能でSupabaseを外部パッケージとして扱う
+  // App Routerを明示的に指定
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
+    appDir: true,
   },
+  
+  // Pages Routerを完全に無効化
+  pageExtensions: ['tsx', 'ts'],
   
   webpack: (config, { isServer }) => {
     // punycode deprecation 警告を抑制
