@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 静的最適化を完全に無効化してSSGエラーを回避
+  // 完全に動的レンダリングを強制
   output: 'standalone',
   
-  // プリレンダリング設定
+  // プリレンダリングを完全に無効化
   trailingSlash: false,
   
-  // 動的レンダリングを強制
+  // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
