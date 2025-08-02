@@ -4,16 +4,25 @@ import { TrackingNumber, PaymentIdButton } from './TransactionActions'
 import TransactionTableSwitcher from './TransactionTableSwitcher'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+const createSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase environment variables')
   }
-)
+  
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
 
 // 取引データの型定義
 export interface Transaction {
@@ -82,7 +91,18 @@ async function fetchTransactions(): Promise<{ transactions: Transaction[], stats
   try {
     console.log('🔐 管理者取引データ取得開始')
 
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('⚠️ Supabase環境変数が設定されていません（ビルド時など）')
+      return {
+        transactions: [],
+        stats: { totalTransactions: 0, totalRevenue: 0, completedTransactions: 0, internationalShipments: 0 },
+        error: 'Supabase環境変数が設定されていません'
+      }
+    }
+
     // shipmentsテーブルとprofilesテーブルを結合してデータを取得
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('shipments')
       .select(`

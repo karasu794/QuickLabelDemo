@@ -3,22 +3,41 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+const createSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase environment variables')
   }
-)
+  
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
 
 // 現在の手数料率を取得する関数
 async function getCurrentFeePercentage(): Promise<{ feePercentage: number; error?: string }> {
   try {
     console.log('🔐 管理者手数料設定取得開始')
 
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('⚠️ Supabase環境変数が設定されていません（ビルド時など）')
+      return {
+        feePercentage: 15, // デフォルト値
+        error: 'Supabase環境変数が設定されていません'
+      }
+    }
+
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('app_settings')
       .select('value')
@@ -64,7 +83,14 @@ async function updateFeeAction(formData: FormData) {
   }
 
   try {
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Supabase環境変数が設定されていません')
+      return redirect('/fees?error=env_variables_missing')
+    }
+
     // ★★★ tryブロックはDB操作のみを囲む ★★★
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('app_settings')
       .update({ value: feePercentage.toString() })
@@ -119,6 +145,11 @@ function MessageDisplay({ searchParams }: { searchParams: { [key: string]: strin
         return {
           type: 'error' as const,
           text: 'データベースの更新に失敗しました'
+        }
+      case 'env_variables_missing':
+        return {
+          type: 'error' as const,
+          text: 'システム設定が不完全です。管理者にお問い合わせください'
         }
       case 'server_error':
         return {

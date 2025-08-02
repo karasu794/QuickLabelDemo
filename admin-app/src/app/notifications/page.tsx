@@ -2,23 +2,42 @@ import { createClient } from '@supabase/supabase-js'
 import NotificationClient, { Notification } from './NotificationClient'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+const createSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase environment variables')
   }
-)
+  
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
 
 // サーバーサイドでの通知データ取得
 async function getNotifications(): Promise<{ notifications: Notification[]; error?: string }> {
   try {
     console.log('🔐 管理者通知データ取得開始')
 
+    // 環境変数チェック
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('⚠️ Supabase環境変数が設定されていません（ビルド時など）')
+      return {
+        notifications: [],
+        error: 'Supabase環境変数が設定されていません'
+      }
+    }
+
     // notificationsテーブルから全データを取得（新しい順）
+    const supabaseAdmin = createSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('notifications')
       .select('*')
