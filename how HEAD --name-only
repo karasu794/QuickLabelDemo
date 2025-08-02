@@ -1,0 +1,3 @@
+[33mbd82493[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m fix: 文字化けとリンターエラーを完全修正
+[33m1435710[m fix: admin-appの重要な修正を復元してVercelビルドエラーを解決
+[33mcbe6466[m fix: Next.js App Routerルール違反を修正

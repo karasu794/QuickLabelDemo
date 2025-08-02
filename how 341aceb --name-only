@@ -1,0 +1,5 @@
+[33mcbe6466[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m fix: Next.js App Routerルール違反を修正
+[33m341aceb[m fix: admin-appのSSRエラーを完全解決（最終版）
+[33mf2aac42[m fix: admin-appのSSRエラーを根本的に解決
+[33m0f1d69a[m fix: admin-appで動的レンダリングを強制してSSG関連のエラーを解決
+[33m27c51ca[m fix: admin-appのAPI RoutesとUsersページでの環境変数エラーを修正
