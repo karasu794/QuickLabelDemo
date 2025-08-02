@@ -2,7 +2,7 @@
 const path = require('path')
 
 const nextConfig = {
-  // Server Component対応のため standalone に戻す
+  // CRITICAL: サーバーサイドレンダリングのみ使用
   output: 'standalone',
   trailingSlash: false,
   images: {
@@ -23,12 +23,11 @@ const nextConfig = {
     // usePathnameエラー対策
     scrollRestoration: false,
     // App Routerのみを強制 (Pages Router無効化)
-    // appDir: true, // REMOVED: Invalid in Next.js 14
     typedRoutes: false,
-    // キャッシュを完全に無効化
-    // turbo: false, // REMOVED: Invalid boolean, expects object
-    // 静的最適化を無効化
-    // staticPageGenerationTimeout: 0, // REMOVED: Invalid config
+    // CRITICAL: 全ページを動的にする
+    isrMemoryCacheSize: 0,
+    // CRITICAL: SSG完全無効化
+    outputFileTracingRoot: path.join(__dirname, '../../'),
   },
   
   // SWCミニ化を無効化してSSG問題を回避
@@ -53,9 +52,14 @@ const nextConfig = {
     ]
   },
   
-  // App Routerのみを強制するビルドID
+  // CRITICAL: 動的ビルドIDでキャッシュを無効化
   async generateBuildId() {
-    return `app-router-${Date.now()}`
+    return `dynamic-ssr-${Date.now()}-${Math.random().toString(36).substring(7)}`
+  },
+
+  // CRITICAL: SSG完全無効化設定
+  async exportPathMap(defaultPathMap) {
+    return {}
   },
   
   // ランタイム設定でSSGを阻止
