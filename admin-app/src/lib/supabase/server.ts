@@ -48,6 +48,7 @@ export const createServiceRoleClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
+    console.warn('⚠️ Supabase環境変数が設定されていません（Service Role Key）');
     throw new Error('Missing Supabase environment variables for Service Role Key');
   }
 

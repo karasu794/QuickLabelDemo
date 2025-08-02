@@ -11,6 +11,16 @@ export interface UserProfile {
 }
 
 export default async function UsersPage() {
+  // 環境変数チェック
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️ Supabase環境変数が設定されていません（ビルド時など）')
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <p className="text-yellow-700">システム設定が不完全です。管理者にお問い合わせください。</p>
+      </div>
+    )
+  }
+
   // Service Role Keyクライアントを使用して全ユーザーデータにアクセス
   const supabase = createServiceRoleClient()
   
