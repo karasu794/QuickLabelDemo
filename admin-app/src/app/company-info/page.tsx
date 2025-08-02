@@ -1,3 +1,6 @@
+// 動的レンダリングを強制してSSGの問題を回避
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'

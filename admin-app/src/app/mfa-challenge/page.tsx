@@ -1,5 +1,8 @@
 'use client'
 
+// 動的レンダリングを強制してSSGの問題を回避
+export const dynamic = 'force-dynamic'
+
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'

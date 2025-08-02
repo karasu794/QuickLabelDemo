@@ -1,3 +1,6 @@
+// 動的レンダリングを強制してSSGの問題を回避
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { TrackingNumber, PaymentIdButton } from './TransactionActions'

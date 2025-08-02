@@ -1,5 +1,8 @@
 'use client'
 
+// 動的レンダリングを強制してSSGの問題を回避
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { 
   Users, 
