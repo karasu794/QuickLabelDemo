@@ -1,6 +1,5 @@
 node_modules/
 .next/
-.next-clean/
 .env.local
 .env
 *.log
