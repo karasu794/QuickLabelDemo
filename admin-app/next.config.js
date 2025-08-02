@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js 14: 静的生成を完全に無効化
-  output: 'standalone',
+  // 完全にSSG/SSRを無効化してSPAモードに
+  output: 'export',
+  trailingSlash: false,
+  images: {
+    unoptimized: true,
+  },
   
   // プリレンダリングを完全に無効化  
-  trailingSlash: false,
+  distDir: '.next',
   
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
@@ -17,11 +21,6 @@ const nextConfig = {
   // 全てのページで動的レンダリングを強制
   async generateBuildId() {
     return `dynamic-${Date.now()}`
-  },
-  
-  // 画像最適化を無効化（静的生成回避）
-  images: {
-    unoptimized: true,
   },
   
   // ランタイム設定でSSGを阻止
