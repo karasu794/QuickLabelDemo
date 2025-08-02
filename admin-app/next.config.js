@@ -3,14 +3,12 @@ const nextConfig = {
   // 静的最適化を完全に無効化してSSGエラーを回避
   output: 'standalone',
   
-  experimental: {
-    // 静的生成を無効化
-    isrMemoryCacheSize: 0,
-  },
+  // プリレンダリング設定
+  trailingSlash: false,
   
-  // 全ページで動的レンダリングを強制
-  async rewrites() {
-    return []
+  // 動的レンダリングを強制
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
   
   webpack: (config, { isServer }) => {

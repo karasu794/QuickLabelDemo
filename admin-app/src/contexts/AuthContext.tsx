@@ -488,11 +488,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 // useAuthカスタムフック
 export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext)
-  
-  // SSR時やAuthProvider外での使用時のフォールバック
-  if (context === undefined) {
-    console.warn('⚠️ useAuth called outside AuthProvider or during SSR - using fallback values')
+  try {
+    const context = useContext(AuthContext)
+    
+    // SSR時やAuthProvider外での使用時のフォールバック
+    if (context === undefined || context === null) {
+      if (typeof window === 'undefined') {
+        // サーバーサイドでのフォールバック
+        return {
+          user: null,
+          loading: true,
+          isAuthenticated: false,
+          isAdmin: false,
+          hasMFA: false,
+          mfaLoading: false,
+          refreshMFAStatus: async () => false,
+          signOut: async () => {}
+        }
+      }
+      console.warn('⚠️ useAuth called outside AuthProvider - using fallback values')
+      return {
+        user: null,
+        loading: true,
+        isAuthenticated: false,
+        isAdmin: false,
+        hasMFA: false,
+        mfaLoading: false,
+        refreshMFAStatus: async () => false,
+        signOut: async () => {}
+      }
+    }
+    
+    return context
+  } catch (error) {
+    // useContext自体でエラーが発生した場合のフォールバック
+    console.warn('⚠️ useAuth error, using fallback values:', error)
     return {
       user: null,
       loading: true,
@@ -504,6 +534,4 @@ export function useAuth(): AuthContextType {
       signOut: async () => {}
     }
   }
-  
-  return context
 } 

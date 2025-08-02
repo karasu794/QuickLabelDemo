@@ -11,40 +11,42 @@ export default function GlobalError({
   reset: () => void
 }) {
   return (
-    <html>
+    <html lang="ja">
+      <head>
+        <meta charSet="utf-8" />
+        <title>サーバーエラー - Admin App</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>{`
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: system-ui, -apple-system, sans-serif; background: #f9fafb; }
+          .container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+          .content { max-width: 28rem; width: 100%; text-align: center; }
+          .error-code { font-size: 3.75rem; font-weight: bold; color: #dc2626; margin-bottom: 1rem; }
+          .title { font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 1rem; }
+          .description { color: #6b7280; margin-bottom: 2rem; }
+          .buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+          .button { padding: 0.5rem 1rem; border-radius: 0.375rem; text-decoration: none; font-weight: 500; font-size: 0.875rem; cursor: pointer; }
+          .button-primary { background: #dc2626; color: white; border: none; }
+          .button-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+        `}</style>
+      </head>
       <body>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full text-center">
-            <div className="text-6xl font-bold text-red-600 mb-4">500</div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-              サーバーエラーが発生しました
-            </h1>
-            <p className="text-gray-600 mb-8">
+        <div className="container">
+          <div className="content">
+            <div className="error-code">500</div>
+            <h1 className="title">サーバーエラーが発生しました</h1>
+            <p className="description">
               申し訳ございません。サーバーで予期しないエラーが発生しました。
               しばらく時間をおいてから再度お試しください。
             </p>
-            <div className="space-x-4">
-              <button
-                onClick={reset}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
+            <div className="buttons">
+              <button onClick={reset} className="button button-primary">
                 再試行
               </button>
-              <a
-                href="/"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
+              <a href="/" className="button button-secondary">
                 ホームに戻る
               </a>
             </div>
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-8 p-4 bg-red-50 rounded-lg text-left">
-                <h3 className="text-sm font-medium text-red-800 mb-2">開発モード - エラー詳細:</h3>
-                <pre className="text-xs text-red-700 whitespace-pre-wrap">
-                  {error.message}
-                </pre>
-              </div>
-            )}
           </div>
         </div>
       </body>
