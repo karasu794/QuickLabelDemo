@@ -489,8 +489,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 // useAuthカスタムフック
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
+  
+  // SSR時やAuthProvider外での使用時のフォールバック
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    console.warn('⚠️ useAuth called outside AuthProvider or during SSR - using fallback values')
+    return {
+      user: null,
+      loading: true,
+      isAuthenticated: false,
+      isAdmin: false,
+      hasMFA: false,
+      mfaLoading: false,
+      refreshMFAStatus: async () => false,
+      signOut: async () => {}
+    }
   }
+  
   return context
 } 
