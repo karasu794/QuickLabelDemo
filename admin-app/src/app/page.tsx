@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic'
+import { redirect } from 'next/navigation'
 
 export default function HomePage() {
-  return <h1>Admin App - Build Test</h1>
+  redirect('/dashboard')
 }
