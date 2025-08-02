@@ -1,7 +1,9 @@
+'use client'
+
 // 動的レンダリングを強制してSSGの問題を回避
 export const dynamic = 'force-dynamic'
 
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import UserTableSwitcher from './UserTableSwitcher'
 
 // ユーザーデータの型定義

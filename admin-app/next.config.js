@@ -1,14 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 完全にSSG/SSRを無効化してSPAモードに
-  output: 'export',
+  // Server Component対応のため standalone に戻す
+  output: 'standalone',
   trailingSlash: false,
   images: {
     unoptimized: true,
   },
-  
-  // プリレンダリングを完全に無効化  
-  distDir: '.next',
   
   // 実験的機能でSupabaseを外部パッケージとして扱う
   experimental: {
