@@ -1,22 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 動的レンダリングを強制
-  output: 'standalone',
-  
-  // 最小限のキャッシュ無効化設定
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
-          },
-        ],
-      },
-    ]
-  },
+  // This is a clean, default configuration.
+  // We will add settings here only if they are needed.
 };
 
 module.exports = nextConfig;
