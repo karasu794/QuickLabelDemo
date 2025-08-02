@@ -16,14 +16,15 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { user, isAuthenticated, isAdmin } = useAuth()
-  const router = useRouter()
+  // const router = useRouter() // TEMPORARY: Disabled
 
   // 既にログイン済みの管理者はダッシュボードにリダイレクト
   useEffect(() => {
     if (isAuthenticated && isAdmin) {
-      router.replace('/')
+      // router.replace('/') // TEMPORARY: Disabled
+      window.location.href = '/' // TEMPORARY: Use native redirect
     }
-  }, [isAuthenticated, isAdmin, router])
+  }, [isAuthenticated, isAdmin]) // router removed from deps
 
   if (isAuthenticated && isAdmin) {
     return null

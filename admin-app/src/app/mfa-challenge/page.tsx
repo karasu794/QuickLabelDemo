@@ -18,24 +18,26 @@ export default function MFAChallengePage() {
   
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const { user, isAuthenticated, isAdmin } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  // const router = useRouter() // TEMPORARY: Disabled
+  // const searchParams = useSearchParams() // TEMPORARY: Disabled
 
   // 認証されていない、または管理者でない場合はログインページへ
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
       return
     }
     
     if (!isAdmin) {
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
       return
     }
 
     // MFAチャレンジを開始
     startMFAChallenge()
-  }, [isAuthenticated, isAdmin, router])
+  }, [isAuthenticated, isAdmin]) // router removed from deps
 
   // MFAチャレンジを開始する関数
   const startMFAChallenge = async () => {
@@ -50,7 +52,8 @@ export default function MFAChallengePage() {
 
       if (!totpFactor) {
         console.error('❌ No verified TOTP factor found')
-        router.replace('/mfa-setup?required=true')
+        // router.replace('/mfa-setup?required=true') // TEMPORARY: Disabled
+        window.location.href = '/mfa-setup?required=true' // TEMPORARY: Use native redirect
         return
       }
 
@@ -143,7 +146,8 @@ export default function MFAChallengePage() {
       console.log('✅ MFA verification successful')
       
       // 成功時はダッシュボードにリダイレクト
-      router.replace('/')
+      // router.replace('/') // TEMPORARY: Disabled
+      window.location.href = '/' // TEMPORARY: Use native redirect
 
     } catch (error) {
       console.error('❌ MFA verification error:', error)
@@ -159,7 +163,8 @@ export default function MFAChallengePage() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut()
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
     } catch (error) {
       console.error('Sign out error:', error)
     }

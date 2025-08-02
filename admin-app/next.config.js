@@ -23,12 +23,12 @@ const nextConfig = {
     // usePathnameエラー対策
     scrollRestoration: false,
     // App Routerのみを強制 (Pages Router無効化)
-    appDir: true,
+    // appDir: true, // REMOVED: Invalid in Next.js 14
     typedRoutes: false,
     // キャッシュを完全に無効化
-    turbo: false,
+    // turbo: false, // REMOVED: Invalid boolean, expects object
     // 静的最適化を無効化
-    staticPageGenerationTimeout: 0,
+    // staticPageGenerationTimeout: 0, // REMOVED: Invalid config
   },
   
   // SWCミニ化を無効化してSSG問題を回避

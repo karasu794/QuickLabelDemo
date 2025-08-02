@@ -23,23 +23,26 @@ export default function MFASetupPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const setupStartedRef = useRef(false)
   const { user, isAuthenticated, isAdmin, refreshMFAStatus } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  // const router = useRouter() // TEMPORARY: Disabled
+  // const searchParams = useSearchParams() // TEMPORARY: Disabled
 
   useEffect(() => {
     // 認証チェック
     if (!isAuthenticated) {
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
       return
     }
     
     if (!isAdmin) {
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
       return
     }
 
     // 必須フラグをチェック
-    const required = searchParams.get('required') === 'true'
+    // const required = searchParams.get('required') === 'true' // TEMPORARY: Disabled
+    const required = false // TEMPORARY: Default value
     setIsRequired(required)
 
     // MFA設定を開始（重複実行防止）
@@ -157,7 +160,8 @@ export default function MFASetupPage() {
         
         // 成功メッセージを表示してダッシュボードにリダイレクト
         console.log('🎉 MFA is already configured, redirecting to dashboard')
-        router.replace('/')
+        // router.replace('/') // TEMPORARY: Disabled
+        window.location.href = '/' // TEMPORARY: Use native redirect
         return
       }
 
@@ -359,7 +363,8 @@ export default function MFASetupPage() {
       await refreshMFAStatus()
       
       // 成功時はダッシュボードにリダイレクト
-      router.replace('/')
+      // router.replace('/') // TEMPORARY: Disabled
+      window.location.href = '/' // TEMPORARY: Use native redirect
 
     } catch (error) {
       console.error('❌ MFA verification error:', error)
@@ -377,7 +382,8 @@ export default function MFASetupPage() {
     
     try {
       await supabase.auth.signOut()
-      router.replace('/login')
+      // router.replace('/login') // TEMPORARY: Disabled
+      window.location.href = '/login' // TEMPORARY: Use native redirect
     } catch (error) {
       console.error('Sign out error:', error)
     }

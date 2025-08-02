@@ -10,7 +10,7 @@ interface AdminAuthGuardProps {
 
 export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
   const { user, loading, isAuthenticated, isAdmin, hasMFA, mfaLoading } = useAuth()
-  const router = useRouter()
+  // const router = useRouter() // TEMPORARY: Disabled
   const initialCheckDone = useRef(false)
   const lastAuthState = useRef<{isAuthenticated: boolean; isAdmin: boolean; hasMFA: boolean} | null>(null)
 
@@ -60,13 +60,15 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
       // 認証状態の悪化（ログアウトなど）のみ処理
       if (lastAuthState.current.isAuthenticated && !isAuthenticated) {
         console.log('[AdminAuthGuard] User logged out, redirecting to login')
-        router.replace('/login')
+        // router.replace('/login') // TEMPORARY: Disabled
+        window.location.href = '/login' // TEMPORARY: Use native redirect
         return
       }
       
       if (lastAuthState.current.isAdmin && isAuthenticated && !isAdmin) {
         console.log('[AdminAuthGuard] Admin privileges revoked, redirecting to login')
-        router.replace('/login')
+        // router.replace('/login') // TEMPORARY: Disabled
+        window.location.href = '/login' // TEMPORARY: Use native redirect
         return
       }
     }
@@ -76,14 +78,16 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
       // 未認証の場合、ログインページにリダイレクト
       if (!isAuthenticated) {
         console.log('[AdminAuthGuard] Initial check: User not authenticated, redirecting to login')
-        router.replace('/login')
+        // router.replace('/login') // TEMPORARY: Disabled
+        window.location.href = '/login' // TEMPORARY: Use native redirect
         return
       }
 
       // 認証されているが管理者でない場合もログインページにリダイレクト
       if (isAuthenticated && !isAdmin) {
         console.log('[AdminAuthGuard] Initial check: User not admin, redirecting to login')
-        router.replace('/login')
+        // router.replace('/login') // TEMPORARY: Disabled
+        window.location.href = '/login' // TEMPORARY: Use native redirect
         return
       }
 
@@ -95,7 +99,8 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
       
       if (isAuthenticated && isAdmin && !hasMFA && !isInMFAFlow) {
         console.log('[AdminAuthGuard] Initial check: Admin without MFA, redirecting to MFA setup')
-        router.replace('/mfa-setup?required=true')
+        // router.replace('/mfa-setup?required=true') // TEMPORARY: Disabled
+        window.location.href = '/mfa-setup?required=true' // TEMPORARY: Use native redirect
         return
       }
       
