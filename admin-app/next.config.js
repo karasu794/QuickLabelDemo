@@ -16,8 +16,9 @@ const nextConfig = {
     esmExternals: true,
     forceSwcTransforms: true,
     // 静的生成を完全に無効化
-    isrMemoryCacheSize: 0,
     workerThreads: false,
+    // usePathnameエラー対策
+    scrollRestoration: false,
   },
   
   // SWCミニ化を無効化してSSG問題を回避
@@ -27,8 +28,20 @@ const nextConfig = {
   distDir: '.next',
   generateEtags: false,
   
-  // Pages Routerを完全に無効化
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  // 強制的にサーバーサイドレンダリング
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+    ]
+  },
   
   // 全てのページで動的レンダリングを強制
   async generateBuildId() {
