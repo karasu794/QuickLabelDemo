@@ -13,8 +13,8 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
     // SSGを完全に無効化する追加設定
-    optimizePackageImports: false,
-    esmExternals: false,
+    optimizePackageImports: ['@supabase/supabase-js'],
+    esmExternals: true,
     forceSwcTransforms: true,
   },
   

@@ -15,7 +15,14 @@ interface RootLayoutProps {
 }
 
 function LayoutContent({ children }: { children: ReactNode }) {
-  const pathname = usePathname()
+  let pathname = '';
+  
+  try {
+    pathname = usePathname() || '';
+  } catch (error) {
+    console.warn('usePathname failed in layout, defaulting to empty string');
+    pathname = '';
+  }
   
   // MFA関連ページかどうかの判定を安全に行う
   let isMFAPage = false

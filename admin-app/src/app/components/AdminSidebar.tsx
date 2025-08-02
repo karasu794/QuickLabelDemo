@@ -45,13 +45,21 @@ const navigationItems = [
 ]
 
 export default function AdminSidebar() {
-  const pathname = usePathname()
+  let pathname = '';
+  
+  try {
+    pathname = usePathname() || '';
+  } catch (error) {
+    console.warn('usePathname failed, defaulting to empty string');
+    pathname = '';
+  }
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
     if (href === '/') {
       return pathname === '/'
     }
-    return pathname && pathname.startsWith(href)
+    return pathname.startsWith(href)
   }
 
   return (
