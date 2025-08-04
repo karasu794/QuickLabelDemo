@@ -23,10 +23,23 @@ export interface FedExApiResponse<T = any> {
 /**
  * FedEx OAuth 2.0認証トークン取得
  */
-export async function getFedExAccessToken(): Promise<string> {
-  const authUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://apis.fedex.com/oauth/token'
-    : 'https://apis-sandbox.fedex.com/oauth/token'
+/**
+ * FedEx API ベースURLを取得
+ */
+export function getFedExApiBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_FEDEX_API_BASE_URL || 'https://apis.fedex.com'
+}
+
+/**
+ * 🚨 基幹仕様: 輸出入に応じた動的認証トークン取得
+ * @param originCountry 出荷地国コード（必須）
+ */
+export async function getFedExAccessToken(originCountry: string): Promise<string> {
+  const baseUrl = getFedExApiBaseUrl()
+  const authUrl = `${baseUrl}/oauth/token`
+  
+  // 基幹仕様に従って認証情報を動的選択
+  const credentials = getFedExCredentialsByOrigin(originCountry)
 
   try {
     const response = await fetch(authUrl, {
@@ -36,8 +49,8 @@ export async function getFedExAccessToken(): Promise<string> {
       },
       body: new URLSearchParams({
         grant_type: 'client_credentials',
-        client_id: process.env.FEDEX_API_KEY!,
-        client_secret: process.env.FEDEX_SECRET_KEY!,
+        client_id: credentials.apiKey,
+        client_secret: credentials.secretKey,
       }),
     })
 
@@ -70,14 +83,29 @@ export async function fedexApiRequest<T = any>(
   accessToken: string,
   body?: any
 ): Promise<FedExApiResponse<T>> {
-  const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://apis.fedex.com'
-    : 'https://apis-sandbox.fedex.com'
+  const baseUrl = getFedExApiBaseUrl()
 
   const url = `${baseUrl}${endpoint}`
 
   try {
     console.log(`🌐 FedEx API ${method} ${endpoint}`)
+    
+    // ===== デバッグ用: リクエストペイロードの詳細ログ =====
+    console.log('--- FedEx API Request Payload ---');
+    console.log('🔗 URL:', url);
+    console.log('📋 Method:', method);
+    console.log('🔑 Headers:', {
+      'Authorization': `Bearer ${accessToken.substring(0, 20)}...`, // トークンの一部のみ表示
+      'Content-Type': 'application/json',
+      'X-locale': 'ja_JP',
+    });
+    if (body) {
+      console.log('📦 Request Body:');
+      console.log(JSON.stringify(body, null, 2));
+    } else {
+      console.log('📦 Request Body: (none)');
+    }
+    console.log('--- End of Request Payload ---');
     
     const response = await fetch(url, {
       method,
@@ -91,8 +119,29 @@ export async function fedexApiRequest<T = any>(
 
     const responseText = await response.text()
     
+    // ===== デバッグ用: レスポンスの詳細ログ =====
+    console.log('--- FedEx API Response Details ---');
+    console.log('📊 Status Code:', response.status);
+    console.log('📋 Status Text:', response.statusText);
+    console.log('🔧 Response Headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       console.error(`❌ FedEx API Error ${response.status}:`, responseText)
+      console.log('🔍 503エラーの場合の詳細チェック:');
+      if (response.status === 503) {
+        console.log('  - Service Unavailable detected');
+        console.log('  - Possible causes: Rate limiting, server overload, maintenance');
+        console.log('  - Retry-After header:', response.headers.get('Retry-After'));
+        console.log('  - X-RateLimit headers:');
+        // TypeScript downlevelIteration対応: Array.from()を使用
+        const headersArray = Array.from(response.headers.entries());
+        headersArray.forEach(([key, value]) => {
+          if (key.toLowerCase().includes('ratelimit') || key.toLowerCase().includes('limit')) {
+            console.log(`    ${key}: ${value}`);
+          }
+        });
+      }
+      console.log('--- End of Error Response ---');
       
       try {
         const errorData = JSON.parse(responseText)
@@ -112,6 +161,9 @@ export async function fedexApiRequest<T = any>(
       }
     }
 
+    console.log('📄 Response Body Length:', responseText.length);
+    console.log('--- End of Response Details ---');
+    
     const data = JSON.parse(responseText)
     console.log('✅ FedEx APIレスポンス成功')
     return data
@@ -123,53 +175,37 @@ export async function fedexApiRequest<T = any>(
 }
 
 /**
- * 環境変数からFedEx認証情報を取得
+ * 🚨 基幹仕様: 輸出入に応じた認証情報を動的に選択
+ * @param originCountry 出荷地国コード
  */
-export function getFedExCredentials(): FedExCredentials {
-  const requiredEnvVars = [
-    'FEDEX_API_KEY',
-    'FEDEX_SECRET_KEY',
-    'FEDEX_ACCOUNT_NUMBER'
-  ]
-
-  const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar])
-  if (missingVars.length > 0) {
-    throw new Error(`Missing FedEx environment variables: ${missingVars.join(', ')}`)
-  }
-
-  return {
-    apiKey: process.env.FEDEX_API_KEY!,
-    secretKey: process.env.FEDEX_SECRET_KEY!,
-    accountNumber: process.env.FEDEX_ACCOUNT_NUMBER!,
-    exportAccountNumber: process.env.FEDEX_EXPORT_ACCOUNT_NUMBER,
-    importAccountNumber: process.env.FEDEX_IMPORT_ACCOUNT_NUMBER,
+export function getFedExCredentialsByOrigin(originCountry: string): { apiKey: string; secretKey: string; accountNumber: string } {
+  const isExport = originCountry === 'JP'
+  
+  if (isExport) {
+    // 輸出の場合: 日本からの発送
+    console.log('🌏 輸出用認証情報を使用 (originCountry: JP)')
+    return {
+      apiKey: process.env.FEDEX_EXPORT_API_KEY!,
+      secretKey: process.env.FEDEX_EXPORT_SECRET_KEY!,
+      accountNumber: process.env.FEDEX_EXPORT_ACCOUNT_NUMBER!
+    }
+  } else {
+    // 輸入の場合: 日本以外からの発送
+    console.log(`🏠 輸入用認証情報を使用 (originCountry: ${originCountry})`)
+    return {
+      apiKey: process.env.FEDEX_IMPORT_API_KEY!,
+      secretKey: process.env.FEDEX_IMPORT_SECRET_KEY!,
+      accountNumber: process.env.FEDEX_IMPORT_ACCOUNT_NUMBER!
+    }
   }
 }
 
-/**
- * 適切なアカウント番号を選択（輸出入判定）
- */
-export function selectAccountNumber(
-  credentials: FedExCredentials,
-  originCountry: string,
-  destinationCountry: string
-): string {
-  const isExport = originCountry === 'JP' && destinationCountry !== 'JP'
-  const isImport = originCountry !== 'JP' && destinationCountry === 'JP'
-  
-  if (isExport && credentials.exportAccountNumber) {
-    console.log('🌏 輸出用アカウント使用')
-    return credentials.exportAccountNumber
-  }
-  
-  if (isImport && credentials.importAccountNumber) {
-    console.log('🏠 輸入用アカウント使用')
-    return credentials.importAccountNumber
-  }
-  
-  console.log('🏘️ 標準アカウント使用')
-  return credentials.accountNumber
-} 
+// 🚨 基幹仕様: レガシー関数完全削除完了
+// 以下の関数は汎用変数を使用するため削除されました:
+// - getFedExCredentials() 
+// - selectAccountNumber()
+// 
+// 代替として getFedExCredentialsByOrigin(originCountry) を使用してください 
 
 /**
  * FedX Rate API - 複数パッケージ対応料金見積もり
@@ -210,25 +246,21 @@ export interface FedExRateQuote {
 }
 
 /**
- * FedX Rate APIを使用して料金見積もりを取得
+ * 🚨 基幹仕様: FedX Rate APIを使用して料金見積もりを取得（動的アカウント切り替え対応）
  */
 export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRateQuote[]> {
-  const accessToken = await getFedExAccessToken()
-  
-  // アカウント番号を決定（輸出入判定）
-  const isExport = rateInfo.shipperCountryCode !== rateInfo.recipientCountryCode
-  const accountNumber = isExport 
-    ? process.env.FEDEX_EXPORT_ACCOUNT_NUMBER || process.env.FEDEX_ACCOUNT_NUMBER
-    : process.env.FEDEX_ACCOUNT_NUMBER
+  // 基幹仕様に従って認証情報とアカウント番号を動的選択
+  const credentials = getFedExCredentialsByOrigin(rateInfo.shipperCountryCode)
+  const accessToken = await getFedExAccessToken(rateInfo.shipperCountryCode)
 
-  if (!accountNumber) {
+  if (!credentials.accountNumber) {
     throw new Error('FedXアカウント番号が設定されていません')
   }
 
   // Rate APIリクエストボディを構築
   const requestBody = {
     accountNumber: {
-      value: accountNumber
+      value: credentials.accountNumber
     },
     requestedShipment: {
       shipper: {
@@ -251,6 +283,17 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
       shipDatestamp: rateInfo.shipDate,
       rateRequestType: ["ACCOUNT", "LIST"],
       pickupType: "DROPOFF_AT_FEDEX_LOCATION",
+      // ACCOUNT.NUMBER.MISMATCHエラー対策: 送料支払人情報を追加
+      shippingChargesPayment: {
+        paymentType: "SENDER",
+        payor: {
+          responsibleParty: {
+            accountNumber: {
+              value: credentials.accountNumber
+            }
+          }
+        }
+      },
       requestedPackageLineItems: rateInfo.packages.map((pkg, index) => ({
         sequenceNumber: index + 1,
         groupPackageCount: 1,

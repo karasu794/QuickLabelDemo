@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addPackagesToOpenShipment } from '@/lib/fedex/open-ship'
+import { getFedExCredentialsByOrigin } from '@/lib/fedex/auth'
 import type { PackageData } from '@/lib/fedex/open-ship'
 
 // リクエストの型定義
@@ -144,8 +145,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // アカウント番号を決定
-    const accountNumber = data.accountNumber || process.env.FEDEX_ACCOUNT_NUMBER!
+    // 🚨 基幹仕様対応: アカウント番号を動的決定（汎用変数排除）
+    let accountNumber: string
+    if (data.accountNumber) {
+      // 明示的に指定された場合はそれを使用
+      accountNumber = data.accountNumber
+      console.log('📦 明示的に指定されたアカウント番号を使用:', accountNumber)
+    } else {
+      // デフォルトは輸出用アカウント（日本発送前提）
+      const credentials = getFedExCredentialsByOrigin('JP')
+      accountNumber = credentials.accountNumber
+      console.log('🌏 デフォルト輸出用アカウント番号を使用:', accountNumber)
+    }
 
     // 現在のパッケージ数を取得して、新しいsequenceNumberを決定
     const nextSequenceNumber = openShipment.packages_added + 1

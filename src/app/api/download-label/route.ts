@@ -4,10 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 // FedX認証トークン取得（/api/shipと同じ実装）
-async function getFedExAccessToken(): Promise<string> {
-  const authUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://apis.fedex.com/oauth/token'
-    : 'https://apis-sandbox.fedex.com/oauth/token'
+// 🚨 基幹仕様: FedX アクセストークンを取得（動的認証情報切り替え対応）
+async function getFedExAccessToken(originCountry: string): Promise<string> {
+  const authUrl = 'https://apis.fedex.com/oauth/token'
 
   try {
     const response = await fetch(authUrl, {
@@ -17,8 +16,9 @@ async function getFedExAccessToken(): Promise<string> {
       },
       body: new URLSearchParams({
         grant_type: 'client_credentials',
-        client_id: process.env.FEDEX_API_KEY!,
-        client_secret: process.env.FEDEX_SECRET_KEY!,
+        // 基幹仕様に従って認証情報を動的選択
+        client_id: originCountry === 'JP' ? process.env.FEDEX_EXPORT_API_KEY! : process.env.FEDEX_IMPORT_API_KEY!,
+        client_secret: originCountry === 'JP' ? process.env.FEDEX_EXPORT_SECRET_KEY! : process.env.FEDEX_IMPORT_SECRET_KEY!,
       }),
     })
 
@@ -57,11 +57,12 @@ export async function GET(request: NextRequest) {
 
     console.log('📄 送り状PDFダウンロード開始:', labelUrl)
 
-    // FedX認証トークンを取得
+    // FedX認証トークンを取得（基幹仕様対応）
     let accessToken: string
     try {
-      accessToken = await getFedExAccessToken()
-      console.log('✅ FedX認証完了')
+      // 🚨 基幹仕様: ラベルダウンロードでは日本発送を前提として輸出用認証を使用
+      accessToken = await getFedExAccessToken('JP')
+      console.log('✅ FedX認証完了（輸出用認証使用）')
     } catch (error) {
       console.error('❌ FedX認証エラー:', error)
       return NextResponse.json(

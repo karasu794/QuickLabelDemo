@@ -141,11 +141,25 @@ async function getUserFromRequest(request: NextRequest): Promise<string | null> 
   }
 }
 
-// FedEx認証トークン取得
-async function getFedExAccessToken(): Promise<string> {
-  const authUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://apis.fedex.com/oauth/token'
-    : 'https://apis-sandbox.fedex.com/oauth/token'
+// 🚨 基幹仕様: FedEx認証トークン取得（動的認証情報切り替え対応）
+async function getFedExAccessToken(originCountry: string): Promise<string> {
+  const authUrl = 'https://apis.fedex.com/oauth/token'
+  
+  // 基幹仕様に従って認証情報を動的選択
+  const isExport = originCountry === 'JP'
+  
+  let apiKey: string, secretKey: string
+  if (isExport) {
+    // 輸出の場合: 日本からの発送
+    apiKey = process.env.FEDEX_EXPORT_API_KEY!
+    secretKey = process.env.FEDEX_EXPORT_SECRET_KEY!
+    console.log('🌏 Ship API: 輸出用認証情報を使用してトークン取得')
+  } else {
+    // 輸入の場合: 日本以外からの発送
+    apiKey = process.env.FEDEX_IMPORT_API_KEY!
+    secretKey = process.env.FEDEX_IMPORT_SECRET_KEY!
+    console.log(`🏠 Ship API: 輸入用認証情報を使用してトークン取得 (originCountry: ${originCountry})`)
+  }
 
   try {
     const response = await fetch(authUrl, {
@@ -155,8 +169,8 @@ async function getFedExAccessToken(): Promise<string> {
       },
       body: new URLSearchParams({
         grant_type: 'client_credentials',
-        client_id: process.env.FEDEX_API_KEY!,
-        client_secret: process.env.FEDEX_SECRET_KEY!,
+        client_id: apiKey,
+        client_secret: secretKey,
       }),
     })
 
@@ -436,9 +450,7 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
 
 // Step 2: FedX Validate Shipment APIを呼び出す
 async function validateFedExShipment(accessToken: string, data: ShipmentRequest) {
-  const validateUrl = process.env.NODE_ENV === 'production'
-    ? 'https://apis.fedex.com/ship/v1/shipments/packages/validate'
-    : 'https://apis-sandbox.fedex.com/ship/v1/shipments/packages/validate'
+  const validateUrl = 'https://apis.fedex.com/ship/v1/shipments/packages/validate'
 
   try {
     const baseRequest = buildBaseFedExShipmentRequest(data)
@@ -520,9 +532,7 @@ async function validateFedExShipment(accessToken: string, data: ShipmentRequest)
 
 // Step 5: FedX Ship APIを呼び出す（本発行）
 async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
-  const shipUrl = process.env.NODE_ENV === 'production'
-    ? 'https://apis.fedex.com/ship/v1/shipments'
-    : 'https://apis-sandbox.fedex.com/ship/v1/shipments'
+  const shipUrl = 'https://apis.fedex.com/ship/v1/shipments'
 
   try {
     const baseRequest = buildBaseFedExShipmentRequest(data)
@@ -651,11 +661,11 @@ export async function POST(request: NextRequest) {
     // const user = await getUserFromRequest(request);
     // console.log('👤 ユーザー認証:', user ? '認証済み' : 'ゲストユーザー');
 
-    // FedX認証とアクセストークン取得
+    // 🚨 基幹仕様: FedX認証とアクセストークン取得（動的認証）
     console.log('🔐 FedX認証中...');
     let fedexAccessToken: string;
     try {
-      fedexAccessToken = await getFedExAccessToken();
+      fedexAccessToken = await getFedExAccessToken(data.shipperInfo.countryCode);
       console.log('✅ FedX認証完了');
     } catch (error) {
       console.error('FedX認証エラー:', error);

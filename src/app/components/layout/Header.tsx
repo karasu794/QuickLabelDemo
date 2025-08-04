@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
 import { ShieldCheckIcon } from '@heroicons/react/24/outline'
+import { toast } from 'react-hot-toast'
 
 export default function Header() {
   const { isAuthenticated, isAdmin, loading } = useAuth()
@@ -16,7 +17,12 @@ export default function Header() {
       
       // 1. Supabase のセッションを削除
       console.log('[CLIENT] Calling supabase.auth.signOut()')
-      await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        throw error
+      }
+      
       console.log('[CLIENT] Supabase sign out completed')
       
       // 2. Cookie を手動で削除（確実にクリアするため）
@@ -28,7 +34,14 @@ export default function Header() {
         localStorage.removeItem('sb-quicklabel-auth-token')
       }
       
-      // 3. 少し待ってからリダイレクト（認証状態の更新を待つ）
+      // 3. 成功トースト通知を表示
+      console.log('[CLIENT] Showing success toast')
+      toast.success('ログアウトしました。', {
+        duration: 2500,
+        icon: '👋',
+      })
+      
+      // 4. 少し待ってからリダイレクト（認証状態の更新を待つ）
       console.log('[CLIENT] Waiting for auth state to update...')
       setTimeout(() => {
         console.log('[CLIENT] Redirecting to home page')
@@ -47,11 +60,20 @@ export default function Header() {
       
     } catch (error) {
       console.error('ログアウトエラー:', error)
-      // エラーが発生した場合も確実にリダイレクト
+      
+      // エラートースト通知を表示
+      toast.error('ログアウト中にエラーが発生しました。', {
+        duration: 4000,
+        icon: '⚠️',
+      })
+      
+      // エラーが発生した場合も確実にリダイレクト（少し遅らせてトースト表示を確保）
       console.log('[CLIENT] Error occurred, forcing redirect')
-      if (typeof window !== 'undefined') {
-        window.location.href = '/'
-      }
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/'
+        }
+      }, 1000)
     }
   }
 

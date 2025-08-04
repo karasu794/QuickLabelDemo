@@ -24,6 +24,7 @@
     "papaparse": "^5.5.3",
     "react": "^18",
     "react-dom": "^18",
+    "react-hot-toast": "^2.5.2",
     "react-square-web-payments-sdk": "^3.2.4-beta.1",
     "square": "^43.0.0",
     "tailwind-merge": "^2.5.5",

@@ -43,9 +43,13 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
     const envCheck = {
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? '設定済み' : '未設定',
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? '設定済み' : '未設定',
-      FEDEX_API_KEY: process.env.FEDEX_API_KEY ? '設定済み' : '未設定',
-      FEDEX_SECRET_KEY: process.env.FEDEX_SECRET_KEY ? '設定済み' : '未設定',
-      FEDEX_ACCOUNT_NUMBER: process.env.FEDEX_ACCOUNT_NUMBER ? '設定済み' : '未設定',
+          // 🚨 基幹仕様対応: 汎用変数表示から動的切り替え表示に変更
+    FEDEX_EXPORT_API_KEY: process.env.FEDEX_EXPORT_API_KEY ? '設定済み' : '未設定',
+    FEDEX_EXPORT_SECRET_KEY: process.env.FEDEX_EXPORT_SECRET_KEY ? '設定済み' : '未設定',
+    FEDEX_EXPORT_ACCOUNT_NUMBER: process.env.FEDEX_EXPORT_ACCOUNT_NUMBER ? '設定済み' : '未設定',
+    FEDEX_IMPORT_API_KEY: process.env.FEDEX_IMPORT_API_KEY ? '設定済み' : '未設定',
+    FEDEX_IMPORT_SECRET_KEY: process.env.FEDEX_IMPORT_SECRET_KEY ? '設定済み' : '未設定',
+    FEDEX_IMPORT_ACCOUNT_NUMBER: process.env.FEDEX_IMPORT_ACCOUNT_NUMBER ? '設定済み' : '未設定',
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ? '設定済み' : '未設定',
       CALCULATED_SITE_URL: siteUrl,
       IS_VERCEL_ENVIRONMENT: isVercel

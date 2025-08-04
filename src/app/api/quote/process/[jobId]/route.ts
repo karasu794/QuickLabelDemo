@@ -251,16 +251,29 @@ function convertToRomaji(text: string): string {
   return result;
 }
 
-// FedEx APIアクセストークンを取得
-async function getFedExAccessToken(): Promise<string> {
-  const apiKey = process.env.FEDEX_API_KEY;
-  const secretKey = process.env.FEDEX_SECRET_KEY;
-
-  if (!apiKey || !secretKey) {
-    throw new Error('FedEx API credentials are not configured');
+// 🚨 基幹仕様: FedEx APIアクセストークンを取得（動的認証情報切り替え対応）
+async function getFedExAccessToken(originCountry: string): Promise<string> {
+  // 基幹仕様に従って認証情報を動的選択
+  const isExport = originCountry === 'JP'
+  
+  let apiKey: string, secretKey: string
+  if (isExport) {
+    // 輸出の場合: 日本からの発送
+    apiKey = process.env.FEDEX_EXPORT_API_KEY!
+    secretKey = process.env.FEDEX_EXPORT_SECRET_KEY!
+    console.log('🌏 輸出用認証情報を使用してトークン取得')
+  } else {
+    // 輸入の場合: 日本以外からの発送
+    apiKey = process.env.FEDEX_IMPORT_API_KEY!
+    secretKey = process.env.FEDEX_IMPORT_SECRET_KEY!
+    console.log(`🏠 輸入用認証情報を使用してトークン取得 (originCountry: ${originCountry})`)
   }
 
-  const response = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
+  if (!apiKey || !secretKey) {
+    throw new Error(`FedEx ${isExport ? '輸出' : '輸入'}用API認証情報が設定されていません`);
+  }
+
+  const response = await fetch('https://apis.fedex.com/oauth/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -396,9 +409,23 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
     }
   }
 
+  // 🚨 基幹仕様: アカウント番号を動的選択（ACCOUNT.NUMBER.MISMATCHエラー対策）
+  const isExport = quoteParams.originCountry === 'JP'
+  let shipperAccountNumber: string
+  
+  if (isExport) {
+    // 輸出の場合: 日本からの発送
+    shipperAccountNumber = process.env.FEDEX_EXPORT_ACCOUNT_NUMBER!
+    console.log('🌏 輸出用アカウント番号を使用')
+  } else {
+    // 輸入の場合: 日本以外からの発送
+    shipperAccountNumber = process.env.FEDEX_IMPORT_ACCOUNT_NUMBER!
+    console.log(`🏠 輸入用アカウント番号を使用 (originCountry: ${quoteParams.originCountry})`)
+  }
+
   return {
     accountNumber: {
-      value: process.env.FEDEX_ACCOUNT_NUMBER
+      value: shipperAccountNumber
     },
     requestedShipment: {
       shipper: {
@@ -413,6 +440,17 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       packagingType: packages[0]?.packagingType || 'YOUR_PACKAGING',
       pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
       rateRequestType: ['ACCOUNT', 'LIST'], // LISTを追加してより多くのオプションを取得
+      // ACCOUNT.NUMBER.MISMATCHエラー対策: 送料支払人情報を追加
+      shippingChargesPayment: {
+        paymentType: 'SENDER',
+        payor: {
+          responsibleParty: {
+            accountNumber: {
+              value: shipperAccountNumber
+            }
+          }
+        }
+      },
       // 複数個口の場合のみ、groupPackageCountを追加
       ...(packages.length > 1 && { groupPackageCount: packages.length }),
       // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue
@@ -468,36 +506,59 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
   console.log(`${isDomestic ? '国内' : '国際'}配送で見積もりを取得中...`);
   console.log('使用するサービスタイプ:', serviceTypes);
   
-  // 各サービスタイプのリクエストを並列実行
-  const servicePromises = serviceTypes.map(async (serviceType) => {
-    try {
-      const requestWithService = {
-        ...baseRequest,
-        requestedShipment: {
-          ...baseRequest.requestedShipment,
-          serviceType: serviceType
-        }
-      };
-      
-      console.log(`${serviceType}の見積もりを取得中...`);
-      const response = await getFedExRates(accessToken, requestWithService);
-      
-      if (response.output?.rateReplyDetails) {
-        console.log(`${serviceType}: ${response.output.rateReplyDetails.length}件の料金を取得`);
-        return {
-          serviceType,
-          rates: response.output.rateReplyDetails,
-          success: true
-        };
-      }
-      return { serviceType, rates: [], success: false };
-    } catch (error) {
-      console.log(`${serviceType}の取得でエラー（スキップして続行）:`, error instanceof Error ? error.message : error);
-      return { serviceType, rates: [], success: false, error };
-    }
-  });
+  // ===== 🚀 並列処理復活（セーフガード付き） =====
+  console.log('全サービスタイプの料金を並列取得中（150msクールダウン付き）...');
+  const startTime = Date.now();
 
-  // 汎用的な見積もりも並列で実行
+  // 🛡️ セーフガード: 各サービスタイプのプロミス生成時に150ms遅延を追加
+  const servicePromises: Promise<any>[] = [];
+  
+  for (let i = 0; i < serviceTypes.length; i++) {
+    const serviceType = serviceTypes[i];
+    
+    // プロミス生成前に遅延を追加（最初のリクエストは即座に実行）
+    if (i > 0) {
+      console.log(`⏳ リクエスト間隔調整: 150ms待機中...`);
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+    
+    const servicePromise = (async () => {
+      try {
+        const requestWithService = {
+          ...baseRequest,
+          requestedShipment: {
+            ...baseRequest.requestedShipment,
+            serviceType: serviceType
+          }
+        };
+        
+        console.log(`${serviceType}の見積もりを取得中...`);
+        const response = await getFedExRates(accessToken, requestWithService);
+        
+        if (response.output?.rateReplyDetails) {
+          console.log(`${serviceType}: ${response.output.rateReplyDetails.length}件の料金を取得`);
+          return {
+            serviceType,
+            rates: response.output.rateReplyDetails,
+            success: true
+          };
+        }
+        return { serviceType, rates: [], success: false };
+      } catch (error) {
+        console.log(`${serviceType}の取得でエラー（スキップして続行）:`, error instanceof Error ? error.message : error);
+        return { serviceType, rates: [], success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    })();
+    
+    servicePromises.push(servicePromise);
+  }
+
+  // 汎用的な見積もりも追加（最後に実行）
+  if (serviceTypes.length > 0) {
+    console.log(`⏳ 汎用リクエスト前の待機: 150ms...`);
+    await new Promise(resolve => setTimeout(resolve, 150));
+  }
+  
   const genericPromise = (async () => {
     try {
       console.log('汎用的な見積もりを取得中...');
@@ -513,25 +574,30 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
       return { serviceType: 'generic', rates: [], success: false };
     } catch (error) {
       console.log('汎用的な見積もりでエラー（続行）:', error instanceof Error ? error.message : error);
-      return { serviceType: 'generic', rates: [], success: false, error };
+      return { serviceType: 'generic', rates: [], success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   })();
 
   // 全ての並列リクエストを実行
-  console.log('全サービスタイプの料金を並列取得中...');
-  const startTime = Date.now();
-  
   const results = await Promise.all([...servicePromises, genericPromise]);
   
   const endTime = Date.now();
-  console.log(`並列処理完了: ${endTime - startTime}ms`);
+  console.log(`🎯 セーフガード付き並列処理完了: ${endTime - startTime}ms`);
 
   // 成功した結果のみを集約
+  let successCount = 0;
+  let errorCount = 0;
+  
   results.forEach(result => {
     if (result.success && result.rates.length > 0) {
       allRates.push(...result.rates);
+      successCount++;
+    } else {
+      errorCount++;
     }
   });
+  
+  console.log(`📊 並列処理結果: 成功 ${successCount}件, エラー ${errorCount}件, 総料金オプション ${allRates.length}件`);
   
   // 重複を除去（serviceNameで判定）
   const uniqueRates = allRates.filter((rate, index, self) => 
@@ -602,7 +668,7 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
 
 // FedEx Rate APIを呼び出し
 async function getFedExRates(accessToken: string, requestData: any) {
-  const response = await fetch('https://apis-sandbox.fedex.com/rate/v1/rates/quotes', {
+  const response = await fetch('https://apis.fedex.com/rate/v1/rates/quotes', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -689,8 +755,8 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
 
       console.log('FedEx API認証開始...');
       
-      // FedXアクセストークンを取得
-      const accessToken = await getFedExAccessToken();
+      // 🚨 基幹仕様: FedXアクセストークンを取得（動的認証）
+      const accessToken = await getFedExAccessToken(quoteParams.originCountry);
       console.log('アクセストークン取得完了');
 
       // 実行時間チェック
@@ -715,7 +781,7 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       const fedexRequest = buildFedExRateRequest(quoteParams, packages);
       console.log('FedX APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
 
-      // FedX Rate APIを呼び出し（タイムアウト付き）
+      // 🚨 基幹仕様: FedX Rate APIを呼び出し（タイムアウト付き）
       const fedexResponse = await getAllServiceRates(accessToken, fedexRequest, quoteParams);
       console.log('FedX APIレスポンス取得完了');
 

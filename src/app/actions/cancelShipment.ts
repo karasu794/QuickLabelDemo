@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@supabase/supabase-js'
-import { getFedExAccessToken, getFedExCredentials } from '@/lib/fedex/auth'
+import { getFedExAccessToken, getFedExCredentialsByOrigin } from '@/lib/fedex/auth'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -110,11 +110,12 @@ export async function cancelShipmentAction(trackingNumber: string, squarePayment
       }
     }
 
-    // 3. FedEx認証トークンを取得
+    // 3. FedEx認証トークンを取得（基幹仕様対応）
     let accessToken: string
     try {
-      accessToken = await getFedExAccessToken()
-      console.log('✅ FedEx認証完了')
+      // 🚨 基幹仕様: キャンセル処理では日本発送を前提として輸出用認証を使用
+      accessToken = await getFedExAccessToken('JP')
+      console.log('✅ FedEx認証完了（輸出用認証使用）')
     } catch (error) {
       console.error('❌ FedEx認証エラー:', error)
       return {
@@ -124,13 +125,12 @@ export async function cancelShipmentAction(trackingNumber: string, squarePayment
       }
     }
 
-    // 4. FedEx認証情報を取得
-    const credentials = getFedExCredentials()
+    // 4. FedEx認証情報を取得（基幹仕様対応）
+    // キャンセル処理では日本発送を前提として輸出用認証情報を使用
+    const credentials = getFedExCredentialsByOrigin('JP')
 
     // 5. FedEx Ship API Cancel エンドポイントを呼び出し
-    const cancelUrl = process.env.NODE_ENV === 'production'
-      ? 'https://apis.fedex.com/ship/v1/shipments/cancel'
-      : 'https://apis-sandbox.fedex.com/ship/v1/shipments/cancel'
+    const cancelUrl = 'https://apis.fedex.com/ship/v1/shipments/cancel'
 
     const cancelRequest = {
       accountNumber: {

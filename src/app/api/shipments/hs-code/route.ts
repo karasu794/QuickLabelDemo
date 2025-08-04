@@ -81,16 +81,31 @@ export async function POST(request: NextRequest) {
 
     // まずFedX APIを試行
     try {
-      // FedX認証トークンを取得
-      const authResponse = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
+      // 🚨 基幹仕様: FedX認証トークンを取得（動的認証情報切り替え対応）
+      // HSコード検索では出荷地は通常JP（日本）なので輸出用認証を使用
+      const originCountry = 'JP'  // HSコード検索は日本発が一般的
+      const isExport = originCountry === 'JP'
+      
+      let apiKey: string, secretKey: string
+      if (isExport) {
+        apiKey = process.env.FEDEX_EXPORT_API_KEY!
+        secretKey = process.env.FEDEX_EXPORT_SECRET_KEY!
+        console.log('🌏 HSコード検索: 輸出用認証情報を使用')
+      } else {
+        apiKey = process.env.FEDEX_IMPORT_API_KEY!
+        secretKey = process.env.FEDEX_IMPORT_SECRET_KEY!
+        console.log('🏠 HSコード検索: 輸入用認証情報を使用')
+      }
+
+      const authResponse = await fetch('https://apis.fedex.com/oauth/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
           grant_type: 'client_credentials',
-          client_id: process.env.FEDEX_API_KEY || '',
-          client_secret: process.env.FEDEX_SECRET_KEY || '',
+          client_id: apiKey,
+          client_secret: secretKey,
         }),
       })
 
@@ -120,7 +135,7 @@ export async function POST(request: NextRequest) {
       console.log('HSコード検索リクエストボディ:', JSON.stringify(hsCodeRequestBody, null, 2))
 
       // FedX HSコード検索APIを試行
-      const hsCodeResponse = await fetch('https://apis-sandbox.fedex.com/commodity/v1/hscodes/search', {
+      const hsCodeResponse = await fetch('https://apis.fedex.com/commodity/v1/hscodes/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -51,53 +51,73 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   try {
-    // quicklabel-auth-token の値を確認
-    const authTokenCookie = request.cookies.get('quicklabel-auth-token')
+    console.log(`[MIDDLEWARE] Session acquisition started for path: ${pathname}`)
     
-    // quicklabel-auth-token からセッション情報を直接取得を試行
+    // まずSupabaseからのセッション取得を試行（より信頼性が高い）
+    const { data: { session: supabaseSession }, error: sessionError } = await supabase.auth.getSession()
+    
     let user = null
     let session = null
     
-    if (authTokenCookie?.value) {
-      try {
-        let cookieData
-        
-        // Base64 エンコードされているかチェック
-        if (authTokenCookie.value.startsWith('base64-')) {
-          // Base64 デコード
-          const base64Data = authTokenCookie.value.replace('base64-', '')
-          const decodedData = Buffer.from(base64Data, 'base64').toString('utf-8')
-          cookieData = JSON.parse(decodedData)
-        } else {
-          // 通常の JSON
-          cookieData = JSON.parse(authTokenCookie.value)
-        }
-        
-        if (cookieData.access_token && cookieData.user) {
-          // 手動でセッション情報を構築
-          user = cookieData.user
-          session = cookieData
-        }
-      } catch (e) {
-        console.log(`[MIDDLEWARE] Failed to parse cookie:`, e)
-      }
-    }
-    
-    // Supabase のセッションが取得できない場合の fallback
-    if (!session || !user) {
-      const { data: { session: supabaseSession }, error: sessionError } = await supabase.auth.getSession()
+    if (supabaseSession && !sessionError) {
+      console.log(`[MIDDLEWARE] Supabase session found`, {
+        hasSession: !!supabaseSession,
+        hasUser: !!supabaseSession.user,
+        userId: supabaseSession.user?.id,
+        email: supabaseSession.user?.email
+      })
       
-      if (supabaseSession && !sessionError) {
-        const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
-        if (!userError) {
-          user = userData
-          session = supabaseSession
+      user = supabaseSession.user
+      session = supabaseSession
+    } else {
+      console.log(`[MIDDLEWARE] Supabase session not found, trying cookie fallback`, {
+        sessionError: sessionError?.message
+      })
+      
+      // Supabaseセッションが取得できない場合のcookie fallback
+      const authTokenCookie = request.cookies.get('quicklabel-auth-token')
+      
+      if (authTokenCookie?.value) {
+        try {
+          let cookieData
+          
+          // Base64 エンコードされているかチェック
+          if (authTokenCookie.value.startsWith('base64-')) {
+            // Base64 デコード
+            const base64Data = authTokenCookie.value.replace('base64-', '')
+            const decodedData = Buffer.from(base64Data, 'base64').toString('utf-8')
+            cookieData = JSON.parse(decodedData)
+          } else {
+            // 通常の JSON
+            cookieData = JSON.parse(authTokenCookie.value)
+          }
+          
+          if (cookieData.access_token && cookieData.user) {
+            console.log(`[MIDDLEWARE] Cookie session parsed successfully`, {
+              hasUser: !!cookieData.user,
+              userId: cookieData.user?.id,
+              email: cookieData.user?.email
+            })
+            // 手動でセッション情報を構築
+            user = cookieData.user
+            session = cookieData
+          }
+        } catch (e) {
+          console.error(`[MIDDLEWARE] Failed to parse cookie:`, e)
         }
       }
     }
     
     // ユーザーが取得できない場合は未ログイン状態として処理
     const isLoggedIn = !!user
+    
+    console.log(`[MIDDLEWARE] Final authentication state:`, {
+      isLoggedIn,
+      hasUser: !!user,
+      hasSession: !!session,
+      userId: user?.id,
+      email: user?.email
+    })
 
     // 1. ログイン済みユーザーがログイン・サインアップページにアクセスした場合のリダイレクト
     if (isLoggedIn && (pathname === '/login' || pathname === '/signup')) {
@@ -106,27 +126,64 @@ export async function middleware(request: NextRequest) {
 
     // 2. 管理者ページへのアクセス制御
     if (pathname.startsWith('/admin')) {
+      console.log(`[MIDDLEWARE] Admin access attempt:`, {
+        pathname,
+        isLoggedIn,
+        hasUser: !!user,
+        userId: user?.id,
+        userEmail: user?.email
+      })
+
       if (!isLoggedIn) {
+        console.log(`[MIDDLEWARE] Admin access denied: Not logged in`)
         // 未ログインならログインページへ
         return NextResponse.redirect(new URL('/login', request.url))
       }
 
+      // Type Safety: userがnullでないことを確認
+      if (!user || !user.id) {
+        console.error(`[MIDDLEWARE] Admin access denied: Invalid user object`, { user })
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+
       // SupabaseのDBからユーザーのロールを取得
+      console.log(`[MIDDLEWARE] Fetching user profile for userId: ${user.id}`)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user!.id)
+        .eq('id', user.id)
         .single()
 
+      console.log(`[MIDDLEWARE] Profile fetch result:`, {
+        profile,
+        profileError: profileError?.message,
+        hasProfile: !!profile,
+        role: profile?.role
+      })
+
       if (profileError) {
-        console.error('Profile fetch error in middleware:', profileError)
-        return NextResponse.redirect(new URL('/', request.url))
+        console.error(`[MIDDLEWARE] Profile fetch error:`, {
+          error: profileError,
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint
+        })
+        // プロファイル取得エラーの場合、ログインページへリダイレクト（ホームではなく）
+        return NextResponse.redirect(new URL('/login?error=profile_fetch_failed', request.url))
       }
 
       if (profile?.role !== 'admin') {
-        // 管理者でなければトップページへ
+        console.log(`[MIDDLEWARE] Admin access denied: User role is not admin`, {
+          userId: user.id,
+          userEmail: user.email,
+          currentRole: profile?.role
+        })
+        // 管理者でなければトップページへリダイレクト
         return NextResponse.redirect(new URL('/', request.url))
       }
+
+      console.log(`[MIDDLEWARE] Admin access granted for user: ${user.id}`)
     }
 
     // 3. 一般保護ページへのアクセス制御

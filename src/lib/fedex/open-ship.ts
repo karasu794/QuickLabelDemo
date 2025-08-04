@@ -3,7 +3,23 @@
  * MPS（Multiple Package Shipment）対応
  */
 
-import { fedexApiRequest, getFedExAccessToken, selectAccountNumber, getFedExCredentials } from './auth'
+import { fedexApiRequest, getFedExAccessToken, getFedExCredentialsByOrigin } from './auth'
+
+/**
+ * 🚨 基幹仕様: アカウント番号から出荷地国コードを推定
+ */
+function getOriginCountryFromAccount(accountNumber: string): string {
+  // 輸出用アカウント番号の場合は日本
+  if (accountNumber === process.env.FEDEX_EXPORT_ACCOUNT_NUMBER) {
+    return 'JP'
+  }
+  // 輸入用アカウント番号の場合は非日本（一般的にUS）
+  if (accountNumber === process.env.FEDEX_IMPORT_ACCOUNT_NUMBER) {
+    return 'US'  // 実際のプロジェクトでは、より具体的な判定ロジックが必要
+  }
+  // デフォルトは日本発送として扱う
+  return 'JP'
+}
 
 export interface OpenShipmentData {
   // 基本情報
@@ -158,7 +174,9 @@ export interface ConfirmShipmentResponse {
 export async function createOpenShipment(
   shipmentData: OpenShipmentData
 ): Promise<OpenShipmentResponse> {
-  const accessToken = await getFedExAccessToken()
+  // 🚨 基幹仕様: 出荷地国コードに基づいて動的認証
+  const originCountry = shipmentData.shipper.address.countryCode
+  const accessToken = await getFedExAccessToken(originCountry)
   
   const request = {
     openShipmentAction: 'CREATE_PACKAGE',
@@ -229,7 +247,9 @@ export async function addPackagesToOpenShipment(
     message: string
   }>
 }> {
-  const accessToken = await getFedExAccessToken()
+  // 🚨 基幹仕様: アカウント番号から出荷地国コードを推定
+  const originCountry = getOriginCountryFromAccount(accountNumber)
+  const accessToken = await getFedExAccessToken(originCountry)
   
   const request = {
     index: indexOrTrackingNumber,
@@ -269,7 +289,9 @@ export async function confirmOpenShipment(
   indexOrTrackingNumber: string,
   labelResponseOptions: 'URL_ONLY' | 'LABEL_DATA_ONLY' = 'URL_ONLY'
 ): Promise<ConfirmShipmentResponse> {
-  const accessToken = await getFedExAccessToken()
+  // 🚨 基幹仕様: アカウント番号から出荷地国コードを推定
+  const originCountry = getOriginCountryFromAccount(accountNumber)
+  const accessToken = await getFedExAccessToken(originCountry)
   
   const request = {
     index: indexOrTrackingNumber,
@@ -328,7 +350,9 @@ export async function getOpenShipmentResults(
   accountNumber: string,
   jobId: string
 ): Promise<ConfirmShipmentResponse> {
-  const accessToken = await getFedExAccessToken()
+  // 🚨 基幹仕様: アカウント番号から出荷地国コードを推定
+  const originCountry = getOriginCountryFromAccount(accountNumber)
+  const accessToken = await getFedExAccessToken(originCountry)
   
   const response = await fedexApiRequest<any>(
     `/ship/v1/openshipments/results?accountNumber=${accountNumber}&jobId=${jobId}&resultMethodType=CREATE`,
@@ -363,12 +387,9 @@ export function buildOpenShipmentData(
   items?: any[],
   serviceType: string = 'FEDEX_INTERNATIONAL_PRIORITY'
 ): OpenShipmentData {
-  const credentials = getFedExCredentials()
-  const accountNumber = selectAccountNumber(
-    credentials,
-    shipperInfo.countryCode,
-    recipientInfo.countryCode
-  )
+  // 🚨 基幹仕様対応: 出荷地国コードに基づいて動的認証情報取得
+  const credentials = getFedExCredentialsByOrigin(shipperInfo.countryCode)
+  const accountNumber = credentials.accountNumber
 
   const isInternational = shipperInfo.countryCode !== recipientInfo.countryCode
 
