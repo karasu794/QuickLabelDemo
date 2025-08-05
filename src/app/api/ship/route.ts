@@ -865,7 +865,7 @@ export async function POST(request: NextRequest) {
       };
 
       const { data: insertedRecord, error: insertError } = await supabase
-        .from('shipments')
+        .from('shipments' as any)
         .insert(shipmentRecord)
         .select('id')
         .single()
@@ -938,7 +938,7 @@ export async function POST(request: NextRequest) {
       console.log('💾 取引記録を最終更新中...')
       
       const { error: updateError } = await supabase
-        .from('shipments')
+        .from('shipments' as any)
         .update({
           tracking_number: trackingNumber,
           label_url: labelUrl,

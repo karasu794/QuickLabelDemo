@@ -263,6 +263,48 @@ export type Database = {
         }
         Relationships: []
       }
+      shipments: {
+        Row: {
+          id: string
+          user_id: string
+          tracking_number: string
+          status: string
+          shipper_country: string | null
+          payment_id: string | null
+          square_payment_id: string | null
+          total_amount: number | null
+          label_url: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          tracking_number: string
+          status?: string
+          shipper_country?: string | null
+          payment_id?: string | null
+          square_payment_id?: string | null
+          total_amount?: number | null
+          label_url?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          tracking_number?: string
+          status?: string
+          shipper_country?: string | null
+          payment_id?: string | null
+          square_payment_id?: string | null
+          total_amount?: number | null
+          label_url?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -302,4 +344,8 @@ export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
 export type QuoteJob = Database['public']['Tables']['quote_jobs']['Row']
 export type QuoteJobInsert = Database['public']['Tables']['quote_jobs']['Insert']
-export type QuoteJobUpdate = Database['public']['Tables']['quote_jobs']['Update'] 
+export type QuoteJobUpdate = Database['public']['Tables']['quote_jobs']['Update']
+
+export type Shipment = Database['public']['Tables']['shipments']['Row']
+export type ShipmentInsert = Database['public']['Tables']['shipments']['Insert']
+export type ShipmentUpdate = Database['public']['Tables']['shipments']['Update'] 
