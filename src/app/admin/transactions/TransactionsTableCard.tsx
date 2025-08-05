@@ -144,6 +144,47 @@ export default function TransactionsTableCard({ transactions }: TransactionsTabl
       )
     },
     {
+      label: 'キャンセル',
+      onClick: async (row: Transaction) => {
+        // 確認ダイアログ
+        const confirmCancel = window.confirm(
+          `【管理者権限】追跡番号 ${row.tracking_number} の発送をキャンセルし、返金処理を行いますか？\n\nこの操作は取り消すことができません。`
+        )
+
+        if (!confirmCancel) {
+          return
+        }
+
+        try {
+          // 管理者キャンセルアクションを動的インポート
+          const { adminCancelShipmentAction } = await import('@/app/actions/adminActions')
+          
+          console.log('🚫 管理者による発送キャンセル・返金処理開始:', row.tracking_number)
+          
+          const response = await adminCancelShipmentAction(row.tracking_number)
+          
+          if (response.success) {
+            alert(`✅ キャンセル・返金が完了しました: ${response.message}`)
+            // ページをリロードして最新状態を反映
+            window.location.reload()
+          } else {
+            alert(`❌ キャンセル・返金に失敗しました: ${response.message}`)
+          }
+          
+        } catch (error) {
+          console.error('❌ 管理者キャンセル・返金処理エラー:', error)
+          alert('❌ キャンセル・返金処理中にエラーが発生しました')
+        }
+      },
+      className: 'text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100',
+      disabled: (row: Transaction) => row.status === 'cancelled' || row.status === 'CANCELED' || row.status === 'CANCELLED',
+      icon: (
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      )
+    },
+    {
       label: '決済情報',
       onClick: (row: Transaction) => {
         // PaymentIdButtonの機能を実装

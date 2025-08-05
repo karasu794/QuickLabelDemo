@@ -611,39 +611,80 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
     return priceA - priceB;
   });
   
-  // 輸入見積もりの場合、FEDEX_CONNECT_PLUSを除外
+  // 🚨 重要: INTERNATIONAL_FIRSTを完全除外（汎用見積もり対応）
   const isExport = quoteParams.originCountry === 'JP';
   let filteredRates = uniqueRates;
   
   console.log(`発送判定: originCountry=${quoteParams.originCountry}, isExport=${isExport}`);
   
-  if (!isExport) {
-    // 輸入の場合、FEDEX_CONNECT_PLUSを除外
-    const originalCount = filteredRates.length;
+  // 全ての見積もりからINTERNATIONAL_FIRSTを除外
+  const preFilterCount = filteredRates.length;
+  console.log('フィルタリング前のサービス名一覧:');
+  filteredRates.forEach((rate, index) => {
+    console.log(`  ${index + 1}. "${rate.serviceName}" (${rate.serviceType})`);
+  });
+  
+  // ビジネス要件：INTERNATIONAL_FIRSTサービスを完全除外
+  filteredRates = filteredRates.filter(rate => {
+    const serviceType = rate.serviceType || '';
+    const serviceName = rate.serviceName || '';
     
-    // デバッグ用：すべてのサービス名をログ出力
-    console.log('フィルタリング前のサービス名一覧:');
-    filteredRates.forEach((rate, index) => {
-      console.log(`  ${index + 1}. "${rate.serviceName}"`);
-    });
+    // INTERNATIONAL_FIRSTの除外（serviceTypeとserviceNameの両方で判定）
+    const isInternationalFirst = serviceType === 'INTERNATIONAL_FIRST' || 
+                                serviceName.toLowerCase().includes('international first');
     
-    // Connect Plusを含むサービスを除外（部分一致で判定）
-    filteredRates = filteredRates.filter(rate => {
-      const serviceName = rate.serviceName || '';
-      const isConnectPlus = serviceName.toLowerCase().includes('connect plus');
-      if (isConnectPlus) {
-        console.log(`除外対象: "${serviceName}"`);
-      }
-      return !isConnectPlus;
-    });
-    
-    const filteredCount = filteredRates.length;
-    
-    if (originalCount > filteredCount) {
-      console.log(`輸入見積もりのため、Connect Plusサービスを除外しました (${originalCount} → ${filteredCount}件)`);
-    } else {
-      console.log('Connect Plusサービスは見つかりませんでした');
+    if (isInternationalFirst) {
+      console.log(`🚫 ビジネス要件により除外: "${serviceName}" (${serviceType})`);
+      return false;
     }
+    
+    return true;
+  });
+  
+  const afterFirstFilterCount = filteredRates.length;
+  if (preFilterCount > afterFirstFilterCount) {
+    console.log(`✅ INTERNATIONAL_FIRSTサービスを除外しました (${preFilterCount} → ${afterFirstFilterCount}件)`);
+  }
+  
+  if (!isExport) {
+    // 輸入の場合、追加でConnect Plusサービスを除外（契約なし）
+    const beforeConnectPlusFilter = filteredRates.length;
+    
+    // Connect Plusサービスを複数パターンで確実に除外
+    filteredRates = filteredRates.filter(rate => {
+      const serviceType = rate.serviceType || '';
+      const serviceName = rate.serviceName || '';
+      
+      // Connect Plusの除外（複数パターンで判定）
+      const isConnectPlus = 
+        // サービス名による判定（部分一致）
+        serviceName.toLowerCase().includes('connect plus') ||
+        serviceName.toLowerCase().includes('connectplus') ||
+        // サービスタイプによる判定（完全一致）
+        serviceType === 'FEDEX_INTERNATIONAL_CONNECT_PLUS' ||
+        serviceType === 'INTERNATIONAL_CONNECT_PLUS' ||
+        // その他のパターン
+        serviceName.toLowerCase().includes('ficp') ||
+        serviceName.toLowerCase().includes('international connect');
+      
+      if (isConnectPlus) {
+        console.log(`🚫 輸入見積もり：Connect Plus契約なしのため除外 "${serviceName}" (${serviceType})`);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    const afterConnectPlusFilter = filteredRates.length;
+    
+    if (beforeConnectPlusFilter > afterConnectPlusFilter) {
+      console.log(`✅ 輸入見積もり：Connect Plusサービスを除外しました (${beforeConnectPlusFilter} → ${afterConnectPlusFilter}件)`);
+    } else {
+      console.log('📋 Connect Plusサービスは見つかりませんでした（既に除外済みまたは該当なし）');
+    }
+  } else {
+    // 輸出の場合はConnect Plus契約ありのため表示
+    console.log('📋 輸出見積もり：Connect Plus契約ありのため全サービス表示');
   }
   
   console.log(`合計 ${filteredRates.length} 件の一意な配送オプションを取得しました`);

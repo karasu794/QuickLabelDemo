@@ -1,34 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteRequest } from '@/lib/validators/quote'
 
-// 新しいリクエストボディの型定義
-interface QuoteParams {
-  originCountry: string
-  originPostalCode: string
-  destinationCountry: string
-  destinationPostalCode: string
-  shipDate: string
-  isResidential: boolean
-  higherInsurance: boolean
-  originStateCode: string
-  originCityName: string
-  destinationStateCode: string
-  destinationCityName: string
-}
-
-interface Package {
-  id: number
-  packagingType: string
-  weight: string
-  length: string
-  width: string
-  height: string
-}
-
-interface QuoteRequest {
-  quoteParams: QuoteParams
-  packages: Package[]
-}
+// 📝 注意: 型定義はZodから自動生成されるValidatedQuoteRequestを使用します
+// 以前のQuoteParams, Package, QuoteRequestインターフェースは
+// /lib/validators/quote.ts のZodスキーマから自動生成される型に置き換えられました
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,35 +43,40 @@ export async function POST(request: NextRequest) {
       userError: userError?.message || 'none'
     });
 
-    const body: QuoteRequest = await request.json();
-    console.log('見積もりジョブリクエスト受信:', JSON.stringify(body, null, 2));
+    // 🛡️ リクエストボディの取得とバリデーション
+    let rawBody;
+    try {
+      rawBody = await request.json();
+    } catch (parseError) {
+      console.error('🚫 JSON解析エラー:', parseError);
+      return NextResponse.json({
+        error: '無効なリクエスト形式です',
+        details: 'JSONの形式が正しくありません',
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+    
+    console.log('見積もりジョブリクエスト受信:', JSON.stringify(rawBody, null, 2));
 
-    const { quoteParams, packages } = body;
+    // Zodによる厳格なバリデーション
+    const validationResult = validateQuoteRequest(rawBody);
 
-    // バリデーション
-    if (!quoteParams.originCountry || !quoteParams.destinationCountry) {
-      return NextResponse.json(
-        { error: '出荷地と仕向地の国を選択してください' },
-        { status: 400 }
-      );
+    if (!validationResult.success) {
+      console.error('🚫 バリデーションエラー:', validationResult.error.format());
+      
+      const formattedErrors = formatValidationErrors(validationResult.error.format());
+      
+      return NextResponse.json({
+        error: '入力データが不正です',
+        details: 'リクエストデータの形式または内容に問題があります',
+        validationErrors: formattedErrors,
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
     }
 
-    if (!packages || packages.length === 0) {
-      return NextResponse.json(
-        { error: 'パッケージ情報が必要です' },
-        { status: 400 }
-      );
-    }
-
-    // パッケージの重量をチェック
-    for (const pkg of packages) {
-      if (!pkg.weight || parseFloat(pkg.weight) <= 0) {
-        return NextResponse.json(
-          { error: 'すべてのパッケージの重量を入力してください' },
-          { status: 400 }
-        );
-      }
-    }
+    // ✅ バリデーション成功 - 型安全なデータとして使用
+    const { quoteParams, packages }: ValidatedQuoteRequest = validationResult.data;
+    console.log('✅ バリデーション成功。処理を続行します。');
 
     console.log('Supabaseクライアント作成完了');
 

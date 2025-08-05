@@ -182,7 +182,7 @@ export default function FedExQuoteResults({
   const getDeliveryTime = (serviceType: string) => {
     const timeMap: { [key: string]: string } = {
       'INTERNATIONAL_PRIORITY': '12:00まで',
-      'INTERNATIONAL_FIRST': '10:30まで',
+      // 'INTERNATIONAL_FIRST': '10:30まで', // FedEx International First除外済み
       'INTERNATIONAL_ECONOMY': '終日',
       'FEDEX_INTERNATIONAL_PRIORITY': '12:00まで',
       'PRIORITY_OVERNIGHT': '10:30まで',
@@ -198,7 +198,7 @@ export default function FedExQuoteResults({
   const getServiceDisplayName = (serviceType: string) => {
     const nameMap: { [key: string]: string } = {
       'INTERNATIONAL_PRIORITY': 'FedEx International Priority',
-      'INTERNATIONAL_FIRST': 'FedEx International First',
+      // 'INTERNATIONAL_FIRST': 'FedEx International First', // FedEx International First除外済み
       'INTERNATIONAL_ECONOMY': 'FedEx International Economy',
       'FEDEX_INTERNATIONAL_PRIORITY': 'FedEx International Priority',
       'PRIORITY_OVERNIGHT': 'FedEx Priority Overnight',

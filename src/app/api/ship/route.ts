@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SquareClient, SquareEnvironment, SquareError } from 'square'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
+import { validateShipmentRequest, formatShipmentValidationErrors, validateShipmentBusinessRules, type ValidatedShipmentRequest } from '@/lib/validators/ship'
 
 // Square clientの初期化（動的）
 function getSquareClient() {
@@ -626,7 +627,46 @@ export async function POST(request: NextRequest) {
   let shipmentId: string | null = null;
 
   try {
-    const data: ShipmentRequest = await request.json();
+    // 🛡️ リクエストボディの取得とバリデーション
+    let rawBody;
+    try {
+      rawBody = await request.json();
+    } catch (parseError) {
+      console.error('🚫 JSON解析エラー:', parseError);
+      return NextResponse.json({
+        error: '無効なリクエスト形式です',
+        details: 'JSONの形式が正しくありません',
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+
+    // Zodによる厳格なバリデーション
+    const validationResult = validateShipmentRequest(rawBody);
+    if (!validationResult.success) {
+      console.error('🚫 バリデーションエラー:', validationResult.error.format());
+      const formattedErrors = formatShipmentValidationErrors(validationResult.error.format());
+      return NextResponse.json({
+        error: '入力データが不正です',
+        details: 'リクエストデータの形式または内容に問題があります',
+        validationErrors: formattedErrors,
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+
+    // ビジネスルール追加バリデーション
+    const businessRuleErrors = validateShipmentBusinessRules(validationResult.data);
+    if (businessRuleErrors.length > 0) {
+      console.error('🚫 ビジネスルールエラー:', businessRuleErrors);
+      return NextResponse.json({
+        error: 'ビジネスルールに違反しています',
+        details: businessRuleErrors,
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+
+    // ✅ バリデーション成功
+    const data: ValidatedShipmentRequest = validationResult.data;
+
     console.log('🚀 === Step 1: リクエスト受信とHSコード検証 ===');
     console.log('リクエストボディ:', {
       shipperCountry: data.shipperInfo.countryCode,
