@@ -28,3 +28,13 @@ const createOptimizedClient = () => {
 
 // シングルトンパターンでクライアントを作成
 export const supabase = createOptimizedClient()
+
+// 認証関数のエクスポート（既存コードとの互換性のため）
+export const signIn = (email: string, password: string) => 
+  supabase.auth.signInWithPassword({ email, password })
+
+export const signUp = (email: string, password: string) => 
+  supabase.auth.signUp({ email, password })
+
+// createClient のエイリアス（既存コードとの互換性のため）
+export const createClient = () => supabase
