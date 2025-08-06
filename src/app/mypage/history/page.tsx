@@ -1,5 +1,8 @@
 'use client'
 
+// 動的レンダリングを強制してキャッシュを回避
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'

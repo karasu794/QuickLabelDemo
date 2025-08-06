@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import Header from '@/app/components/layout/Header'
 import { Toaster } from 'react-hot-toast'
+import { getSession } from '@/lib/supabase/server'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -13,15 +14,25 @@ export const metadata = {
   description: 'FedEx国際配送ラベル発行システム',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // サーバーサイドで初期セッション情報を取得
+  const session = await getSession()
+  
+  console.log('[SERVER] Initial session fetched in layout:', {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    email: session?.user?.email || 'no user',
+    userId: session?.user?.id || 'no id'
+  })
+
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <AuthProvider>
+        <AuthProvider initialSession={session}>
           <Header />
           <main className="container mx-auto p-6 min-h-screen">
             {children}

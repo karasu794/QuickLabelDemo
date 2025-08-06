@@ -1,5 +1,8 @@
 'use client'
 
+// 動的レンダリングを強制してキャッシュを回避
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { User, Mail, Phone, Building, MapPin, Save, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'

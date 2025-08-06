@@ -9,6 +9,9 @@ import {
 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 
+// 動的レンダリングを強制してキャッシュを回避
+export const dynamic = 'force-dynamic'
+
 interface MypageLayoutProps {
   children: ReactNode
 }

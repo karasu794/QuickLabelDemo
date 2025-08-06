@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import type { Session } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
 
 /**
@@ -9,6 +10,13 @@ import { Database } from '@/types/supabase'
  */
 export const createClient = () => {
   const cookieStore = cookies()
+  
+  // デバッグ：利用可能なCookieを確認
+  console.log('[SERVER] createClient: Available cookies:', {
+    'quicklabel-auth-token': !!cookieStore.get('quicklabel-auth-token'),
+    'sb-quicklabel-auth-token': !!cookieStore.get('sb-quicklabel-auth-token'),
+    allCookies: cookieStore.getAll().map(c => c.name)
+  })
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +24,9 @@ export const createClient = () => {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          const value = cookieStore.get(name)?.value
+          console.log(`[SERVER] Cookie get: ${name} = ${value ? 'found' : 'not found'}`)
+          return value
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
@@ -36,6 +46,14 @@ export const createClient = () => {
       },
     }
   )
+}
+
+/**
+ * サーバーコンポーネント用のSupabaseクライアントを作成（エイリアス）
+ * 要求仕様に合わせた命名での同機能提供
+ */
+export const createSupabaseServerClient = () => {
+  return createClient()
 }
 
 /**
@@ -140,25 +158,73 @@ export const getUserProfile = async () => {
 }
 
 /**
- * セッションを取得するヘルパー関数
+ * セッションを取得するヘルパー関数（ミドルウェアと同様のフォールバック付き）
  */
 export const getSession = async () => {
   const supabase = createClient()
   
   try {
+    console.log('[SERVER] getSession: Starting session retrieval...')
+    
     const {
       data: { session },
       error,
     } = await supabase.auth.getSession()
 
-    if (error) {
-      console.error('Error getting session:', error)
-      return null
+    console.log('[SERVER] getSession: Supabase response:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      email: session?.user?.email || 'no email',
+      error: error?.message || 'no error'
+    })
+
+    if (session && !error) {
+      console.log('[SERVER] getSession: Valid session found from Supabase')
+      return session
     }
 
-    return session
+    // Supabaseからセッションが取得できない場合、ミドルウェアと同様のCookieフォールバック
+    console.log('[SERVER] getSession: Trying cookie fallback...')
+    const cookieStore = cookies()
+    const authTokenCookie = cookieStore.get('quicklabel-auth-token')
+    
+    if (authTokenCookie?.value) {
+      try {
+        let cookieData
+        
+        if (authTokenCookie.value.startsWith('base64-')) {
+          const base64Data = authTokenCookie.value.replace('base64-', '')
+          const decodedData = Buffer.from(base64Data, 'base64').toString('utf-8')
+          cookieData = JSON.parse(decodedData)
+        } else {
+          cookieData = JSON.parse(authTokenCookie.value)
+        }
+        
+        if (cookieData.access_token && cookieData.user) {
+          console.log('[SERVER] getSession: Valid session found from cookie:', {
+            email: cookieData.user?.email,
+            userId: cookieData.user?.id
+          })
+          
+          // Cookie データからセッション形式に変換
+          return {
+            access_token: cookieData.access_token,
+            refresh_token: cookieData.refresh_token,
+            expires_at: cookieData.expires_at,
+            expires_in: cookieData.expires_in,
+            token_type: cookieData.token_type || 'bearer',
+            user: cookieData.user
+          } as Session
+        }
+      } catch (cookieError) {
+        console.error('[SERVER] getSession: Cookie parsing error:', cookieError)
+      }
+    }
+
+    console.log('[SERVER] getSession: No valid session found')
+    return null
   } catch (error) {
-    console.error('Error in getSession:', error)
+    console.error('[SERVER] Error in getSession:', error)
     return null
   }
 } 

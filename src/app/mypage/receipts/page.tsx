@@ -1,5 +1,8 @@
 import { Receipt } from 'lucide-react'
 
+// 動的レンダリングを強制してキャッシュを回避
+export const dynamic = 'force-dynamic'
+
 export default function MypageReceiptsPage() {
   return (
     <div className="p-6">

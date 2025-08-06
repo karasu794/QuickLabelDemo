@@ -78,13 +78,11 @@ export default function Header() {
     }
   }
 
-  // ステートマシンベースの厳格な条件分岐でレースコンディションを防ぐ
+  // サーバーサイド初期化により、フリッカー問題は解決済み
   console.log('[CLIENT] Header rendering - authStatus:', authStatus, 'loading:', loading)
   
-  // 認証処理中は確実にスケルトンUIを表示（レースコンディション防止の要）
-  if (authStatus === 'AUTHENTICATING') {
-    return <HeaderSkeleton />
-  }
+  // サーバーサイド初期化により'AUTHENTICATING'状態は不要
+  // loadingもfalseで初期化されるため、スケルトンUIは基本的に不要
 
   // 認証済みユーザー向けヘッダー
   if (authStatus === 'AUTHENTICATED') {
