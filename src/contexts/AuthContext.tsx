@@ -140,11 +140,41 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
             hasFrom: typeof activeSupabase.from === 'function'
           })
           
-          const { data: profile, error } = await activeSupabase
+          // ========== VERCEL EMERGENCY DEBUG: 初期セッション用タイムアウト付きクエリ ==========
+          console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Starting initial profiles query with timeout...')
+          
+          const queryPromise = activeSupabase
             .from('profiles')
             .select('role')
             .eq('id', userId)
             .single()
+          
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Initial query timeout after 10 seconds')), 10000)
+          })
+          
+          let profile, error
+          try {
+            console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Executing initial query...')
+            const result = await Promise.race([queryPromise, timeoutPromise]) as { data: any, error: any }
+            profile = result.data
+            error = result.error
+            console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Initial query completed successfully:', { 
+              hasData: !!profile, 
+              hasError: !!error,
+              dataPreview: profile ? JSON.stringify(profile).substring(0, 100) : 'no data',
+              errorPreview: error ? JSON.stringify(error).substring(0, 100) : 'no error'
+            })
+          } catch (timeoutError) {
+            console.error('[CLIENT] 🚨 EMERGENCY DEBUG - Initial query failed or timed out:', {
+              errorType: timeoutError instanceof Error ? timeoutError.name : typeof timeoutError,
+              errorMessage: timeoutError instanceof Error ? timeoutError.message : String(timeoutError),
+              isTimeout: timeoutError instanceof Error && timeoutError.message.includes('timeout')
+            })
+            // タイムアウト時は管理者権限をfalseに設定
+            setIsAdmin(false)
+            return
+          }
           
           // ★★★ 詳細なSupabaseレスポンス分析 ★★★
           if (error) {
@@ -293,11 +323,41 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
               authEvent: event
             })
             
-            const { data: profile, error } = await activeSupabase
+            // ========== VERCEL EMERGENCY DEBUG: タイムアウト付きクエリ実行 ==========
+            console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Starting profiles query with timeout...')
+            
+            const queryPromise = activeSupabase
               .from('profiles')
               .select('role')
               .eq('id', userId)
               .single()
+            
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000)
+            })
+            
+            let profile, error
+            try {
+              console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Executing query...')
+              const result = await Promise.race([queryPromise, timeoutPromise]) as { data: any, error: any }
+              profile = result.data
+              error = result.error
+              console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Query completed successfully:', { 
+                hasData: !!profile, 
+                hasError: !!error,
+                dataPreview: profile ? JSON.stringify(profile).substring(0, 100) : 'no data',
+                errorPreview: error ? JSON.stringify(error).substring(0, 100) : 'no error'
+              })
+            } catch (timeoutError) {
+              console.error('[CLIENT] 🚨 EMERGENCY DEBUG - Query failed or timed out:', {
+                errorType: timeoutError instanceof Error ? timeoutError.name : typeof timeoutError,
+                errorMessage: timeoutError instanceof Error ? timeoutError.message : String(timeoutError),
+                isTimeout: timeoutError instanceof Error && timeoutError.message.includes('timeout')
+              })
+              // タイムアウト時は管理者権限をfalseに設定
+              setIsAdmin(false)
+              return
+            }
             
             // ★★★ 詳細なSupabaseレスポンス分析 ★★★
             if (error) {

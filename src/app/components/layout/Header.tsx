@@ -30,17 +30,23 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      console.log('[CLIENT] Logout initiated')
+      console.log('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Logout initiated')
       
-      // 1. Supabase のセッションを削除
-      console.log('[CLIENT] Calling supabase.auth.signOut()')
-      const { error } = await supabase.auth.signOut()
+      // 1. Supabase のセッションを削除（タイムアウト付き）
+      console.log('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Calling supabase.auth.signOut() with timeout...')
       
-      if (error) {
-        throw error
+      const signOutPromise = supabase.auth.signOut()
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('SignOut timeout after 8 seconds')), 8000)
+      })
+      
+      const result = await Promise.race([signOutPromise, timeoutPromise]) as { error: any }
+      
+      if (result.error) {
+        throw result.error
       }
       
-      console.log('[CLIENT] Supabase sign out completed')
+      console.log('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Supabase sign out completed successfully')
       
       // 2. Cookie を手動で削除（確実にクリアするため）
       if (typeof window !== 'undefined') {
@@ -76,16 +82,37 @@ export default function Header() {
       }, 100)
       
     } catch (error) {
-      console.error('ログアウトエラー:', error)
-      
-      // エラートースト通知を表示
-      toast.error('ログアウト中にエラーが発生しました。', {
-        duration: 4000,
-        icon: '⚠️',
+      console.error('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Logout failed:', {
+        errorType: error instanceof Error ? error.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        isTimeout: error instanceof Error && error.message.includes('timeout'),
+        fullError: error
       })
       
+      if (error instanceof Error && error.message.includes('timeout')) {
+        toast.error('ログアウト処理がタイムアウトしました。ページを再読み込みしてください。', {
+          duration: 6000,
+          icon: '⏰',
+        })
+        // タイムアウト時は強制的に手動クリーンアップとリダイレクト
+        if (typeof window !== 'undefined') {
+          console.log('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Forcing manual cleanup due to timeout')
+          document.cookie = 'quicklabel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+          document.cookie = 'sb-quicklabel-auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+          localStorage.removeItem('quicklabel-auth-token')
+          localStorage.removeItem('sb-quicklabel-auth-token')
+          setTimeout(() => window.location.href = '/', 1000)
+        }
+      } else {
+        // エラートースト通知を表示
+        toast.error('ログアウト中にエラーが発生しました。', {
+          duration: 4000,
+          icon: '⚠️',
+        })
+      }
+      
       // エラーが発生した場合も確実にリダイレクト（少し遅らせてトースト表示を確保）
-      console.log('[CLIENT] Error occurred, forcing redirect')
+      console.log('[CLIENT] 🚨 EMERGENCY LOGOUT DEBUG - Error occurred, forcing redirect')
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           window.location.href = '/'
