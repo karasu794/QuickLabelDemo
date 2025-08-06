@@ -4,11 +4,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 
+// 認証状態の型定義（ステートマシンパターン）
+type AuthStatus = 'AUTHENTICATING' | 'AUTHENTICATED' | 'UNAUTHENTICATED'
+
 interface AuthContextType {
   user: User | null
   loading: boolean
   isAuthenticated: boolean
   isAdmin: boolean
+  // 新しく追加：明確な認証状態
+  authStatus: AuthStatus
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,6 +26,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  // 新しく追加：認証状態を管理するステート（初期値は認証処理中）
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('AUTHENTICATING')
 
   useEffect(() => {
     console.log('[CLIENT] useEffect for AuthProvider started')
@@ -73,6 +80,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('[CLIENT] Setting user from cookie session')
           setUser(session.user)
           setIsAdmin(false) // 簡略化：管理者チェックは省略
+          // ステートマシン：認証済み状態に変更
+          setAuthStatus('AUTHENTICATED')
           clearTimeout(forceFinishTimer)
           setLoading(false)
           return
@@ -81,11 +90,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('[CLIENT] No cookie session, setting as logged out')
         setUser(null)
         setIsAdmin(false)
+        // ステートマシン：未認証状態に変更
+        setAuthStatus('UNAUTHENTICATED')
         
       } catch (error) {
         console.error('[CLIENT] Error in getInitialSession:', error)
         setUser(null)
         setIsAdmin(false)
+        // ステートマシン：エラー時も未認証状態に変更
+        setAuthStatus('UNAUTHENTICATED')
       } finally {
         // 必ずローディング状態を終了
         console.log('[CLIENT] Initial session loading completed')
@@ -109,8 +122,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         setUser(session?.user ?? null)
         
-        // ユーザーの管理者権限をチェック
+        // ステートマシン：セッションの有無に応じて認証状態を更新
         if (session?.user) {
+          setAuthStatus('AUTHENTICATED')
+          
+          // ユーザーの管理者権限をチェック
           try {
             const { data: profile } = await supabase
               .from('profiles')
@@ -124,6 +140,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setIsAdmin(false)
           }
         } else {
+          setAuthStatus('UNAUTHENTICATED')
           setIsAdmin(false)
         }
         
@@ -145,7 +162,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     loading,
     isAuthenticated: !!user,
-    isAdmin
+    isAdmin,
+    // 新しく追加：ステートマシンの状態を公開
+    authStatus
   }
   console.log('[CLIENT] AuthProvider value:', value);
 
