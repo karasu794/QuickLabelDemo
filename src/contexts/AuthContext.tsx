@@ -67,29 +67,70 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       console.log('[CLIENT] 🔍 VERCEL DEBUG - Starting initial admin role check for user:', initialSession.user.id)
       
       const checkAdminRole = async () => {
+        const userId = initialSession.user.id
+        
         try {
-          console.log('[CLIENT] 🔍 VERCEL DEBUG - Querying profiles table for admin role...')
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - Querying profiles table for admin role...')
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - User ID for query:', userId)
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - Query details:', {
+            table: 'profiles',
+            select: 'role',
+            filter: `id.eq.${userId}`,
+            operation: 'single()'
+          })
           
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('role')
-            .eq('id', initialSession.user.id)
+            .eq('id', userId)
             .single()
           
-          console.log('[CLIENT] 🔍 VERCEL DEBUG - Admin role query result:', {
-            profileData: profile,
-            error: error?.message || 'no error',
+          // ★★★ 詳細なSupabaseレスポンス分析 ★★★
+          if (error) {
+            console.error('[CLIENT] 🚨 ADMIN DEBUG - Supabase returned error:', {
+              errorObject: error,
+              errorMessage: error.message,
+              errorCode: error.code,
+              errorDetails: error.details,
+              errorHint: error.hint,
+              userId: userId,
+              timestamp: new Date().toISOString()
+            })
+          }
+          
+          console.log('[CLIENT] ✅ ADMIN DEBUG - Profile query SUCCESS - Full response:', {
+            dataObject: profile,
+            dataType: typeof profile,
+            dataKeys: profile ? Object.keys(profile) : 'null',
+            roleValue: profile?.role,
+            roleType: typeof profile?.role,
             isAdmin: profile?.role === 'admin',
-            userId: initialSession.user.id,
+            adminCheckResult: {
+              'profile?.role': profile?.role,
+              'exact match "admin"': profile?.role === 'admin',
+              'loose match "admin"': String(profile?.role).toLowerCase() === 'admin'
+            },
+            userId: userId,
             timestamp: new Date().toISOString()
           })
           
-          setIsAdmin(profile?.role === 'admin')
+          const isAdminResult = profile?.role === 'admin'
+          console.log('[CLIENT] 🎯 ADMIN DEBUG - Final admin status decision:', {
+            isAdmin: isAdminResult,
+            reasoning: `profile?.role (${profile?.role}) === 'admin' → ${isAdminResult}`,
+            willSetIsAdmin: isAdminResult
+          })
+          
+          setIsAdmin(isAdminResult)
+          
         } catch (error) {
-          console.error('[CLIENT] 🔍 VERCEL DEBUG - Admin role check error:', {
-            error: error instanceof Error ? error.message : 'Unknown error',
-            stack: error instanceof Error ? error.stack : 'No stack trace',
-            userId: initialSession.user.id
+          console.error('[CLIENT] 🚨 ADMIN DEBUG - UNEXPECTED error in admin role check:', {
+            errorObject: error,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            errorStack: error instanceof Error ? error.stack : 'No stack trace',
+            errorType: typeof error,
+            userId: userId,
+            timestamp: new Date().toISOString()
           })
           setIsAdmin(false)
         }
@@ -135,37 +176,87 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         setUser(session?.user ?? null)
         setAuthStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
         
-        // ========== VERCEL DEBUG: 管理者権限チェック（onAuthStateChange内） ==========
+        // ========== ADMIN DEBUG: 管理者権限チェック（onAuthStateChange内） ==========
         if (session?.user) {
-          console.log('[CLIENT] 🔍 VERCEL DEBUG - Checking admin role for auth state change...')
+          const userId = session.user.id
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - Checking admin role for auth state change...')
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - Auth event context:', {
+            event: event,
+            userId: userId,
+            sessionExpiry: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'no expiry'
+          })
           
           try {
+            console.log('[CLIENT] 🔍 ADMIN DEBUG - Executing profiles query for auth state change...')
+            console.log('[CLIENT] 🔍 ADMIN DEBUG - Query parameters:', {
+              table: 'profiles',
+              select: 'role', 
+              filter: `id.eq.${userId}`,
+              operation: 'single()',
+              triggerEvent: event
+            })
+            
             const { data: profile, error } = await supabase
               .from('profiles')
               .select('role')
-              .eq('id', session.user.id)
+              .eq('id', userId)
               .single()
             
-            console.log('[CLIENT] 🔍 VERCEL DEBUG - Auth change admin role result:', {
-              profileData: profile,
-              error: error?.message || 'no error',
+            // ★★★ 詳細なSupabaseレスポンス分析 ★★★
+            if (error) {
+              console.error('[CLIENT] 🚨 ADMIN DEBUG - Auth change query error:', {
+                errorObject: error,
+                errorMessage: error.message,
+                errorCode: error.code,
+                errorDetails: error.details,
+                errorHint: error.hint,
+                userId: userId,
+                event: event,
+                timestamp: new Date().toISOString()
+              })
+            }
+            
+            console.log('[CLIENT] ✅ ADMIN DEBUG - Auth change query SUCCESS - Full response:', {
+              dataObject: profile,
+              dataType: typeof profile,
+              dataKeys: profile ? Object.keys(profile) : 'null',
+              roleValue: profile?.role,
+              roleType: typeof profile?.role,
               isAdmin: profile?.role === 'admin',
-              userId: session.user.id,
-              event: event
+              adminCheckResult: {
+                'profile?.role': profile?.role,
+                'exact match "admin"': profile?.role === 'admin',
+                'loose match "admin"': String(profile?.role).toLowerCase() === 'admin'
+              },
+              userId: userId,
+              event: event,
+              timestamp: new Date().toISOString()
             })
             
-            setIsAdmin(profile?.role === 'admin')
+            const isAdminResult = profile?.role === 'admin'
+            console.log('[CLIENT] 🎯 ADMIN DEBUG - Auth change admin status decision:', {
+              isAdmin: isAdminResult,
+              reasoning: `profile?.role (${profile?.role}) === 'admin' → ${isAdminResult}`,
+              willSetIsAdmin: isAdminResult,
+              triggerEvent: event
+            })
+            
+            setIsAdmin(isAdminResult)
+            
           } catch (error) {
-            console.error('[CLIENT] 🔍 VERCEL DEBUG - Auth change admin role error:', {
-              error: error instanceof Error ? error.message : 'Unknown error',
-              stack: error instanceof Error ? error.stack : 'No stack trace',
-              userId: session.user.id,
-              event: event
+            console.error('[CLIENT] 🚨 ADMIN DEBUG - UNEXPECTED error in auth change admin role check:', {
+              errorObject: error,
+              errorMessage: error instanceof Error ? error.message : 'Unknown error',
+              errorStack: error instanceof Error ? error.stack : 'No stack trace',
+              errorType: typeof error,
+              userId: userId,
+              event: event,
+              timestamp: new Date().toISOString()
             })
             setIsAdmin(false)
           }
         } else {
-          console.log('[CLIENT] 🔍 VERCEL DEBUG - No session user, clearing admin status')
+          console.log('[CLIENT] 🔍 ADMIN DEBUG - No session user in auth change, clearing admin status')
           setIsAdmin(false)
         }
       }
@@ -201,6 +292,17 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     authStatus: authStatus,
     timestamp: new Date().toISOString(),
     componentRenderCount: 'tracked in console'
+  });
+
+  // ========== ADMIN DEBUG: 管理者権限状態の詳細出力 ==========
+  console.log('[CLIENT] 🎯 ADMIN DEBUG - Current Admin Status Summary:', {
+    isAdmin: isAdmin,
+    isAdminType: typeof isAdmin,
+    userExists: !!user,
+    userId: user?.id || 'no user',
+    authStatus: authStatus,
+    adminStateSource: 'React state (isAdmin)',
+    stateUpdatedAt: new Date().toISOString()
   });
 
   return (
