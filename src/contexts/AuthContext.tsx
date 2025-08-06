@@ -277,12 +277,14 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         setAuthStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
         
         // ========== ADMIN DEBUG: 管理者権限チェック（onAuthStateChange内） ==========
-        // 🚨 EMERGENCY FIX: SIGNED_INイベントでのクエリ実行をスキップ（INITIAL_SESSIONのみ実行）
-        if (session?.user && event === 'SIGNED_IN') {
-          console.log('[CLIENT] 🚨 EMERGENCY FIX - Skipping SIGNED_IN query to prevent timeout, waiting for INITIAL_SESSION')
-        }
-        
-        if (session?.user && event === 'INITIAL_SESSION') {
+        // 🚨 EMERGENCY FIX: SIGNED_INイベントでは遅延実行、INITIAL_SESSIONでは即座実行
+        if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          
+          // SIGNED_INの場合は状態安定化を待つ
+          const delayMs = event === 'SIGNED_IN' ? 1000 : 0
+          console.log(`[CLIENT] 🚨 EMERGENCY FIX - Executing admin check with ${delayMs}ms delay for ${event} event`)
+          
+          setTimeout(async () => {
           const userId = session.user.id
           console.log('[CLIENT] 🔍 ADMIN DEBUG - Checking admin role for auth state change...')
           console.log('[CLIENT] 🔍 ADMIN DEBUG - Auth event context:', {
@@ -417,6 +419,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
             })
             setIsAdmin(false)
           }
+          }, delayMs)
         } else {
           console.log('[CLIENT] 🔍 ADMIN DEBUG - No session user in auth change, clearing admin status')
           setIsAdmin(false)
