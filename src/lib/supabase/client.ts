@@ -36,5 +36,8 @@ export const signIn = (email: string, password: string, persistSession?: boolean
 export const signUp = (email: string, password: string) => 
   supabase.auth.signUp({ email, password })
 
+export const signOut = () => 
+  supabase.auth.signOut()
+
 // createClient のエイリアス（既存コードとの互換性のため）
 export const createClient = () => supabase
