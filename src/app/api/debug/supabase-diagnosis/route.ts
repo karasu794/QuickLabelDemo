@@ -82,6 +82,7 @@ async function testRLSPolicies(userId: string) {
     const userStart = Date.now()
     const userClient = createUserClient()
     
+    // 注意: ユーザートークンなしのテストのため、RLSで正しく拒否されることを期待
     const { data: userData, error: userError } = await userClient
       .from('profiles')
       .select('role')
