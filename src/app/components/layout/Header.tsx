@@ -12,6 +12,22 @@ export default function Header() {
   const { isAuthenticated, isAdmin, loading, authStatus, user } = useAuth()
   const router = useRouter()
 
+  // ========== VERCEL DEBUG: Header レンダリング情報 ==========
+  console.log('[CLIENT] 🔍 VERCEL DEBUG - Header Component Render:', {
+    authStatus: authStatus,
+    isAuthenticated: isAuthenticated,
+    isAdmin: isAdmin,
+    loading: loading,
+    hasUser: !!user,
+    userDetails: user ? {
+      id: user.id,
+      email: user.email
+    } : null,
+    url: typeof window !== 'undefined' ? window.location.href : 'SSR',
+    pathname: typeof window !== 'undefined' ? window.location.pathname : 'SSR',
+    renderTimestamp: new Date().toISOString()
+  })
+
   const handleLogout = async () => {
     try {
       console.log('[CLIENT] Logout initiated')
@@ -78,14 +94,18 @@ export default function Header() {
     }
   }
 
-  // サーバーサイド初期化により、フリッカー問題は解決済み
-  console.log('[CLIENT] Header rendering - authStatus:', authStatus, 'loading:', loading)
-  
-  // サーバーサイド初期化により'AUTHENTICATING'状態は不要
-  // loadingもfalseで初期化されるため、スケルトンUIは基本的に不要
+  // ========== VERCEL DEBUG: レンダリング条件分岐 ==========
+  console.log('[CLIENT] 🔍 VERCEL DEBUG - Header Rendering Decision:', {
+    authStatus: authStatus,
+    loading: loading,
+    willRenderAuthenticatedHeader: authStatus === 'AUTHENTICATED',
+    willRenderUnauthenticatedHeader: authStatus !== 'AUTHENTICATED',
+    timestamp: new Date().toISOString()
+  })
 
   // 認証済みユーザー向けヘッダー
   if (authStatus === 'AUTHENTICATED') {
+    console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering AUTHENTICATED header with admin status:', isAdmin)
     return (
       <header className="bg-purple-900">
         <div className="container mx-auto px-6 h-16">
@@ -136,6 +156,9 @@ export default function Header() {
     )
   }
 
+  // ========== VERCEL DEBUG: 未認証ヘッダーレンダリング ==========
+  console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering UNAUTHENTICATED header')
+  
   // 未認証ユーザー向けヘッダー (authStatus === 'UNAUTHENTICATED')
   return (
     <header className="bg-purple-900">

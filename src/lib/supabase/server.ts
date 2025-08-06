@@ -11,11 +11,35 @@ import { Database } from '@/types/supabase'
 export const createClient = () => {
   const cookieStore = cookies()
   
-  // デバッグ：利用可能なCookieを確認
-  console.log('[SERVER] createClient: Available cookies:', {
-    'quicklabel-auth-token': !!cookieStore.get('quicklabel-auth-token'),
-    'sb-quicklabel-auth-token': !!cookieStore.get('sb-quicklabel-auth-token'),
-    allCookies: cookieStore.getAll().map(c => c.name)
+  // ========== VERCEL DEBUG: 環境情報 ==========
+  console.log('[SERVER] 🔍 VERCEL DEBUG - Environment Info:', {
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+    vercelUrl: process.env.VERCEL_URL,
+    platform: process.platform,
+    timestamp: new Date().toISOString()
+  })
+  
+  // ========== VERCEL DEBUG: Supabase 環境変数 ==========
+  console.log('[SERVER] 🔍 VERCEL DEBUG - Supabase Environment Variables:', {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    anonKeyExists: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    anonKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+    anonKeyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...',
+    serviceRoleKeyExists: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+  })
+  
+  // ========== VERCEL DEBUG: Cookie詳細情報 ==========
+  const allCookies = cookieStore.getAll()
+  console.log('[SERVER] 🔍 VERCEL DEBUG - Cookie Details:', {
+    totalCookieCount: allCookies.length,
+    cookieNames: allCookies.map(c => c.name),
+    authTokenExists: !!cookieStore.get('quicklabel-auth-token'),
+    authTokenSize: cookieStore.get('quicklabel-auth-token')?.value?.length || 0,
+    sbAuthTokenExists: !!cookieStore.get('sb-quicklabel-auth-token'),
+    sbAuthTokenSize: cookieStore.get('sb-quicklabel-auth-token')?.value?.length || 0,
+    supabaseSessionExists: !!cookieStore.get('sb-quicklabel-auth-token-session'),
+    allSupabaseCookies: allCookies.filter(c => c.name.includes('supabase') || c.name.includes('sb-'))
   })
 
   return createServerClient<Database>(
@@ -164,18 +188,26 @@ export const getSession = async () => {
   const supabase = createClient()
   
   try {
-    console.log('[SERVER] getSession: Starting session retrieval...')
+    console.log('[SERVER] 🔍 VERCEL DEBUG - getSession: Starting detailed session retrieval...')
     
     const {
       data: { session },
       error,
     } = await supabase.auth.getSession()
 
-    console.log('[SERVER] getSession: Supabase response:', {
+    // ========== VERCEL DEBUG: Supabase API レスポンス詳細 ==========
+    console.log('[SERVER] 🔍 VERCEL DEBUG - Supabase API Response:', {
       hasSession: !!session,
       hasUser: !!session?.user,
       email: session?.user?.email || 'no email',
-      error: error?.message || 'no error'
+      userId: session?.user?.id || 'no id',
+      sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'no expiry',
+      currentTime: new Date().toISOString(),
+      isExpired: session?.expires_at ? Date.now() / 1000 > session.expires_at : 'unknown',
+      tokenLength: session?.access_token?.length || 0,
+      refreshTokenExists: !!session?.refresh_token,
+      error: error?.message || 'no error',
+      errorCode: error?.code || 'no error code'
     })
 
     if (session && !error) {
@@ -183,27 +215,48 @@ export const getSession = async () => {
       return session
     }
 
-    // Supabaseからセッションが取得できない場合、ミドルウェアと同様のCookieフォールバック
-    console.log('[SERVER] getSession: Trying cookie fallback...')
+    // ========== VERCEL DEBUG: Cookie フォールバック開始 ==========
+    console.log('[SERVER] 🔍 VERCEL DEBUG - getSession: Trying advanced cookie fallback...')
     const cookieStore = cookies()
     const authTokenCookie = cookieStore.get('quicklabel-auth-token')
+    
+    console.log('[SERVER] 🔍 VERCEL DEBUG - Cookie Fallback Details:', {
+      authTokenCookieExists: !!authTokenCookie,
+      cookieValue: authTokenCookie?.value ? 'present' : 'missing',
+      cookieLength: authTokenCookie?.value?.length || 0,
+      isBase64: authTokenCookie?.value?.startsWith('base64-') || false,
+      cookiePreview: authTokenCookie?.value?.substring(0, 50) + '...'
+    })
     
     if (authTokenCookie?.value) {
       try {
         let cookieData
         
         if (authTokenCookie.value.startsWith('base64-')) {
+          console.log('[SERVER] 🔍 VERCEL DEBUG - Decoding base64 cookie data...')
           const base64Data = authTokenCookie.value.replace('base64-', '')
           const decodedData = Buffer.from(base64Data, 'base64').toString('utf-8')
           cookieData = JSON.parse(decodedData)
         } else {
+          console.log('[SERVER] 🔍 VERCEL DEBUG - Parsing plain JSON cookie data...')
           cookieData = JSON.parse(authTokenCookie.value)
         }
         
+        console.log('[SERVER] 🔍 VERCEL DEBUG - Cookie Data Structure:', {
+          hasAccessToken: !!cookieData.access_token,
+          hasUser: !!cookieData.user,
+          userEmail: cookieData.user?.email || 'no email',
+          userId: cookieData.user?.id || 'no id',
+          hasRefreshToken: !!cookieData.refresh_token,
+          expiresAt: cookieData.expires_at || 'no expiry',
+          tokenType: cookieData.token_type || 'no token type'
+        })
+        
         if (cookieData.access_token && cookieData.user) {
-          console.log('[SERVER] getSession: Valid session found from cookie:', {
+          console.log('[SERVER] 🔍 VERCEL DEBUG - Valid session constructed from cookie:', {
             email: cookieData.user?.email,
-            userId: cookieData.user?.id
+            userId: cookieData.user?.id,
+            constructedAt: new Date().toISOString()
           })
           
           // Cookie データからセッション形式に変換
@@ -217,14 +270,25 @@ export const getSession = async () => {
           } as Session
         }
       } catch (cookieError) {
-        console.error('[SERVER] getSession: Cookie parsing error:', cookieError)
+        console.error('[SERVER] 🔍 VERCEL DEBUG - Cookie parsing error details:', {
+          error: cookieError instanceof Error ? cookieError.message : 'Unknown error',
+          stack: cookieError instanceof Error ? cookieError.stack : 'No stack trace',
+          cookieLength: authTokenCookie?.value?.length || 0,
+          cookiePreview: authTokenCookie?.value?.substring(0, 100) + '...'
+        })
       }
+    } else {
+      console.log('[SERVER] 🔍 VERCEL DEBUG - No auth token cookie found for fallback')
     }
 
-    console.log('[SERVER] getSession: No valid session found')
+    console.log('[SERVER] 🔍 VERCEL DEBUG - Final result: No valid session found')
     return null
   } catch (error) {
-    console.error('[SERVER] Error in getSession:', error)
+    console.error('[SERVER] 🔍 VERCEL DEBUG - Critical error in getSession:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      timestamp: new Date().toISOString()
+    })
     return null
   }
 } 
