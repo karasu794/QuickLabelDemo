@@ -30,7 +30,7 @@ const createOptimizedClient = () => {
 export const supabase = createOptimizedClient()
 
 // 認証関数のエクスポート（既存コードとの互換性のため）
-export const signIn = (email: string, password: string) => 
+export const signIn = (email: string, password: string, persistSession?: boolean) => 
   supabase.auth.signInWithPassword({ email, password })
 
 export const signUp = (email: string, password: string) => 
