@@ -6,6 +6,15 @@ import { Database } from '@/types/supabase'
  * セッション永続化とクライアントサイド遷移の安定性を向上
  */
 const createOptimizedClient = () => {
+  // ========== SUPABASE CLIENT DEBUG: 環境変数確認 ==========
+  console.log('[CLIENT] 🔍 SUPABASE CLIENT DEBUG - Environment Variables Check:', {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    anonKeyExists: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    anonKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+    anonKeyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...',
+    environment: typeof window !== 'undefined' ? 'browser' : 'server'
+  })
+  
   return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -103,6 +112,27 @@ export const createClient = () => createOptimizedClient()
  * 認証状態の一貫性を保つため、常にこのインスタンスを使用してください
  */
 export const supabase = createOptimizedClient()
+
+// ========== SUPABASE CLIENT DEBUG: 初期化確認 ==========
+console.log('[CLIENT] 🔍 SUPABASE CLIENT DEBUG - Supabase Client Initialized:', supabase)
+console.log('[CLIENT] 🔍 SUPABASE CLIENT DEBUG - Client Configuration:', {
+  // 環境変数から直接取得（クライアントの内部プロパティではなく）
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  anonKeyExists: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  anonKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+  anonKeyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...',
+  // 利用可能な公開プロパティのみアクセス
+  hasAuth: !!supabase.auth,
+  hasRealtime: !!supabase.realtime,
+  hasStorage: !!supabase.storage,
+  clientType: typeof supabase,
+  clientConstructor: supabase.constructor.name,
+  environment: {
+    browser: typeof window !== 'undefined',
+    nodeEnv: typeof process !== 'undefined' ? process.env.NODE_ENV : 'unknown'
+  },
+  timestamp: new Date().toISOString()
+})
 
 /**
  * 認証状態の変更を監視するヘルパー関数
