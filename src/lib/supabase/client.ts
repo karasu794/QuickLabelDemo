@@ -21,15 +21,6 @@ const createOptimizedClient = () => {
         storageKey: 'quicklabel-auth-token',
         // フローをPKCEに固定（セキュリティ向上）
         flowType: 'pkce'
-      },
-      // Cookieの設定を最適化
-      cookies: {
-        // Cookieの設定をデフォルトのままにして、@supabase/ssrの最適化を活用
-      },
-      // リアルタイム機能の最適化（必要に応じて調整）
-      realtime: {
-        // イベント頻度制限（デフォルト: 10/秒, 節約: 2/秒）
-        eventsPerSecond: 2,
       }
     }
   )
