@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
+import { runComprehensiveDiagnosis, testBasicConnection, diagnosisAuthState } from '@/lib/supabase/diagnostics'
 
 // ========== VERCEL CLIENT DEBUG: クライアント初期化診断 ==========
 console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - AuthContext Import Check:', {
@@ -139,6 +140,33 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
             clientType: typeof activeSupabase,
             hasFrom: typeof activeSupabase.from === 'function'
           })
+          
+          // ========== 🩺 DIAGNOSIS: 包括的診断実行 ==========
+          console.log('[CLIENT] 🩺 DIAGNOSIS - Running comprehensive Supabase diagnosis...')
+          try {
+            const diagnosisResult = await runComprehensiveDiagnosis(activeSupabase, userId)
+            console.log('[CLIENT] 🩺 DIAGNOSIS COMPLETE - Results:', diagnosisResult)
+            
+            // 診断結果に基づく問題判定
+            if (!diagnosisResult.basicConnection.success) {
+              console.log('[CLIENT] 🚨 DIAGNOSIS ALERT - Basic connection failed, aborting profile query')
+              setIsAdmin(false)
+              return
+            }
+            
+            if (!diagnosisResult.authState.success) {
+              console.log('[CLIENT] 🚨 DIAGNOSIS ALERT - Auth state invalid, aborting profile query')
+              setIsAdmin(false)
+              return
+            }
+            
+            // 診断成功時のサマリー
+            console.log('[CLIENT] 🩺 DIAGNOSIS SUMMARY - Connection health check passed, proceeding with profile query')
+            
+          } catch (diagnosisError) {
+            console.error('[CLIENT] 🚨 DIAGNOSIS ERROR - Comprehensive diagnosis failed:', diagnosisError)
+            // 診断失敗でも元のクエリは実行する（診断はデバッグ目的）
+          }
           
           // ========== VERCEL EMERGENCY DEBUG: 初期セッション用タイムアウト付きクエリ ==========
           console.log('[CLIENT] 🚨 EMERGENCY DEBUG - Starting initial profiles query with timeout...')

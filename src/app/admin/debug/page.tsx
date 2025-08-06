@@ -3,7 +3,8 @@
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { User, Shield, Database, AlertCircle } from 'lucide-react'
+import { User, Shield, Database, AlertCircle, Activity, Zap } from 'lucide-react'
+import { runComprehensiveDiagnosis, type ConnectionDiagnosis } from '@/lib/supabase/diagnostics'
 
 interface Profile {
   id: string
@@ -16,6 +17,10 @@ export default function AdminDebugPage() {
   const { user, loading, isAuthenticated, isAdmin } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
+  const [diagnosisData, setDiagnosisData] = useState<ConnectionDiagnosis | null>(null)
+  const [diagnosisLoading, setDiagnosisLoading] = useState(false)
+  const [serverDiagnosis, setServerDiagnosis] = useState<any>(null)
+  const [serverDiagnosisLoading, setServerDiagnosisLoading] = useState(false)
 
   // プロフィール情報を取得
   useEffect(() => {
@@ -45,6 +50,49 @@ export default function AdminDebugPage() {
       setProfile(null)
     }
   }, [user, isAuthenticated])
+
+  // クライアントサイド診断の実行
+  const runClientDiagnosis = async () => {
+    if (!user) return
+    
+    setDiagnosisLoading(true)
+    try {
+      console.log('[DEBUG] 🩺 Running client-side diagnosis...')
+      const diagnosis = await runComprehensiveDiagnosis(supabase, user.id)
+      setDiagnosisData(diagnosis)
+      console.log('[DEBUG] 🩺 Client diagnosis completed:', diagnosis)
+    } catch (error) {
+      console.error('[DEBUG] 🚨 Client diagnosis failed:', error)
+    } finally {
+      setDiagnosisLoading(false)
+    }
+  }
+
+  // サーバーサイド診断の実行
+  const runServerDiagnosis = async () => {
+    if (!user) return
+    
+    setServerDiagnosisLoading(true)
+    try {
+      console.log('[DEBUG] 🩺 Running server-side diagnosis...')
+      const response = await fetch(`/api/debug/supabase-diagnosis?userId=${user.id}`)
+      const result = await response.json()
+      setServerDiagnosis(result)
+      console.log('[DEBUG] 🩺 Server diagnosis completed:', result)
+    } catch (error) {
+      console.error('[DEBUG] 🚨 Server diagnosis failed:', error)
+    } finally {
+      setServerDiagnosisLoading(false)
+    }
+  }
+
+  // 包括的診断（クライアント + サーバー）
+  const runComprehensiveDiagnosisTest = async () => {
+    await Promise.all([
+      runClientDiagnosis(),
+      runServerDiagnosis()
+    ])
+  }
 
   if (loading) {
     return (
@@ -217,6 +265,135 @@ export default function AdminDebugPage() {
             </p>
           </div>
         )}
+
+        {/* Supabase診断セクション */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Supabase接続診断
+          </h2>
+          
+          <div className="space-y-4">
+            <p className="text-blue-800 text-sm">
+              Supabase接続の問題診断と詳細分析を実行します。管理者権限が表示されない問題の原因特定に使用します。
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
+                onClick={runClientDiagnosis}
+                disabled={diagnosisLoading || !user}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                {diagnosisLoading ? '実行中...' : 'クライアント診断'}
+              </button>
+              
+              <button
+                onClick={runServerDiagnosis}
+                disabled={serverDiagnosisLoading || !user}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Database className="h-4 w-4" />
+                {serverDiagnosisLoading ? '実行中...' : 'サーバー診断'}
+              </button>
+              
+              <button
+                onClick={runComprehensiveDiagnosisTest}
+                disabled={diagnosisLoading || serverDiagnosisLoading || !user}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Activity className="h-4 w-4" />
+                {(diagnosisLoading || serverDiagnosisLoading) ? '実行中...' : '包括的診断'}
+              </button>
+            </div>
+
+            {/* クライアント診断結果 */}
+            {diagnosisData && (
+              <div className="mt-6 bg-white rounded-lg p-4 border">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  クライアント診断結果
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className={`p-3 rounded ${diagnosisData.basicConnection.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                    <div className="font-medium">基本接続</div>
+                    <div>{diagnosisData.basicConnection.success ? '✅ 成功' : '❌ 失敗'}</div>
+                    <div className="text-xs text-gray-600">{diagnosisData.basicConnection.duration}ms</div>
+                    {diagnosisData.basicConnection.error && (
+                      <div className="text-xs text-red-600 mt-1">{diagnosisData.basicConnection.error}</div>
+                    )}
+                  </div>
+                  
+                  <div className={`p-3 rounded ${diagnosisData.authState.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                    <div className="font-medium">認証状態</div>
+                    <div>{diagnosisData.authState.success ? '✅ 有効' : '❌ 無効'}</div>
+                    <div className="text-xs text-gray-600">{diagnosisData.authState.duration}ms</div>
+                    {diagnosisData.authState.error && (
+                      <div className="text-xs text-red-600 mt-1">{diagnosisData.authState.error}</div>
+                    )}
+                  </div>
+                  
+                  <div className={`p-3 rounded ${diagnosisData.profileQuery.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                    <div className="font-medium">プロフィールクエリ</div>
+                    <div>{diagnosisData.profileQuery.success ? '✅ 成功' : '❌ 失敗'}</div>
+                    <div className="text-xs text-gray-600">{diagnosisData.profileQuery.duration}ms</div>
+                    {diagnosisData.profileQuery.error && (
+                      <div className="text-xs text-red-600 mt-1">{diagnosisData.profileQuery.error}</div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mt-4 text-xs">
+                  <div className="font-medium text-gray-700 mb-2">環境情報:</div>
+                  <div className="bg-gray-50 p-2 rounded font-mono">
+                    {diagnosisData.environment.vercelEnv || 'ローカル'} / {diagnosisData.environment.vercelRegion || 'N/A'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* サーバー診断結果 */}
+            {serverDiagnosis && (
+              <div className="mt-6 bg-white rounded-lg p-4 border">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  サーバー診断結果
+                </h3>
+                {serverDiagnosis.success ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="bg-green-100 p-3 rounded">
+                        <div className="font-medium">管理者アクセス</div>
+                        <div>{serverDiagnosis.diagnosis.rls?.adminAccess.success ? '✅ 成功' : '❌ 失敗'}</div>
+                        <div className="text-xs text-gray-600">{serverDiagnosis.diagnosis.rls?.adminAccess.duration}ms</div>
+                      </div>
+                      
+                      <div className={`p-3 rounded ${serverDiagnosis.diagnosis.rls?.userAccess.success ? 'bg-green-100' : 'bg-red-100'}`}>
+                        <div className="font-medium">ユーザーアクセス</div>
+                        <div>{serverDiagnosis.diagnosis.rls?.userAccess.success ? '✅ 成功' : '❌ 失敗'}</div>
+                        <div className="text-xs text-gray-600">{serverDiagnosis.diagnosis.rls?.userAccess.duration}ms</div>
+                        {serverDiagnosis.diagnosis.rls?.userAccess.error && (
+                          <div className="text-xs text-red-600 mt-1">{serverDiagnosis.diagnosis.rls?.userAccess.error}</div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="text-xs">
+                      <div className="font-medium text-gray-700 mb-2">RLSポリシー:</div>
+                      <div className="bg-gray-50 p-2 rounded">
+                        {serverDiagnosis.diagnosis.rls?.rls.policyCount || 0}個のポリシーが設定されています
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-red-600 text-sm">
+                    サーバー診断に失敗しました: {serverDiagnosis.error}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
