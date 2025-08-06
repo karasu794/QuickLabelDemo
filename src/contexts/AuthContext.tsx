@@ -4,6 +4,41 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 
+// ========== VERCEL CLIENT DEBUG: クライアント初期化診断 ==========
+console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - AuthContext Import Check:', {
+  supabaseExists: !!supabase,
+  supabaseType: typeof supabase,
+  supabaseConstructor: supabase?.constructor?.name || 'undefined',
+  hasAuth: !!supabase?.auth,
+  hasFrom: typeof supabase?.from === 'function',
+  authUrlExists: !!(supabase && 'authUrl' in supabase),
+  timestamp: new Date().toISOString(),
+  windowExists: typeof window !== 'undefined',
+  processEnvExists: typeof process !== 'undefined'
+})
+
+// ========== VERCEL FALLBACK: 動的インポート機能 ==========
+const getSupabaseClient = async () => {
+  if (supabase && typeof supabase.from === 'function') {
+    console.log('[CLIENT] 🟢 VERCEL FALLBACK - Using static import supabase client')
+    return supabase
+  }
+  
+  try {
+    console.log('[CLIENT] 🔄 VERCEL FALLBACK - Attempting dynamic import of Supabase client...')
+    const { supabase: dynamicSupabase } = await import('@/lib/supabase/client')
+    console.log('[CLIENT] 🟢 VERCEL FALLBACK - Dynamic import successful:', {
+      exists: !!dynamicSupabase,
+      hasAuth: !!dynamicSupabase?.auth,
+      hasFrom: typeof dynamicSupabase?.from === 'function'
+    })
+    return dynamicSupabase
+  } catch (error) {
+    console.error('[CLIENT] 🚨 VERCEL FALLBACK - Dynamic import failed:', error)
+    return null
+  }
+}
+
 // 認証状態の型定義（サーバーサイド初期化により'AUTHENTICATING'は不要）
 type AuthStatus = 'AUTHENTICATED' | 'UNAUTHENTICATED'
 
@@ -79,7 +114,33 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
             operation: 'single()'
           })
           
-          const { data: profile, error } = await supabase
+          // ========== VERCEL CLIENT DEBUG: クエリ直前診断 ==========
+          console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - Pre-Query Supabase State:', {
+            supabaseExists: !!supabase,
+            supabaseType: typeof supabase,
+            hasAuth: !!supabase?.auth,
+            hasFrom: typeof supabase?.from === 'function',
+            authStatus: supabase?.auth ? 'auth exists' : 'auth missing',
+            fromFunction: supabase?.from?.toString().substring(0, 100) || 'no from function',
+            timestamp: new Date().toISOString()
+          })
+          
+          console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - About to execute supabase.from...')
+          
+          // ========== VERCEL FALLBACK: 動的クライアント取得 ==========
+          const activeSupabase = await getSupabaseClient()
+          if (!activeSupabase) {
+            console.error('[CLIENT] 🚨 VERCEL FALLBACK - Failed to get Supabase client, aborting query')
+            setIsAdmin(false)
+            return
+          }
+          
+          console.log('[CLIENT] 🟢 VERCEL FALLBACK - Using Supabase client for profiles query:', {
+            clientType: typeof activeSupabase,
+            hasFrom: typeof activeSupabase.from === 'function'
+          })
+          
+          const { data: profile, error } = await activeSupabase
             .from('profiles')
             .select('role')
             .eq('id', userId)
@@ -144,7 +205,16 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     // ========== VERCEL DEBUG: 認証状態変化リスナー設定 ==========
     console.log('[CLIENT] 🔍 VERCEL DEBUG - Setting up onAuthStateChange listener...')
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // ========== VERCEL FALLBACK: リスナー設定での動的クライアント取得 ==========
+    const setupAuthListener = async () => {
+      const activeSupabase = await getSupabaseClient()
+      if (!activeSupabase) {
+        console.error('[CLIENT] 🚨 VERCEL FALLBACK - Failed to get Supabase client for auth listener setup')
+        return { data: { subscription: { unsubscribe: () => {} } } }
+      }
+      
+      console.log('[CLIENT] 🟢 VERCEL FALLBACK - Setting up auth listener with dynamic client')
+      return activeSupabase.auth.onAuthStateChange(
       async (event, session) => {
         // ========== VERCEL DEBUG: 認証イベント詳細 ==========
         console.log('[CLIENT] 🔍 VERCEL DEBUG - Auth State Change Event Details:', {
@@ -196,7 +266,34 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
               triggerEvent: event
             })
             
-            const { data: profile, error } = await supabase
+            // ========== VERCEL CLIENT DEBUG: onAuthStateChange内クエリ直前診断 ==========
+            console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - Pre-Auth-Query Supabase State:', {
+              supabaseExists: !!supabase,
+              supabaseType: typeof supabase,
+              hasAuth: !!supabase?.auth,
+              hasFrom: typeof supabase?.from === 'function',
+              authEvent: event,
+              userId: userId,
+              timestamp: new Date().toISOString()
+            })
+            
+            console.log('[CLIENT] 🚨 VERCEL CLIENT DEBUG - About to execute auth state change supabase.from...')
+            
+            // ========== VERCEL FALLBACK: 動的クライアント取得（Auth State Change） ==========
+            const activeSupabase = await getSupabaseClient()
+            if (!activeSupabase) {
+              console.error('[CLIENT] 🚨 VERCEL FALLBACK - Failed to get Supabase client for auth state change, aborting query')
+              setIsAdmin(false)
+              return
+            }
+            
+            console.log('[CLIENT] 🟢 VERCEL FALLBACK - Using Supabase client for auth state change query:', {
+              clientType: typeof activeSupabase,
+              hasFrom: typeof activeSupabase.from === 'function',
+              authEvent: event
+            })
+            
+            const { data: profile, error } = await activeSupabase
               .from('profiles')
               .select('role')
               .eq('id', userId)
@@ -261,10 +358,23 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         }
       }
     )
+    }
+    
+    // 非同期でリスナーを設定
+    let subscription: any = null
+    setupAuthListener().then(result => {
+      subscription = result.data.subscription
+      console.log('[CLIENT] 🟢 VERCEL FALLBACK - Auth listener setup complete')
+    }).catch(error => {
+      console.error('[CLIENT] 🚨 VERCEL FALLBACK - Auth listener setup failed:', error)
+    })
 
     // クリーンアップ関数
     return () => {
-      subscription.unsubscribe()
+      if (subscription) {
+        subscription.unsubscribe()
+        console.log('[CLIENT] 🔄 VERCEL FALLBACK - Auth listener unsubscribed')
+      }
     }
   }, [initialSession])
 
