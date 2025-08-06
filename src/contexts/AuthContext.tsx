@@ -277,7 +277,12 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         setAuthStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
         
         // ========== ADMIN DEBUG: 管理者権限チェック（onAuthStateChange内） ==========
-        if (session?.user) {
+        // 🚨 EMERGENCY FIX: SIGNED_INイベントでのクエリ実行をスキップ（INITIAL_SESSIONのみ実行）
+        if (session?.user && event === 'SIGNED_IN') {
+          console.log('[CLIENT] 🚨 EMERGENCY FIX - Skipping SIGNED_IN query to prevent timeout, waiting for INITIAL_SESSION')
+        }
+        
+        if (session?.user && event === 'INITIAL_SESSION') {
           const userId = session.user.id
           console.log('[CLIENT] 🔍 ADMIN DEBUG - Checking admin role for auth state change...')
           console.log('[CLIENT] 🔍 ADMIN DEBUG - Auth event context:', {
