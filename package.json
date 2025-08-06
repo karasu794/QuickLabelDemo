@@ -11,8 +11,8 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@react-google-maps/api": "^2.20.7",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.46.2",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.53.0",
     "@types/papaparse": "^5.3.16",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
