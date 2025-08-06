@@ -19,30 +19,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // ========== VERCEL DEBUG: Layout 初期化情報 ==========
-  console.log('[SERVER] 🔍 VERCEL DEBUG - RootLayout Starting:', {
-    nodeEnv: process.env.NODE_ENV,
-    vercelEnv: process.env.VERCEL_ENV,
-    vercelUrl: process.env.VERCEL_URL,
-    platform: process.platform,
-    timestamp: new Date().toISOString()
-  })
-
   // サーバーサイドで初期セッション情報を取得
   const session = await getSession()
-  
-  // ========== VERCEL DEBUG: Layout セッション情報 ==========
-  console.log('[SERVER] 🔍 VERCEL DEBUG - Layout Session Details:', {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    userEmail: session?.user?.email || 'no user',
-    userId: session?.user?.id || 'no id',
-    sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'no expiry',
-    currentTime: new Date().toISOString(),
-    isExpired: session?.expires_at ? Date.now() / 1000 > session.expires_at : 'unknown',
-    tokenLength: session?.access_token?.length || 0,
-    layoutTimestamp: new Date().toISOString()
-  })
 
   return (
     <html lang="ja">
