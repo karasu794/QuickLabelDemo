@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -146,9 +147,28 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
       }
 
-      // SupabaseのDBからユーザーのロールを取得
+      // SupabaseのDBからユーザーのロールを取得（Service Role Keyを使用）
       console.log(`[MIDDLEWARE] Fetching user profile for userId: ${user.id}`)
-      const { data: profile, error: profileError } = await supabase
+      
+      // Service Role Keyクライアントを作成（RLSバイパス）
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (!serviceRoleKey) {
+        console.error(`[MIDDLEWARE] Service Role Key not found`)
+        return NextResponse.redirect(new URL('/login?error=service_key_missing', request.url))
+      }
+      
+      const adminSupabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      )
+      
+      const { data: profile, error: profileError } = await adminSupabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
@@ -162,15 +182,17 @@ export async function middleware(request: NextRequest) {
       })
 
       if (profileError) {
-        console.error(`[MIDDLEWARE] Profile fetch error:`, {
+        console.error(`[MIDDLEWARE] Profile fetch error with Service Role Key:`, {
           error: profileError,
           code: profileError.code,
           message: profileError.message,
           details: profileError.details,
-          hint: profileError.hint
+          hint: profileError.hint,
+          userId: user.id,
+          usingServiceRole: true
         })
-        // プロファイル取得エラーの場合、ログインページへリダイレクト（ホームではなく）
-        return NextResponse.redirect(new URL('/login?error=profile_fetch_failed', request.url))
+        // Service Role Keyでも失敗した場合、システムエラーとして扱う
+        return NextResponse.redirect(new URL('/login?error=system_error', request.url))
       }
 
       if (profile?.role !== 'admin') {
