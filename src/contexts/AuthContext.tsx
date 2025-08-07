@@ -38,55 +38,72 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
   
   // 認証状態変更コールバックを安定化
   const handleAuthStateChange = useCallback(async (event: any, session: Session | null) => {
-    console.log('[AUTH_CONTEXT] Auth state change event:', { 
+    console.log('[AUTH_CONTEXT] 🔄 Auth state change event started:', { 
       event, 
       hasSession: !!session, 
       hasUser: !!session?.user,
       isFirstAuthEvent: !hasReceivedInitialAuthEventRef.current
     })
     
-    // 認証状態を更新
-    setUser(session?.user ?? null)
-    setAuthStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
-    
-    if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-      // 管理者権限チェック
-      try {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-
-        if (error) {
-          console.error('Error fetching profile:', error)
-          setIsAdmin(false)
-        } else {
-          const isUserAdmin = profile?.role === 'admin'
-          setIsAdmin(isUserAdmin)
-        }
-      } catch (error) {
-        console.error('Error in admin check:', error)
-        setIsAdmin(false)
+    try {
+      // 認証状態を更新（最重要処理）
+      setUser(session?.user ?? null)
+      setAuthStatus(session ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
+      console.log('[AUTH_CONTEXT] ✅ Core auth state updated')
+      
+      // 初回認証イベントの追跡
+      if (!hasReceivedInitialAuthEventRef.current) {
+        hasReceivedInitialAuthEventRef.current = true
+        console.log('[AUTH_CONTEXT] 🎯 First auth state event received:', {
+          event,
+          finalAuthStatus: session ? 'AUTHENTICATED' : 'UNAUTHENTICATED'
+        })
       }
-    } else {
-      setIsAdmin(false)
+      
+      // loading状態を即座に解除（管理者権限チェックより優先）
+      setLoading(false)
+      console.log('[AUTH_CONTEXT] 🚀 Loading set to FALSE - UI should update now')
+      
+      // 管理者権限チェック（非ブロッキング、UIの表示に影響させない）
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        console.log('[AUTH_CONTEXT] 🔍 Starting admin check (non-blocking)...')
+        // 非同期で管理者権限チェックを実行（UIをブロックしない）
+        const adminCheckPromise = async () => {
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single()
+
+            if (error) {
+              console.error('[AUTH_CONTEXT] ❌ Error fetching profile:', error)
+              setIsAdmin(false)
+            } else {
+              const isUserAdmin = profile?.role === 'admin'
+              setIsAdmin(isUserAdmin)
+              console.log('[AUTH_CONTEXT] ✅ Admin check completed:', { isUserAdmin })
+            }
+          } catch (error) {
+            console.error('[AUTH_CONTEXT] ❌ Error in admin check:', error)
+            setIsAdmin(false)
+          }
+        }
+        
+        // 非同期実行（awaitしない）
+        adminCheckPromise()
+      } else {
+        setIsAdmin(false)
+        console.log('[AUTH_CONTEXT] ⚪ No admin check needed')
+      }
+      
+    } catch (error) {
+      console.error('[AUTH_CONTEXT] ❌ Critical error in auth state change:', error)
+      // エラーが発生してもloading状態を解除
+      setLoading(false)
     }
     
-    // 初回認証イベントの追跡
-    if (!hasReceivedInitialAuthEventRef.current) {
-      hasReceivedInitialAuthEventRef.current = true
-      console.log('[AUTH_CONTEXT] First auth state event received:', {
-        event,
-        finalAuthStatus: session ? 'AUTHENTICATED' : 'UNAUTHENTICATED'
-      })
-    } else {
-      console.log('[AUTH_CONTEXT] Subsequent auth state event:', { event })
-    }
-    
-    // すべての認証イベント処理完了後、loading状態を確実に解除
-    setLoading(false)
-    console.log('[AUTH_CONTEXT] Auth state processing completed, loading set to false')
+    console.log('[AUTH_CONTEXT] 🏁 Auth state change event completed')
   }, [])
 
   useEffect(() => {
