@@ -110,17 +110,20 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         setIsAdmin(false)
       }
       
-      // 初回認証イベントを受け取った場合のみloading状態を解除
+      // 初回認証イベントの追跡
       if (!hasReceivedInitialAuthEvent) {
         setHasReceivedInitialAuthEvent(true)
-        setLoading(false)
-        console.log('[AUTH_CONTEXT] First auth state event received, loading set to false:', {
+        console.log('[AUTH_CONTEXT] First auth state event received:', {
           event,
           finalAuthStatus: session ? 'AUTHENTICATED' : 'UNAUTHENTICATED'
         })
       } else {
-        console.log('[AUTH_CONTEXT] Subsequent auth state event, loading already false:', { event })
+        console.log('[AUTH_CONTEXT] Subsequent auth state event:', { event })
       }
+      
+      // すべての認証イベント処理完了後、loading状態を確実に解除
+      setLoading(false)
+      console.log('[AUTH_CONTEXT] Auth state processing completed, loading set to false')
     })
 
     return () => subscription.unsubscribe()
