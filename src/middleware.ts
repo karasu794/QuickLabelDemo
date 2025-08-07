@@ -54,6 +54,27 @@ export async function middleware(request: NextRequest) {
   try {
     console.log(`[MIDDLEWARE] Session acquisition started for path: ${pathname}`)
     
+    // ホームページと公開ページでは最小限の処理に限定
+    if (pathname === '/' || pathname === '/login' || pathname === '/signup') {
+      console.log(`[MIDDLEWARE] Public page accessed: ${pathname}, minimal processing`)
+      
+      // ログイン済みユーザーがログイン・サインアップページにアクセスした場合のリダイレクトのみ実行
+      if (pathname === '/login' || pathname === '/signup') {
+        // Supabaseから軽量なセッションチェックのみ
+        const { data: { session: quickSession } } = await supabase.auth.getSession()
+        if (quickSession && quickSession.user) {
+          console.log(`[MIDDLEWARE] Logged-in user accessing auth page, redirecting to home`)
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+      }
+      
+      // 公開ページは通常のレスポンスを返す
+      return response
+    }
+    
+    // 保護されたパスでのみ完全な認証チェックを実行
+    console.log(`[MIDDLEWARE] Protected path accessed: ${pathname}, full authentication check`)
+    
     // まずSupabaseからのセッション取得を試行（より信頼性が高い）
     const { data: { session: supabaseSession }, error: sessionError } = await supabase.auth.getSession()
     
@@ -120,10 +141,7 @@ export async function middleware(request: NextRequest) {
       email: user?.email
     })
 
-    // 1. ログイン済みユーザーがログイン・サインアップページにアクセスした場合のリダイレクト
-    if (isLoggedIn && (pathname === '/login' || pathname === '/signup')) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+    // 1. この処理は上記の公開ページ処理で既に処理済み
 
     // 2. 管理者ページへのアクセス制御
     if (pathname.startsWith('/admin')) {
@@ -237,12 +255,15 @@ function isProtectedPath(pathname: string): boolean {
 
 export const config = {
   matcher: [
-    // 保護が必要なパスのみに限定してパフォーマンスを向上
-    '/admin/:path*',
-    '/mypage/:path*', 
-    '/shipping/:path*',
-    '/history/:path*',
-    '/login',
-    '/signup'
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - api (API routes)
+     * - / (homepage - public access)
+     * Feel free to modify this pattern to fit your needs.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|api|^$).*)',
   ],
 }

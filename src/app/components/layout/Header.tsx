@@ -125,10 +125,17 @@ export default function Header() {
   console.log('[CLIENT] 🔍 VERCEL DEBUG - Header Rendering Decision:', {
     authStatus: authStatus,
     loading: loading,
-    willRenderAuthenticatedHeader: authStatus === 'AUTHENTICATED',
-    willRenderUnauthenticatedHeader: authStatus !== 'AUTHENTICATED',
+    willRenderSkeleton: loading,
+    willRenderAuthenticatedHeader: !loading && authStatus === 'AUTHENTICATED',
+    willRenderUnauthenticatedHeader: !loading && authStatus !== 'AUTHENTICATED',
     timestamp: new Date().toISOString()
   })
+
+  // 認証状態が確定するまではスケルトンを表示（競合状態解消）
+  if (loading) {
+    console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering HeaderSkeleton due to loading state')
+    return <HeaderSkeleton />
+  }
 
   // 認証済みユーザー向けヘッダー
   if (authStatus === 'AUTHENTICATED') {
