@@ -58,11 +58,14 @@ export default function QuoteFormComponent({
     insuranceValidation.hasAnyOverLimit ||
     insuranceValidation.isValidating;
   
-  // 🔍 State変更監視用useEffect
+  // State変更監視用useEffect（デバッグ用、必要時のみ有効化）
   useEffect(() => {
-    console.log(`🎭 QuoteFormComponent再レンダリング:`);
-    console.log(`   originStateCode: "${quoteParams.originStateCode}"`);
-    console.log(`   destinationStateCode: "${quoteParams.destinationStateCode}"`);
+    if (process.env.NODE_ENV === 'development' && false) {
+      console.log(`QuoteFormComponent re-render:`, {
+        originStateCode: quoteParams.originStateCode,
+        destinationStateCode: quoteParams.destinationStateCode
+      });
+    }
   }, [quoteParams.originStateCode, quoteParams.destinationStateCode]);
 
   // 場所が選択された際のコールバック関数

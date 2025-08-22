@@ -1,5 +1,15 @@
 import '@testing-library/jest-dom'
 
+// Polyfills for Node.js environment
+const { TextEncoder, TextDecoder } = require('util')
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
+// Environment variables for testing
+process.env.BLOB_READ_WRITE_TOKEN = 'test-blob-token'
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+
 // Next.js Router のモック
 jest.mock('next/navigation', () => ({
   useRouter: () => ({

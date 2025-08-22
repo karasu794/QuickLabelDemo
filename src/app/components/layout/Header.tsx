@@ -12,21 +12,15 @@ export default function Header() {
   const { isAuthenticated, isAdmin, loading, authStatus, user } = useAuth()
   const router = useRouter()
 
-  // ========== VERCEL DEBUG: Header レンダリング情報 ==========
-  console.log('[CLIENT] 🔍 VERCEL DEBUG - Header Component Render:', {
-    authStatus: authStatus,
-    isAuthenticated: isAuthenticated,
-    isAdmin: isAdmin,
-    loading: loading,
-    hasUser: !!user,
-    userDetails: user ? {
-      id: user.id,
-      email: user.email
-    } : null,
-    url: typeof window !== 'undefined' ? window.location.href : 'SSR',
-    pathname: typeof window !== 'undefined' ? window.location.pathname : 'SSR',
-    renderTimestamp: new Date().toISOString()
-  })
+  // デバッグログ（開発環境でのみ、必要時のみ有効化）
+  if (process.env.NODE_ENV === 'development' && false) {
+    console.log('[CLIENT] Header Component Render:', {
+      authStatus,
+      isAuthenticated,
+      loading,
+      hasUser: !!user
+    })
+  }
 
   const handleLogout = async () => {
     try {
@@ -121,25 +115,13 @@ export default function Header() {
     }
   }
 
-  // ========== VERCEL DEBUG: レンダリング条件分岐 ==========
-  console.log('[CLIENT] 🔍 VERCEL DEBUG - Header Rendering Decision:', {
-    authStatus: authStatus,
-    loading: loading,
-    willRenderSkeleton: loading,
-    willRenderAuthenticatedHeader: !loading && authStatus === 'AUTHENTICATED',
-    willRenderUnauthenticatedHeader: !loading && authStatus !== 'AUTHENTICATED',
-    timestamp: new Date().toISOString()
-  })
-
   // 認証状態が確定するまではスケルトンを表示（競合状態解消）
   if (loading) {
-    console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering HeaderSkeleton due to loading state')
     return <HeaderSkeleton />
   }
 
   // 認証済みユーザー向けヘッダー
   if (authStatus === 'AUTHENTICATED') {
-    console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering AUTHENTICATED header with admin status:', isAdmin)
     return (
       <header className="bg-purple-900">
         <div className="container mx-auto px-6 h-16">
@@ -190,8 +172,7 @@ export default function Header() {
     )
   }
 
-  // ========== VERCEL DEBUG: 未認証ヘッダーレンダリング ==========
-  console.log('[CLIENT] 🔍 VERCEL DEBUG - Rendering UNAUTHENTICATED header')
+  // 未認証ユーザー向けヘッダー
   
   // 未認証ユーザー向けヘッダー (authStatus === 'UNAUTHENTICATED')
   return (

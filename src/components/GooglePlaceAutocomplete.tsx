@@ -593,9 +593,13 @@ export function GooglePlaceAutocomplete({
   useEffect(() => {
     const initializeGoogleMaps = async () => {
       try {
-        console.log('🔄 Loading Google Maps API...');
+        if (process.env.NODE_ENV === 'development' && false) {
+          console.log('Loading Google Maps API...');
+        }
         await managerRef.current.loadApi();
-        console.log('✅ Google Maps API loaded successfully');
+        if (process.env.NODE_ENV === 'development' && false) {
+          console.log('Google Maps API loaded successfully');
+        }
         setIsReady(true);
         setIsLoading(false);
       } catch (error) {
@@ -619,7 +623,9 @@ export function GooglePlaceAutocomplete({
   }, []);
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
-    console.log('📍 Autocomplete component loaded');
+    if (process.env.NODE_ENV === 'development' && false) {
+      console.log('Autocomplete component loaded');
+    }
     autocompleteRef.current = autocomplete;
   }, []);
 

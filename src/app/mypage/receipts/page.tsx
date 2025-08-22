@@ -125,8 +125,12 @@ export default function MypageReceiptsPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || '領収書の生成に失敗しました')
+        try {
+          const errorData = await response.json()
+          throw new Error(errorData.error?.message || '領収書の生成に失敗しました')
+        } catch (parseError) {
+          throw new Error('領収書の生成に失敗しました')
+        }
       }
 
       // PDFをダウンロード
@@ -176,16 +180,37 @@ export default function MypageReceiptsPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || '領収書の生成に失敗しました')
+        try {
+          const errorData = await response.json()
+          throw new Error(errorData.error?.message || '領収書の生成に失敗しました')
+        } catch (parseError) {
+          throw new Error('領収書の生成に失敗しました')
+        }
       }
 
-      const data = await response.json()
-      if (data.success && data.url) {
-        // 新しいタブで開く
-        window.open(data.url, '_blank')
+      // Content-Typeを確認してレスポンスタイプを判定
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/pdf')) {
+        // PDFバイナリが返された場合（開発環境でキャッシュが無効な場合）
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        window.open(url, '_blank')
+        // メモリリークを防ぐため、しばらく後にURLを解放
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000)
       } else {
-        throw new Error('領収書URLの取得に失敗しました')
+        // JSONレスポンスが返された場合（正常なキャッシュ有効時）
+        try {
+          const data = await response.json()
+          if (data.success && data.data?.url) {
+            window.open(data.data.url, '_blank')
+          } else {
+            throw new Error('領収書URLの取得に失敗しました')
+          }
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError)
+          throw new Error('レスポンスの解析に失敗しました')
+        }
       }
     } catch (err) {
       console.error('Error previewing receipt:', err)

@@ -11,8 +11,10 @@ interface AuthGuardProps {
 export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const { isAuthenticated, loading, user } = useAuth()
 
-  // ▼▼▼ ログ6: AuthGuardの状態確認 ▼▼▼
-  console.log(`[CLIENT] AuthGuard status - Loading: ${loading}, Authenticated: ${isAuthenticated}, User:`, user);
+  // AuthGuardの状態確認（デバッグ用、必要時のみ有効化）
+  if (process.env.NODE_ENV === 'development' && false) {
+    console.log(`[CLIENT] AuthGuard status - Loading: ${loading}, Authenticated: ${isAuthenticated}, User:`, user);
+  }
 
   // 認証状態を確認中はローディング画面を表示
   if (loading) {

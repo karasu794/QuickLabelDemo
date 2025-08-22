@@ -1,0 +1,42 @@
+name: Supabase Typegen Drift Check
+
+on:
+  pull_request:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  typegen-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+
+      - name: Generate types from remote
+        run: npx supabase@latest gen types typescript --project-id ${{ secrets.SUPABASE_PROJECT_REF }} --schema public > src/types/supabase.gen.ts
+
+      - name: Check drift
+        run: |
+          set -e
+          if ! diff -u src/types/supabase.ts src/types/supabase.gen.ts; then
+            echo "Type drift detected between src/types/supabase.ts and remote schema." >&2
+            echo "Run 'npm run typegen' locally and commit the changes." >&2
+            exit 1
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: rm -f src/types/supabase.gen.ts
+
+

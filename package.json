@@ -6,14 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "typegen": "node scripts/typegen.mjs",
+    "test:watch": "jest --watch",
+    "postinstall": "node ./scripts/download-chromium.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@react-google-maps/api": "^2.20.7",
+    "@sparticuz/chromium": "^131.0.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.53.0",
     "@types/papaparse": "^5.3.16",
+    "@vercel/blob": "^0.27.0",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -22,10 +29,12 @@
     "lucide-react": "^0.456.0",
     "next": "14.2.17",
     "papaparse": "^5.5.3",
+    "puppeteer-core": "^23.9.0",
     "react": "^18",
     "react-dom": "^18",
     "react-hot-toast": "^2.5.2",
     "react-square-web-payments-sdk": "^3.2.4-beta.1",
+    "server-only": "^0.0.1",
     "square": "^43.0.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
@@ -34,6 +43,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "dotenv": "^16.4.5",
     "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/react": "^18",

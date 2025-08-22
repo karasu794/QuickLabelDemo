@@ -1,30 +1,11 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/types/supabase'
 
 /**
  * 最適化されたSupabaseクライアント設定
  * セッション永続化とクライアントサイド遷移の安定性を向上
  */
-const createOptimizedClient = () => {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        // セッションの永続化設定を最適化
-        persistSession: true,
-        // セッション検出の積極性を向上
-        detectSessionInUrl: true,
-        // 自動リフレッシュの有効化
-        autoRefreshToken: true,
-        // ストレージからのセッション復元を有効化
-        storageKey: 'quicklabel-auth-token',
-        // フローをPKCEに固定（セキュリティ向上）
-        flowType: 'pkce'
-      }
-    }
-  )
-}
+const createOptimizedClient = () => createClientComponentClient<Database>()
 
 // シングルトンパターンでクライアントを作成
 export const supabase = createOptimizedClient()
