@@ -429,6 +429,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string | null
+          created_by: string | null
           error_message: string | null
           id: string
           org_id: string
@@ -441,6 +442,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string | null
+          created_by?: string | null
           error_message?: string | null
           id?: string
           org_id: string
@@ -453,6 +455,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string | null
+          created_by?: string | null
           error_message?: string | null
           id?: string
           org_id?: string

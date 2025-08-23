@@ -11,10 +11,11 @@ export async function GET(
     const supabase = createServiceRoleClient()
     
     // shipmentsテーブルから取引データを取得
+    const numericId = Number(id)
     const { data: shipment, error } = await supabase
       .from('shipments')
       .select('*')
-      .eq('id', id)
+      .eq('id', numericId)
       .single()
 
     if (error) {

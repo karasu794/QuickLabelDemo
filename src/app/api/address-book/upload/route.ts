@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import Papa from 'papaparse'
-import type { AddressBookInsert } from '@/types/supabase'
+import { requireOrg } from '@/lib/org'
+import type { Database } from '@/types/supabase'
 
 interface CSVRow {
   contact_name: string
@@ -20,16 +20,7 @@ interface ParsedRow extends CSVRow {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
-    
-    // ユーザー認証チェック
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'ログインが必要です' },
-        { status: 401 }
-      )
-    }
+    const { supabase, userId, orgId } = await requireOrg()
 
     // FormDataからファイルを取得
     const formData = await request.formData()
@@ -86,7 +77,8 @@ export async function POST(request: NextRequest) {
 
     // データバリデーション
     const validationErrors: string[] = []
-    const validRows: AddressBookInsert[] = []
+    type AddressInsert = Database['public']['Tables']['address_book']['Insert']
+    const validRows: AddressInsert[] = []
 
     rows.forEach((row: CSVRow, index: number) => {
       const rowNumber = index + 2 // ヘッダー行を除くため+2
@@ -114,17 +106,18 @@ export async function POST(request: NextRequest) {
       if (errors.length > 0) {
         validationErrors.push(...errors)
       } else {
-        const addressBookEntry: AddressBookInsert = {
-          user_id: user.id,
+        const addressBookEntry: AddressInsert = {
+          org_id: orgId,
+          created_by: userId,
           contact_name: row.contact_name.trim(),
           company_name: row.company_name?.trim() || null,
           phone_number: row.phone_number?.trim() || null,
           address1: row.address1?.trim() || null,
-          address2: null, // CSVには含めない、拡張用
+          address2: null,
           city: row.city?.trim() || null,
           state_code: row.state_code?.trim() || null,
           postal_code: row.postal_code?.trim() || null,
-          country_code: row.country_code.trim().toUpperCase()
+          country_code: row.country_code.trim().toUpperCase(),
         }
         validRows.push(addressBookEntry)
       }

@@ -101,7 +101,7 @@ export async function POST(request: NextRequest, { params }: { params: { shipmen
     const { data: shipment, error: shipError } = await supabaseAdmin
       .from('shipments')
       .select('id, user_id, tracking_number, status, shipper_country')
-      .eq('id', shipmentId)
+      .eq('id', Number(shipmentId))
       .single()
 
     if (shipError || !shipment) {
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest, { params }: { params: { shipmen
         status: 'CANCELED', 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', shipmentId)
+      .eq('id', Number(shipmentId))
 
     if (updateError) {
       console.error('❌ データベース更新エラー:', updateError)

@@ -13,27 +13,24 @@ export async function GET() {
 		const { supabase, orgId } = await requireOrg()
 
 		let query = supabase
-			.from('quote_jobs')
+			.from('shipments')
 			.select('*')
 			.eq('org_id', orgId)
 
-		// created_at での降順ソート（存在すれば）
-		// Supabaseは存在しないカラムのorder指定でエラーになるため、その場合はソートなしで返す
 		const { data, error } = await query.order('created_at', { ascending: false })
-
 		if (error) {
-			// created_atが無いなどで失敗した場合は、ソート無しで再試行
+			// created_at がない等のケースではソート無しで再実行
 			const retry = await supabase
-				.from('quote_jobs')
+				.from('shipments')
 				.select('*')
 				.eq('org_id', orgId)
 			if (retry.error) {
 				return NextResponse.json({ code: 'QL-DB', message: retry.error.message }, { status: 500 })
 			}
-			return NextResponse.json({ ok: true, data: retry.data as Database['public']['Tables']['quote_jobs']['Row'][] }, { status: 200 })
+			return NextResponse.json({ ok: true, data: retry.data as Database['public']['Tables']['shipments']['Row'][] }, { status: 200 })
 		}
 
-		return NextResponse.json({ ok: true, data: data as Database['public']['Tables']['quote_jobs']['Row'][] }, { status: 200 })
+		return NextResponse.json({ ok: true, data: data as Database['public']['Tables']['shipments']['Row'][] }, { status: 200 })
 	} catch (e: unknown) {
 		if (isKnownError(e)) {
 			return NextResponse.json({ code: e.code, message: e.message }, { status: e.status })
@@ -43,8 +40,13 @@ export async function GET() {
 }
 
 const createSchema = z.object({
-	request_payload: z.unknown(),
-	status: z.enum(['pending','processing_auth','processing_rate_request','completed','failed']).default('pending')
+	tracking_number: z.string().min(1),
+	status: z.string().min(1),
+	label_url: z.string().url().optional(),
+	total_amount: z.number().optional(),
+	shipper_country: z.string().optional(),
+	payment_id: z.string().optional(),
+	square_payment_id: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -62,17 +64,24 @@ export async function POST(request: NextRequest) {
 		}
 
 		const { supabase, userId, orgId } = await requireOrg()
-		type Insert = Database['public']['Tables']['quote_jobs']['Insert']
-		const base: Insert = {
+		type Insert = Database['public']['Tables']['shipments']['Insert']
+		const input = parsed.data
+		const payload: Insert = {
 			org_id: orgId,
-			request_payload: parsed.data.request_payload as Insert['request_payload'],
-			status: parsed.data.status
+			created_by: userId as Insert['created_by'],
+			user_id: userId as Insert['user_id'],
+			tracking_number: input.tracking_number as Insert['tracking_number'],
+			status: input.status as Insert['status'],
+			label_url: input.label_url as Insert['label_url'],
+			total_amount: input.total_amount as Insert['total_amount'],
+			shipper_country: input.shipper_country as Insert['shipper_country'],
+			payment_id: input.payment_id as Insert['payment_id'],
+			square_payment_id: input.square_payment_id as Insert['square_payment_id'],
 		}
-		const withAudit = { ...base, created_by: userId } as unknown as Insert
 
 		const { data, error } = await supabase
-			.from('quote_jobs')
-			.insert(withAudit)
+			.from('shipments')
+			.insert(payload)
 			.select('*')
 			.single()
 
@@ -88,6 +97,5 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ code: 'QL-UNEXPECTED', message: '予期しないエラーが発生しました' }, { status: 500 })
 	}
 }
-
 
 

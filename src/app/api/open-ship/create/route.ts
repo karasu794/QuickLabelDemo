@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { requireOrg } from '@/lib/org'
 import { createOpenShipment, buildOpenShipmentData } from '@/lib/fedex/open-ship'
 
 // リクエストの型定義
@@ -83,19 +83,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Supabaseクライアント初期化
-    const supabase = createClient()
-
-    // ユーザー認証状態を確認
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError) {
-      console.error('ユーザー認証エラー:', userError)
-      return NextResponse.json(
-        { error: 'ユーザー認証に失敗しました' },
-        { status: 401 }
-      )
-    }
+    // 認証・組織解決（APIでもCookie経由でセッション更新済み）
+    const { supabase, userId, orgId } = await requireOrg()
 
     // Open Shipment用データを構築
     const openShipmentData = buildOpenShipmentData(
@@ -126,7 +115,8 @@ export async function POST(request: NextRequest) {
     const { data: openShipmentRecord, error: dbError } = await supabase
       .from('open_shipments')
       .insert({
-        user_id: user?.id,
+        org_id: orgId,
+        created_by: userId,
         master_tracking_number: openShipmentResult.masterTrackingNumber,
         fedex_index: openShipmentResult.index,
         status: 'created',

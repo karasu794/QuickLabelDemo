@@ -167,7 +167,7 @@ async function verifyTransactionAccess(transactionId: string, userId: string): P
     const { data: shipment, error: shipmentError } = await supabase
       .from('shipments')
       .select('id, user_id')
-      .eq('id', transactionId)
+      .eq('id', Number(transactionId))
       .eq('user_id', userId)
       .single()
 
@@ -202,7 +202,8 @@ async function deleteCacheRecord(transactionId: string): Promise<void> {
     const { createServiceRoleClient } = await import('@/lib/supabase/server')
     const supabase = createServiceRoleClient()
     
-    const { error } = await supabase
+    // 型に存在しない旧テーブル名のため型回避して削除
+    const { error } = await (supabase as any)
       .from('receipt_cache')
       .delete()
       .eq('transaction_id', transactionId)
