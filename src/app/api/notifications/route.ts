@@ -1,42 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { requireOrg } from '@/lib/org'
+import type { Database } from '@/types/supabase'
 
-// Supabase client（service role）
-const getSupabaseServiceClient = () => {
-  return createClient()
-}
+// (unused legacy helper removed)
+type NotificationRow = Database['public']['Tables']['notifications']['Row']
 
 // GETリクエスト: 全ての通知を新しい順に取得
 export async function GET() {
   try {
-    const supabase = getSupabaseServiceClient()
+    const { supabase, orgId } = await requireOrg()
 
-    // notificationsテーブルから全ての通知を取得（新しい順）
-    const { data: notifications, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id,created_at,created_by,is_read,message,org_id,target_user_id,type')
+      .eq('org_id', orgId)
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('通知取得エラー:', error)
-      return NextResponse.json(
-        { error: '通知の取得に失敗しました' },
-        { status: 500 }
-      )
+      return NextResponse.json({ code: 'QL-DB', message: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({
-      success: true,
-      notifications: notifications || [],
-      count: notifications?.length || 0
-    })
-
-  } catch (error) {
-    console.error('通知取得エラー:', error)
-    return NextResponse.json(
-      { error: 'サーバーエラーが発生しました' },
-      { status: 500 }
-    )
+    return NextResponse.json({ ok: true, data: data as NotificationRow[] }, { status: 200 })
+  } catch (e: unknown) {
+    return NextResponse.json({ code: 'QL-UNEXPECTED', message: '予期しないエラーが発生しました' }, { status: 500 })
   }
 }
 
@@ -61,7 +47,14 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const supabase = getSupabaseServiceClient()
+    const { supabase, userId, orgId } = await requireOrg()
+    const idNum = Number(id)
+    if (!Number.isFinite(idNum)) {
+      return NextResponse.json(
+        { error: '無効な通知IDです' },
+        { status: 400 }
+      )
+    }
 
     // 通知を既読に更新
     const { data, error } = await (supabase as any)
@@ -71,8 +64,10 @@ export async function PUT(request: NextRequest) {
         read_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
-      .select()
+      .eq('id', idNum)
+      .eq('target_user_id', userId)
+      .eq('org_id', orgId)
+      .select('*')
       .single()
 
     if (error) {
@@ -128,7 +123,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = getSupabaseServiceClient()
+    const { supabase, orgId } = await requireOrg()
 
     // 新しい通知を作成
     const { data, error } = await (supabase as any)
@@ -137,6 +132,7 @@ export async function POST(request: NextRequest) {
         type: type,
         message: message,
         is_read: false,
+        org_id: orgId,
         metadata: metadata || {},
       })
       .select()
@@ -180,13 +176,21 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = getSupabaseServiceClient()
+    const { supabase, orgId } = await requireOrg()
+    const idNum = Number(id)
+    if (!Number.isFinite(idNum)) {
+      return NextResponse.json(
+        { error: '無効な通知IDです' },
+        { status: 400 }
+      )
+    }
 
     // 通知を削除
     const { error } = await (supabase as any)
       .from('notifications')
       .delete()
-      .eq('id', id)
+      .eq('id', idNum)
+      .eq('org_id', orgId)
 
     if (error) {
       console.error('通知削除エラー:', error)

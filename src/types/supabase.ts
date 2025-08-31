@@ -228,8 +228,10 @@ export type Database = {
           is_read: boolean | null
           message: string | null
           org_id: string | null
+          read_at: string | null
           target_user_id: string | null
           type: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
@@ -238,8 +240,10 @@ export type Database = {
           is_read?: boolean | null
           message?: string | null
           org_id?: string | null
+          read_at?: string | null
           target_user_id?: string | null
           type?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
@@ -248,8 +252,10 @@ export type Database = {
           is_read?: boolean | null
           message?: string | null
           org_id?: string | null
+          read_at?: string | null
           target_user_id?: string | null
           type?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
