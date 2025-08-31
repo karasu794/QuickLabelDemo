@@ -1,7 +1,9 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { ReceiptNumberService } from '@/types/receipt'
 import { TransactionType } from '@/types/receipt'
-import { ReceiptNumber, ReceiptNumberInsert } from '@/types/supabase'
+import type { Database } from '@/types/supabase'
+type ReceiptNumber = Database['public']['Tables']['receipt_numbers']['Row']
+type ReceiptNumberInsert = Database['public']['Tables']['receipt_numbers']['Insert']
 
 /**
  * 領収書番号生成サービス
@@ -37,14 +39,36 @@ export class ReceiptNumberServiceImpl implements ReceiptNumberService {
       // 領収書番号を YYMMDD0XXXX 形式で生成
       const receiptNumber = this.formatReceiptNumber(dateKey, sequenceNumber)
       
-      // データベースに保存
+      // org_id を解決（shipments → open_shipments の順）し、transaction_id の型も合わせる
+      const idNum = Number(transactionId)
+      const txId = (Number.isFinite(idNum) ? idNum : transactionId) as ReceiptNumberInsert['transaction_id']
+
+      let orgId: string | null = null
+      if (Number.isFinite(idNum)) {
+        const { data: shipOrg } = await this.supabase
+          .from('shipments')
+          .select('org_id')
+          .eq('id', idNum)
+          .maybeSingle()
+        orgId = shipOrg?.org_id ?? null
+      }
+      if (!orgId) {
+        const { data: openOrg } = await this.supabase
+          .from('open_shipments')
+          .select('org_id')
+          .eq('id', transactionId)
+          .maybeSingle()
+        orgId = openOrg?.org_id ?? null
+      }
+
       await this.saveReceiptNumber({
         date_key: dateKey,
         sequence_number: sequenceNumber,
         receipt_number: receiptNumber,
-        transaction_id: transactionId,
-        transaction_type: transactionType
-      })
+        transaction_id: txId,
+        transaction_type: transactionType,
+        org_id: orgId || ''
+      } as ReceiptNumberInsert)
       
       return receiptNumber
     } catch (error) {
@@ -93,10 +117,13 @@ export class ReceiptNumberServiceImpl implements ReceiptNumberService {
     transactionType: TransactionType
   ): Promise<string | null> {
     try {
+      const idNum2 = Number(transactionId)
+      const txId2 = (Number.isFinite(idNum2) ? idNum2 : transactionId) as ReceiptNumber['transaction_id']
+
       const { data, error } = await this.supabase
         .from('receipt_numbers')
         .select('receipt_number')
-        .eq('transaction_id', transactionId)
+        .eq('transaction_id', txId2)
         .eq('transaction_type', transactionType)
         .single()
 

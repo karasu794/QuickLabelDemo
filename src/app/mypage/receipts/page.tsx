@@ -8,7 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Shipment } from '@/types/supabase'
+import type { Database } from '@/types/supabase'
+type ShipmentRow = Database['public']['Tables']['shipments']['Row']
 
 // 動的レンダリングを強制してキャッシュを回避
 export const dynamic = 'force-dynamic'
@@ -71,16 +72,16 @@ export default function MypageReceiptsPage() {
 
       // shipmentsを変換
       if (shipments) {
-        shipments.forEach((shipment: Shipment) => {
+        (shipments as ShipmentRow[]).forEach((shipment) => {
           allTransactions.push({
-            id: shipment.id,
+            id: String(shipment.id),
             type: 'shipment',
-            trackingNumber: shipment.tracking_number,
-            status: shipment.status,
+            trackingNumber: shipment.tracking_number || '',
+            status: shipment.status || '',
             totalAmount: shipment.total_amount,
             paymentId: shipment.payment_id,
             createdAt: shipment.created_at || '',
-            description: `配送サービス (追跡番号: ${shipment.tracking_number})`
+            description: `配送サービス (追跡番号: ${shipment.tracking_number || '-'})`
           })
         })
       }

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import { requireOrg } from '@/lib/org'
+import { checkRate } from '@/lib/ratelimit'
 import { SquareClient, SquareEnvironment, SquareError } from 'square'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
@@ -623,6 +626,20 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit (per user if available, otherwise per IP)
+  let userId: string | null = null
+  try {
+    const org = await requireOrg()
+    userId = org.userId
+  } catch {
+    userId = null
+  }
+  const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
+  const key = userId ? `user:${userId}` : `ip:${ip}`
+  const rate = await checkRate(key)
+  if (!rate.success) {
+    return NextResponse.json({ code: 'RATE_LIMIT', message: 'Too many requests' }, { status: 429 })
+  }
   let paymentId: string | null = null;
   let shipmentId: string | null = null;
 

@@ -9,11 +9,10 @@ import {
   FeeBreakdown,
   TransactionType 
 } from '@/types/receipt'
-import { 
-  Shipment, 
-  Profile,
-  AppSetting 
-} from '@/types/supabase'
+import type { Database } from '@/types/supabase'
+type Shipment = Database['public']['Tables']['shipments']['Row']
+type Profile = Database['public']['Tables']['profiles']['Row']
+type AppSetting = Database['public']['Tables']['app_settings']['Row']
 import { RECEIPT_CONFIG } from '@/lib/config/receipt'
 
 /**
@@ -93,7 +92,7 @@ export class DataRetrievalService {
       const { data: shipment, error: shipmentError } = await this.supabase
         .from('shipments')
         .select('id')
-        .eq('id', transactionId)
+        .eq('id', Number(transactionId))
         .single()
 
       if (!shipmentError && shipment) {
@@ -124,7 +123,7 @@ export class DataRetrievalService {
       const { data, error } = await this.supabase
         .from('shipments')
         .select('*')
-        .eq('id', transactionId)
+        .eq('id', Number(transactionId))
         .eq('user_id', userId) // 所有者確認
         .single()
 
@@ -354,10 +353,19 @@ export class DataRetrievalService {
    * @returns 顧客情報
    */
   private buildCustomerInfo(profile: Profile): CustomerInfo {
+    const addressCombined = [
+      profile.address_prefecture,
+      profile.address_city,
+      profile.address_line1,
+      profile.address_line2,
+    ]
+      .filter((v): v is string => !!v && v.length > 0)
+      .join(' ')
+
     return {
       name: profile.full_name || '名前未設定',
       companyName: profile.company_name || undefined,
-      address: profile.address || undefined,
+      address: addressCombined || undefined,
       phone: profile.phone_number || undefined
     }
   }
@@ -462,7 +470,7 @@ export class DataRetrievalService {
         const { data, error } = await this.supabase
           .from('shipments')
           .select('updated_at')
-          .eq('id', transactionId)
+          .eq('id', Number(transactionId))
           .single()
           
         if (error || !data) return true

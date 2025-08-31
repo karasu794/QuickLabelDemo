@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import { requireOrg } from '@/lib/org'
+import { checkRate } from '@/lib/ratelimit'
 import { createClient } from '@/lib/supabase/server'
 import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteRequest } from '@/lib/validators/quote'
 
@@ -8,6 +11,20 @@ import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteReques
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit (per user if available, otherwise per IP)
+    let userId: string | null = null
+    try {
+      const org = await requireOrg()
+      userId = org.userId
+    } catch {
+      userId = null
+    }
+    const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
+    const key = userId ? `user:${userId}` : `ip:${ip}`
+    const rate = await checkRate(key)
+    if (!rate.success) {
+      return NextResponse.json({ code: 'RATE_LIMIT', message: 'Too many requests' }, { status: 429 })
+    }
     // 環境変数の確認
     console.log('環境変数確認:', {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? '設定済み' : '未設定',

@@ -54,11 +54,18 @@ export default function ProfilePage() {
         }
 
         if (profile) {
+          const addressCombined = [
+            profile.address_prefecture,
+            profile.address_city,
+            profile.address_line1,
+            profile.address_line2,
+          ].filter((v) => !!v && v.length > 0).join(' ')
+
           setProfileData({
             full_name: profile.full_name || '',
             company_name: profile.company_name || '',
             phone_number: profile.phone_number || '',
-            address: profile.address || '',
+            address: addressCombined || '',
             postal_code: '',
             city: '',
             state: '',

@@ -127,7 +127,7 @@ export class CacheInvalidationService {
     try {
       const supabase = createServiceRoleClient()
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('receipt_cache')
         .select('created_at')
         .order('created_at', { ascending: true })
@@ -167,7 +167,7 @@ export class CacheInvalidationService {
     try {
       const supabase = createServiceRoleClient()
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('receipt_cache')
         .delete()
         .eq('transaction_id', transactionId)
@@ -194,7 +194,7 @@ export class CacheInvalidationService {
       .eq('user_id', userId)
 
     if (!shipmentError && shipments) {
-      transactionIds.push(...shipments.map(s => s.id))
+      transactionIds.push(...shipments.map(s => String((s as { id: string | number }).id)))
     }
 
     // open_shipmentsテーブルから取得
@@ -204,7 +204,9 @@ export class CacheInvalidationService {
       .eq('user_id', userId)
 
     if (!openShipmentError && openShipments) {
-      transactionIds.push(...openShipments.map(s => s.id))
+      transactionIds.push(
+        ...openShipments.map((s: { id: string | number }) => String(s.id))
+      )
     }
 
     return transactionIds
@@ -217,7 +219,7 @@ export class CacheInvalidationService {
     const supabase = createServiceRoleClient()
     const cutoffDate = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000)
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('receipt_cache')
       .select('transaction_id')
       .lt('created_at', cutoffDate.toISOString())
@@ -226,7 +228,7 @@ export class CacheInvalidationService {
       throw error
     }
 
-    return data ? data.map(record => record.transaction_id) : []
+    return data ? data.map(record => String((record as { transaction_id: string | number }).transaction_id)) : []
   }
 }
 
