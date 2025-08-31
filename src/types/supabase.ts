@@ -223,26 +223,43 @@ export type Database = {
       notifications: {
         Row: {
           created_at: string | null
+          created_by: string | null
           id: number
           is_read: boolean | null
           message: string | null
+          org_id: string | null
+          target_user_id: string | null
           type: string | null
         }
         Insert: {
           created_at?: string | null
+          created_by?: string | null
           id?: number
           is_read?: boolean | null
           message?: string | null
+          org_id?: string | null
+          target_user_id?: string | null
           type?: string | null
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
           id?: number
           is_read?: boolean | null
           message?: string | null
+          org_id?: string | null
+          target_user_id?: string | null
           type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_org_fk"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       open_shipments: {
         Row: {
