@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { requireOrg } from '@/lib/org'
 import type { Database } from '@/types/supabase'
 type NotificationRow = Database['public']['Tables']['notifications']['Row']
-type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+type NotificationUpdate = Database['public']['Tables']['notifications']['Update'] & {
+  read_at?: string | null
+  updated_at?: string | null
+}
 
 type KnownError = { status: number; code: string; message: string }
 function isKnownError(e: unknown): e is KnownError {
@@ -11,29 +13,30 @@ function isKnownError(e: unknown): e is KnownError {
 }
 
 // notifications.id は number（integer）
-const idSchema = z.object({ id: z.string().regex(/^\d+$/, 'invalid id') })
 
 export async function PATCH(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const parsed = idSchema.safeParse(params)
-    if (!parsed.success) {
-      return NextResponse.json({ code: 'QL-VALIDATION', message: '無効なIDです' }, { status: 400 })
+    const { supabase, userId, orgId } = await requireOrg()
+    const idStr = params.id
+    const idNum = Number(idStr)
+    if (!Number.isFinite(idNum)) {
+      return NextResponse.json({ code: 'QL-VALIDATION', message: 'invalid id' }, { status: 400 })
     }
 
-    const { supabase, userId } = await requireOrg()
-    const id = parsed.data.id
-    const idNum = Number(id)
-
-    const updates: NotificationUpdate = {
+    const now = new Date().toISOString()
+    const update: Partial<NotificationRow> & Pick<NotificationUpdate, 'read_at' | 'updated_at'> = {
       is_read: true,
+      read_at: now,
+      updated_at: now,
     }
 
     const { data, error } = await supabase
       .from('notifications')
-      .update(updates)
+      .update(update)
       .eq('id', idNum)
+      .eq('org_id', orgId)
       .eq('target_user_id', userId)
-      .select('id,created_at,created_by,is_read,message,org_id,target_user_id,type')
+      .select('id,is_read,read_at,updated_at')
       .maybeSingle()
 
     if (error) {
