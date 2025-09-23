@@ -23,6 +23,7 @@ interface ConfirmShipmentRequest {
 export async function POST(request: NextRequest) {
   try {
     const data: ConfirmShipmentRequest = await request.json()
+    // NOTE: For production single-package flow, prefer /api/ship/create.
 
     console.log('🚀 === Open Shipment確定処理開始 ===')
     console.log('リクエストデータ:', { 
