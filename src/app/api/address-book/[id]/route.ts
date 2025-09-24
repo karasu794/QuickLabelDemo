@@ -47,11 +47,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 		}
 
 		const { supabase, orgId } = await requireOrg()
+		// Supabase の型推論が .update(...) の引数で never になるのを回避
 		type Update = Database['public']['Tables']['address_book']['Update']
-		const payload: Partial<Update> = updateInput
+		const payload = updateInput as Partial<Update>
 
-		const { data, error } = await supabase
-			.from('address_book')
+		const { data, error } = await (supabase
+			.from('address_book') as any)
 			.update(payload)
 			.match({ id })
 			.eq('org_id', orgId)

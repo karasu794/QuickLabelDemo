@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { addPackagesToOpenShipment } from '@/lib/fedex/open-ship'
 import { getFedExCredentialsByOrigin } from '@/lib/fedex/auth'
 import type { PackageData } from '@/lib/fedex/open-ship'
+import type { Database } from '@/types/supabase'
 
 // リクエストの型定義
 interface AddPackagesRequest {
@@ -120,7 +121,10 @@ export async function POST(request: NextRequest) {
       openShipmentQuery = openShipmentQuery.eq('user_id', user.id)
     }
 
-    const { data: openShipment, error: queryError } = await openShipmentQuery.single()
+    type OpenShipmentRow = Database['public']['Tables']['open_shipments']['Row']
+    const { data: openShipmentRaw, error: queryError } = await (openShipmentQuery
+      .select('*') as any).single()
+    const openShipment = openShipmentRaw as OpenShipmentRow
 
     if (queryError || !openShipment) {
       console.error('Open Shipment検索エラー:', queryError)
@@ -187,15 +191,15 @@ export async function POST(request: NextRequest) {
     const newTotalPackages = openShipment.total_packages + fedexPackages.length
     const newPackagesAdded = openShipment.packages_added + fedexPackages.length
 
-    const { error: updateError } = await supabase
-      .from('open_shipments')
+    const { error: updateError } = await (supabase
+      .from('open_shipments') as any)
       .update({
         total_packages: newTotalPackages,
         packages_added: newPackagesAdded,
         status: 'in_progress',
         updated_at: new Date().toISOString()
-      })
-      .eq('id', openShipment.id)
+      } as any)
+      .eq('id', openShipment.id as OpenShipmentRow['id'])
 
     if (updateError) {
       console.error('データベース更新エラー:', updateError)

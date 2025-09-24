@@ -44,11 +44,9 @@ export async function POST(request: NextRequest) {
 			created_by: userId,
 		}
 
-		const { data, error } = await supabase
-			.from('address_book')
-			.insert(
-				insertPayload as unknown as Database['public']['Tables']['address_book']['Insert']
-			)
+		const { data, error } = await (supabase
+			.from('address_book') as any)
+			.insert(insertPayload)
 			.select()
 			.single()
 

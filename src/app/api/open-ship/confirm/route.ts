@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { confirmOpenShipment, getOpenShipmentResults } from '@/lib/fedex/open-ship'
 import { getFedExCredentialsByOrigin } from '@/lib/fedex/auth'
+import type { Database } from '@/types/supabase'
 
 // リクエストの型定義
 interface ConfirmShipmentRequest {
@@ -71,7 +72,10 @@ export async function POST(request: NextRequest) {
       openShipmentQuery = openShipmentQuery.eq('user_id', user.id)
     }
 
-    const { data: openShipment, error: queryError } = await openShipmentQuery.single()
+    type OpenShipmentRow = Database['public']['Tables']['open_shipments']['Row']
+    const { data: openShipmentRaw, error: queryError } = await (openShipmentQuery
+      .select('*') as any).single()
+    const openShipment = openShipmentRaw as OpenShipmentRow
 
     if (queryError || !openShipment) {
       console.error('Open Shipment検索エラー:', queryError)
@@ -180,16 +184,16 @@ export async function POST(request: NextRequest) {
       console.log('⏳ 大量パッケージのため非同期処理中...', confirmResult.jobId)
       
       // データベースを更新（jobId保存）
-      await supabase
-        .from('open_shipments')
-        .update({
+    await (supabase
+      .from('open_shipments') as any)
+      .update({
           status: 'processing',
           fedex_job_id: confirmResult.jobId,
           confirmed_at: new Date().toISOString(),
           ...(paymentId && { payment_id: paymentId }),
           updated_at: new Date().toISOString()
-        })
-        .eq('id', openShipment.id)
+      } as any)
+      .eq('id', openShipment.id as OpenShipmentRow['id'])
 
       return NextResponse.json({
         success: true,
@@ -218,8 +222,8 @@ export async function POST(request: NextRequest) {
       .filter(url => url)
 
     // データベースを更新
-    await supabase
-      .from('open_shipments')
+    await (supabase
+      .from('open_shipments') as any)
       .update({
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
@@ -227,8 +231,8 @@ export async function POST(request: NextRequest) {
         tracking_numbers: confirmResult.packageResponses.map(p => p.trackingNumber),
         ...(paymentId && { payment_id: paymentId }),
         updated_at: new Date().toISOString()
-      })
-      .eq('id', openShipment.id)
+      } as any)
+      .eq('id', openShipment.id as OpenShipmentRow['id'])
 
     return NextResponse.json({
       success: true,
@@ -301,15 +305,15 @@ export async function GET(request: NextRequest) {
       .map(pkg => pkg.packageDocuments?.[0]?.url)
       .filter(url => url)
 
-    await supabase
-      .from('open_shipments')
+    await (supabase
+      .from('open_shipments') as any)
       .update({
         status: 'confirmed',
         label_urls: labelUrls.filter((url): url is string => url !== undefined),
         tracking_numbers: results.packageResponses.map(p => p.trackingNumber),
         updated_at: new Date().toISOString()
-      })
-      .eq('fedex_job_id', jobId)
+      } as any)
+      .eq('fedex_job_id', jobId as string)
 
     return NextResponse.json({
       success: true,

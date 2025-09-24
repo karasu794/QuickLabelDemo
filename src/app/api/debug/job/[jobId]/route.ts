@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/supabase'
+
+type QuoteJobRow = Database['public']['Tables']['quote_jobs']['Row']
 
 export async function GET(request: NextRequest, { params }: { params: { jobId: string } }) {
   try {
@@ -19,16 +22,16 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
     let query = supabase
       .from('quote_jobs')
       .select('*')
-      .eq('id', jobId);
+      .eq('id', jobId as QuoteJobRow['id']);
 
     // ログインユーザーの場合は自分のジョブのみ、未ログインの場合はuser_idがnullのジョブのみ
     if (user) {
-      query = query.eq('user_id', user.id);
+      query = query.eq('user_id', user.id as QuoteJobRow['user_id']);
     } else {
       query = query.is('user_id', null);
     }
 
-    const { data: job, error: fetchError } = await query.single();
+    const { data: job, error: fetchError } = await (query as any).single();
 
     if (fetchError || !job) {
       console.error('ジョブ取得エラー:', fetchError);
@@ -71,7 +74,8 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
     const { data: todayStats, error: statsError } = await supabase
       .from('quote_jobs')
       .select('status')
-      .gte('created_at', new Date().toISOString().split('T')[0]);
+      .gte('created_at', new Date().toISOString().split('T')[0])
+      .returns<Pick<QuoteJobRow, 'status'>[]>();
 
     const statusCounts = todayStats?.reduce((acc, job) => {
       acc[job.status] = (acc[job.status] || 0) + 1;

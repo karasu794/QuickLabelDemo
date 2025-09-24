@@ -79,9 +79,9 @@ export async function POST(request: NextRequest) {
 			square_payment_id: input.square_payment_id as Insert['square_payment_id'],
 		}
 
-		const { data, error } = await supabase
-			.from('shipments')
-			.insert(payload)
+		const { data, error } = await (supabase
+			.from('shipments') as any)
+			.insert(payload as any)
 			.select('*')
 			.single()
 

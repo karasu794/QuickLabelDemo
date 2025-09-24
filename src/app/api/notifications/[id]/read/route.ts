@@ -30,12 +30,12 @@ export async function PATCH(_req: NextRequest, { params }: { params: { id: strin
       updated_at: now,
     }
 
-    const { data, error } = await supabase
-      .from('notifications')
-      .update(update)
+    const { data, error } = await (supabase
+      .from('notifications') as any)
+      .update(update as any)
       .eq('id', idNum)
-      .eq('org_id', orgId)
-      .eq('target_user_id', userId)
+      .eq('org_id', orgId as NotificationRow['org_id'])
+      .eq('target_user_id', userId as NotificationRow['target_user_id'])
       .select('id,is_read,read_at,updated_at')
       .maybeSingle()
 

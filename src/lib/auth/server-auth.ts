@@ -45,8 +45,9 @@ export async function verifyAdminAccess(): Promise<AdminVerificationResult> {
       }
     }
 
-    if (profile?.role !== 'admin') {
-      console.log('🚨 管理者権限なし:', { userId: user.id, role: profile?.role })
+    if (!profile || (profile as any).role !== 'admin') {
+      const roleVal = profile ? (profile as any).role : null
+      console.log('🚨 管理者権限なし:', { userId: user.id, role: roleVal })
       return {
         success: false,
         error: 'Insufficient permissions'

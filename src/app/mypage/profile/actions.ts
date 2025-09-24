@@ -19,8 +19,8 @@ export async function updateProfile(userId: string, profileData: ProfileData) {
     const supabase = createClient()
 
     // プロフィールを更新
-    const { error } = await supabase
-      .from('profiles')
+    const { error } = await (supabase
+      .from('profiles') as any)
       .update({
         full_name: profileData.full_name,
         company_name: profileData.company_name,
@@ -31,8 +31,8 @@ export async function updateProfile(userId: string, profileData: ProfileData) {
         state: profileData.state,
         country: profileData.country,
         updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
+      } as any)
+      .eq('id', userId as any)
 
     if (error) {
       console.error('プロフィール更新エラー:', error)

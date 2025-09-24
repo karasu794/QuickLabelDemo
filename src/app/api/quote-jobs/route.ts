@@ -70,9 +70,9 @@ export async function POST(request: NextRequest) {
 		}
 		const withAudit = { ...base, created_by: userId } as unknown as Insert
 
-		const { data, error } = await supabase
-			.from('quote_jobs')
-			.insert(withAudit)
+		const { data, error } = await (supabase
+			.from('quote_jobs') as any)
+			.insert(withAudit as any)
 			.select('*')
 			.single()
 

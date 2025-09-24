@@ -42,10 +42,21 @@ export default function ProfilePage() {
 
       try {
         const supabase = createClient()
-        const { data: profile, error } = await supabase
+        type ProfileRow = {
+          id: string
+          full_name: string | null
+          company_name: string | null
+          phone_number: string | null
+          address_prefecture: string | null
+          address_city: string | null
+          address_line1: string | null
+          address_line2: string | null
+          updated_at: string | null
+        }
+        const { data: profile, error } = await (supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', user.id) as any)
           .single()
 
         if (error) {

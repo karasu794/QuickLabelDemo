@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOrg } from '@/lib/org'
 import { createOpenShipment, buildOpenShipmentData } from '@/lib/fedex/open-ship'
+import type { Database } from '@/types/supabase'
 
 // リクエストの型定義
 interface CreateOpenShipmentRequest {
@@ -112,8 +113,8 @@ export async function POST(request: NextRequest) {
     })
 
     // データベースにOpen Shipment情報を記録
-    const { data: openShipmentRecord, error: dbError } = await supabase
-      .from('open_shipments')
+    const { data: openShipmentRecord, error: dbError } = await (supabase
+      .from('open_shipments') as any)
       .insert({
         org_id: orgId,
         created_by: userId,
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
         total_packages: 1, // 最初は1個から開始
         packages_added: 1,
         created_at: new Date().toISOString()
-      })
+      } as any)
       .select()
       .single()
 

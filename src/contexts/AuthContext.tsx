@@ -82,7 +82,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
               console.error('[AUTH_CONTEXT] Error fetching profile:', error)
               setIsAdmin(false)
             } else {
-              const isUserAdmin = profile?.role === 'admin'
+              const isUserAdmin = !!profile && (profile as any).role === 'admin'
               setIsAdmin(isUserAdmin)
             }
           } catch (error) {
@@ -126,7 +126,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
             console.error('Error fetching profile:', error)
             setIsAdmin(false)
           } else {
-            const isUserAdmin = profile?.role === 'admin'
+            const isUserAdmin = !!profile && (profile as any).role === 'admin'
             setIsAdmin(isUserAdmin)
           }
           

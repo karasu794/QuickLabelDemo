@@ -17,10 +17,10 @@ export async function requireOrg(): Promise<{ supabase: ReturnType<typeof getSer
 		throw err
 	}
 
-	const { data: mem, error: memErr } = await supabase
-		.from('organization_members')
+	const { data: mem, error: memErr } = await (supabase
+		.from('organization_members') as any)
 		.select('org_id')
-		.eq('user_id', user.id)
+		.eq('user_id', user.id as any)
 		.limit(1)
 		.maybeSingle()
 
@@ -29,7 +29,7 @@ export async function requireOrg(): Promise<{ supabase: ReturnType<typeof getSer
 		throw err
 	}
 
-	return { supabase, userId: user.id, orgId: mem.org_id as string }
+	return { supabase, userId: user.id, orgId: (mem as { org_id: string }).org_id }
 }
 
 export type RequireOrgResult = Awaited<ReturnType<typeof requireOrg>>

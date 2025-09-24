@@ -134,9 +134,9 @@ export async function POST(request: NextRequest) {
     }
 
     // データベースへの一括挿入
-    const { error: insertError } = await supabase
-      .from('address_book')
-      .insert(validRows)
+    const { error: insertError } = await (supabase
+      .from('address_book') as any)
+      .insert(validRows as any)
 
     if (insertError) {
       console.error('データベース挿入エラー:', insertError)
