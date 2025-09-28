@@ -19,6 +19,9 @@ alter table if exists public.shipments
 alter table if exists public.shipments
   add column if not exists rate_total numeric(12,2);
 
+alter table if exists public.shipments
+  add column if not exists order_id text;
+
 -- Unique index on order_id (create if not exists)
 create unique index if not exists shipments_order_id_key on public.shipments(order_id);
 

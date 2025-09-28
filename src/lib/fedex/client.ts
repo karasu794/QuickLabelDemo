@@ -1,123 +1,160 @@
+'use server'
+
 import 'server-only'
-import { Redis } from '@upstash/redis'
 
-export type FedExAccountKind = 'export' | 'import'
+import { logError, logInfo, maskPII } from '../logging'
 
-export type FedExCredentials = {
-  kind: FedExAccountKind
-  accountNumber: string
-  clientId: string
-  clientSecret: string
+export type AccountKind = 'export' | 'import'
+
+export function determineAccountKind(originCountry: string, destinationCountry: string): AccountKind {
+	const o = (originCountry || '').trim().toUpperCase()
+	const d = (destinationCountry || '').trim().toUpperCase()
+	if (o !== d && o === 'JP') return 'export'
+	return 'import'
 }
 
-function getBaseUrl(): string {
-  const base = process.env.FEDEX_API_BASE_URL?.trim()
-  return base || 'https://apis.fedex.com'
+function readEnv(kind: AccountKind) {
+	const env = process.env
+	if (kind === 'export') {
+		const apiKey = env.FEDEX_EXPORT_API_KEY || ''
+		const secret = env.FEDEX_EXPORT_SECRET_KEY || ''
+		const accountNumber = env.FEDEX_EXPORT_ACCOUNT_NUMBER || ''
+		if (!apiKey || !secret || !accountNumber) {
+			throw new Error('Missing FedEx export credentials: FEDEX_EXPORT_API_KEY/SECRET_KEY/ACCOUNT_NUMBER')
+		}
+		return { apiKey, secret, accountNumber }
+	}
+	const apiKey = env.FEDEX_IMPORT_API_KEY || ''
+	const secret = env.FEDEX_IMPORT_SECRET_KEY || ''
+	const accountNumber = env.FEDEX_IMPORT_ACCOUNT_NUMBER || ''
+	if (!apiKey || !secret || !accountNumber) {
+		throw new Error('Missing FedEx import credentials: FEDEX_IMPORT_API_KEY/SECRET_KEY/ACCOUNT_NUMBER')
+	}
+	return { apiKey, secret, accountNumber }
 }
 
-export function selectFedExCredentials(params: { originCountry: string; destinationCountry: string }): FedExCredentials {
-  const { originCountry, destinationCountry } = params
-  const isExport = originCountry?.toUpperCase() === 'JP' && destinationCountry?.toUpperCase() !== 'JP'
-  const kind: FedExAccountKind = isExport ? 'export' : 'import'
-  if (kind === 'export') {
-    return {
-      kind,
-      accountNumber: process.env.FEDEX_EXPORT_ACCOUNT_NUMBER!,
-      clientId: process.env.FEDEX_EXPORT_API_KEY!,
-      clientSecret: process.env.FEDEX_EXPORT_SECRET_KEY!,
-    }
-  }
-  return {
-    kind,
-    accountNumber: process.env.FEDEX_IMPORT_ACCOUNT_NUMBER!,
-    clientId: process.env.FEDEX_IMPORT_API_KEY!,
-    clientSecret: process.env.FEDEX_IMPORT_SECRET_KEY!,
-  }
+export function selectCredentials(params: { originCountry: string; destinationCountry: string }): { kind: AccountKind; apiKey: string; secret: string; accountNumber: string } {
+	const kind = determineAccountKind(params.originCountry, params.destinationCountry)
+	const { apiKey, secret, accountNumber } = readEnv(kind)
+	return { kind, apiKey, secret, accountNumber }
 }
 
-const memCache = new Map<string, { token: string; exp: number }>()
+// In-memory token cache as a fallback when Redis is not configured
+const memoryTokenCache: Map<AccountKind, { token: string; expiresAt: number }> = new Map()
 
-async function getRedis(): Promise<Redis | null> {
-  const url = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
-  return new Redis({ url, token })
+async function getRedisClient() {
+	const url = process.env.UPSTASH_REDIS_REST_URL
+	const token = process.env.UPSTASH_REDIS_REST_TOKEN
+	if (!url || !token) return null
+	const { Redis } = await import('@upstash/redis')
+	return new Redis({ url, token }) as InstanceType<typeof Redis>
+}
+
+export async function getAccessToken(kind: AccountKind): Promise<string> {
+	// Prefer Redis cache
+	try {
+		const redis = await getRedisClient()
+		const key = `ql:fedex:token:${kind}`
+		if (redis) {
+			const cached = await redis.get<string>(key)
+			if (cached) return cached
+		}
+		// Check memory cache
+		const now = Date.now()
+		const mem = memoryTokenCache.get(kind)
+		if (mem && mem.expiresAt > now + 5_000) {
+			return mem.token
+		}
+
+		const { apiKey, secret } = readEnv(kind)
+		const body = new URLSearchParams()
+		body.set('grant_type', 'client_credentials')
+
+		const res = await fetch('https://apis.fedex.com/oauth/token', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Authorization: 'Basic ' + Buffer.from(`${apiKey}:${secret}`).toString('base64'),
+			},
+			body: body.toString(),
+			cache: 'no-store',
+		})
+		if (!res.ok) {
+			const text = await res.text().catch(() => '')
+			logError('fedex.oauth.error', { kind, status: res.status, body: text })
+			throw new FedExError(res.status, 'Failed to obtain access token', safeJson(text))
+		}
+		const data = (await res.json()) as { access_token: string; expires_in: number }
+		const token = data.access_token
+		// FedEx expires_in is seconds; store slightly under real TTL (3000s per spec)
+		const ttlSeconds = Math.min(3000, Math.max(60, Number(data.expires_in || 3000)))
+		const expiresAt = Date.now() + ttlSeconds * 1000
+		memoryTokenCache.set(kind, { token, expiresAt })
+		const redis2 = await getRedisClient()
+		if (redis2) {
+			await redis2.set(`ql:fedex:token:${kind}`, token, { ex: 3000 })
+		}
+		logInfo('fedex.oauth.ok', { kind, ttl: ttlSeconds })
+		return token
+	} catch (e: unknown) {
+		if (e instanceof FedExError) throw e
+		logError('fedex.oauth.exception', { kind, error: String(e) })
+		throw e
+	}
 }
 
 export class FedExError extends Error {
-  code: string
-  status: number
-  details?: unknown
-  constructor(init: { code: string; message: string; status: number; details?: unknown }) {
-    super(init.message)
-    this.code = init.code
-    this.status = init.status
-    this.details = init.details
-  }
+	code: number
+	details?: unknown
+	constructor(code: number, message: string, details?: unknown) {
+		super(message)
+		this.name = 'FedExError'
+		this.code = code
+		this.details = details
+	}
 }
 
-export async function getAccessToken(kind: FedExAccountKind): Promise<string> {
-  const key = `fedex:token:${kind}`
-  const now = Date.now()
-  const cached = memCache.get(key)
-  if (cached && cached.exp > now + 5_000) {
-    return cached.token
-  }
-  const redis = await getRedis()
-  if (redis) {
-    const v = await redis.get<string>(key)
-    if (v) return v
-  }
-  const creds = kind === 'export'
-    ? { id: process.env.FEDEX_EXPORT_API_KEY!, secret: process.env.FEDEX_EXPORT_SECRET_KEY! }
-    : { id: process.env.FEDEX_IMPORT_API_KEY!, secret: process.env.FEDEX_IMPORT_SECRET_KEY! }
-  const resp = await fetch(`${getBaseUrl()}/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: creds.id,
-      client_secret: creds.secret,
-    }) as any,
-  })
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => '')
-    throw new FedExError({ code: 'AUTH', status: resp.status, message: 'FedEx OAuth failed', details: text })
-  }
-  const json = await resp.json()
-  const token: string = json.access_token
-  const ttlSec: number = Math.max(60, Math.min(3000, Number(json.expires_in ?? 3000)))
-  memCache.set(key, { token, exp: now + (ttlSec * 1000) })
-  if (redis) await redis.set(key, token, { ex: Math.floor(ttlSec * 0.95) })
-  return token
+function safeJson(text: string): unknown {
+	try {
+		return JSON.parse(text)
+	} catch {
+		return { raw: text }
+	}
 }
 
-export async function fedexRequest<T>(args: {
-  endpoint: string
-  method: 'GET'|'POST'|'PUT'|'DELETE'
-  body?: unknown
-  kind: FedExAccountKind
-  accessToken?: string
-  locale?: string
-}): Promise<{ status: number; data: T }> {
-  const token = args.accessToken ?? await getAccessToken(args.kind)
-  const url = `${getBaseUrl()}${args.endpoint}`
-  const resp = await fetch(url, {
-    method: args.method,
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...(args.locale ? { 'X-locale': args.locale } : {}),
-    },
-    body: args.body ? JSON.stringify(args.body) : undefined,
-  })
-  const text = await resp.text().catch(() => '')
-  let data: any = undefined
-  try { data = text ? JSON.parse(text) : undefined } catch { data = undefined }
-  if (!resp.ok) {
-    const code = data?.errors?.[0]?.code || 'FEDEX_API_ERROR'
-    const message = data?.errors?.[0]?.message || 'FedEx API error'
-    throw new FedExError({ code, status: resp.status, message, details: data })
-  }
-  return { status: resp.status, data }
+export async function request<T>(options: { endpoint: string; method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown; kind: AccountKind; correlationId?: string }): Promise<T> {
+	const { endpoint, method = 'POST', body, kind, correlationId } = options
+	const token = await getAccessToken(kind)
+	const url = new URL(endpoint, 'https://apis.fedex.com')
+	const headers: Record<string, string> = {
+		Authorization: `Bearer ${token}`,
+		'Content-Type': 'application/json',
+	}
+	if (correlationId) headers['X-Correlation-Id'] = correlationId
+
+	logInfo('fedex.request', { endpoint: url.pathname, method, kind, body: maskPII(body) })
+	const res = await fetch(url.toString(), {
+		method,
+		headers,
+		body: body !== undefined ? JSON.stringify(body) : undefined,
+		cache: 'no-store',
+	})
+	const text = await res.text().catch(() => '')
+	const parsed = text ? safeJson(text) : undefined
+	if (!res.ok) {
+		logWarn('fedex.response.error', { endpoint: url.pathname, status: res.status, body: parsed })
+		throw new FedExError(res.status, 'FedEx request failed', parsed)
+	}
+	logInfo('fedex.response.ok', { endpoint: url.pathname, status: res.status })
+	return (parsed as T) as T
+}
+
+export async function postShipment<T>(payload: unknown, kind: AccountKind, correlationId?: string): Promise<T> {
+	return request<T>({ endpoint: '/ship/v1/shipments', method: 'POST', body: payload, kind, correlationId })
+}
+
+// Re-exports of seams for testing
+export const __internal = {
+	memoryTokenCache,
+	readEnv,
 }

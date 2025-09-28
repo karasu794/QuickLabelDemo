@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+// NOTE: This legacy route is superseded by /api/ship/create for production single-package shipping.
+// Please migrate callers to `POST /api/ship/create`.
 import { headers } from 'next/headers'
 import { requireOrg } from '@/lib/org'
 import { checkRate } from '@/lib/ratelimit'
@@ -6,9 +8,6 @@ import { SquareClient, SquareEnvironment, SquareError } from 'square'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { validateShipmentRequest, formatShipmentValidationErrors, validateShipmentBusinessRules, type ValidatedShipmentRequest } from '@/lib/validators/ship'
-
-// NOTE: This legacy route is superseded by /api/ship/create for production single-package flow.
-// Sandbox-specific behaviors are disabled to avoid accidental prod leakage.
 
 function getSquareClient() {
   const accessToken = process.env.SQUARE_ACCESS_TOKEN!
