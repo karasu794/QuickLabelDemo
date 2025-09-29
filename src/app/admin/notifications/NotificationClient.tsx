@@ -21,7 +21,10 @@ interface NotificationClientProps {
 }
 
 export default function NotificationClient({ initialNotifications }: NotificationClientProps) {
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
+  // フィルタ & 検索
+  const [level, setLevel] = useState<'all'|'info'|'warn'|'error'>('all')
+  const [status, setStatus] = useState<'all'|'unread'|'read'>('all')
+  const [query, setQuery] = useState('')
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set())
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -215,12 +218,27 @@ export default function NotificationClient({ initialNotifications }: Notificatio
     })
   }
 
-  // フィルタリングされた通知
-  const filteredNotifications = optimisticNotifications.filter(notification => {
-    if (filter === 'unread') return !notification.is_read
-    if (filter === 'read') return notification.is_read
-    return true
-  })
+  // フィルタリングされた通知（レベル/ステータス/検索）
+  const filteredNotifications = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const matchLevel = (n: Notification) => {
+      if (level === 'all') return true
+      // type を level にマッピング: error -> error, warning -> warn, その他 -> info
+      const mapped: 'info'|'warn'|'error' = n.type === 'error' ? 'error' : n.type === 'warning' ? 'warn' : 'info'
+      return mapped === level
+    }
+    const matchStatus = (n: Notification) => {
+      if (status === 'all') return true
+      if (status === 'unread') return !n.is_read && !n.read_at
+      return !!n.read_at || n.is_read
+    }
+    const matchQuery = (n: Notification) => {
+      if (!q) return true
+      const hay = `${n.type} ${n.message ?? ''}`.toLowerCase()
+      return hay.includes(q)
+    }
+    return optimisticNotifications.filter(n => matchLevel(n) && matchStatus(n) && matchQuery(n))
+  }, [optimisticNotifications, level, status, query])
 
   // 統計情報
   const stats = {
@@ -275,37 +293,42 @@ export default function NotificationClient({ initialNotifications }: Notificatio
 
       {/* フィルター */}
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-              filter === 'all' 
-                ? 'bg-[#4D148C] text-white' 
-                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            全て ({stats.total})
-          </button>
-          <button
-            onClick={() => setFilter('unread')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-              filter === 'unread' 
-                ? 'bg-red-600 text-white' 
-                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            未読 ({stats.unread})
-          </button>
-          <button
-            onClick={() => setFilter('read')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-              filter === 'read' 
-                ? 'bg-green-600 text-white' 
-                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            既読 ({stats.read})
-          </button>
+        <div className="flex flex-col md:flex-row gap-3 md:items-center">
+          <label className="text-sm text-gray-700 inline-flex items-center gap-2" aria-label="レベルフィルタ">
+            <span>Level</span>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value as any)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+            >
+              <option value="all">All</option>
+              <option value="info">info</option>
+              <option value="warn">warn</option>
+              <option value="error">error</option>
+            </select>
+          </label>
+          <label className="text-sm text-gray-700 inline-flex items-center gap-2" aria-label="状態フィルタ">
+            <span>Status</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm"
+            >
+              <option value="all">All</option>
+              <option value="unread">unread</option>
+              <option value="read">read</option>
+            </select>
+          </label>
+          <label className="text-sm text-gray-700 inline-flex items-center gap-2 flex-1" aria-label="検索">
+            <span className="hidden md:inline">Search</span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="event / message を検索"
+              className="border border-gray-300 rounded px-3 py-1 text-sm w-full"
+            />
+          </label>
         </div>
       </div>
 
@@ -323,7 +346,7 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            通知リスト {filter !== 'all' && `(${filter === 'unread' ? '未読のみ' : '既読のみ'})`}
+            通知リスト
           </h2>
           <p className="text-sm text-gray-600 mt-1">
             {filteredNotifications.length}件の通知
