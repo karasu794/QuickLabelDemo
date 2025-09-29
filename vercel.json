@@ -1,0 +1,5 @@
+{
+	"buildCommand": "pnpm build",
+	"installCommand": "pnpm install --frozen-lockfile --prefer-offline",
+	"ignoreCommand": "bash -lc 'if git diff --name-only $VERCEL_GIT_PREVIOUS_SHA $VERCEL_GIT_COMMIT_SHA | egrep -qv \"^(docs/|README.md|.*\\.md|.*\\.(png|jpg|jpeg|svg|gif)|\\.github/|\\.vscode/|test/|tests/|playwright/|e2e/)\"; then echo Build required && exit 1; else echo Skipping build && exit 0; fi'"
+}
