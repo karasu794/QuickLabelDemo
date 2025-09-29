@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CHANGED="$(git diff --name-only "${VERCEL_GIT_PREVIOUS_SHA:-}" "${VERCEL_GIT_COMMIT_SHA:-}" || true)"
+PREV="${VERCEL_GIT_PREVIOUS_SHA:-}"
+CURR="${VERCEL_GIT_COMMIT_SHA:-}"
 
-if [ -z "$CHANGED" ]; then
-  echo "Build required"; exit 1
+# If previous commit is unknown or unreachable, require build
+if [[ -z "$PREV" ]] || ! git cat-file -e "${PREV}^{commit}" 2>/dev/null; then
+  echo "Previous commit unknown or unreachable; Build required"
+  exit 1
 fi
 
-PATTERN='^(docs/|README\.md|.*\.md|.*\.(png|jpg|jpeg|svg|gif)|\.github/|\.vscode/|test/|tests/|playwright/|e2e/)'
-if echo "$CHANGED" | egrep -qv "$PATTERN"; then
+CHANGED="$(git diff --name-only "$PREV" "$CURR" || true)"
+
+ALLOW_REGEX='^(docs/|README\.md$|\.github/|\.vscode/|.*\.(md|png|jpg|jpeg|svg|gif)$|test/|tests/|playwright/|e2e/|recordings/|artifacts/)'
+
+if echo "$CHANGED" | egrep -qv "$ALLOW_REGEX"; then
   echo "Build required"; exit 1
 else
   echo "Skipping build"; exit 0

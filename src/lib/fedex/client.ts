@@ -1,8 +1,7 @@
-'use server'
-
+// server-only ensures this isn't bundled client-side but does not enforce server actions
 import 'server-only'
 
-import { logError, logInfo, maskPII } from '../logging'
+import { logError, logInfo, logWarn, maskPII } from '../logging'
 
 export type AccountKind = 'export' | 'import'
 
@@ -38,6 +37,8 @@ export function selectCredentials(params: { originCountry: string; destinationCo
 	const { apiKey, secret, accountNumber } = readEnv(kind)
 	return { kind, apiKey, secret, accountNumber }
 }
+// Back-compat alias for tests
+export const selectFedExCredentials = selectCredentials
 
 // In-memory token cache as a fallback when Redis is not configured
 const memoryTokenCache: Map<AccountKind, { token: string; expiresAt: number }> = new Map()
