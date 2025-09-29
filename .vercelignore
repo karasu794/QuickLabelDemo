@@ -1,0 +1,21 @@
+# Ignore non-build-critical files from Vercel upload/cache
+node_modules
+**/__tests__/**
+**/tests/**
+playwright/**
+e2e/**
+coverage/**
+.docs/**
+docs/**
+.vscode/**
+.github/**
+*.md
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webm
+*.mp4
+*.mov
+scripts/recordings/**

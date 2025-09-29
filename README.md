@@ -42,4 +42,31 @@ RATE_MATCH_PERCENT_TOLERANCE=2
 
 旧フロー（複数個口/Open Ship）は引き続き存在しますが、本番の単品発行は `/api/ship/create` を推奨します。
 
+## 開発環境とパッケージ管理
+
+- 本リポは pnpm を使用します。Node は engines に記載の範囲に固定してください。
+- Corepack を有効化すると、Vercel/CI/ローカルで同一の pnpm バージョンが使われます。
+
+```bash
+# 初回のみ（Node 18+）
+corepack enable
+# 以降は lockfile に基づいてインストール
+pnpm install --frozen-lockfile --prefer-offline
+```
+
+## Vercel 設定のヒント
+
+- Install Command: `pnpm install --frozen-lockfile --prefer-offline`
+- Build Command: `pnpm build`
+- Ignored Build Step: ドキュメント/画像/テストのみの変更ではビルドをスキップするシェルを登録
+
+```bash
+# example
+if git diff --name-only $VERCEL_GIT_PREVIOUS_SHA $VERCEL_GIT_COMMIT_SHA | egrep -qv '^(docs/|README.md|.*\.md|.*\.(png|jpg|jpeg|svg|gif)|\.github/|\.vscode/|test/|tests/|playwright/|e2e/)'; then
+  echo "Build required" && exit 1
+else
+  echo "Skipping build" && exit 0
+fi
+```
+
 
