@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "set -euo pipefail; node -v; pnpm -v; echo 'Check env'; node scripts/check-env.js; pnpm build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint:ci": "next lint --max-warnings 0",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",

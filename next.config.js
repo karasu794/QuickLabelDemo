@@ -2,6 +2,9 @@
 const nextConfig = {
 	productionBrowserSourceMaps: false,
 	output: 'standalone',
+	logging: {
+		buildActivity: true,
+	},
 	experimental: {
 		optimizePackageImports: [
 			'@heroicons/react',

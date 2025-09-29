@@ -57,7 +57,7 @@ pnpm install --frozen-lockfile --prefer-offline
 ## Vercel 設定のヒント
 
 - Install Command: `pnpm install --frozen-lockfile --prefer-offline`
-- Build Command: `pnpm build`
+- Build Command: `pnpm run vercel-build`
 - Ignored Build Step: ドキュメント/画像/テストのみの変更ではビルドをスキップするシェルを登録
 
 ```bash
@@ -68,5 +68,15 @@ else
   echo "Skipping build" && exit 0
 fi
 ```
+
+## 本番相当ビルドのローカル再現
+
+```bash
+pnpm dlx vercel build --cwd .
+# 失敗時のログを保存
+pnpm dlx vercel build --cwd . 2>&1 | tee artifacts/build-log.txt
+```
+
+CI で `artifacts/build-log.txt` をアーティファクト収集することで、失敗層の特定が容易になります。
 
 
