@@ -1,5 +1,5 @@
 {
 	"buildCommand": "pnpm run vercel-build",
-	"installCommand": "corepack enable && pnpm --version && pnpm install --ignore-scripts",
+	"installCommand": "corepack enable && pnpm --version && pnpm config set fetch-retries 5 && pnpm config set network-concurrency 1 && pnpm install --ignore-scripts",
 	"ignoreCommand": "bash scripts/ignore-build.sh"
 }
