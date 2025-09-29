@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useOptimistic } from 'react'
+import { useState, useOptimistic, useMemo } from 'react'
 import { markNotificationAsRead, markAllNotificationsAsRead } from './actions'
+import toast from 'react-hot-toast'
 
 // 通知データの型定義
 export interface Notification {
@@ -23,17 +24,29 @@ export default function NotificationClient({ initialNotifications }: Notificatio
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set())
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selectAll, setSelectAll] = useState(false)
 
   // 楽観的更新のためのhook
   const [optimisticNotifications, updateOptimisticNotifications] = useOptimistic(
     initialNotifications,
-    (state, { id, action }: { id: string; action: 'mark_read' }) => {
+    (state, { id, action }: { id: string; action: 'mark_read' | 'mark_unread' | 'delete' }) => {
       if (action === 'mark_read') {
         return state.map(notification =>
           notification.id === id
             ? { ...notification, is_read: true, read_at: new Date().toISOString() }
             : notification
         )
+      }
+      if (action === 'mark_unread') {
+        return state.map(notification =>
+          notification.id === id
+            ? { ...notification, is_read: false, read_at: undefined }
+            : notification
+        )
+      }
+      if (action === 'delete') {
+        return state.filter(n => n.id !== id)
       }
       return state
     }
@@ -91,14 +104,70 @@ export default function NotificationClient({ initialNotifications }: Notificatio
         throw new Error(result.error || '一括更新に失敗しました')
       }
 
-      console.log('✅ 全ての通知が正常に既読になりました')
+      toast.success('全ての未読を既読にしました')
 
     } catch (error) {
       console.error('一括既読処理エラー:', error)
+      toast.error('一括既読に失敗しました')
       // エラー時はページをリロードして状態をリセット
       window.location.reload()
     } finally {
       setIsMarkingAllAsRead(false)
+    }
+  }
+
+  // 一括操作: read/unread/delete
+  const bulkAction = async (action: 'read' | 'unread' | 'delete') => {
+    const ids = Array.from(selected)
+    if (ids.length === 0) return
+    // 楽観更新
+    const snapshot = optimisticNotifications
+    try {
+      ids.forEach(id => {
+        updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_read' : action === 'unread' ? 'mark_unread' : 'delete' })
+      })
+      const res = await fetch('/api/notifications/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ids })
+      })
+      if (!res.ok) throw new Error('bulk failed')
+      const { updated } = await res.json()
+      toast.success(`${updated}件を${action === 'delete' ? '削除' : action === 'read' ? '既読' : '未読'}にしました`)
+      // 成功後に選択解除
+      setSelected(new Set())
+      setSelectAll(false)
+    } catch (e) {
+      toast.error('一括操作に失敗しました')
+      // リバート
+      window.location.reload()
+    }
+  }
+
+  const toggleOne = (id: string) => {
+    setSelected(prev => {
+      const s = new Set(prev)
+      if (s.has(id)) s.delete(id)
+      else s.add(id)
+      return s
+    })
+  }
+
+  const filtered = useMemo(() => (
+    optimisticNotifications.filter(notification => {
+      if (filter === 'unread') return !notification.is_read
+      if (filter === 'read') return notification.is_read
+      return true
+    })
+  ), [optimisticNotifications, filter])
+
+  const headerToggleAll = () => {
+    if (selectAll) {
+      setSelected(new Set())
+      setSelectAll(false)
+    } else {
+      setSelected(new Set(filtered.map(n => n.id)))
+      setSelectAll(true)
     }
   }
 
@@ -240,6 +309,16 @@ export default function NotificationClient({ initialNotifications }: Notificatio
         </div>
       </div>
 
+      {/* アクションバー（選択時） */}
+      {selected.size > 0 && (
+        <div className="sticky top-2 z-10 bg-white border border-gray-300 rounded-md p-3 flex items-center gap-3 shadow-sm">
+          <span className="text-sm text-gray-700">{selected.size} 件選択中</span>
+          <button onClick={() => bulkAction('read')} className="px-3 py-1 text-sm rounded bg-green-600 text-white hover:bg-green-700">既読にする</button>
+          <button onClick={() => bulkAction('unread')} className="px-3 py-1 text-sm rounded bg-yellow-600 text-white hover:bg-yellow-700">未読にする</button>
+          <button onClick={() => bulkAction('delete')} className="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700">削除する</button>
+        </div>
+      )}
+
       {/* 通知リスト */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
@@ -249,6 +328,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
           <p className="text-sm text-gray-600 mt-1">
             {filteredNotifications.length}件の通知
           </p>
+          {/* 全選択 */}
+          <label className="inline-flex items-center gap-2 mt-2 text-sm text-gray-700">
+            <input type="checkbox" checked={selectAll} onChange={headerToggleAll} /> 全選択（表示分）
+          </label>
         </div>
 
         {filteredNotifications.length > 0 ? (
@@ -264,6 +347,12 @@ export default function NotificationClient({ initialNotifications }: Notificatio
                   <div className="flex-1">
                     {/* 通知ヘッダー */}
                     <div className="flex items-center gap-3 mb-2">
+                      <input
+                        type="checkbox"
+                        aria-label={`select notification ${notification.id}`}
+                        checked={selected.has(notification.id)}
+                        onChange={() => toggleOne(notification.id)}
+                      />
                       <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getNotificationColor(notification.type)}`}>
                         {notification.type}
