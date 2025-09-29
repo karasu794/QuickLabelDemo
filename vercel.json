@@ -1,5 +1,5 @@
 {
 	"buildCommand": "pnpm run vercel-build",
-	"installCommand": "pnpm install --frozen-lockfile --prefer-offline",
+	"installCommand": "pnpm install --frozen-lockfile --prefer-offline --ignore-scripts",
 	"ignoreCommand": "bash scripts/ignore-build.sh"
 }
