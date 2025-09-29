@@ -2,7 +2,7 @@
   "name": "quicklabel",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@10.17.1",
   "engines": {
     "node": ">=20 <23"
   },
