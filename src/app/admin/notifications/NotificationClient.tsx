@@ -156,20 +156,14 @@ export default function NotificationClient({ initialNotifications }: Notificatio
     })
   }
 
-  const filtered = useMemo(() => (
-    optimisticNotifications.filter(notification => {
-      if (filter === 'unread') return !notification.is_read
-      if (filter === 'read') return notification.is_read
-      return true
-    })
-  ), [optimisticNotifications, filter])
+  // 旧フィルタ変数は廃止（filteredNotifications を使用）
 
   const headerToggleAll = () => {
     if (selectAll) {
       setSelected(new Set())
       setSelectAll(false)
     } else {
-      setSelected(new Set(filtered.map(n => n.id)))
+      setSelected(new Set(filteredNotifications.map(n => n.id)))
       setSelectAll(true)
     }
   }
@@ -441,8 +435,8 @@ export default function NotificationClient({ initialNotifications }: Notificatio
               </svg>
             </div>
             <p className="text-gray-500">
-              {filter === 'all' ? '通知がありません' :
-               filter === 'unread' ? '未読の通知がありません' :
+              {status === 'all' ? '通知がありません' :
+               status === 'unread' ? '未読の通知がありません' :
                '既読の通知がありません'}
             </p>
           </div>
