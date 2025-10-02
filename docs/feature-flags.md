@@ -1,9 +1,14 @@
-# Feature Flags — 台帳 & 期限管理
+# Feature Flags 台帳
 
-> Type: Release（短期で削除）/ Experiment（A/B終了後削除）/ Ops（常設可）
-> 追加時は本ファイルに必ず追記。CIで期限未設定をFail。
+## 種別
+- Release（短期：削除前提） / Experiment（検証後に削除） / Ops（常設可）
 
-| Name | Type | Created | Status | Default | Cleanup | Scope | Notes |
-|------|------|--------|--------|---------|---------|-------|-------|
-| (例) USE_NEW_CTX_MIDDLEWARE | Release | 2025-10-05 | Active | OFF | 2025-10-20 | API ctx | 自orgのみ先行ON |
+## 運用ルール
+- Release/Experiment は **Cleanup 期限必須**
+- 追加時はこのファイルに**必ず行追加**（CIで突合）
+- ON/OFFのSLIは SLO-SLI.md で分割集計
 
+## 一覧
+| Flag | Type | Created | Status | Cleanup | Scope |
+|------|------|---------|--------|---------|-------|
+|      |      |         |        |         |       |

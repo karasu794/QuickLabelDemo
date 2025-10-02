@@ -1,20 +1,20 @@
 # Release Runbook
 
-## 0. 前提
-- 変更は常に小バッチ（files<=3, new-exports<=2, public-sig=0）
-- Feature Flag デフォルトOFFで出荷（自org→100%）
+## 前提
+- PRテンプレ（PLAN/IMPACT/CHECK/OPEN/DOC-PATCH）完了
+- 最小契約テスト（必須対象）Green
+- 型&Zodプリフライト済み
 
-## 1. リリース
-1) Flag OFFのままデプロイ
-2) 自orgだけ ON → SLI/ログ確認 → 段階展開
+## 段階リリース（Feature Flag）
+1) デフォルトOFFで本番デプロイ
+2) 自orgのみON → SLI監視（SLO-SLI.md）
+3) 問題なければ段階拡大
 
-## 2. インシデント時
-1) 影響範囲確認 → **Flag OFF**
-2) One-Click Revert（例: `pnpm revert:latest`）
-3) 告知テンプレ（1行）→ チャンネル/顧客
-4) Postmortemライト（WHAT/WHY/RULE）をPRに追記
+## ロールバック
+- まず Flag OFF（即時）
+- なお復旧不可は `revert:latest` 実行
+- 影響連絡：短文テンプレ
 
-## 3. PDF生成のトラブルシュート（Vercel）
-- フォント: Noto Sans JP
-- タイムアウト/メモリ: Vercel 制約に注意
-- 典型エラーと対応を箇条書きで後日追記
+## PDFトラブルシュート（Vercel）
+- フォント/Noto Sans JP, メモリ/タイムアウト点検
+- 再試行/遅延実行の回避策メモ

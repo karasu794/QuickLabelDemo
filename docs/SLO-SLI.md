@@ -1,12 +1,12 @@
-# SLI / SLO — Minimal Observability
+# SLO / SLI
 
-> 各API 最大2指標。Flag ON/OFF で分割集計できるとベター。
+## 原則
+- 各APIの SLI は最大2つ（success_rate, p95_latency_ms）
+- SLO は目安（例：success >= 99.5%, p95 <= 800ms）
+- Feature Flag ON/OFF で分割集計
 
-## /api/ship/create
+## 例
+### /api/ship/create
 - SLI: success_rate, p95_latency_ms
-- SLO: success_rate >= 99.5%, p95 <= 800
-- Notes: Flag=USE_NEW_CTX_MIDDLEWARE 分割
-
-## /api/ship/rate
-- SLI: success_rate, p95_latency_ms
-- SLO: success_rate >= 99.0%, p95 <= 600
+- SLO: 99.5%, 800ms
+- Flag: USE_NEW_CTX_MIDDLEWARE (ON/OFF 別集計)
