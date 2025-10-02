@@ -1,4 +1,5 @@
 # Supabase セットアップガイド
+Moved: この内容は /docs/ARCHINDEX.md と /docs/Guardrails.md に統合されました。
 
 ## 必要な依存関係のインストール
 
