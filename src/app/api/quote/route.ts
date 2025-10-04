@@ -6,6 +6,7 @@ import { getOptionalUser } from '@/lib/auth/optionalAuth'
 import { checkRate } from '@/lib/ratelimit'
 import { createClient } from '@/lib/supabase/server'
 import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteRequest } from '@/lib/validators/quote'
+import { getPublicQuotesOrgId } from '@/lib/config/guestOrg'
 // CORE_MODE
 import { CORE_MODE } from '@/lib/config/coreMode'
 import { randomUUID } from 'crypto'
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // リクエストペイロードを準備
+    // リクエストペイロードを準備（保存用は非PIIに限定）
     const requestPayload = {
       quoteParams,
       packages,
@@ -141,18 +142,39 @@ export async function POST(request: NextRequest) {
 
     console.log('リクエストペイロード準備完了:', JSON.stringify(requestPayload, null, 2));
 
-    // quote_jobsテーブルにジョブを作成（必ず user_id を付与）
+    // quote_jobsテーブルにジョブを作成（匿名時は Public Quotes org に紐付け、PIIを保存しない）
     console.log('quote_jobsテーブルへの書き込みを開始...');
     const insertData: any = {
-      status: 'pending',
-      request_payload: requestPayload
+      status: 'pending'
     };
 
     if (userId) {
+      // ログイン時: 従来どおり user_id を付与（org_id はDB側トリガや後続で解決される前提）
       insertData.user_id = userId;
+      insertData.request_payload = requestPayload; // 既存互換: ただし保存先でPII取り扱いに注意
       console.log('ユーザーID追加:', userId);
     } else {
-      console.log('匿名ユーザー: user_idは付与しません');
+      // 未ログイン: Public Quotes org_id を使用。user_id は付与しない。
+      const publicOrgId = getPublicQuotesOrgId();
+      if (publicOrgId) {
+        insertData.org_id = publicOrgId;
+        // 非PIIフィールドのみ格納
+        insertData.request_payload = {
+          quoteParams: {
+            originCountry: quoteParams.originCountry,
+            originPostalCode: quoteParams.originPostalCode,
+            destinationCountry: quoteParams.destinationCountry,
+            destinationPostalCode: quoteParams.destinationPostalCode,
+          },
+          packagesSummary: Array.isArray(packages) ? packages.length : 0,
+          timestamp: requestPayload.timestamp,
+        };
+        console.log('匿名ユーザー: Public Quotes org で保存', { orgId: publicOrgId });
+      } else {
+        // ENV未設定など想定外は匿名NODBでフォールバック（core- jobId を返す）。
+        const jobId = `core-${randomUUID()}`
+        return NextResponse.json({ success: true, jobId, mode: 'anon-fallback' })
+      }
     }
 
     const { data: jobData, error: insertError } = await supabase

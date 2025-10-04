@@ -48,6 +48,39 @@ function assert(cond: any, msg: string) {
 
 const checks: Check[] = [
   {
+    name: "POST /api/quote (anonymous) -> 200 & jobId not core-*",
+    run: async () => {
+      const res = await req("/api/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          quoteParams: {
+            originCountry: "JP",
+            originPostalCode: "100-0001",
+            destinationCountry: "US",
+            destinationPostalCode: "10001",
+          },
+          packages: [
+            {
+              id: 1,
+              packagingType: "YOUR_PACKAGING",
+              weight: "1",
+              length: "10",
+              width: "10",
+              height: "10",
+            },
+          ],
+        }),
+      });
+      if (res.status < 200 || res.status >= 300)
+        throw new Error(`status ${res.status}`);
+      const j = await res.json();
+      if (!j?.jobId) throw new Error("jobId missing");
+      if (String(j.jobId).startsWith("core-"))
+        throw new Error("guest-org insert did not happen");
+    },
+  },
+  {
     name: `GET /api/quote -> 2xx`,
     run: async () => {
       const res = await req("/api/quote");
