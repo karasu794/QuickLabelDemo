@@ -30,6 +30,20 @@ jobs:
           version: 9
           run_install: true
 
+      # 2) 念のため corepack でも有効化（環境差で action が効かないケースの保険）
+      - name: Enable pnpm via corepack (fallback)
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          pnpm -v
+          which pnpm || command -v pnpm || true
+
+      - name: Print tool versions
+        run: |
+          node -v
+          pnpm -v
+          which pnpm || command -v pnpm
+
       - name: Build
         run: pnpm -s build
 
