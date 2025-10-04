@@ -16,9 +16,9 @@ RATE_MATCH_PERCENT_TOLERANCE=2
   - ラベル: FedEx URL→PDF取得→Vercel Blob 保存（`application/pdf`）→ URL返却（署名付きを推奨）
   - エラー応答: `{ code, message }` のみ（detailsはサーバログ）
 
-## ロギング
+## ロギング（更新）
 - すべて `correlationId=orderId`。イベント: `ship_create_requested/blocked/succeeded/failed`
-- PII を `maskPII()` で伏字化
+- SR-D: PII マスクは撤去。外部転送は行わず短期ローテーションを推奨。
 
 ## エラーコード
 - `WRITE_DISABLED` (503): ラッチOFF

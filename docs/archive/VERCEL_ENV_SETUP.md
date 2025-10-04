@@ -1,5 +1,5 @@
 # Vercel環境変数設定ガイド
-
+Moved: この内容は /docs/ARCHINDEX.md と /docs/Guardrails.md に統合されました。
 ## 📋 必要な環境変数
 
 Vercel上でアプリケーションを正常に動作させるために、以下の環境変数を設定する必要があります：
@@ -218,4 +218,4 @@ import { siteUrl } from '@/lib/config';
 
 // バックグラウンド処理のURL
 const processingUrl = `${siteUrl}/api/quote/process/${jobId}`;
-``` 
+```

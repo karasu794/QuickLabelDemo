@@ -166,4 +166,4 @@ interface IdleTimeoutProviderProps {
 
 ### セッション延長が機能しない
 - `extendSession` 関数が正しく呼ばれているか確認
-- ネットワーク接続を確認 
+- ネットワーク接続を確認

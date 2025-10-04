@@ -1,0 +1,24 @@
+name: Doc Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  doc-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (skip if not needed)
+        run: npm ci --ignore-scripts || true
+      - name: Run doc check (strict)
+        run: npm run doc-check
+        # warnモードで実行したい場合は下記に切替
+        # run: npm run doc-check:warn

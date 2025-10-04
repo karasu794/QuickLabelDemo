@@ -1,5 +1,5 @@
 # Vercel環境でのPDF生成設定ガイド
-
+Moved: この内容は /docs/ARCHINDEX.md と /docs/Guardrails.md に統合されました。
 ## 概要
 
 QuickLabelのPDF生成機能は、Vercelのサーバーレス環境で動作するように最適化されています。このドキュメントでは、Vercel環境での設定と制約について説明します。

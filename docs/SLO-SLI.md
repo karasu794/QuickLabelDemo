@@ -9,4 +9,9 @@
 ### /api/ship/create
 - SLI: success_rate, p95_latency_ms
 - SLO: 99.5%, 800ms
-- Flag: USE_NEW_CTX_MIDDLEWARE (ON/OFF 別集計)
+- Flag: N/A（必要時は追加）
+
+### /api/receipts/pdf
+- SLI: success_rate, p95_latency_ms
+- SLO: 99.0%, 3000ms
+- Flag: N/A（必要になれば追加）

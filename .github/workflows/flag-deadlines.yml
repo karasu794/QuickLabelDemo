@@ -1,0 +1,40 @@
+name: Feature Flags Deadline
+
+on:
+  pull_request:
+    paths:
+      - "docs/feature-flags.md"
+      - "src/**"
+      - "scripts/check-flag-deadlines.js"
+      - "package.json"
+      - ".github/workflows/flag-deadlines.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "docs/feature-flags.md"
+      - "scripts/check-flag-deadlines.js"
+
+jobs:
+  flag-deadlines:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: flags-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts || true
+
+      - name: Run deadlines check (strict)
+        run: npm run flag-deadlines
+        # warnモードで回す場合は上をコメントアウトし、下を有効化:
+        # run: npm run flag-deadlines:warn

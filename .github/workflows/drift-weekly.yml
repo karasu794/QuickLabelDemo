@@ -1,0 +1,43 @@
+name: Weekly Drift Check
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'   # UTC 日曜21:00 = JST 月曜 06:00
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+    paths:
+      - "src/**"
+      - "scripts/drift-weekly.js"
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts || true
+
+      - name: Run weekly drift check
+        id: run
+        run: |
+          set -e
+          node scripts/drift-weekly.js | tee drift-report.txt
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: drift-report.txt
+          if-no-files-found: warn
