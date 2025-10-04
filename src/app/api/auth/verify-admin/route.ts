@@ -3,6 +3,7 @@ import { getAdminContext } from '@/lib/auth/isAdmin'
 import { createRouteHandlerClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 export const revalidate = 0
 
 export async function GET() {

@@ -5,39 +5,14 @@ export const isAdmin = (p?: AdminLike | null): boolean => {
 }
 
 // 共通: SSRクッキーから現在ユーザーを取得し、ADMIN_EMAILS/プロフィールで管理者判定
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { createSSRClient } from '@/lib/supabase/ssrClient'
 
 export async function getAdminContext() {
-  const cookieStore = cookies()
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabase = createSSRClient()
   const adminEmails = (process.env.ADMIN_EMAILS || '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
-
-  const supabase = createServerClient(supabaseUrl, anonKey, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: any) {
-        try {
-          cookieStore.set(name, value, options)
-        } catch {
-          // Server Component では set は許可されないため無視
-        }
-      },
-      remove(name: string, options: any) {
-        try {
-          cookieStore.set(name, '', { ...options, maxAge: 0 })
-        } catch {
-          // Server Component では remove は許可されないため無視
-        }
-      },
-    },
-  })
 
   const {
     data: { user },
