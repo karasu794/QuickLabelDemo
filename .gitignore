@@ -11,3 +11,6 @@
 # Other
 .DS_Store
 *.log
+.env
+
+.env
