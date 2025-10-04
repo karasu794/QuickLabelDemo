@@ -4,6 +4,9 @@ import { requireOrg } from '@/lib/org'
 import { checkRate } from '@/lib/ratelimit'
 import { createClient } from '@/lib/supabase/server'
 import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteRequest } from '@/lib/validators/quote'
+// CORE_MODE
+import { CORE_MODE } from '@/lib/config/coreMode'
+import { randomUUID } from 'crypto'
 
 // 📝 注意: 型定義はZodから自動生成されるValidatedQuoteRequestを使用します
 // 以前のQuoteParams, Package, QuoteRequestインターフェースは
@@ -11,6 +14,20 @@ import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteReques
 
 export async function POST(request: NextRequest) {
   try {
+    // CORE_MODE: 未ログイン許可・擬似ジョブ応答（DB書き込みなし、Service Role未使用）
+    if (CORE_MODE) {
+      let rawBody: any
+      try { rawBody = await request.json() } catch { return NextResponse.json({ error: '無効なリクエスト形式です' }, { status: 400 }) }
+      const validationResult = validateQuoteRequest(rawBody)
+      if (!validationResult.success) {
+        const formattedErrors = formatValidationErrors(validationResult.error.format())
+        return NextResponse.json({ error: '入力データが不正です', validationErrors: formattedErrors }, { status: 400 })
+      }
+      const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
+      await checkRate(`ip:${ip}`)
+      const jobId = `core-${randomUUID()}`
+      return NextResponse.json({ success: true, jobId, message: 'CORE_MODE: 見積もりを受け付けました（擬似ジョブ）。' })
+    }
     // Rate limit (per user if available, otherwise per IP)
     let userId: string | null = null
     try {
@@ -50,7 +67,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ユーザー認証チェック（user_id取得のため）
+    // ユーザー認証チェック（未ログインは401で早期終了）
     const supabase = createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -59,6 +76,9 @@ export async function POST(request: NextRequest) {
       userId: user?.id || 'null',
       userError: userError?.message || 'none'
     });
+    if (!user) {
+      return NextResponse.json({ code: 'AUTH_REQUIRED', message: 'ログインが必要です。' }, { status: 401 })
+    }
 
     // 🛡️ リクエストボディの取得とバリデーション
     let rawBody;
@@ -97,27 +117,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Supabaseクライアント作成完了');
 
-    // Service Role Keyでのクライアント作成も試す
-    let serviceSupabase = null;
-    try {
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js');
-      serviceSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-      console.log('Service Role Keyでのクライアント作成完了');
-    } catch (serviceError) {
-      console.log('Service Role Keyでのクライアント作成失敗:', serviceError);
-    }
-
-    // 使用するクライアントを決定
-    const activeSupabase = serviceSupabase || supabase;
-    console.log('使用するクライアント:', serviceSupabase ? 'Service Role' : 'Anonymous');
-
     // Supabase接続テスト
     try {
       console.log('Supabase接続テスト開始...');
-      const { data: testData, error: testError } = await activeSupabase
+      const { data: testData, error: testError } = await supabase
         .from('quote_jobs')
         .select('count')
         .limit(1);
@@ -151,22 +154,17 @@ export async function POST(request: NextRequest) {
 
     console.log('リクエストペイロード準備完了:', JSON.stringify(requestPayload, null, 2));
 
-    // quote_jobsテーブルにジョブを作成（user_idを追加）
+    // quote_jobsテーブルにジョブを作成（必ず user_id を付与）
     console.log('quote_jobsテーブルへの書き込みを開始...');
     const insertData: any = {
       status: 'pending',
       request_payload: requestPayload
     };
 
-    // ユーザーがログインしている場合はuser_idを追加
-    if (user) {
-      insertData.user_id = user.id;
-      console.log('ユーザーID追加:', user.id);
-    } else {
-      console.log('未ログインユーザー - user_idはnull');
-    }
+    insertData.user_id = user.id;
+    console.log('ユーザーID追加:', user.id);
 
-    const { data: jobData, error: insertError } = await activeSupabase
+    const { data: jobData, error: insertError } = await supabase
       .from('quote_jobs')
       .insert(insertData)
       .select('id')
@@ -196,7 +194,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!jobData || !jobData.id) {
+    const jobIdCreated = (jobData as any)?.id as string | undefined
+    if (!jobIdCreated) {
       console.error('ジョブデータが返されませんでした:', jobData);
       return NextResponse.json(
         { error: 'ジョブIDが取得できませんでした' },
@@ -204,13 +203,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('見積もりジョブを作成しました:', jobData.id);
+    console.log('見積もりジョブを作成しました:', jobIdCreated);
 
     // バックグラウンド処理をトリガー
     try {
       // Next.js API Routeの場合、別エンドポイントを非同期で呼び出し
       const { siteUrl } = await import('@/lib/config');
-      const processingUrl = `${siteUrl}/api/quote/process/${jobData.id}`;
+      const processingUrl = `${siteUrl}/api/quote/process/${jobIdCreated}`;
       
       // 非同期で処理を開始（await不要）
       setTimeout(async () => {
@@ -254,7 +253,7 @@ export async function POST(request: NextRequest) {
                 error_message: fetchError instanceof Error ? fetchError.message : 'バックグラウンド処理でエラーが発生しました',
                 completed_at: new Date().toISOString()
               })
-              .eq('id', jobData.id);
+              .eq('id', jobIdCreated);
           } catch (dbError) {
             console.error('エラー状態の更新に失敗しました:', dbError);
           }
@@ -267,7 +266,7 @@ export async function POST(request: NextRequest) {
     // ジョブIDをすぐに返却
     return NextResponse.json({
       success: true,
-      jobId: jobData.id,
+      jobId: jobIdCreated,
       message: '見積もりリクエストを受け付けました。処理中です...'
     });
 
@@ -286,9 +285,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// SMOKE-FIX: add lightweight GET for /api/quote
 export async function GET() {
-  return NextResponse.json(
-    { error: 'このエンドポイントはPOSTリクエストのみ対応しています' },
-    { status: 405 }
-  );
-} 
+  return NextResponse.json({
+    ok: true,
+    endpoint: 'quote',
+    method: 'GET',
+  })
+}

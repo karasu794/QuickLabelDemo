@@ -1,14 +1,17 @@
 import 'server-only'
 import { NextRequest, NextResponse } from 'next/server'
-import { headers } from 'next/headers'
 import { z } from 'zod'
 import { requireOrg } from '@/lib/org'
 import { withOrderAdvisoryLock } from '@/lib/db/locks'
-import { createServiceRoleClient } from '@/lib/supabase/server'
-import { logError, logInfo, maskPII } from '@/lib/logging'
+import { createClient } from '@/lib/supabase/server'
+import { logError, logInfo, logWarn } from '@/lib/logging'
+// CORE_MODE
+import { CORE_MODE } from '@/lib/config/coreMode'
 import { assertRateConsistency } from '@/lib/ship/rateGuard'
 import { determineAccountKind, getAccessToken, postShipment, FedExError, AccountKind } from '@/lib/fedex/client'
 import { put } from '@vercel/blob'
+// ensurePost
+import { ensurePost } from '@/lib/http/ensurePost'
 
 function envBool(name: string, def = false): boolean {
 	const v = process.env[name]
@@ -16,19 +19,7 @@ function envBool(name: string, def = false): boolean {
 	return ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase())
 }
 
-function ensurePostAndOrigin(req: NextRequest) {
-	if (req.method !== 'POST') {
-		return NextResponse.json({ code: 'METHOD_NOT_ALLOWED', message: 'POST only' }, { status: 405 })
-	}
-	const origin = headers().get('origin') || ''
-	const referer = headers().get('referer') || ''
-	const allowed = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || '').trim()
-	if (allowed) {
-		if (origin && origin !== allowed) return NextResponse.json({ code: 'CSRF', message: 'Origin mismatch' }, { status: 403 })
-		if (referer && !referer.startsWith(allowed)) return NextResponse.json({ code: 'CSRF', message: 'Referer mismatch' }, { status: 403 })
-	}
-	return null
-}
+// MW-REMOVED: middleware撤去に伴い、CSRF等の前処理は行わない
 
 const partySchema = z.object({
 	name: z.string().min(1),
@@ -54,6 +45,7 @@ const bodySchema = z.object({
 	shipper: partySchema,
 	recipient: partySchema,
 	package: pkgSchema,
+	htsCode: z.string().max(10).regex(/^\d+$/).optional(),
 })
 
 type CreateShipRequest = z.infer<typeof bodySchema>
@@ -64,6 +56,7 @@ type CreateShipResponse = {
 	serviceType: string
 	rate: number
 	currency: string
+	htsCode?: string
 }
 
 async function verifyPayment(orderId: string): Promise<{ amount: number; currency: string; paymentId: string } | null> {
@@ -99,12 +92,14 @@ function toCm(value: number, unit: 'CM' | 'IN'): number {
 }
 
 export async function POST(req: NextRequest) {
-	const early = ensurePostAndOrigin(req)
-	if (early) return early
+  // ensurePost: POST以外は405
+  const early = ensurePost(req)
+  if (early) return early
 
 	if (process.env.SHIP_API_WRITE_ENABLED !== 'true') {
-		const snapshot = await req.json().catch(() => ({}))
-		logInfo('ship_create_blocked', maskPII({ reason: 'WRITE_DISABLED', input: snapshot }))
+    const snapshot = await req.json().catch(() => ({}))
+    // SR-D: 生ログ出力（PIIマスク撤去）
+    logInfo('ship_create_blocked', { reason: 'WRITE_DISABLED', input: snapshot })
 		return NextResponse.json({ code: 'WRITE_DISABLED' }, { status: 503 })
 	}
 
@@ -115,6 +110,15 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ code: 'BAD_REQUEST', message: 'Invalid payload' }, { status: 400 })
 	}
 
+    // HTS code validation: US destination requires numeric up to 10 digits
+    if ((input?.recipient?.country || '').toUpperCase() === 'US') {
+        const code = input.htsCode ?? ''
+        const ok = typeof code === 'string' && /^\d{1,10}$/.test(code)
+        if (!ok) {
+            return NextResponse.json({ error: 'HTS_CODE_REQUIRED' }, { status: 400 })
+        }
+    }
+
 	let userId: string, orgId: string
 	try {
 		const org = await requireOrg()
@@ -124,7 +128,7 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ code: 'QL-AUTH', message: 'Unauthorized' }, { status: 401 })
 	}
 
-	const supabase = createServiceRoleClient()
+  const supabase = createClient()
 
 	// Idempotency: return existing if present
 	{
@@ -133,14 +137,14 @@ export async function POST(req: NextRequest) {
 			.select('*')
 			.filter('order_id', 'eq', input.orderId as any)
 			.maybeSingle()
-		if (existing && existing.tracking_number && (existing as any).label_blob_url) {
+        if (existing && (existing as any).tracking_number && (existing as any).label_blob_url) {
 			logInfo('ship_create_idempotent', { orderId: input.orderId, orgId })
 			return NextResponse.json({
-				trackingNumber: existing.tracking_number as string,
+                trackingNumber: (existing as any).tracking_number as string,
 				labelUrl: (existing as any).label_blob_url as string,
-				serviceType: (existing as any).service_type || input.serviceType,
-				rate: Number((existing as any).rate_total ?? 0),
-				currency: (existing as any).currency || 'JPY',
+                serviceType: (existing as any).service_type || input.serviceType,
+                rate: Number((existing as any).rate_total ?? 0),
+                currency: (existing as any).currency || 'JPY',
 			} satisfies CreateShipResponse)
 		}
 	}
@@ -166,13 +170,13 @@ export async function POST(req: NextRequest) {
 				.select('*')
 				.filter('order_id', 'eq', input.orderId as any)
 				.maybeSingle()
-			if (existing && existing.tracking_number && (existing as any).label_blob_url) {
+            if (existing && (existing as any).tracking_number && (existing as any).label_blob_url) {
 				return NextResponse.json({
-					trackingNumber: existing.tracking_number as string,
+                    trackingNumber: (existing as any).tracking_number as string,
 					labelUrl: (existing as any).label_blob_url as string,
-					serviceType: (existing as any).service_type || input.serviceType,
-					rate: Number((existing as any).rate_total ?? 0),
-					currency: (existing as any).currency || 'JPY',
+                    serviceType: (existing as any).service_type || input.serviceType,
+                    rate: Number((existing as any).rate_total ?? 0),
+                    currency: (existing as any).currency || 'JPY',
 				} satisfies CreateShipResponse)
 			}
 		}
@@ -272,6 +276,7 @@ export async function POST(req: NextRequest) {
 				label_blob_url: labelUrl,
 				square_payment_id: pay.paymentId,
 				payment_status: 'completed',
+				hts_code: input.htsCode ?? null,
 			}
 			const ins = await supabase.from('shipments').insert([row] as any).select('*').maybeSingle()
 			if (ins.error && String(ins.error?.message || '').includes('duplicate')) {
@@ -280,23 +285,24 @@ export async function POST(req: NextRequest) {
 					.select('*')
 					.filter('order_id', 'eq', input.orderId as any)
 					.maybeSingle()
-				if (existing) {
+                if (existing) {
 					return NextResponse.json({
-						trackingNumber: existing.tracking_number as string,
+                        trackingNumber: (existing as any).tracking_number as string,
 						labelUrl: (existing as any).label_blob_url as string,
 						serviceType: (existing as any).service_type || input.serviceType,
-						rate: Number((existing as any).rate_total ?? rate),
+                        rate: Number((existing as any).rate_total ?? rate),
 						currency: (existing as any).currency || currency,
 					} satisfies CreateShipResponse)
 				}
 			}
 		} catch (e) {
-			logError('ship_create_persist_failed', maskPII({ orderId: input.orderId, labelUrl }))
+      // SR-D: 生ログ出力
+      logError('ship_create_persist_failed', { orderId: input.orderId, labelUrl })
 			return NextResponse.json({ code: 'PERSIST_FAILED' }, { status: 500 })
 		}
 
 		logInfo('ship_create_succeeded', { orderId: input.orderId, orgId, trackingNumber: tracking, accountKind: kind })
-		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency } satisfies CreateShipResponse)
+		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency, htsCode: input.htsCode } satisfies CreateShipResponse)
 	}
 
 	try {
