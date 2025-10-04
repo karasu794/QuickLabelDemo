@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { toArray, withDefaults, mapOrEmpty } from '@/lib/utils/safe'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -779,8 +780,25 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         .update({ status: 'processing_auth' })
         .eq('id', jobId);
 
-      // リクエストペイロードを取得
-      const { quoteParams, packages } = job.request_payload as any;
+    // リクエストペイロードを取得し正規化
+    const raw = job.request_payload as any
+    const quoteParams = withDefaults(raw?.quoteParams, {
+      originCountry: '',
+      originPostalCode: '',
+      originStateCode: '',
+      originCityName: '',
+      originStreet: '',
+      destinationCountry: '',
+      destinationPostalCode: '',
+      destinationStateCode: '',
+      destinationCityName: '',
+      destinationStreet: '',
+      shipDate: '',
+      isResidential: false,
+      higherInsurance: false,
+      declaredValue: '',
+    } as any)
+    const packages = toArray<any>(raw?.packages)
 
       console.log('FedEx API認証開始...');
       
@@ -821,11 +839,11 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       }
 
       // レスポンスを変換
-      const rates = fedexResponse.output.rateReplyDetails.map((detail: any) => {
-        const ratedShipment = detail.ratedShipmentDetails[0];
+      const rates = mapOrEmpty<any, any>(fedexResponse.output?.rateReplyDetails, (detail) => {
+        const ratedShipment = detail.ratedShipmentDetails?.[0] || { totalNetCharge: 0 };
         return {
           serviceType: detail.serviceName,
-          totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge).toString(),
+          totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge || 0).toString(),
           estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
           deliveryDate: detail.commit?.dateDetail?.dayFormat,
           deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
