@@ -58,6 +58,16 @@ const checks: Check[] = [
     },
   },
   {
+    name: "GET /api/quote/{jobId} anonymous -> 200 or 404 (no 401)",
+    run: async () => {
+      const res = await req("/api/quote/dummy-id-that-may-not-exist");
+      if (res.status === 401) throw new Error("anonymous access blocked by auth");
+      if (![200, 404].includes(res.status)) {
+        throw new Error(`unexpected status ${res.status}`);
+      }
+    },
+  },
+  {
     name: `GET /api/ship/create -> 405 (ensurePost)`,
     run: async () => {
       const res = await req("/api/ship/create");

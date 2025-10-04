@@ -1,37 +1,18 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import type { Database } from '@/types/supabase'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest, { params }: { params: { jobId: string } }) {
   try {
     const { jobId } = params;
     console.log(`ジョブステータス確認 - ジョブID: ${jobId}`);
 
-    // Supabaseクライアントを作成
-    const supabase = createClient();
-
-    // ユーザー認証状態を確認
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log('ユーザー認証状態:', {
-      authenticated: !!user,
-      userId: user?.id || 'null'
-    });
-
-    // ジョブを取得（user_id条件も含めてセキュリティチェック）
-    type QuoteJobRow = Database['public']['Tables']['quote_jobs']['Row']
-    let query = supabase
+    const supa = createServiceRoleClient()
+    const { data: job, error: fetchError } = await supa
       .from('quote_jobs')
-      .select('*')
-      .eq('id', jobId as QuoteJobRow['id']);
-
-    // ログインユーザーの場合は自分のジョブのみ、未ログインの場合はuser_idがnullのジョブのみ
-    if (user) {
-      query = query.eq('user_id', user.id as QuoteJobRow['user_id']);
-    } else {
-      query = query.is('user_id', null);
-    }
-
-    const { data: job, error: fetchError } = await (query as any).single();
+      .select('id,status,created_at,updated_at,completed_at,response_payload,error_message')
+      .eq('id', jobId as any)
+      .maybeSingle()
 
     if (fetchError || !job) {
       console.error('ジョブ取得エラー:', fetchError);

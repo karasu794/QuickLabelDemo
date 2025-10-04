@@ -1,6 +1,8 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { requireOrg } from '@/lib/org'
+// optional public access for quote
+import { getOptionalUser } from '@/lib/auth/optionalAuth'
 import { checkRate } from '@/lib/ratelimit'
 import { createClient } from '@/lib/supabase/server'
 import { validateQuoteRequest, formatValidationErrors, type ValidatedQuoteRequest } from '@/lib/validators/quote'
@@ -29,13 +31,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, jobId, message: 'CORE_MODE: 見積もりを受け付けました（擬似ジョブ）。' })
     }
     // Rate limit (per user if available, otherwise per IP)
-    let userId: string | null = null
-    try {
-      const org = await requireOrg()
-      userId = org.userId
-    } catch {
-      userId = null
-    }
+    const opt = await getOptionalUser()
+    const userId: string | null = opt?.id ?? null
     const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
     const key = userId ? `user:${userId}` : `ip:${ip}`
     const rate = await checkRate(key)
@@ -67,18 +64,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ユーザー認証チェック（未ログインは401で早期終了）
+    // 匿名許可: 認証は任意
     const supabase = createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    console.log('ユーザー認証状態:', {
-      authenticated: !!user,
-      userId: user?.id || 'null',
-      userError: userError?.message || 'none'
-    });
-    if (!user) {
-      return NextResponse.json({ code: 'AUTH_REQUIRED', message: 'ログインが必要です。' }, { status: 401 })
-    }
 
     // 🛡️ リクエストボディの取得とバリデーション
     let rawBody;
@@ -161,8 +148,12 @@ export async function POST(request: NextRequest) {
       request_payload: requestPayload
     };
 
-    insertData.user_id = user.id;
-    console.log('ユーザーID追加:', user.id);
+    if (userId) {
+      insertData.user_id = userId;
+      console.log('ユーザーID追加:', userId);
+    } else {
+      console.log('匿名ユーザー: user_idは付与しません');
+    }
 
     const { data: jobData, error: insertError } = await supabase
       .from('quote_jobs')
