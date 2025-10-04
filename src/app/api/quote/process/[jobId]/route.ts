@@ -337,22 +337,35 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       quoteParams.destinationCityName;
   }
 
-  // パッケージ情報を構築
-  const requestedPackageLineItems = packages.map((pkg, index) => {
+  // パッケージ情報を構築（数値に正規化し必ず配列）
+  const normalizedPkgs = (Array.isArray(packages) ? packages : []).map((pkg, i) => ({
+    id: (pkg as any)?.id ?? i + 1,
+    packagingType: (pkg as any)?.packagingType || 'YOUR_PACKAGING',
+    weight: Number((pkg as any)?.weight ?? 0),
+    length: Number((pkg as any)?.length ?? 0),
+    width: Number((pkg as any)?.width ?? 0),
+    height: Number((pkg as any)?.height ?? 0),
+    declaredValue: Number((pkg as any)?.declaredValue ?? 0),
+  }))
+  if (normalizedPkgs.length === 0) {
+    throw new Error('NO_PACKAGES_AFTER_NORMALIZE')
+  }
+
+  const requestedPackageLineItems = normalizedPkgs.map((pkg, index) => {
     const packageItem: any = {
       sequenceNumber: index + 1,
       weight: {
         units: 'KG',
-        value: parseFloat(pkg.weight)
+        value: Number(pkg.weight) || 0
       }
     };
 
     // カスタム梱包材の場合は寸法を追加
     if (pkg.packagingType === 'customer') {
       packageItem.dimensions = {
-        length: parseInt(pkg.length),
-        width: parseInt(pkg.width),
-        height: parseInt(pkg.height),
+        length: Number(pkg.length) || 0,
+        width: Number(pkg.width) || 0,
+        height: Number(pkg.height) || 0,
         units: 'CM'
       };
     }
@@ -376,8 +389,8 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
   });
 
   // 複数個口の場合のログ出力
-  if (packages.length > 1) {
-    console.log(`📦 複数個口検出: ${packages.length}個 → groupPackageCount: ${packages.length}`)
+  if (normalizedPkgs.length > 1) {
+    console.log(`📦 複数個口検出: ${normalizedPkgs.length}個 → groupPackageCount: ${normalizedPkgs.length}`)
     console.log('📦 各荷物のsequenceNumber:', requestedPackageLineItems.map(item => `${item.sequenceNumber}`).join(', '))
   } else {
     console.log('📦 単一荷物: groupPackageCountは追加しません')
@@ -386,8 +399,8 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
   // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue計算
   let totalInsuredValue = null;
   if (quoteParams.higherInsurance) {
-    const totalDeclaredValueJPY = packages.reduce((sum, pkg) => {
-      return sum + (pkg.declaredValue ? Number(pkg.declaredValue) : 0);
+    const totalDeclaredValueJPY = (Array.isArray(packages) ? packages : []).reduce((sum, pkg: any) => {
+      return sum + (pkg?.declaredValue ? Number(pkg.declaredValue) : 0);
     }, 0);
     
     if (totalDeclaredValueJPY > 0) {
@@ -429,7 +442,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       },
       shipDatestamp: quoteParams.shipDate,
       // serviceTypeを削除して、すべての利用可能なサービスを取得
-      packagingType: packages[0]?.packagingType || 'YOUR_PACKAGING',
+      packagingType: normalizedPkgs[0]?.packagingType || 'YOUR_PACKAGING',
       pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
       rateRequestType: ['ACCOUNT', 'LIST'], // LISTを追加してより多くのオプションを取得
       // ACCOUNT.NUMBER.MISMATCHエラー対策: 送料支払人情報を追加
@@ -444,7 +457,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
         }
       },
       // 複数個口の場合のみ、groupPackageCountを追加
-      ...(packages.length > 1 && { groupPackageCount: packages.length }),
+      ...(normalizedPkgs.length > 1 && { groupPackageCount: normalizedPkgs.length }),
       // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue
       ...(totalInsuredValue && { totalInsuredValue }),
       requestedPackageLineItems: requestedPackageLineItems
@@ -799,6 +812,7 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       declaredValue: '',
     } as any)
     const packages = toArray<any>(raw?.packages)
+    // 数値変換・単位はビルド関数側で統一
 
       console.log('FedEx API認証開始...');
       

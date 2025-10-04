@@ -48,6 +48,33 @@ function assert(cond: any, msg: string) {
 
 const checks: Check[] = [
   {
+    name: "POST /api/quote without packages -> 400",
+    run: async () => {
+      const res = await req("/api/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quoteParams: { originCountry: "JP", destinationCountry: "US" }, packages: [] }),
+      });
+      if (res.status !== 400) throw new Error(`expected 400, got ${res.status}`);
+    },
+  },
+  {
+    name: "POST /api/quote with 1 package -> not 400",
+    run: async () => {
+      const res = await req("/api/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          quoteParams: { originCountry: "JP", destinationCountry: "US" },
+          packages: [
+            { id: 1, packagingType: "YOUR_PACKAGING", weight: "1", length: "10", width: "10", height: "10" },
+          ],
+        }),
+      });
+      if (res.status === 400) throw new Error(`unexpected 400`);
+    },
+  },
+  {
     name: "POST /api/quote (anonymous) -> 200 & jobId not core-*",
     run: async () => {
       const res = await req("/api/quote", {

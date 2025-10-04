@@ -10,6 +10,7 @@ import { getPublicQuotesOrgId } from '@/lib/config/guestOrg'
 // CORE_MODE
 import { CORE_MODE } from '@/lib/config/coreMode'
 import { randomUUID } from 'crypto'
+import { toArray } from '@/lib/utils/safe'
 
 // 📝 注意: 型定義はZodから自動生成されるValidatedQuoteRequestを使用します
 // 以前のQuoteParams, Package, QuoteRequestインターフェースは
@@ -26,6 +27,24 @@ export async function POST(request: NextRequest) {
         const formattedErrors = formatValidationErrors(validationResult.error.format())
         return NextResponse.json({ error: '入力データが不正です', validationErrors: formattedErrors }, { status: 400 })
       }
+      // packages を正規化して最低限のバリデーション
+      const pkgsIn = toArray<any>(rawBody?.packages)
+      const norm = pkgsIn.map((p: any, i: number) => ({
+        id: p?.id ?? i + 1,
+        packagingType: p?.packagingType || 'YOUR_PACKAGING',
+        weight: Number(p?.weight ?? 0),
+        length: Number(p?.length ?? 0),
+        width: Number(p?.width ?? 0),
+        height: Number(p?.height ?? 0),
+      }))
+      const validPackages = norm.filter((p) => p.weight > 0 && p.length >= 0 && p.width >= 0 && p.height >= 0)
+      if (validPackages.length === 0) {
+        return NextResponse.json(
+          { ok: false, code: 'PACKAGES_REQUIRED', message: '少なくとも1件の荷物（重さ・サイズ）が必要です。' },
+          { status: 400 }
+        )
+      }
+
       const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
       await checkRate(`ip:${ip}`)
       const jobId = `core-${randomUUID()}`
@@ -101,6 +120,23 @@ export async function POST(request: NextRequest) {
 
     // ✅ バリデーション成功 - 型安全なデータとして使用
     const { quoteParams, packages }: ValidatedQuoteRequest = validationResult.data;
+    // packages を正規化し最低限のバリデーション
+    const pkgsIn = toArray<any>(packages)
+    const norm = pkgsIn.map((p: any, i: number) => ({
+      id: p?.id ?? i + 1,
+      packagingType: p?.packagingType || 'YOUR_PACKAGING',
+      weight: Number(p?.weight ?? 0),
+      length: Number(p?.length ?? 0),
+      width: Number(p?.width ?? 0),
+      height: Number(p?.height ?? 0),
+    }))
+    const validPackages = norm.filter((p) => p.weight > 0 && p.length >= 0 && p.width >= 0 && p.height >= 0)
+    if (validPackages.length === 0) {
+      return NextResponse.json(
+        { ok: false, code: 'PACKAGES_REQUIRED', message: '少なくとも1件の荷物（重さ・サイズ）が必要です。' },
+        { status: 400 }
+      )
+    }
     console.log('✅ バリデーション成功。処理を続行します。');
 
     console.log('Supabaseクライアント作成完了');
@@ -136,7 +172,7 @@ export async function POST(request: NextRequest) {
     // リクエストペイロードを準備（保存用は非PIIに限定）
     const requestPayload = {
       quoteParams,
-      packages,
+      packages: validPackages,
       timestamp: new Date().toISOString()
     };
 
