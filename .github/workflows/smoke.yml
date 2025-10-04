@@ -18,6 +18,8 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: dummy-service-role
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon
       FEDEX_CLIENT_ID: dummy
       FEDEX_CLIENT_SECRET: dummy
       FEDEX_API_BASE: https://apis-sandbox.fedex.com

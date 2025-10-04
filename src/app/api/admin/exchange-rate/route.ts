@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { ExchangeRateService } from '@/lib/services/exchangeRateService'
 import { requireAdminAuth } from '@/lib/auth/server-auth'
