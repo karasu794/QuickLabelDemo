@@ -1,3 +1,18 @@
+import { NextResponse } from 'next/server'
+import { getAdminContext } from '@/lib/auth/isAdmin'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
+  const ctx = await getAdminContext()
+  return NextResponse.json({
+    ok: true,
+    authenticated: ctx.isAuthenticated,
+    isAdmin: ctx.isAdmin,
+    user: ctx.user ? { id: ctx.user.id, email: (ctx.user as any).email ?? null } : null,
+  })
+}
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { NextResponse } from 'next/server'

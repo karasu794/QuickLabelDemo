@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { isAdmin as isAdminFn } from '@/lib/auth/isAdmin'
-// CORE_MODE
-import { CORE_MODE } from '@/lib/config/coreMode'
+import { isAdmin as isAdminFn, getAdminContext } from '@/lib/auth/isAdmin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -25,8 +23,9 @@ async function getInitialAuth() {
 export default async function HeaderServer() {
   const initial = await getInitialAuth()
   const HeaderClient = (await import('./HeaderClient')).default
-  // CORE_MODE: 管理ナビ非表示
-  return <HeaderClient initialAuth={initial} showAdminNav={!CORE_MODE} />
+  // 管理者には常に表示（CORE_MODE でも表示）。非管理者は非表示。
+  const { isAdmin } = await getAdminContext()
+  return <HeaderClient initialAuth={initial} showAdminNav={isAdmin} />
 }
 
 

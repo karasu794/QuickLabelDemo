@@ -1,33 +1,19 @@
 import { ReactNode } from 'react'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getAdminContext } from '@/lib/auth/isAdmin'
 import AdminSidebar from './components/AdminSidebar'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 async function requireAdminPage() {
-  const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  if (!session) {
+  const { isAuthenticated, isAdmin } = await getAdminContext()
+  if (!isAuthenticated) {
     redirect('/login?redirect_to=/admin')
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', session.user.id)
-    .single()
-
-  const isAdmin = (profile as any)?.role === 'admin' || (profile as any)?.is_admin === true
   if (!isAdmin) {
     return { isAdmin: false as const }
   }
-
   return { isAdmin: true as const }
 }
 
