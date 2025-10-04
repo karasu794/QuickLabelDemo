@@ -17,7 +17,24 @@
     "test": "jest",
     "typegen": "node scripts/typegen.mjs",
     "test:watch": "jest --watch",
-    "postinstall": "node ./scripts/download-chromium.js"
+    "postinstall": "node ./scripts/download-chromium.js",
+    "doc-check": "node scripts/check-docs-updated.js",
+    "doc-check:warn": "DOC_CHECK_GUARDRAILS=warn node scripts/check-docs-updated.js",
+    "flag-deadlines": "node scripts/check-flag-deadlines.js",
+    "flag-deadlines:warn": "FLAG_DEADLINE_MODE=warn node scripts/check-flag-deadlines.js",
+    "drift:weekly": "node scripts/drift-weekly.js",
+    "test:contracts": "jest --runInBand --testMatch \"**/tests/contracts/**/*.(contract|spec|test).(ts|tsx|js)\"",
+    "test:e2e": "playwright test tests/e2e --reporter=line",
+    "e2e:ci": "start-server-and-test \"npm run build && npm run start\" http://localhost:3000 \"npm run test:e2e\"",
+    "preflight": "node scripts/preflight.mjs",
+    "preflight:warn": "DOC_CHECK_GUARDRAILS=warn FLAG_DEADLINE_MODE=warn node scripts/preflight.mjs",
+    "manus:preflight": "ts-node scripts/manus-run.ts tasks/preflight_fix.yaml",
+    "manus:docs": "ts-node scripts/manus-run.ts tasks/docs_sync.yaml",
+    "manus:all": "npm run manus:preflight && npm run manus:docs",
+    "smoke": "pnpm -s build && tsx scripts/probe/smoke.ts",
+    "health": "cross-env BASE_URL=${BASE_URL:-http://localhost:3000} node -e \"fetch(process.env.BASE_URL+'/api/health').then(r=>r.text()).then(console.log).catch(e=>{console.error(e);process.exit(1)})\"",
+    "smoke:ci": "start-server-and-test \"npm run build && npm run start\" http://localhost:3000 \"pnpm -s smoke\"",
+    "smoke:dev": "start-server-and-test \"npm run dev\" http://localhost:3000 \"pnpm -s smoke\""
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -52,19 +69,26 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.2",
     "@types/google.maps": "^3.58.1",
     "@types/jest": "30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "eslint": "^8",
     "eslint-config-next": "14.2.17",
+    "fast-glob": "^3.3.2",
     "jest": "29.7.0",
+    "madge": "^6.1.0",
+    "picocolors": "^1.0.0",
     "postcss": "^8",
+    "start-server-and-test": "^2.0.0",
     "tailwindcss": "^3.4.1",
     "ts-jest": "29.1.2",
     "ts-node": "10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }
