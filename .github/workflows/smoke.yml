@@ -11,8 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NODE_ENV: production
       BASE_URL: http://localhost:3000
+
+      # --- Build-time minimal ENV (dummy values; no secrets) ---
+      SUPABASE_URL: http://localhost:54321
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-role
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      FEDEX_CLIENT_ID: dummy
+      FEDEX_CLIENT_SECRET: dummy
+      FEDEX_API_BASE: https://apis-sandbox.fedex.com
+      SHIP_API_WRITE_ENABLED: "false"
 
     steps:
       - name: Checkout
@@ -26,7 +35,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: true
+          run_install: false
+
+      # ✅ devDependencies を必ず入れる
+      - name: Install deps (include devDependencies)
+        run: pnpm install --frozen-lockfile --prod=false
 
       # 2) 念のため corepack でも有効化（環境差で action が効かないケースの保険）
       - name: Enable pnpm via corepack (fallback)
