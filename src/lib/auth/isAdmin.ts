@@ -23,10 +23,18 @@ export async function getAdminContext() {
         return cookieStore.get(name)?.value
       },
       set(name: string, value: string, options: any) {
-        cookieStore.set(name, value, options)
+        try {
+          cookieStore.set(name, value, options)
+        } catch {
+          // Server Component では set は許可されないため無視
+        }
       },
       remove(name: string, options: any) {
-        cookieStore.set(name, '', { ...options, maxAge: 0 })
+        try {
+          cookieStore.set(name, '', { ...options, maxAge: 0 })
+        } catch {
+          // Server Component では remove は許可されないため無視
+        }
       },
     },
   })
