@@ -1,7 +1,7 @@
 // server-only ensures this isn't bundled client-side but does not enforce server actions
 import 'server-only'
 
-import { logError, logInfo, logWarn, maskPII } from '../logging'
+import { logError, logInfo, logWarn } from '../logging'
 
 export type AccountKind = 'export' | 'import'
 
@@ -133,7 +133,8 @@ export async function request<T>(options: { endpoint: string; method?: 'GET' | '
 	}
 	if (correlationId) headers['X-Correlation-Id'] = correlationId
 
-	logInfo('fedex.request', { endpoint: url.pathname, method, kind, body: maskPII(body) })
+  // SR-D: 生ログ出力（PIIマスク撤去）
+  logInfo('fedex.request', { endpoint: url.pathname, method, kind, body })
 	const res = await fetch(url.toString(), {
 		method,
 		headers,

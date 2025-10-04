@@ -1,16 +1,20 @@
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
-import { requireAdminAuth } from '@/lib/auth/server-auth'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { requireAdminAuthRoute } from '@/lib/auth/route'
 import { logInfo, logError } from '@/lib/logging'
 
 export async function POST() {
-  const authErr = await requireAdminAuth()
-  if (authErr) return authErr
+  const auth = await requireAdminAuthRoute()
+  if (!auth.ok) {
+    const status = 'status' in auth ? auth.status : 403
+    const err = status === 401 ? 'UNAUTHENTICATED' : 'FORBIDDEN'
+    return NextResponse.json({ error: err }, { status })
+  }
 
   try {
-    const supabase = createServiceRoleClient()
+    const { supabase } = auth
     const now = new Date().toISOString()
     const { data, error } = await (supabase as any)
       .from('notifications')
@@ -20,7 +24,7 @@ export async function POST() {
 
     if (error) {
       logError('admin_notifications_mark_all_read_failed', { error: String(error?.message || error) })
-      return NextResponse.json({ error: '一括既読に失敗しました' }, { status: 500 })
+      return NextResponse.json({ error: 'INTERNAL', message: '一括既読に失敗しました' }, { status: 500 })
     }
 
     const updated = Array.isArray(data) ? data.length : 0

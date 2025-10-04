@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { randomUUID } from 'crypto'
 
-// Supabase clientの初期化（サービスロールキー使用）
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Supabase client（サービスロール・ラッパ）
+const supabase = createServiceRoleClient()
 
 // リクエストの型定義
 interface DraftRequest {

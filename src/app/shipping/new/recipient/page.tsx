@@ -74,6 +74,7 @@ export default function RecipientInfoPage() {
     return hasAddress;
   })
   const [error, setError] = useState('')
+  const [htsError, setHtsError] = useState('')
   
   // ハイドレーション完了後に住所フィールドを更新
   useEffect(() => {
@@ -340,6 +341,18 @@ export default function RecipientInfoPage() {
 
   // バリデーション
   const validateForm = () => {
+    // HTS (US only)
+    if (recipientInfo.countryCode === 'US') {
+      const code = (recipientInfo as any).htsCode || ''
+      if (!/^\d{1,10}$/.test(code)) {
+        setError('HTSコードを半角数字1〜10桁で入力してください')
+        setHtsError('HTSコードは必須です（半角数字1〜10桁）')
+        return false
+      }
+    } else {
+      setHtsError('')
+    }
+
     if (!recipientInfo.contactName.trim()) {
       setError('担当者名を入力してください')
       return false
@@ -629,6 +642,31 @@ export default function RecipientInfoPage() {
                   </div>
                 </div>
 
+                {/* HTSコード（US宛てのみ） */}
+                {recipientInfo.countryCode === 'US' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="htsCode" className="text-sm md:text-base">
+                      HTS コード <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="htsCode"
+                      name="htsCode"
+                      value={(recipientInfo as any).htsCode || ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setHtsError('')
+                        updateRecipientInfo('htsCode' as any, v)
+                      }}
+                      placeholder="例: 0101102030"
+                      data-test="hts-code"
+                      className="h-11 md:h-10 text-base"
+                    />
+                    {htsError && (
+                      <p className="text-red-600 text-sm" data-test="hts-error">{htsError}</p>
+                    )}
+                  </div>
+                )}
+
                 {/* エラーメッセージ */}
                 {error && (
                   <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -650,6 +688,8 @@ export default function RecipientInfoPage() {
                   <Button 
                     type="submit"
                     className="h-11 md:h-10 text-sm md:text-base font-medium bg-purple-600 hover:bg-purple-700 order-1 sm:order-2"
+                    disabled={recipientInfo.countryCode === 'US' && !/^\d{1,10}$/.test(((recipientInfo as any).htsCode||''))}
+                    data-test="submit-ship"
                   >
                     次へ
                   </Button>

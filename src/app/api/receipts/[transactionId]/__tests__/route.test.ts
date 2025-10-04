@@ -71,7 +71,7 @@ describe('GET /api/receipts/[transactionId]', () => {
     expect(data.error.code).toBe('MISSING_TRANSACTION_ID')
   })
 
-  it('should return 401 if user is not authenticated', async () => {
+  it('should return 401 if user is not authenticated (RLS removed, route still enforces auth)', async () => {
     const { createServerClient } = require('@supabase/ssr')
     const { cookies } = require('next/headers')
     

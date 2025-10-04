@@ -3,7 +3,7 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
-import Header from '@/app/components/layout/Header'
+import HeaderServer from '@/components/header/HeaderServer'
 import { Toaster } from 'react-hot-toast'
 import { getSession } from '@/lib/supabase/server'
 
@@ -13,6 +13,9 @@ export const metadata = {
   title: 'QuickLabel',
   description: 'FedEx国際配送ラベル発行システム',
 }
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function RootLayout({
   children,
@@ -26,7 +29,7 @@ export default async function RootLayout({
     <html lang="ja">
       <body className={inter.className}>
         <AuthProvider initialSession={session}>
-          <Header />
+          <HeaderServer />
           <main className="container mx-auto p-6 min-h-screen">
             {children}
           </main>

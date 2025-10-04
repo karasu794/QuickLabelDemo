@@ -20,11 +20,9 @@ const required = [
 ]
 
 const optional = [
-	'UPSTASH_REDIS_REST_URL',
-	'UPSTASH_REDIS_REST_TOKEN',
-	'ALERT_WEBHOOK_URL',
-	'ALLOWED_ORIGINS',
-	'REQUIRE_RATE_MATCH',
+    'ALERT_WEBHOOK_URL',
+    'ALLOWED_ORIGINS',
+    'REQUIRE_RATE_MATCH',
 ]
 
 let missing = []

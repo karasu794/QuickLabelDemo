@@ -1,6 +1,11 @@
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOrg } from '@/lib/org'
+import { requireAdminAuthRoute } from '@/lib/auth/route'
 import type { Database } from '@/types/supabase'
+
 type NotificationRow = Database['public']['Tables']['notifications']['Row']
 type NotificationUpdate = Database['public']['Tables']['notifications']['Update'] & {
   read_at?: string | null
@@ -12,15 +17,19 @@ function isKnownError(e: unknown): e is KnownError {
   return typeof e === 'object' && e !== null && 'status' in e && 'code' in e && 'message' in e
 }
 
-// notifications.id は number（integer）
-
 export async function PATCH(_req: NextRequest, { params }: { params: { id: string } }) {
+  const admin = await requireAdminAuthRoute()
+  if (!admin.ok) {
+    const status = 'status' in admin ? admin.status : 403
+    const err = status === 401 ? 'UNAUTHENTICATED' : 'FORBIDDEN'
+    return NextResponse.json({ error: err }, { status })
+  }
   try {
     const { supabase, userId, orgId } = await requireOrg()
     const idStr = params.id
     const idNum = Number(idStr)
     if (!Number.isFinite(idNum)) {
-      return NextResponse.json({ code: 'QL-VALIDATION', message: 'invalid id' }, { status: 400 })
+      return NextResponse.json({ error: 'BAD_REQUEST', message: 'invalid id' }, { status: 400 })
     }
 
     const now = new Date().toISOString()
@@ -40,18 +49,18 @@ export async function PATCH(_req: NextRequest, { params }: { params: { id: strin
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ code: 'QL-DB', message: error.message }, { status: 500 })
+      return NextResponse.json({ error: 'INTERNAL', message: error.message }, { status: 500 })
     }
     if (!data) {
-      return NextResponse.json({ code: 'NOT_FOUND', message: 'Notification not found' }, { status: 404 })
+      return NextResponse.json({ error: 'NOT_FOUND', message: 'Notification not found' }, { status: 404 })
     }
 
     return NextResponse.json({ ok: true, data }, { status: 200 })
   } catch (e: unknown) {
     if (isKnownError(e)) {
-      return NextResponse.json({ code: e.code, message: e.message }, { status: e.status })
+      return NextResponse.json({ error: e.code, message: e.message }, { status: e.status })
     }
-    return NextResponse.json({ code: 'QL-UNEXPECTED', message: '予期しないエラーが発生しました' }, { status: 500 })
+    return NextResponse.json({ error: 'INTERNAL', message: '予期しないエラーが発生しました' }, { status: 500 })
   }
 }
 

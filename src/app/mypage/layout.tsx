@@ -11,6 +11,7 @@ import AuthGuard from '@/components/AuthGuard'
 
 // 動的レンダリングを強制してキャッシュを回避
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 interface MypageLayoutProps {
   children: ReactNode

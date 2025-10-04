@@ -1,4 +1,23 @@
-export default function AdminDashboardPage() {
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const runtime = 'nodejs'
+
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { isAdmin } from '@/lib/auth/isAdmin'
+
+export default async function AdminDashboardPage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login?redirect_to=/admin')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, is_admin')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (!isAdmin(profile as any)) redirect('/')
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto">

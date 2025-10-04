@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceRoleClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // サービスロールキーを使用したSupabase client（管理者権限）
-const supabaseAdmin = createServiceRoleClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
+const supabaseAdmin = createServiceRoleClient()
 
 // 新しいリクエストボディの型定義
 interface QuoteParams {
@@ -90,8 +81,8 @@ async function detectAndNotifySpecialOffers(jobId: string, rateReplyDetails: any
         
         console.log(`🔍 重複チェック開始: ${serviceName} × ${destinationCountry} (24時間以内)`);
         
-        const { data: existingNotifications, error: selectError } = await supabaseAdmin
-          .from('notifications')
+        const { data: existingNotifications, error: selectError } = await (supabaseAdmin
+          .from('notifications') as any)
           .select('id, created_at, metadata')
           .eq('type', 'special_offer')
           .gte('created_at', twentyFourHoursAgo)
@@ -102,11 +93,11 @@ async function detectAndNotifySpecialOffers(jobId: string, rateReplyDetails: any
           continue;
         }
         
-        if (existingNotifications && existingNotifications.length > 0) {
+        if (existingNotifications && (existingNotifications as any[]).length > 0) {
           console.log(`⚠️ 24時間以内に同じ特別オファー通知が存在します (${existingNotifications.length}件)`, {
             serviceName,
             destinationCountry,
-            lastNotification: existingNotifications[0].created_at
+            lastNotification: (existingNotifications as any[])[0]?.created_at
           });
           continue; // 重複があるため、新しい通知は作成しない
         }
@@ -746,11 +737,8 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
     }
 
     // Service Role Keyを使用したSupabaseクライアントを作成
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js');
-    const supabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const { createServiceRoleClient: getSrv } = await import('@/lib/supabase/server');
+    const supabase = getSrv();
     console.log('Service Role Keyでのクライアント作成完了');
 
     // ジョブを取得
@@ -878,11 +866,8 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
     
     // エラーをデータベースに記録
     try {
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js');
-      const errorSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
+      const { createServiceRoleClient: getSrv2 } = await import('@/lib/supabase/server');
+      const errorSupabase = getSrv2();
       
       await errorSupabase
         .from('quote_jobs')

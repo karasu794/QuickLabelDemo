@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import { requireOrg } from '@/lib/org'
 import { checkRate } from '@/lib/ratelimit'
 import { SquareClient, SquareEnvironment, SquareError } from 'square'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { randomUUID } from 'crypto'
 import { validateShipmentRequest, formatShipmentValidationErrors, validateShipmentBusinessRules, type ValidatedShipmentRequest } from '@/lib/validators/ship'
 
@@ -16,10 +16,7 @@ function getSquareClient() {
   return new SquareClient(config)
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createServiceRoleClient()
 
 interface ShipmentRequest {
   sourceId: string
@@ -588,10 +585,7 @@ export async function POST(request: NextRequest) {
   try { const org = await requireOrg(); userId = org.userId } catch { userId = null }
   const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
   const key = userId ? `user:${userId}` : `ip:${ip}`
-  const rate = await checkRate(key)
-  if (!rate.success) {
-    return NextResponse.json({ code: 'RATE_LIMIT', message: 'Too many requests' }, { status: 429 })
-  }
+  await checkRate(key) // SR-B: 常時PASSのため分岐不要
 
   let rawBody: any
   try { rawBody = await request.json() } catch { return NextResponse.json({ error: '無効なリクエスト形式です' }, { status: 400 }) }

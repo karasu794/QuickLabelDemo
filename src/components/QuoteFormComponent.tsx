@@ -9,6 +9,7 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Checkbox } from "./ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Plus, X, Loader2 } from "lucide-react"
 import { GooglePlaceAutocomplete, ParsedAddress } from "./GooglePlaceAutocomplete"
 import { getPrefectureFromPostalCode, usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
@@ -52,6 +53,87 @@ export default function QuoteFormComponent({
   onRemovePackage,
   onSubmit
 }: QuoteFormProps) {
+
+  // --- Dimensions (YOUR_PACKAGING) helper state & utils ---
+  const [dimsById, setDimsById] = useState<Record<number, { longest: string; middle: string; shortest: string; error?: string }>>({})
+
+  const parsePositive = (v: string): number | null => {
+    const n = Number(v)
+    if (!isFinite(n) || isNaN(n)) return null
+    if (n <= 0) return null
+    return n
+  }
+
+  const recomputeLwh = (a: number, b: number, c: number) => {
+    const sorted = [a, b, c].sort((x, y) => y - x)
+    return { length: sorted[0], width: sorted[1], height: sorted[2] }
+  }
+
+  const ensureDimsInit = useCallback((pkg: Package) => {
+    setDimsById(prev => {
+      if (prev[pkg.id]) return prev
+      const numbers = [Number(pkg.length) || 0, Number(pkg.width) || 0, Number(pkg.height) || 0]
+      const sorted = [...numbers].sort((x, y) => y - x)
+      const next = { ...prev }
+      next[pkg.id] = {
+        longest: sorted[0] ? String(sorted[0]) : "",
+        middle: sorted[1] ? String(sorted[1]) : "",
+        shortest: sorted[2] ? String(sorted[2]) : "",
+      }
+      return next
+    })
+  }, [])
+
+  const updateDimField = (pkgId: number, field: 'longest' | 'middle' | 'shortest', value: string) => {
+    setDimsById(prev => ({ ...prev, [pkgId]: { ...prev[pkgId], [field]: value, error: undefined } }))
+  }
+
+  const commitDimsToLwh = (pkg: Package) => {
+    const current = dimsById[pkg.id]
+    if (!current) return
+    const a = parsePositive(current.longest)
+    const b = parsePositive(current.middle)
+    const c = parsePositive(current.shortest)
+    if (a === null || b === null || c === null) {
+      setDimsById(prev => ({ ...prev, [pkg.id]: { ...prev[pkg.id], error: '3辺すべてに0より大きい数値を入力してください。' } }))
+      return
+    }
+    const { length, width, height } = recomputeLwh(a, b, c)
+    onPackageChange(pkg.id, 'length', String(length))
+    onPackageChange(pkg.id, 'width', String(width))
+    onPackageChange(pkg.id, 'height', String(height))
+  }
+
+  // 初期化: YOUR_PACKAGING のパッケージに対して表示用3辺を一度だけ用意
+  useEffect(() => {
+    setDimsById(prev => {
+      let changed = false
+      const next = { ...prev }
+      for (const pkg of packages) {
+        if (pkg.packagingType === 'YOUR_PACKAGING' && !next[pkg.id]) {
+          const numbers = [Number(pkg.length) || 0, Number(pkg.width) || 0, Number(pkg.height) || 0]
+          const sorted = [...numbers].sort((x, y) => y - x)
+          next[pkg.id] = {
+            longest: sorted[0] ? String(sorted[0]) : "",
+            middle: sorted[1] ? String(sorted[1]) : "",
+            shortest: sorted[2] ? String(sorted[2]) : "",
+          }
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [packages])
+
+  // フォーム送信時に YOUR_PACKAGING の寸法を降順整列 → L/W/H に反映してから親の onSubmit を呼ぶ
+  const handleFormSubmit = (e: React.FormEvent) => {
+    for (const pkg of packages) {
+      if (pkg.packagingType === 'YOUR_PACKAGING') {
+        commitDimsToLwh(pkg)
+      }
+    }
+    onSubmit(e)
+  }
 
   // エラーがあるかどうかをチェック
   const hasValidationErrors = Object.values(packageErrors).some(error => error !== null) ||
@@ -250,7 +332,7 @@ export default function QuoteFormComponent({
       <h1 className="text-4xl font-bold text-center mb-12">運送料金見積もり</h1>
       <Card>
         <CardContent className="p-8">
-          <form onSubmit={onSubmit} className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-6">
             {/* 上部の見出しと説明文 */}
             <div className="text-center space-y-2 mb-8">
               <h2 className="text-2xl font-semibold text-gray-800">出荷地と仕向地を入力してください</h2>
@@ -521,28 +603,69 @@ export default function QuoteFormComponent({
                 id="isResidential"
                 checked={quoteParams.isResidential}
                 onCheckedChange={(checked) => onQuoteParamsChange("isResidential", !!checked)}
+                data-test="residential"
               />
               <Label htmlFor="isResidential" className="text-sm font-medium">
-                個人宅への配送
+                個人宅への配送の場合はチェックを入れて下さい
               </Label>
+              <Popover>
+                <PopoverTrigger data-test="residential-help-trigger">詳しく</PopoverTrigger>
+                <PopoverContent className="max-w-[32rem]">
+                  <div className="space-y-3">
+                    <p>
+                      これは「荷物の届け先が一般の住宅（個人宅）かどうか」を FedEx に知らせるためのチェックです。
+                    </p>
+                    <div>
+                      <p className="font-semibold">■ チェックを入れる場合</p>
+                      <p>
+                        届け先が自宅やマンション、アパートなどの個人宅のとき。 この場合、FedEx は通常よりも配達コストがかかるため、
+                        「住宅配達料（Residential Delivery Fee）」という追加料金が発生します。
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">■ チェックを外す場合</p>
+                      <p>
+                        届け先が会社・店舗・工場などの事業所のとき。 追加料金はかからず、通常の法人向け料金で計算されます。
+                      </p>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* お客様の貨物詳細セクション */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">お客様の貨物詳細を教えてください</h2>
               
-              {/* より高額な保険を年額使用する */}
+              {/* 申告価額による補償上限の設定 */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <Checkbox
-                    id="higherInsurance"
+                    id="declared-limit"
                     checked={quoteParams.higherInsurance}
                     onCheckedChange={(checked) => onQuoteParamsChange("higherInsurance", !!checked)}
+                    aria-describedby="declared-limit-helpshort"
+                    data-test="declared-limit"
                   />
-                  <Label htmlFor="higherInsurance" className="text-sm font-medium">
-                    より高額な保険を年額使用する
+                  <Label htmlFor="declared-limit" className="text-sm font-medium">
+                    申告価額による補償上限の設定
                   </Label>
+
+                  <Popover>
+                    <PopoverTrigger data-test="declared-limit-help-trigger">詳しく</PopoverTrigger>
+                    <PopoverContent data-test="declared-limit-popover">
+                      <div className="space-y-2">
+                        <p className="font-semibold">申告価額・補償上限について</p>
+                        <p>
+                          運送条件に基づき、申告した価額が補償の上限になります。 価額を申告しない場合は、FedExの標準補償額（通常100米ドルなど）が上限となります。
+                        </p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
+                <p id="declared-limit-helpshort" className="text-sm text-gray-600">
+                  荷物の価値を申告し、補償上限を設定します。申告額に応じて追加料金がかかります。
+                </p>
                 
                 {/* 検証中の表示 */}
                 {quoteParams.higherInsurance && insuranceValidation.isValidating && (
@@ -628,32 +751,59 @@ export default function QuoteFormComponent({
                     {/* 寸法 (お客様梱包材の場合のみ) */}
                     {pkg.packagingType === 'YOUR_PACKAGING' && (
                       <div className="space-y-2">
-                        <Label className="text-sm font-medium">寸法 L×W×H (cm)</Label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <Label className="text-sm font-medium">一番長い辺 × 二番目に長い辺 × 最も短い辺（cm）</Label>
+                        {/* 初期化は useEffect 側で一度だけ行う（レンダー内で setState しない） */}
+                        <div className="grid grid-cols-3 gap-2" aria-describedby={`dims-help-${pkg.id}`}>
                           <Input
+                            id={`dim-longest-${pkg.id}`}
+                            name="dim-longest"
                             type="number"
                             step="0.1"
                             min="0"
-                            placeholder="長さ"
-                            value={pkg.length}
-                            onChange={(e) => onPackageChange(pkg.id, 'length', e.target.value)}
+                            placeholder="最長"
+                            value={dimsById[pkg.id]?.longest ?? ''}
+                            onChange={(e) => updateDimField(pkg.id, 'longest', e.target.value)}
+                            onBlur={() => commitDimsToLwh(pkg)}
+                            data-test="dim-longest"
                           />
                           <Input
+                            id={`dim-middle-${pkg.id}`}
+                            name="dim-middle"
                             type="number"
                             step="0.1"
                             min="0"
-                            placeholder="幅"
-                            value={pkg.width}
-                            onChange={(e) => onPackageChange(pkg.id, 'width', e.target.value)}
+                            placeholder="二番目"
+                            value={dimsById[pkg.id]?.middle ?? ''}
+                            onChange={(e) => updateDimField(pkg.id, 'middle', e.target.value)}
+                            onBlur={() => commitDimsToLwh(pkg)}
+                            data-test="dim-middle"
                           />
                           <Input
+                            id={`dim-shortest-${pkg.id}`}
+                            name="dim-shortest"
                             type="number"
                             step="0.1"
                             min="0"
-                            placeholder="高さ"
-                            value={pkg.height}
-                            onChange={(e) => onPackageChange(pkg.id, 'height', e.target.value)}
+                            placeholder="最短"
+                            value={dimsById[pkg.id]?.shortest ?? ''}
+                            onChange={(e) => updateDimField(pkg.id, 'shortest', e.target.value)}
+                            onBlur={() => commitDimsToLwh(pkg)}
+                            data-test="dim-shortest"
                           />
+                        </div>
+                        <p id={`dims-help-${pkg.id}`} className="text-xs text-gray-600">
+                          3辺を入力すると、内部では長さ＝最長／幅＝二番目／高さ＝最短に自動整列して計算します。
+                        </p>
+                        {dimsById[pkg.id]?.error && (
+                          <div className="text-red-600 text-xs bg-red-50 border border-red-200 rounded p-2">
+                            {dimsById[pkg.id]?.error}
+                          </div>
+                        )}
+                        {/* 内部マッピング確認用（非表示可） */}
+                        <div className="hidden" aria-hidden="true">
+                          <span data-test="dim-length">{pkg.length}</span>
+                          <span data-test="dim-width">{pkg.width}</span>
+                          <span data-test="dim-height">{pkg.height}</span>
                         </div>
                       </div>
                     )}

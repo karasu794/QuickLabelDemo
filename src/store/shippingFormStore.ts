@@ -31,6 +31,7 @@ export interface RecipientInfo {
   address1: string
   address2: string
   isResidential: boolean
+  htsCode?: string
 }
 
 export interface PackageInfo {
@@ -174,7 +175,8 @@ const initialRecipientInfo: RecipientInfo = {
   stateCode: '',
   address1: '',
   address2: '',
-  isResidential: false
+  isResidential: false,
+  htsCode: ''
 }
 
 const initialPackage: PackageInfo = {

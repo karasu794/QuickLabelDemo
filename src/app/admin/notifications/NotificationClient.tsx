@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useOptimistic, useMemo } from 'react'
+import { useState, useOptimistic, useMemo, useEffect, useRef } from 'react'
 import { markNotificationAsRead, markAllNotificationsAsRead } from './actions'
 import toast from 'react-hot-toast'
 
@@ -29,6 +29,7 @@ export default function NotificationClient({ initialNotifications }: Notificatio
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [selectAll, setSelectAll] = useState(false)
+  const headerCheckboxRef = useRef<HTMLInputElement>(null)
 
   // 楽観的更新のためのhook
   const [optimisticNotifications, updateOptimisticNotifications] = useOptimistic(
@@ -55,15 +56,22 @@ export default function NotificationClient({ initialNotifications }: Notificatio
     }
   )
 
+  // Helpers
+  const getVisibleRowIds = () => filteredNotifications.map(n => n.id)
+  const computeHeaderCheckboxState = (selectedIds: Set<string>, visibleIds: string[]) => {
+    if (visibleIds.length === 0) return 'none' as const
+    const selectedCount = visibleIds.reduce((acc, id) => acc + (selectedIds.has(id) ? 1 : 0), 0)
+    if (selectedCount === 0) return 'none' as const
+    if (selectedCount === visibleIds.length) return 'all' as const
+    return 'indeterminate' as const
+  }
+
   // 通知を既読にする関数
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       setUpdatingIds(prev => new Set(prev).add(notificationId))
       
-      // 楽観的更新
-      updateOptimisticNotifications({ id: notificationId, action: 'mark_read' })
-      
-      // Server Actionを呼び出し
+      // Server Actionを呼び出し（成功後に反映）
       const result = await markNotificationAsRead(notificationId)
       
       // statusプロパティをチェックして成功・失敗を判定
@@ -71,12 +79,14 @@ export default function NotificationClient({ initialNotifications }: Notificatio
         throw new Error(result.error || '更新に失敗しました')
       }
 
-      console.log('✅ 通知が正常に既読になりました')
+      // 反映
+      updateOptimisticNotifications({ id: notificationId, action: 'mark_read' })
+      toast.success('既読にしました')
 
     } catch (error) {
       console.error('通知更新エラー:', error)
-      // エラー時はページをリロードして状態をリセット
-      window.location.reload()
+      toast.error('既読に失敗しました')
+      // 失敗時は楽観更新をリバート（本関数は更新を適用前に失敗判定するため noop）
     } finally {
       setUpdatingIds(prev => {
         const newSet = new Set(prev)
@@ -112,8 +122,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
     } catch (error) {
       console.error('一括既読処理エラー:', error)
       toast.error('一括既読に失敗しました')
-      // エラー時はページをリロードして状態をリセット
-      window.location.reload()
+      // 失敗時は楽観更新をリバート
+      unreadNotifications.forEach(notification => {
+        updateOptimisticNotifications({ id: notification.id, action: 'mark_unread' })
+      })
     } finally {
       setIsMarkingAllAsRead(false)
     }
@@ -121,29 +133,58 @@ export default function NotificationClient({ initialNotifications }: Notificatio
 
   // 一括操作: read/unread/delete
   const bulkAction = async (action: 'read' | 'unread' | 'delete') => {
-    const ids = Array.from(selected)
+    const visibleIds = getVisibleRowIds()
+    const ids = Array.from(selected).filter(id => visibleIds.includes(id))
     if (ids.length === 0) return
-    // 楽観更新
-    const snapshot = optimisticNotifications
     try {
-      ids.forEach(id => {
-        updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_read' : action === 'unread' ? 'mark_unread' : 'delete' })
-      })
+      // optimistic (read/unread only). delete is applied after success
+      if (action === 'read' || action === 'unread') {
+        ids.forEach(id => updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_read' : 'mark_unread' }))
+      }
+
       const res = await fetch('/api/notifications/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
         body: JSON.stringify({ action, ids })
       })
-      if (!res.ok) throw new Error('bulk failed')
+      if (!res.ok) {
+        let msg = '一括操作に失敗しました'
+        try {
+          const data = await res.json()
+          if (data && data.error) msg = String(data.error)
+        } catch {}
+        if (res.status === 401) toast.error(`未認証: ${msg}`)
+        else if (res.status === 403) toast.error(`権限がありません: ${msg}`)
+        else if (res.status >= 500) toast.error(`サーバーエラー: ${msg}`)
+        else toast.error(msg)
+        // revert optimistic changes
+        if (action === 'read' || action === 'unread') {
+          ids.forEach(id => updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_unread' : 'mark_read' }))
+        }
+        return
+      }
       const { updated } = await res.json()
+      // 成功後に反映
+      ids.forEach(id => {
+        const op = action === 'read' ? 'mark_read' : action === 'unread' ? 'mark_unread' : 'delete'
+        // delete was not applied optimistically; apply now
+        if (op === 'delete') updateOptimisticNotifications({ id, action: 'delete' })
+      })
       toast.success(`${updated}件を${action === 'delete' ? '削除' : action === 'read' ? '既読' : '未読'}にしました`)
       // 成功後に選択解除
       setSelected(new Set())
       setSelectAll(false)
     } catch (e) {
+      console.error('bulk操作エラー:', e)
       toast.error('一括操作に失敗しました')
-      // リバート
-      window.location.reload()
+      // revert optimistic changes on exception
+      if (action === 'read' || action === 'unread') {
+        const visibleIds2 = getVisibleRowIds()
+        const ids2 = Array.from(selected).filter(id => visibleIds2.includes(id))
+        ids2.forEach(id => updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_unread' : 'mark_read' }))
+      }
     }
   }
 
@@ -159,11 +200,13 @@ export default function NotificationClient({ initialNotifications }: Notificatio
   // 旧フィルタ変数は廃止（filteredNotifications を使用）
 
   const headerToggleAll = () => {
-    if (selectAll) {
+    const visibleIds = filteredNotifications.map(n => n.id)
+    const allSelected = visibleIds.length > 0 && visibleIds.every(id => selected.has(id))
+    if (allSelected) {
       setSelected(new Set())
       setSelectAll(false)
     } else {
-      setSelected(new Set(filteredNotifications.map(n => n.id)))
+      setSelected(new Set(visibleIds))
       setSelectAll(true)
     }
   }
@@ -233,6 +276,30 @@ export default function NotificationClient({ initialNotifications }: Notificatio
     }
     return optimisticNotifications.filter(n => matchLevel(n) && matchStatus(n) && matchQuery(n))
   }, [optimisticNotifications, level, status, query])
+
+  // フィルタ変更時は選択を「表示中のみ」に限定（ページ/検索/フィルタ跨ぎ保持を無効化）
+  useEffect(() => {
+    const visibleIds = new Set(filteredNotifications.map(n => n.id))
+    setSelected(prev => new Set(Array.from(prev).filter(id => visibleIds.has(id))))
+  }, [filteredNotifications])
+
+  // ヘッダチェックボックスの3状態制御（0, 部分, 全選択）
+  const selectedVisibleCount = useMemo(() => {
+    const visibleIds = new Set(filteredNotifications.map(n => n.id))
+    let count = 0
+    selected.forEach(id => { if (visibleIds.has(id)) count++ })
+    return count
+  }, [selected, filteredNotifications])
+
+  useEffect(() => {
+    const total = filteredNotifications.length
+    const allSelected = total > 0 && selectedVisibleCount === total
+    const partial = selectedVisibleCount > 0 && selectedVisibleCount < total
+    setSelectAll(allSelected)
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = partial
+    }
+  }, [filteredNotifications, selectedVisibleCount])
 
   // 統計情報
   const stats = {
@@ -345,9 +412,9 @@ export default function NotificationClient({ initialNotifications }: Notificatio
           <p className="text-sm text-gray-600 mt-1">
             {filteredNotifications.length}件の通知
           </p>
-          {/* 全選択 */}
+          {/* 全選択（表示分のみ） */}
           <label className="inline-flex items-center gap-2 mt-2 text-sm text-gray-700">
-            <input type="checkbox" checked={selectAll} onChange={headerToggleAll} /> 全選択（表示分）
+            <input ref={headerCheckboxRef} type="checkbox" checked={selectAll} onChange={headerToggleAll} /> 全選択（表示分）
           </label>
         </div>
 

@@ -24,9 +24,9 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children, initialSession }: AuthProviderProps) {
-  // initialSessionを基に、userとauthStatusの初期値を設定
+  // initialSession は参考値。最終状態は getUser と購読で確定させる
   const [user, setUser] = useState<User | null>(initialSession?.user ?? null)
-  // 競合状態解消のため、初期状態でloading=trueに設定し、onAuthStateChangeの初回イベントまで待機
+  // 初期は loading=true とし、初回の getUser 完了で解除
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [authStatus, setAuthStatus] = useState<AuthStatus>(
@@ -68,13 +68,13 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       setLoading(false)
       
       // 管理者権限チェック（非ブロッキング、UIの表示に影響させない）
-      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
         // 非同期で管理者権限チェックを実行（UIをブロックしない）
         const adminCheckPromise = async () => {
           try {
             const { data: profile, error } = await supabase
               .from('profiles')
-              .select('role')
+              .select('role,is_admin')
               .eq('id', session.user.id)
               .single()
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
               console.error('[AUTH_CONTEXT] Error fetching profile:', error)
               setIsAdmin(false)
             } else {
-              const isUserAdmin = !!profile && (profile as any).role === 'admin'
+              const isUserAdmin = !!profile && (((profile as any).role === 'admin') || (profile as any).is_admin === true)
               setIsAdmin(isUserAdmin)
             }
           } catch (error) {
@@ -110,39 +110,49 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       console.log('[AUTH_CONTEXT] Initializing auth provider with session:', { hasInitialSession: !!initialSession })
     }
     
-    // 初期セッションがある場合の管理者権限チェック（ただしloading状態は維持）
-    if (initialSession?.user) {
-      const userId = initialSession.user.id
-      
-      const checkAdminRole = async () => {
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', userId)
-            .single()
-
-          if (error) {
-            console.error('Error fetching profile:', error)
-            setIsAdmin(false)
-          } else {
-            const isUserAdmin = !!profile && (profile as any).role === 'admin'
-            setIsAdmin(isUserAdmin)
-          }
-          
-        } catch (error) {
-          console.error('Error in admin check:', error)
+    // 初回に getUser でサーバーCookieと同期されたセッションを取得し、状態を確定
+    const init = async () => {
+      try {
+        const { data: { user: currentUser }, error } = await supabase.auth.getUser()
+        if (error) {
+          setUser(null)
+          setAuthStatus('UNAUTHENTICATED')
           setIsAdmin(false)
+        } else {
+          setUser(currentUser ?? null)
+          setAuthStatus(currentUser ? 'AUTHENTICATED' : 'UNAUTHENTICATED')
+          // 管理者チェック（非同期）
+          if (currentUser) {
+            ;(async () => {
+              try {
+                const { data: profile, error: pErr } = await supabase
+                  .from('profiles')
+                  .select('role,is_admin')
+                  .eq('id', currentUser.id)
+                  .single()
+                if (pErr) {
+                  setIsAdmin(false)
+                } else {
+                  const isUserAdmin = !!profile && (((profile as any).role === 'admin') || (profile as any).is_admin === true)
+                  setIsAdmin(isUserAdmin)
+                }
+              } catch {
+                setIsAdmin(false)
+              }
+            })()
+          } else {
+            setIsAdmin(false)
+          }
         }
+      } finally {
+        setLoading(false)
       }
-
-      checkAdminRole()
     }
 
+    init()
+
     // Supabaseの認証状態変更リスナーを設定（安定化されたコールバックを使用）
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(handleAuthStateChange)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
     return () => subscription.unsubscribe()
   }, [initialSession, handleAuthStateChange])

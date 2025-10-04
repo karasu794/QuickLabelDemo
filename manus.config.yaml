@@ -1,0 +1,54 @@
+version: 0.1
+mode: ${MANUS_DEFAULT_MODE:-warn} # 初期はwarn運用
+
+
+# 失敗基準の運用方針
+policy:
+fail_levels:
+High: auto_fix # drift/contracts/e2e は修復を試みる（warn運用ではPRだけ作る）
+Medium: report_only # 大ファイル/未使用疑いはPRコメント化
+Low: weekly_report # TODO/FIXMEは週次で集約
+
+
+# 監査ログ
+logging:
+dir: ${MANUS_LOG_DIR:-./logs/manus}
+format: ndjson
+
+
+# 連携（ローカル経由で実行）
+integrations:
+github:
+repo: ${GITHUB_REPO}
+token_env: GITHUB_TOKEN
+branch: ${GITHUB_BRANCH}
+cursor:
+api_key_env: CURSOR_API_KEY
+mode: prompt_only # or prompt_and_apply（導入初期はPR提案まで）
+ci:
+preflight:
+command: "npm run preflight" # 既存のあなたのCI起動コマンドに合わせる
+parse: "auto" # 標準出力から判定（必要に応じてparserを後日追加）
+
+
+# 正準ドキュメント群（差分検出と自動ドラフト更新対象）
+docs:
+canonical:
+- ARCHINDEX.md
+- Guardrails.md
+- feature-flags.md
+- Release-Runbook.md
+- SLO-SLI.md
+- CURSOR_WORKFLOW.md
+- ASK_GATE.md
+update_strategy: draft_pr # 直接commitせずPR起票
+
+
+# ASK_GATE（破壊的変更は人間承認）
+ask_gate:
+enabled: true
+patterns:
+- "**/supabase/**/migrations/*.sql"
+- "src/app/api/**/route.ts"
+- "package.json" # major升级など
+action: "pause_and_request" # 承認待ちPRを作りコメントで質問票提示

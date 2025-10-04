@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
+const isCI = process.env.CI === 'true';
+const disableStandalone =
+  process.env.NEXT_DISABLE_STANDALONE === '1' || (process.platform === 'win32' && !isCI);
+
 const nextConfig = {
 	productionBrowserSourceMaps: false,
-	output: 'standalone',
+	...(disableStandalone ? {} : { output: 'standalone' }),
 	logging: {
 		buildActivity: true,
 	},

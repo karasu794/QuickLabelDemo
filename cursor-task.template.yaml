@@ -1,0 +1,68 @@
+meta:
+title: "${TASK_ID}: ${TITLE}"
+branch: "${BRANCH:-feature/${TASK_ID}}"
+acceptance:
+- "contracts: all green"
+- "preflight: no High failures"
+- "docs: canonical updated (doc-check pass)"
+
+
+context:
+repo_layout: "refer ARCHINDEX.md"
+guardrails: "refer Guardrails.md"
+flags: "refer feature-flags.md"
+runbook: "refer Release-Runbook.md"
+quality: "refer SLO-SLI.md"
+
+
+changes:
+scope:
+- paths: ["src/**", "tests/**"]
+description: "Code & tests"
+exclusions:
+- paths: ["**/node_modules/**", "**/*.lock"]
+
+
+plan:
+- step: "Design"
+output: "diff-summary + risk notes"
+- step: "Implement (small batches)"
+- step: "Update Canonical Docs"
+- step: "Run contracts & preflight"
+- step: "Prepare PR + rollback notes"
+
+
+prompts:
+cursor:
+system: |
+あなたはFQLの実装担当。破壊的変更はASK_GATEに従い、必要ならPRを分割。
+既存CIを必ず通すこと。冪等・RLS・レートリミット・ログを考慮すること。
+user: |
+【目的】
+${PURPOSE}
+
+
+【仕様要点】
+${SPECS}
+
+
+【受入条件】
+- contracts green
+- preflight:warn で High 0 件
+- canonical docs 差分をPRに含める
+
+
+【変更範囲】
+${SCOPE}
+
+
+【禁止事項】
+- 大量rename/formatのみのPR
+- マイグレーションの直修正（ASK_GATE経由）
+
+
+artifacts:
+pr:
+title: "${TASK_ID}: ${TITLE}"
+reviewers: ["@owner"]
+body_from: "scripts/build-pr-body.ts"

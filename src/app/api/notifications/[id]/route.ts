@@ -1,8 +1,8 @@
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdminAuth } from '@/lib/auth/server-auth'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { requireAdminAuthRoute } from '@/lib/auth/route'
 import { logInfo, logError } from '@/lib/logging'
 
 export async function DELETE(_req: NextRequest, ctx: { params: { id: string } }) {
@@ -11,11 +11,15 @@ export async function DELETE(_req: NextRequest, ctx: { params: { id: string } })
     return NextResponse.json({ error: '通知IDが必要です' }, { status: 400 })
   }
 
-  const authErr = await requireAdminAuth()
-  if (authErr) return authErr
+  const auth = await requireAdminAuthRoute()
+  if (!auth.ok) {
+    const status = 'status' in auth ? auth.status : 403
+    const err = status === 401 ? 'UNAUTHENTICATED' : 'FORBIDDEN'
+    return NextResponse.json({ error: err }, { status })
+  }
 
   try {
-    const supabase = createServiceRoleClient()
+    const { supabase } = auth
     const idNum = Number(id)
     if (!Number.isFinite(idNum)) {
       return NextResponse.json({ error: '無効な通知IDです' }, { status: 400 })

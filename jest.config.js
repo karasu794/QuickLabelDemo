@@ -20,4 +20,22 @@ const customJestConfig = {
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig) 
+/** @type {import('jest').Config} */
+module.exports = {
+	preset: 'ts-jest',
+	testEnvironment: 'node',
+	roots: ['<rootDir>'],
+	testMatch: [
+		'**/tests/contracts/**/*.(contract|spec|test).(ts|tsx|js)',
+		'**/tests/**/*.spec.(ts|tsx|js)',
+		'**/__tests__/**/*.test.ts',
+	],
+	moduleNameMapper: {
+		'^@/(.*)$': '<rootDir>/src/$1',
+		'^server-only$': '<rootDir>/test/__mocks__/server-only.js',
+	},
+	transform: {
+		'^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+	},
+	setupFiles: ['dotenv/config'],
+} 

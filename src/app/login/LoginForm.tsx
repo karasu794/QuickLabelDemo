@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -19,40 +20,49 @@ export default function LoginForm() {
     setErrorMessage('')
 
     try {
-      console.log('🔐 ログイン試行:', { email, persistSession })
-      const { data, error } = await signIn(email, password, persistSession)
+      console.log('🔐 ログイン試行:', { email })
+      // SSR Cookie を確立するため Route Handler 経由でサインイン
+      const res = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: JSON.stringify({ email, password })
+      })
+      const ok = res.ok
+      const payload = ok ? await res.json() : await res.json().catch(() => ({ error: 'sign-in failed' }))
 
-      if (error) {
-        console.error('ログインエラー:', error.message)
-        
-        // エラーの種類に応じた処理
-        if (error.message.includes('Invalid login credentials') ||
-            error.message.includes('Email not confirmed')) {
-          if (error.message.includes('Email not confirmed')) {
-            setErrorMessage('メールアドレスが確認されていません。確認メールをご確認ください。')
-          } else {
-            setErrorMessage('メールアドレスまたはパスワードが正しくありません。')
-          }
-        } else if (error.message.includes('Email not confirmed')) {
+      if (!ok) {
+        const errMsg = String(payload?.error || 'ログインに失敗しました')
+        console.error('ログインエラー:', errMsg)
+
+        // エラーの種類に応じた処理（文字列マッチ）
+        if (/Email not confirmed/i.test(errMsg)) {
           setErrorMessage('メールアドレスが確認されていません。確認メールをご確認ください。')
-        } else if (error.message.includes('Invalid email')) {
+        } else if (/Invalid login credentials/i.test(errMsg)) {
+          setErrorMessage('メールアドレスまたはパスワードが正しくありません。')
+        } else if (/Invalid email/i.test(errMsg)) {
           setErrorMessage('有効なメールアドレスを入力してください。')
         } else {
-          setErrorMessage(`ログインエラー: ${error.message}`)
+          setErrorMessage(`ログインエラー: ${errMsg}`)
         }
       } else {
-        console.log('✅ ログイン成功:', { 
-          email: data.user?.email,
-          persistSession,
-          storageType: persistSession ? 'localStorage' : 'sessionStorage'
-        })
-        // ログイン成功時は元のページまたはトップページにリダイレクト
-        const redirectTo = searchParams.get('redirect_to')
-        if (redirectTo) {
-          router.push(decodeURIComponent(redirectTo))
-        } else {
-          router.push('/')
+        console.log('✅ ログイン成功:', { email })
+        // クライアント側の Supabase セッションも同期（ヘッダー用）
+        try {
+          const access_token = payload?.access_token
+          const refresh_token = payload?.refresh_token
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token })
+          }
+        } catch (e) {
+          console.warn('client setSession failed (will rely on SSR cookie only):', e)
         }
+        // ログイン成功時は元のページまたはトップページに遷移し、即時サーバ再評価
+        const redirectTo = searchParams.get('redirect_to')
+        const nextUrl = redirectTo ? decodeURIComponent(redirectTo) : '/'
+        router.replace(nextUrl)
+        router.refresh()
       }
     } catch (error) {
       console.error('予期しないエラー:', error)
