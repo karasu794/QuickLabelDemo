@@ -108,6 +108,22 @@ const checks: Check[] = [
     },
   },
   {
+    name: "POST /api/quote/process/{jobId} with packages -> not 400",
+    run: async () => {
+      const jobId = "00000000-0000-0000-0000-000000000001";
+      const res = await req(`/api/quote/process/${jobId}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jobId,
+          quoteParams: { originCountry: "JP", destinationCountry: "US" },
+          packages: [{ id: 1, packagingType: "YOUR_PACKAGING", weight: 1, length: 10, width: 10, height: 10 }],
+        }),
+      });
+      if (res.status === 400) throw new Error("unexpected 400");
+    },
+  },
+  {
     name: `GET /api/quote -> 2xx`,
     run: async () => {
       const res = await req("/api/quote");

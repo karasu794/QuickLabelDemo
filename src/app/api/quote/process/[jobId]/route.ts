@@ -741,6 +741,11 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
     const { jobId } = params;
     console.log(`バックグラウンド処理開始 - ジョブID: ${jobId}`);
 
+    // 1) ボディ優先で受け取る
+    const body = await request.json().catch(() => ({} as any))
+    let pkgs: any[] = Array.isArray((body as any).packages) ? (body as any).packages : []
+    let qp: any = (body as any).quoteParams || null
+
     // 環境変数の確認
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       console.error('必要な環境変数が設定されていません');
@@ -793,9 +798,12 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         .update({ status: 'processing_auth' })
         .eq('id', jobId);
 
-    // リクエストペイロードを取得し正規化
-    const raw = job.request_payload as any
-    const quoteParams = withDefaults(raw?.quoteParams, {
+      // ボディ優先: 無ければDBの request_payload から
+      const raw = job.request_payload as any
+      if (!qp) qp = raw?.quoteParams
+      if (!Array.isArray(pkgs) || pkgs.length === 0) pkgs = raw?.packages || []
+
+      const quoteParams = withDefaults(qp as any, {
       originCountry: '',
       originPostalCode: '',
       originStateCode: '',
@@ -811,7 +819,15 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       higherInsurance: false,
       declaredValue: '',
     } as any)
-    const packages = toArray<any>(raw?.packages)
+      const packages = toArray<any>(pkgs)
+
+      // packages が最終的に空なら 400
+      if (packages.length === 0) {
+        return NextResponse.json(
+          { ok: false, code: 'PACKAGES_REQUIRED', message: 'バックグラウンド処理に packages が渡っていません。' },
+          { status: 400 }
+        )
+      }
     // 数値変換・単位はビルド関数側で統一
 
       console.log('FedEx API認証開始...');

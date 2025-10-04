@@ -274,6 +274,14 @@ export async function POST(request: NextRequest) {
             headers: {
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+              jobId: jobIdCreated,
+              // 正規化済みパッケージとオプション配列を渡す
+              packages: (requestPayload as any).packages,
+              commodities: Array.isArray((rawBody as any)?.commodities) ? (rawBody as any).commodities : [],
+              services: Array.isArray((rawBody as any)?.services) ? (rawBody as any).services : [],
+              quoteParams,
+            }),
             signal: controller.signal
           });
           
