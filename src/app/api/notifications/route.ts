@@ -20,7 +20,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('notifications')
       .select('id,type,message,is_read,read_at,updated_at,org_id,target_user_id,created_at')
-      -- TODO(org-removed): org filter removed
+      // TODO(org-removed): org filter removed
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
       })
       .eq('id', idNum)
       .eq('target_user_id', userId)
-      -- TODO(org-removed): org filter removed
+      // TODO(org-removed): org filter removed
       .select('*')
       .single()
 

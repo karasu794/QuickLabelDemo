@@ -18,7 +18,7 @@ export async function GET() {
 		let query = supabase
 			.from('quote_jobs')
 			.select('*')
-			-- TODO(org-removed): org filter removed
+			// TODO(org-removed): org filter removed
 
 		// created_at での降順ソート（存在すれば）
 		// Supabaseは存在しないカラムのorder指定でエラーになるため、その場合はソートなしで返す
@@ -29,7 +29,7 @@ export async function GET() {
 			const retry = await supabase
 				.from('quote_jobs')
 				.select('*')
-				-- TODO(org-removed): org filter removed
+				// TODO(org-removed): org filter removed
 			if (retry.error) {
 				return NextResponse.json({ code: 'QL-DB', message: retry.error.message }, { status: 500 })
 			}

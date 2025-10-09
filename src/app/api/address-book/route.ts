@@ -74,7 +74,7 @@ export async function GET() {
 		const { data, error } = await supabase
 			.from('address_book')
 			.select('*')
-			-- TODO(org-removed): org filter removed
+			// TODO(org-removed): org filter removed
 			.order('created_at', { ascending: false })
 
 		if (error) {

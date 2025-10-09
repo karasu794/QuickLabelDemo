@@ -11,6 +11,7 @@ export type InvoicePdfArtifact = {
     signatureInserted: boolean
     dims: { pageWidth: number; pageHeight: number; margin: number }
     assets: { letterheadUrl?: string; signatureUrl?: string }
+    fql?: string
   }
 }
 

@@ -10,6 +10,7 @@
     "strict": false,
     "noEmit": true,
     "noEmitOnError": true,
+    "downlevelIteration": true,
     "incremental": true,
     "module": "esnext",
     "esModuleInterop": true,
@@ -35,6 +36,13 @@
   ],
   "exclude": [
     "node_modules",
-    "admin-app"
+    "admin-app",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "__tests__",
+    "**/__tests__/**",
+    "tests"
   ]
 }

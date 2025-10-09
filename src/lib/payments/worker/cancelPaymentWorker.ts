@@ -25,11 +25,11 @@ export class CancelPaymentWorker {
 
       if (job.payload.expectedAction === 'void') {
         const res = await this.adapter.void(payment.id, { idempotencyKey: job.payload.idempotencyKey })
-        if (!res.ok) throw new Error(res.reason)
+        if (!res.ok) throw new Error((res as any).reason)
         await paymentsRepo.update(payment.id, { status: 'voided' })
       } else {
         const res = await this.adapter.refund(payment.id, { amount: payment.amount, currency: payment.currency, idempotencyKey: job.payload.idempotencyKey })
-        if (!res.ok) throw new Error(res.reason)
+        if (!res.ok) throw new Error((res as any).reason)
         await paymentsRepo.update(payment.id, { status: 'refunded', refundedAmount: payment.amount })
       }
       jobsStore.updateStatus(job.id, 'succeeded')

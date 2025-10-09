@@ -25,7 +25,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: string
-          org_id: string
+          org_id: string | null
           phone_number: string | null
           postal_code: string | null
           state_code: string | null
@@ -41,7 +41,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          org_id: string
+          org_id?: string | null
           phone_number?: string | null
           postal_code?: string | null
           state_code?: string | null
@@ -57,7 +57,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          org_id?: string
+          org_id?: string | null
           phone_number?: string | null
           postal_code?: string | null
           state_code?: string | null
@@ -277,7 +277,7 @@ export type Database = {
           id: string
           label_urls: string[] | null
           master_tracking_number: string | null
-          org_id: string
+          org_id: string | null
           packages_added: number
           payment_id: string | null
           recipient_info: Json
@@ -299,7 +299,7 @@ export type Database = {
           id?: string
           label_urls?: string[] | null
           master_tracking_number?: string | null
-          org_id: string
+          org_id?: string | null
           packages_added?: number
           payment_id?: string | null
           recipient_info: Json
@@ -321,7 +321,7 @@ export type Database = {
           id?: string
           label_urls?: string[] | null
           master_tracking_number?: string | null
-          org_id?: string
+          org_id?: string | null
           packages_added?: number
           payment_id?: string | null
           recipient_info?: Json
@@ -347,19 +347,19 @@ export type Database = {
       organization_members: {
         Row: {
           created_at: string | null
-          org_id: string
+          org_id: string | null
           role: string
           user_id: string
         }
         Insert: {
           created_at?: string | null
-          org_id: string
+          org_id?: string | null
           role: string
           user_id: string
         }
         Update: {
           created_at?: string | null
-          org_id?: string
+          org_id?: string | null
           role?: string
           user_id?: string
         }
@@ -455,7 +455,7 @@ export type Database = {
           created_by: string | null
           error_message: string | null
           id: string
-          org_id: string
+          org_id: string | null
           request_payload: Json
           response_payload: Json | null
           status: string
@@ -468,7 +468,7 @@ export type Database = {
           created_by?: string | null
           error_message?: string | null
           id?: string
-          org_id: string
+          org_id?: string | null
           request_payload: Json
           response_payload?: Json | null
           status?: string
@@ -481,7 +481,7 @@ export type Database = {
           created_by?: string | null
           error_message?: string | null
           id?: string
-          org_id?: string
+          org_id?: string | null
           request_payload?: Json
           response_payload?: Json | null
           status?: string
@@ -510,7 +510,7 @@ export type Database = {
           created_at: string | null
           date_key: string
           id: string
-          org_id: string
+          org_id: string | null
           receipt_number: string
           sequence_number: number
           transaction_id: number
@@ -520,7 +520,7 @@ export type Database = {
           created_at?: string | null
           date_key: string
           id?: string
-          org_id: string
+          org_id?: string | null
           receipt_number: string
           sequence_number: number
           transaction_id: number
@@ -530,7 +530,7 @@ export type Database = {
           created_at?: string | null
           date_key?: string
           id?: string
-          org_id?: string
+          org_id?: string | null
           receipt_number?: string
           sequence_number?: number
           transaction_id?: number
@@ -639,7 +639,7 @@ export type Database = {
           id: number
           items: Json | null
           label_url: string | null
-          org_id: string
+          org_id: string | null
           packages: Json | null
           payment_details: Json | null
           payment_id: string | null
@@ -688,7 +688,7 @@ export type Database = {
           id?: number
           items?: Json | null
           label_url?: string | null
-          org_id: string
+          org_id?: string | null
           packages?: Json | null
           payment_details?: Json | null
           payment_id?: string | null
@@ -737,7 +737,7 @@ export type Database = {
           id?: number
           items?: Json | null
           label_url?: string | null
-          org_id?: string
+          org_id?: string | null
           packages?: Json | null
           payment_details?: Json | null
           payment_id?: string | null

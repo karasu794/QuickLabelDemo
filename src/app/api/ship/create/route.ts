@@ -245,13 +245,15 @@ try {
 		let rate = 0
 		let currency = 'JPY'
 		let labelUrl = ''
+		let trackingNumbers: string[] = []
+		let responseLabelUrls: string[] = []
 
 		try {
 			const res = await postShipment<any>(payload, kind)
 			const ts = res?.output?.transactionShipments?.[0]
 			const pieces: Array<any> = Array.isArray(ts?.pieceResponses) ? ts!.pieceResponses : []
 			const master = ts?.masterTrackingNumber || pieces?.[0]?.trackingNumber || ''
-			const trackingNumbers: string[] = pieces.map(p => String(p?.trackingNumber || '')).filter(Boolean)
+			trackingNumbers = pieces.map(p => String(p?.trackingNumber || '')).filter(Boolean)
 			const rawUrls: string[] = pieces.flatMap(p => (Array.isArray(p?.packageDocuments) ? p!.packageDocuments : []).map((d: any) => String(d?.url || '')).filter(Boolean))
 			tracking = master
 			const firstFedexUrl = rawUrls[0]
@@ -276,7 +278,7 @@ try {
 			const blob = await put(path, buf, { access: 'public', contentType: 'application/pdf', token: blobToken })
 			labelUrl = blob.url
 			// Build labelUrls array for response: first is blob url, rest are raw FedEx urls (not persisted)
-			var responseLabelUrls: string[] = [labelUrl, ...rawUrls.slice(1)]
+			responseLabelUrls = [labelUrl, ...rawUrls.slice(1)]
 		} catch (e) {
 			if (e instanceof FedExError) {
 				logError('ship_create_failed', { orderId: input.orderId, code: e.code, details: e.details })

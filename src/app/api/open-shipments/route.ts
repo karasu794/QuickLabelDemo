@@ -17,7 +17,7 @@ export async function GET() {
 		const { data, error } = await supabase
 			.from('open_shipments')
 			.select('*')
-			-- TODO(org-removed): org filter removed
+			// TODO(org-removed): org filter removed
 			.order('created_at', { ascending: false })
 
 		if (error) {

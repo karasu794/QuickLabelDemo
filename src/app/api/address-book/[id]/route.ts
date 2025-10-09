@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 			.from('address_book') as any)
 			.update(payload)
 			.match({ id })
-			.eq('org_id', orgId)
+			// TODO(org-removed): org filter removed
 			.select('*')
 			.maybeSingle()
 
@@ -92,7 +92,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 			.from('address_book')
 			.delete()
 			.match({ id })
-			-- TODO(org-removed): org filter removed
+			// TODO(org-removed): org filter removed
 			.select('*')
 			.maybeSingle()
 

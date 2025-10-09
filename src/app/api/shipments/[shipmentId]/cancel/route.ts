@@ -11,7 +11,7 @@ export async function POST(_request: NextRequest, { params }: { params: { shipme
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'ユーザー認証に失敗しました' }, { status: 401 })
 
-    const { data, error } = await (supabase.rpc('cancel_shipment', { p_shipment_id: shipmentId }) as any)
+    const { data, error } = await ((supabase as any).rpc('cancel_shipment', { p_shipment_id: shipmentId }))
     if (error) {
       const msg = String(error.message || '').toLowerCase()
       if (msg.includes('not_found')) return NextResponse.json({ error: 'not found' }, { status: 404 })
