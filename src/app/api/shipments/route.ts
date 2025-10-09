@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 import { z } from 'zod'
 
@@ -10,12 +12,13 @@ function isKnownError(e: unknown): e is KnownError {
 
 export async function GET() {
 	try {
-		const { supabase, orgId } = await requireOrg()
+		const { supabase, user } = await getUserOrThrow()
+		const userId = user.id
 
 		let query = supabase
 			.from('shipments')
 			.select('*')
-			.eq('org_id', orgId)
+			.eq('user_id', userId)
 
 		const { data, error } = await query.order('created_at', { ascending: false })
 		if (error) {
@@ -23,7 +26,7 @@ export async function GET() {
 			const retry = await supabase
 				.from('shipments')
 				.select('*')
-				.eq('org_id', orgId)
+				.eq('user_id', userId)
 			if (retry.error) {
 				return NextResponse.json({ code: 'QL-DB', message: retry.error.message }, { status: 500 })
 			}
@@ -63,11 +66,13 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ code: 'QL-VALIDATION', message: '入力値が不正です' }, { status: 400 })
 		}
 
-		const { supabase, userId, orgId } = await requireOrg()
+		const { supabase, user } = await getUserOrThrow()
+		const userId = user.id
+		const orgId = null // TODO(org-removed)
 		type Insert = Database['public']['Tables']['shipments']['Insert']
 		const input = parsed.data
 		const payload: Insert = {
-			org_id: orgId,
+			// TODO(org-removed): org_id deprecated
 			created_by: userId as Insert['created_by'],
 			user_id: userId as Insert['user_id'],
 			tracking_number: input.tracking_number as Insert['tracking_number'],

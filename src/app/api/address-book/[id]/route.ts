@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 
 type KnownError = { status: number; code: string; message: string }
@@ -46,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 			return NextResponse.json({ code: 'QL-EMPTY', message: '更新フィールドが空です' }, { status: 400 })
 		}
 
-		const { supabase, orgId } = await requireOrg()
+		const { supabase } = await getUserOrThrow()
 		// Supabase の型推論が .update(...) の引数で never になるのを回避
 		type Update = Database['public']['Tables']['address_book']['Update']
 		const payload = updateInput as Partial<Update>
@@ -84,13 +86,13 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 			return NextResponse.json({ code: 'QL-INPUT', message: 'idが指定されていません' }, { status: 400 })
 		}
 
-		const { supabase, orgId } = await requireOrg()
+		const { supabase } = await getUserOrThrow()
 
 		const { data, error } = await supabase
 			.from('address_book')
 			.delete()
 			.match({ id })
-			.eq('org_id', orgId)
+			-- TODO(org-removed): org filter removed
 			.select('*')
 			.maybeSingle()
 

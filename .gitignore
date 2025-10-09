@@ -16,5 +16,9 @@
 .env
 supabase/.temp/
 test-results/
+.playwright-cache/
+playwright-report/
+blob-report/
+tests/e2e/.auth/
 .pnpm/
 tasks/

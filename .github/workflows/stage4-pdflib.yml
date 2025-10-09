@@ -1,0 +1,29 @@
+name: Stage4 pdf-lib Tests (Optional)
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  stage4-pdflib:
+    if: ${{ vars.ENABLE_PDFLIB_TESTS == '1' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Stage4 contracts (pdf-lib)
+        run: ENABLE_PDFLIB_TESTS=1 PDF_BUILDER=pdf-lib pnpm -s test:stage4:contracts
+
+

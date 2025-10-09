@@ -1,14 +1,25 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
+  testDir: 'tests/e2e',
+  retries: 1,
   timeout: 30_000,
-  expect: { timeout: 5_000 },
-  retries: process.env.CI ? 1 : 0,
-  reporter: [['list']],
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    video: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
-});
+  webServer: {
+    command: 'pnpm dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: true,
+    timeout: 120_000,
+  },
+  projects: [
+    { name: 'Chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'Firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'WebKit', use: { ...devices['Desktop Safari'] } },
+  ],
+})

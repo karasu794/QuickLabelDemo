@@ -793,6 +793,122 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          id: string
+          amount: number
+          currency: string
+          status: string
+          refunded_amount: number
+          status_detail: string | null
+          last_error_code: string | null
+          last_error: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          amount: number
+          currency: string
+          status: string
+          refunded_amount?: number
+          status_detail?: string | null
+          last_error_code?: string | null
+          last_error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          amount?: number
+          currency?: string
+          status?: string
+          refunded_amount?: number
+          status_detail?: string | null
+          last_error_code?: string | null
+          last_error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      // jobs table (added)
+      jobs: {
+        Row: {
+          id: string
+          type: string
+          status: 'queued' | 'running' | 'succeeded' | 'failed'
+          attempts: number
+          locked: boolean
+          next_run_at: string | null
+          status_detail: string | null
+          last_error_code: string | null
+          last_error: string | null
+          idempotency_key: string | null
+          payload: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          status?: 'queued' | 'running' | 'succeeded' | 'failed'
+          attempts?: number
+          locked?: boolean
+          next_run_at?: string | null
+          status_detail?: string | null
+          last_error_code?: string | null
+          last_error?: string | null
+          idempotency_key?: string | null
+          payload?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          status?: 'queued' | 'running' | 'succeeded' | 'failed'
+          attempts?: number
+          locked?: boolean
+          next_run_at?: string | null
+          status_detail?: string | null
+          last_error_code?: string | null
+          last_error?: string | null
+          idempotency_key?: string | null
+          payload?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      // job_events table (added)
+      job_events: {
+        Row: {
+          id: number
+          job_id: string
+          at: string
+          event: 'queued' | 'running' | 'rescheduled' | 'succeeded' | 'failed'
+          note: string | null
+          payload: Json | null
+        }
+        Insert: {
+          id?: number
+          job_id: string
+          at?: string
+          event: 'queued' | 'running' | 'rescheduled' | 'succeeded' | 'failed'
+          note?: string | null
+          payload?: Json | null
+        }
+        Update: {
+          id?: number
+          job_id?: string
+          at?: string
+          event?: 'queued' | 'running' | 'rescheduled' | 'succeeded' | 'failed'
+          note?: string | null
+          payload?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -808,6 +924,12 @@ export type Database = {
           match_count: number
         }[]
       }
+      // jobs_pick_for_update RPC (added)
+      , jobs_pick_for_update: {
+        Args: { p_type: string; p_now: string }
+        Returns: Database['public']['Tables']['jobs']['Row']
+      }
+      ,
       search_hs_codes: {
         Args: {
           limit_count?: number

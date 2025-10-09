@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 
 export async function GET() {
-	try {
-		const { userId, orgId } = await requireOrg()
-		return NextResponse.json({ ok: true, userId, orgId }, { status: 200 })
+  try {
+    const { user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
+    return NextResponse.json({ ok: true, userId, orgId }, { status: 200 })
 	} catch (e: unknown) {
 		if (isKnownError(e)) {
 			return NextResponse.json({ code: e.code, message: e.message }, { status: e.status })

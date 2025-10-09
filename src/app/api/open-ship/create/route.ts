@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { createOpenShipment, buildOpenShipmentData } from '@/lib/fedex/open-ship'
 import type { Database } from '@/types/supabase'
 
@@ -84,8 +86,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 認証・組織解決（APIでもCookie経由でセッション更新済み）
-    const { supabase, userId, orgId } = await requireOrg()
+    // 認証（単一ユーザー方式）
+    const { supabase, user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
 
     // Open Shipment用データを構築
     const openShipmentData = buildOpenShipmentData(
@@ -116,7 +120,7 @@ export async function POST(request: NextRequest) {
     const { data: openShipmentRecord, error: dbError } = await (supabase
       .from('open_shipments') as any)
       .insert({
-        org_id: orgId,
+        // TODO(org-removed): org_id deprecated
         created_by: userId,
         master_tracking_number: openShipmentResult.masterTrackingNumber,
         fedex_index: openShipmentResult.index,

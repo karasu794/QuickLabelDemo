@@ -2,7 +2,9 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { requireAdminAuthRoute } from '@/lib/auth/route'
 import type { Database } from '@/types/supabase'
 
@@ -25,7 +27,9 @@ export async function PATCH(_req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: err }, { status })
   }
   try {
-    const { supabase, userId, orgId } = await requireOrg()
+    const { supabase, user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
     const idStr = params.id
     const idNum = Number(idStr)
     if (!Number.isFinite(idNum)) {
@@ -43,7 +47,7 @@ export async function PATCH(_req: NextRequest, { params }: { params: { id: strin
       .from('notifications') as any)
       .update(update as any)
       .eq('id', idNum)
-      .eq('org_id', orgId as NotificationRow['org_id'])
+      // TODO(org-removed): org filter removed
       .eq('target_user_id', userId as NotificationRow['target_user_id'])
       .select('id,is_read,read_at,updated_at')
       .maybeSingle()

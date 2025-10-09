@@ -1,13 +1,15 @@
 import 'server-only'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { withOrderAdvisoryLock } from '@/lib/db/locks'
 import { createClient } from '@/lib/supabase/server'
 import { logError, logInfo, logWarn } from '@/lib/logging'
 // CORE_MODE
 import { CORE_MODE } from '@/lib/config/coreMode'
-import { assertRateConsistency } from '@/lib/ship/rateGuard'
+import { assertRateConsistency as assertRG, RateGuardError, loadRGConfig, fetchReferenceTotal as fetchRGRef } from '@/lib/ship/rateGuard'
 import { determineAccountKind, getAccessToken, postShipment, FedExError, AccountKind } from '@/lib/fedex/client'
 import { put } from '@vercel/blob'
 // ensurePost
@@ -44,7 +46,8 @@ const bodySchema = z.object({
 	bill: z.object({ payer: z.enum(['SENDER', 'RECIPIENT', 'THIRD_PARTY']) }),
 	shipper: partySchema,
 	recipient: partySchema,
-	package: pkgSchema,
+	package: pkgSchema.optional(),
+	packages: z.array(pkgSchema).min(1).optional(),
 	htsCode: z.string().max(10).regex(/^\d+$/).optional(),
 })
 
@@ -119,14 +122,9 @@ export async function POST(req: NextRequest) {
         }
     }
 
-	let userId: string, orgId: string
-	try {
-		const org = await requireOrg()
-		userId = org.userId
-		orgId = org.orgId
-	} catch {
-		return NextResponse.json({ code: 'QL-AUTH', message: 'Unauthorized' }, { status: 401 })
-	}
+const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
+	const userId: string = user.id
+	const orgId: string | null = null // TODO(org-removed): previously persisted; drop column later
 
   const supabase = createClient()
 
@@ -149,18 +147,32 @@ export async function POST(req: NextRequest) {
 		}
 	}
 
-	const pay = await verifyPayment(input.orderId)
+const pay = await verifyPayment(input.orderId)
 	if (!pay) {
 		return NextResponse.json({ code: 'PAYMENT_REQUIRED' }, { status: 402 })
 	}
 
-	await assertRateConsistency({ orderId: input.orderId, shipTotal: pay.amount, currency: pay.currency })
+// RateGuard: new env names + fallback, standard error 400+code
+try {
+  const cfg = loadRGConfig(process.env as any)
+  const refTotal = await fetchRGRef({ supabase: supabaseFromAuth, userId })
+  const rgRes = assertRG(refTotal, pay.amount, cfg)
+  if ((rgRes as any)?.warnings) {
+    // NOTE: warningsを応答に含める場合は、下のJSONにマージする
+  }
+} catch (e: any) {
+  if (e instanceof RateGuardError || e?.code === 'RATE_GUARD_MISMATCH' || e?.code === 'RATE_GUARD_NO_REFERENCE') {
+    return NextResponse.json({ code: e.code ?? 'RATE_GUARD_MISMATCH', ...(e.payload || {}), diff: e.payload?.diff }, { status: e.status ?? 400 })
+  }
+  throw e
+}
 
 	const kind = chooseAccountKind(input.shipper.country, input.recipient.country)
-	const weightKg = toKg(input.package.weight.value, input.package.weight.unit)
-	const lengthCm = toCm(input.package.dimensions.length, input.package.dimensions.unit)
-	const widthCm = toCm(input.package.dimensions.width, input.package.dimensions.unit)
-	const heightCm = toCm(input.package.dimensions.height, input.package.dimensions.unit)
+
+	// Normalize packages: prefer input.packages; fallback to single package
+	const normPackages = (input.packages && input.packages.length > 0)
+		? input.packages
+		: (input.package ? [input.package] : [])
 
 	async function doShip(): Promise<NextResponse> {
 		// Narrow race window by re-checking
@@ -213,14 +225,19 @@ export async function POST(req: NextRequest) {
 				packagingType: 'YOUR_PACKAGING',
 				pickupType: 'DROPOFF_AT_FEDEX_LOCATION',
 				shippingChargesPayment: { paymentType: input.bill.payer },
-				requestedPackageLineItems: [
-					{
-						sequenceNumber: 1,
+				requestedPackageLineItems: normPackages.length > 0
+					? normPackages.map((p, i) => ({
+						sequenceNumber: i + 1,
 						groupPackageCount: 1,
-						weight: { units: 'KG', value: Number(weightKg.toFixed(3)) },
-						dimensions: { length: Math.round(lengthCm), width: Math.round(widthCm), height: Math.round(heightCm), units: 'CM' },
-					},
-				],
+						weight: { units: 'KG', value: Number(toKg(p.weight.value, p.weight.unit).toFixed(3)) },
+						dimensions: {
+							length: Math.round(toCm(p.dimensions.length, p.dimensions.unit)),
+							width: Math.round(toCm(p.dimensions.width, p.dimensions.unit)),
+							height: Math.round(toCm(p.dimensions.height, p.dimensions.unit)),
+							units: 'CM',
+						},
+					}))
+					: [],
 			},
 		}
 
@@ -232,12 +249,16 @@ export async function POST(req: NextRequest) {
 		try {
 			const res = await postShipment<any>(payload, kind)
 			const ts = res?.output?.transactionShipments?.[0]
-			tracking = ts?.masterTrackingNumber || ts?.pieceResponses?.[0]?.trackingNumber || ''
-			const doc = ts?.pieceResponses?.[0]?.packageDocuments?.[0]
+			const pieces: Array<any> = Array.isArray(ts?.pieceResponses) ? ts!.pieceResponses : []
+			const master = ts?.masterTrackingNumber || pieces?.[0]?.trackingNumber || ''
+			const trackingNumbers: string[] = pieces.map(p => String(p?.trackingNumber || '')).filter(Boolean)
+			const rawUrls: string[] = pieces.flatMap(p => (Array.isArray(p?.packageDocuments) ? p!.packageDocuments : []).map((d: any) => String(d?.url || '')).filter(Boolean))
+			tracking = master
+			const firstFedexUrl = rawUrls[0]
 			const charge = ts?.shipmentDocuments?.[0]?.totalNetCharge
 			rate = Number(charge?.amount ?? pay.amount)
 			currency = String(charge?.currency ?? pay.currency ?? 'JPY')
-			const fedexLabelUrl: string | undefined = doc?.url
+			const fedexLabelUrl: string | undefined = firstFedexUrl
 			if (!fedexLabelUrl) throw new Error('LABEL_URL_MISSING')
 			const token = await getAccessToken(kind)
 			const pdfResp = await fetch(fedexLabelUrl, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/pdf' } })
@@ -254,19 +275,21 @@ export async function POST(req: NextRequest) {
 			}
 			const blob = await put(path, buf, { access: 'public', contentType: 'application/pdf', token: blobToken })
 			labelUrl = blob.url
+			// Build labelUrls array for response: first is blob url, rest are raw FedEx urls (not persisted)
+			var responseLabelUrls: string[] = [labelUrl, ...rawUrls.slice(1)]
 		} catch (e) {
 			if (e instanceof FedExError) {
-				logError('ship_create_failed', { orderId: input.orderId, orgId, code: e.code, details: e.details })
+				logError('ship_create_failed', { orderId: input.orderId, code: e.code, details: e.details })
 				return NextResponse.json({ code: e.code, message: e.message }, { status: e.code || 502 })
 			}
-			logError('ship_create_failed', { orderId: input.orderId, orgId, error: String((e as Error)?.message || e) })
+			logError('ship_create_failed', { orderId: input.orderId, error: String((e as Error)?.message || e) })
 			return NextResponse.json({ code: 'SHIP_FAILED' }, { status: 502 })
 		}
 
 		try {
 			const row: any = {
 				order_id: input.orderId,
-				org_id: orgId,
+				// TODO(org-removed): org_id removed in single-user tenancy
 				user_id: userId,
 				tracking_number: tracking,
 				service_type: input.serviceType,
@@ -301,8 +324,12 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ code: 'PERSIST_FAILED' }, { status: 500 })
 		}
 
-		logInfo('ship_create_succeeded', { orderId: input.orderId, orgId, trackingNumber: tracking, accountKind: kind })
-		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency, htsCode: input.htsCode } satisfies CreateShipResponse)
+		logInfo('ship_create_succeeded', { orderId: input.orderId, trackingNumber: tracking, accountKind: kind })
+		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency, htsCode: input.htsCode,
+			masterTrackingNumber: tracking,
+			trackingNumbers,
+			labelUrls: responseLabelUrls,
+		} as any)
 	}
 
 	try {

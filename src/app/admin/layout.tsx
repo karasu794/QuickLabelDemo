@@ -5,27 +5,15 @@ import AdminSidebar from './components/AdminSidebar'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-async function requireAdminPage() {
-  const { isAuthenticated, isAdmin } = await getAdminContext()
-  if (!isAuthenticated) {
-    redirect('/login?redirect_to=/admin')
-  }
-  if (!isAdmin) {
-    return { isAdmin: false as const }
-  }
-  return { isAdmin: true as const }
-}
+export const runtime = 'nodejs'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const r = await requireAdminPage()
-  if (r.isAdmin === false) {
-    return (
-      <div className="p-8">
-        <h1 className="text-xl font-semibold">403 Forbidden</h1>
-        <p className="mt-2">管理者権限が必要です。</p>
-      </div>
-    )
+  const ctx = await getAdminContext()
+  if (!ctx.isAuthenticated) {
+    redirect('/login?redirect_to=/admin')
+  }
+  if (!ctx.isAdmin) {
+    redirect('/')
   }
 
   return (

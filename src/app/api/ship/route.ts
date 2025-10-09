@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 // NOTE: This legacy route is superseded by /api/ship/create for production single-package shipping.
 // Please migrate callers to `POST /api/ship/create`.
 import { headers } from 'next/headers'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { checkRate } from '@/lib/ratelimit'
 import { SquareClient, SquareEnvironment, SquareError } from 'square'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -582,7 +584,7 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
 export async function POST(request: NextRequest) {
   // Keep rate-limit and validation, but remove sandbox sourceId replacement.
   let userId: string | null = null
-  try { const org = await requireOrg(); userId = org.userId } catch { userId = null }
+  try { const { user } = await getUserOrThrow(); userId = user.id } catch { userId = null }
   const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
   const key = userId ? `user:${userId}` : `ip:${ip}`
   await checkRate(key) // SR-B: 常時PASSのため分岐不要

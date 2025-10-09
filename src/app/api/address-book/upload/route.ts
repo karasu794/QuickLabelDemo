@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Papa from 'papaparse'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 
 interface CSVRow {
@@ -20,7 +22,9 @@ interface ParsedRow extends CSVRow {
 
 export async function POST(request: NextRequest) {
   try {
-    const { supabase, userId, orgId } = await requireOrg()
+    const { supabase, user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
 
     // FormDataからファイルを取得
     const formData = await request.formData()
@@ -107,7 +111,7 @@ export async function POST(request: NextRequest) {
         validationErrors.push(...errors)
       } else {
         const addressBookEntry: AddressInsert = {
-          org_id: orgId,
+          // TODO(org-removed): org_id deprecated
           created_by: userId,
           contact_name: row.contact_name.trim(),
           company_name: row.company_name?.trim() || null,

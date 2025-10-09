@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAdminContext } from '@/lib/auth/isAdmin'
-import { createRouteHandlerClient } from '@/lib/supabase/server'
+import { createRouteClient } from '@/lib/supabase/routeClient'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -8,8 +7,8 @@ export const revalidate = 0
 
 export async function GET() {
   try {
-    // Route Handler では cookie 書き換えが許可されるため、こちらを優先
-    const supabase = createRouteHandlerClient()
+    // Route Handler では cookie 書き換えが許可されるため、公式ヘルパを利用
+    const supabase = createRouteClient()
     const { data: { user } } = await supabase.auth.getUser()
     const adminEmails = (process.env.ADMIN_EMAILS || '')
       .split(',').map(s => s.trim().toLowerCase()).filter(Boolean)

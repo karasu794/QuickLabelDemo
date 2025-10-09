@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 
 type KnownError = { status: number; code: string; message: string }
@@ -8,13 +10,14 @@ function isKnownError(e: unknown): e is KnownError {
 }
 
 export async function GET() {
-	try {
-		const { supabase, orgId } = await requireOrg()
+  try {
+    const { supabase, user } = await getUserOrThrow()
+    const orgId = null // TODO(org-removed)
 
 		const { data, error } = await supabase
 			.from('open_shipments')
 			.select('*')
-			.eq('org_id', orgId)
+			-- TODO(org-removed): org filter removed
 			.order('created_at', { ascending: false })
 
 		if (error) {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 import { z } from 'zod'
 
@@ -9,13 +11,14 @@ function isKnownError(e: unknown): e is KnownError {
 }
 
 export async function GET() {
-	try {
-		const { supabase, orgId } = await requireOrg()
+  try {
+    const { supabase, user } = await getUserOrThrow()
+    const orgId = null // TODO(org-removed)
 
 		let query = supabase
 			.from('quote_jobs')
 			.select('*')
-			.eq('org_id', orgId)
+			-- TODO(org-removed): org filter removed
 
 		// created_at での降順ソート（存在すれば）
 		// Supabaseは存在しないカラムのorder指定でエラーになるため、その場合はソートなしで返す
@@ -26,7 +29,7 @@ export async function GET() {
 			const retry = await supabase
 				.from('quote_jobs')
 				.select('*')
-				.eq('org_id', orgId)
+				-- TODO(org-removed): org filter removed
 			if (retry.error) {
 				return NextResponse.json({ code: 'QL-DB', message: retry.error.message }, { status: 500 })
 			}
@@ -61,10 +64,12 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ code: 'QL-VALIDATION', message: '入力値が不正です' }, { status: 400 })
 		}
 
-		const { supabase, userId, orgId } = await requireOrg()
+    const { supabase, user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
 		type Insert = Database['public']['Tables']['quote_jobs']['Insert']
 		const base: Insert = {
-			org_id: orgId,
+			// TODO(org-removed): org_id deprecated
 			request_payload: parsed.data.request_payload as Insert['request_payload'],
 			status: parsed.data.status
 		}

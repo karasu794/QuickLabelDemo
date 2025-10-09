@@ -3,7 +3,9 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminAuthRoute } from '@/lib/auth/route'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 
 // (unused legacy helper removed)
@@ -12,12 +14,13 @@ type NotificationRow = Database['public']['Tables']['notifications']['Row']
 // GETリクエスト: 全ての通知を新しい順に取得
 export async function GET() {
   try {
-    const { supabase, orgId } = await requireOrg()
+    const { supabase, user } = await getUserOrThrow()
+    const orgId = null // TODO(org-removed)
 
     const { data, error } = await supabase
       .from('notifications')
       .select('id,type,message,is_read,read_at,updated_at,org_id,target_user_id,created_at')
-      .eq('org_id', orgId)
+      -- TODO(org-removed): org filter removed
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -51,7 +54,9 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const { supabase, userId, orgId } = await requireOrg()
+    const { supabase, user } = await getUserOrThrow()
+    const userId = user.id
+    const orgId = null // TODO(org-removed)
     const idNum = Number(id)
     if (!Number.isFinite(idNum)) {
       return NextResponse.json(
@@ -70,7 +75,7 @@ export async function PUT(request: NextRequest) {
       })
       .eq('id', idNum)
       .eq('target_user_id', userId)
-      .eq('org_id', orgId)
+      -- TODO(org-removed): org filter removed
       .select('*')
       .single()
 

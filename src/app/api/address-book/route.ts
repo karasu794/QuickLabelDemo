@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requireOrg } from '@/lib/org'
+// TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
+// import { requireOrg } from '@/lib/org'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import type { Database } from '@/types/supabase'
 
 // org_id と created_by はサーバー側で自動付与する
@@ -33,14 +35,16 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ code: 'QL-VALIDATION', message: '入力値が不正です' }, { status: 400 })
 		}
 
-		const { supabase, userId, orgId } = await requireOrg()
+		const { supabase, user } = await getUserOrThrow()
+		const userId = user.id
+		const orgId = null // TODO(org-removed)
 
 		const body: AddressInput = parsed.data
 
-		// サーバーが org_id / created_by を上書き付与する
+		// サーバーが created_by を付与する（org_idは撤去）
 		const insertPayload = {
 			...body,
-			org_id: orgId,
+			// TODO(org-removed): org_id deprecated
 			created_by: userId,
 		}
 
@@ -65,12 +69,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
 	try {
-		const { supabase, orgId } = await requireOrg()
+		const { supabase, user } = await getUserOrThrow()
 
 		const { data, error } = await supabase
 			.from('address_book')
 			.select('*')
-			.filter('org_id', 'eq', orgId)
+			-- TODO(org-removed): org filter removed
 			.order('created_at', { ascending: false })
 
 		if (error) {
