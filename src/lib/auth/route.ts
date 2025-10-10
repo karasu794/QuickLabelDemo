@@ -21,11 +21,12 @@ export async function requireAdminAuthRoute(): Promise<Ok | Ng> {
 
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role,is_admin')
     .eq('id', session.user.id)
     .single()
   if (profileErr || !profile) return { ok: false, status: 403 }
-  if ((profile as any).role !== 'admin') return { ok: false, status: 403 }
+  const p: any = profile
+  if (!(p.role === 'admin' || p.is_admin === true)) return { ok: false, status: 403 }
 
   return { ok: true, supabase, session, user: session.user, profile }
 }

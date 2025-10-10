@@ -17,7 +17,10 @@ export default function HeaderClient({ initialAuth, showAdminNav = true }: Props
   useEffect(() => {
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      setUser(session ? { id: session.user.id, email: session.user.email } : null)
+      // 最小修正A: 初回CSRで session が未復元(null)の場合は SSR の initialAuth.user を維持し、上書きしない
+      if (session) {
+        setUser({ id: session.user.id, email: session.user.email })
+      }
     })()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -40,13 +43,16 @@ export default function HeaderClient({ initialAuth, showAdminNav = true }: Props
     router.refresh()
   }
 
+  // SSRの初期ユーザーを短時間維持してフリッカーを防ぐ
+  const effectiveUser = user ?? initialAuth.user
+
   return (
     <header className="bg-purple-900">
       <div className="container mx-auto px-6 h-16">
         <nav className="flex justify-between items-center h-full">
           <Link href="/" className="text-white text-xl font-normal hover:opacity-80 transition-opacity">QuickLabel</Link>
           <div className="flex items-center space-x-8">
-            {user ? (
+            {effectiveUser ? (
               <>
                 <Link href="/shipping/new/shipper" className="text-white hover:opacity-80 transition-opacity">送り状作成</Link>
                 <Link href="/mypage/profile" className="text-white hover:opacity-80 transition-opacity">マイページ</Link>
