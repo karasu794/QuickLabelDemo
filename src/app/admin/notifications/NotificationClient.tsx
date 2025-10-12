@@ -2,7 +2,6 @@
 
 import { useState, useOptimistic, useMemo, useEffect, useRef } from 'react'
 import { markNotificationAsRead, markAllNotificationsAsRead } from './actions'
-import toast from 'react-hot-toast'
 
 // 通知データの型定義
 export interface Notification {
@@ -81,7 +80,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
 
       // 反映
       updateOptimisticNotifications({ id: notificationId, action: 'mark_read' })
-      toast.success('既読にしました')
       // 応急処置: 成功後に画面を更新
       setTimeout(() => {
         if (typeof window !== 'undefined') window.location.reload()
@@ -89,7 +87,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
 
     } catch (error) {
       console.error('通知更新エラー:', error)
-      toast.error('既読に失敗しました')
       // 失敗時は楽観更新をリバート（本関数は更新を適用前に失敗判定するため noop）
     } finally {
       setUpdatingIds(prev => {
@@ -121,7 +118,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
         throw new Error(result.error || '一括更新に失敗しました')
       }
 
-      toast.success('全ての未読を既読にしました')
       // 応急処置: 成功後に画面を更新
       setTimeout(() => {
         if (typeof window !== 'undefined') window.location.reload()
@@ -129,7 +125,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
 
     } catch (error) {
       console.error('一括既読処理エラー:', error)
-      toast.error('一括既読に失敗しました')
       // 失敗時は楽観更新をリバート
       unreadNotifications.forEach(notification => {
         updateOptimisticNotifications({ id: notification.id, action: 'mark_unread' })
@@ -163,10 +158,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
           const data = await res.json()
           if (data && data.error) msg = String(data.error)
         } catch {}
-        if (res.status === 401) toast.error(`未認証: ${msg}`)
-        else if (res.status === 403) toast.error(`権限がありません: ${msg}`)
-        else if (res.status >= 500) toast.error(`サーバーエラー: ${msg}`)
-        else toast.error(msg)
+        if (res.status === 401) console.error(`未認証: ${msg}`)
+        else if (res.status === 403) console.error(`権限がありません: ${msg}`)
+        else if (res.status >= 500) console.error(`サーバーエラー: ${msg}`)
+        else console.error(msg)
         // revert optimistic changes
         if (action === 'read' || action === 'unread') {
           ids.forEach(id => updateOptimisticNotifications({ id, action: action === 'read' ? 'mark_unread' : 'mark_read' }))
@@ -180,7 +175,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
         // delete was not applied optimistically; apply now
         if (op === 'delete') updateOptimisticNotifications({ id, action: 'delete' })
       })
-      toast.success(`${updated}件を${action === 'delete' ? '削除' : action === 'read' ? '既読' : '未読'}にしました`)
       // 成功後に選択解除
       setSelected(new Set())
       setSelectAll(false)
@@ -190,7 +184,6 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       }, 50)
     } catch (e) {
       console.error('bulk操作エラー:', e)
-      toast.error('一括操作に失敗しました')
       // revert optimistic changes on exception
       if (action === 'read' || action === 'unread') {
         const visibleIds2 = getVisibleRowIds()

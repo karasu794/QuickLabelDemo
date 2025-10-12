@@ -14,15 +14,60 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
+  const [initializing, setInitializing] = useState(true)
 
   const canSubmit = useMemo(() => newPassword.length >= 8 && confirm === newPassword && !busy, [newPassword, confirm, busy])
 
   useEffect(() => {
-    // セッションが無い状態での直アクセスはログインへ誘導
+    // リカバリリンクのURLハッシュ(#access_token, #refresh_token)からセッションを確立
     ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.replace('/login')
+      try {
+        let sessionEstablished = false
+        if (typeof window !== 'undefined' && window.location.hash) {
+          const hash = window.location.hash.slice(1)
+          const params = new URLSearchParams(hash)
+          const access_token = params.get('access_token')
+          const refresh_token = params.get('refresh_token')
+          if (access_token && refresh_token) {
+            try {
+              const { data, error } = await supabase.auth.setSession({ access_token, refresh_token })
+              if (!error && data?.session) {
+                sessionEstablished = true
+                // ハッシュを消してURLを綺麗にする
+                window.history.replaceState(null, '', window.location.pathname + window.location.search)
+              }
+            } catch {
+              // noop
+            }
+          }
+        }
+
+        // PKCEスタイル（?code=...）にも対応
+        if (!sessionEstablished && typeof window !== 'undefined' && window.location.search) {
+          const q = new URLSearchParams(window.location.search)
+          const code = q.get('code')
+          if (code) {
+            try {
+              const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+              if (!error && data?.session) {
+                sessionEstablished = true
+                // クエリを消す
+                window.history.replaceState(null, '', window.location.pathname)
+              }
+            } catch {
+              // noop
+            }
+          }
+        }
+
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!sessionEstablished && !session) {
+          // セッションが無い場合はログインへ誘導
+          router.replace('/login')
+          return
+        }
+      } finally {
+        setInitializing(false)
       }
     })()
   }, [router])
@@ -33,12 +78,20 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
       toast.success('パスワードを更新しました。ログインしてください。')
-      router.replace('/login')
+      router.replace('/login?reset=1')
     } catch (e) {
       toast.error('更新に失敗しました。時間を置いて再度お試しください。')
     } finally {
       setBusy(false)
     }
+  }
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="text-gray-600">セッションを準備しています...</div>
+      </div>
+    )
   }
 
   return (
