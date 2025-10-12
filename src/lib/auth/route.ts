@@ -26,7 +26,10 @@ export async function requireAdminAuthRoute(): Promise<Ok | Ng> {
     .single()
   if (profileErr || !profile) return { ok: false, status: 403 }
   const p: any = profile
-  if (!(p.role === 'admin' || p.is_admin === true)) return { ok: false, status: 403 }
+  {
+    const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+    if (!(p.is_admin === true || roleNormalized === 'admin')) return { ok: false, status: 403 }
+  }
 
   return { ok: true, supabase, session, user: session.user, profile }
 }

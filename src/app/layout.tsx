@@ -4,6 +4,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import HeaderServer from '@/components/header/HeaderServer'
+import ToastOnQuery from '@/components/ToastOnQuery'
 import { Toaster } from 'react-hot-toast'
 import { getSession } from '@/lib/supabase/server'
 
@@ -55,6 +56,8 @@ export default async function RootLayout({
             },
           }}
         />
+        {/* URLクエリに応じた自動トースト */}
+        <ToastOnQuery />
       </body>
     </html>
   )

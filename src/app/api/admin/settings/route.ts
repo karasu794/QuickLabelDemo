@@ -20,7 +20,8 @@ async function isAdminServer(): Promise<boolean> {
     if (!user) return false
     const { data: profile } = await supabase.from('profiles').select('role,is_admin').eq('id', user.id).maybeSingle()
     const p: any = profile || {}
-    return !!(p.is_admin === true || String(p.role || '').toLowerCase() === 'admin')
+    const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+    return p.is_admin === true || roleNormalized === 'admin'
   } catch {
     return false
   }

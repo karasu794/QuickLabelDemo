@@ -8,6 +8,7 @@ import {
   Settings
 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
+import VerifiedGuard from '@/components/VerifiedGuard'
 
 // 動的レンダリングを強制してキャッシュを回避
 export const dynamic = 'force-dynamic'
@@ -20,6 +21,7 @@ interface MypageLayoutProps {
 export default function MypageLayout({ children }: MypageLayoutProps) {
   return (
     <AuthGuard requireAuth={true}>
+      <VerifiedGuard>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
@@ -71,6 +73,7 @@ export default function MypageLayout({ children }: MypageLayoutProps) {
           </div>
         </div>
       </div>
+      </VerifiedGuard>
     </AuthGuard>
   )
 }

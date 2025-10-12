@@ -33,7 +33,7 @@ export async function verifyAdminAccess(): Promise<AdminVerificationResult> {
     // ユーザーのプロフィール（ロール）を取得
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role,is_admin')
       .eq('id', user.id)
       .single()
 
@@ -45,8 +45,10 @@ export async function verifyAdminAccess(): Promise<AdminVerificationResult> {
       }
     }
 
-    if (!profile || (profile as any).role !== 'admin') {
-      const roleVal = profile ? (profile as any).role : null
+    const p: any = profile || {}
+    const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+    if (!(p.is_admin === true || roleNormalized === 'admin')) {
+      const roleVal = p?.role ?? null
       console.log('🚨 管理者権限なし:', { userId: user.id, role: roleVal })
       return {
         success: false,

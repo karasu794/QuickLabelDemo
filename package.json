@@ -17,7 +17,7 @@
     "test:stage3:contracts": "jest --runInBand --verbose --testPathPattern=tests/contracts/(ui\\.stage3\\.invoice\\.contract\\.test\\.tsx|pdf\\.stage3\\.invoice\\.assets\\.contract\\.test\\.ts)$",
     "test:stage3:e2e": "playwright test tests/e2e/stage3.invoice.force-on.spec.ts",
     "test:stage3:all": "pnpm -s test:stage3:contracts && pnpm -s test:stage3:e2e",
-    "dev": "next dev",
+    "dev": "cross-env PORT=3000 next dev",
     "build": "next build",
     "vercel-build": "set -euo pipefail; node -v; pnpm -v; echo 'Check env'; node scripts/check-env.js; pnpm build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@hookform/resolvers": "^3.10.0",
     "@react-google-maps/api": "^2.20.7",
     "@sparticuz/chromium": "^131.0.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
@@ -71,6 +72,7 @@
     "puppeteer-core": "^23.9.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-hook-form": "^7.65.0",
     "react-hot-toast": "^2.5.2",
     "react-square-web-payments-sdk": "^3.2.4-beta.1",
     "server-only": "^0.0.1",
@@ -78,7 +80,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "use-places-autocomplete": "^4.0.1",
-    "zod": "^4.0.14",
+    "zod": "^3.23.8",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

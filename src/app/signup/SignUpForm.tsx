@@ -1,137 +1,144 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useForm, Controller, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { signUp } from '@/lib/supabase/client'
+import { signUpSchema, type SignUpInput } from '@/lib/validators/auth'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import Link from 'next/link'
 
 export default function SignUpForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const router = useRouter()
   const searchParams = useSearchParams()
-
-  // ログインページへのリンクにredirect_toパラメータを含める
+  const router = useRouter()
   const redirectTo = searchParams.get('redirect_to')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrorMessage('') // エラーメッセージをクリア
+  const requirePrivacy = true
 
+  const { register, control, handleSubmit, formState: { errors, isValid, isSubmitting: isRHFSubmitting } } = useForm<SignUpInput>({
+    resolver: zodResolver(signUpSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: { email: '', password: '', termsAccepted: false, privacyAccepted: false },
+  })
+
+  const mapAuthError = (raw?: unknown): string => {
+    const anyErr = raw as any
+    const msg = String(anyErr?.message || raw || '').toLowerCase()
+    const code = String(anyErr?.code || anyErr?.status || '')
+    // 既存登録系
+    if (
+      /already\s*(registered|exists)/.test(msg) ||
+      msg.includes('already in use') ||
+      msg.includes('email already') ||
+      msg.includes('duplicate') ||
+      (code === '400' && (msg.includes('user') || msg.includes('email')))
+    ) {
+      return 'このメールアドレスは既に登録されています。ログインするか、確認メールの再送をお試しください。'
+    }
+    if (msg.includes('invalid email')) {
+      return 'メールアドレスの形式が正しくありません。'
+    }
+    if (msg.includes('password') && msg.includes('least')) {
+      return 'パスワードは8文字以上で入力してください。'
+    }
+    if (msg.includes('rate limit') || msg.includes('too many requests')) {
+      return '一定時間に送信が集中しています。しばらく時間を置いてからお試しください。'
+    }
+    return '登録に失敗しました。時間を置いて再度お試しください。'
+  }
+
+  const onSubmit = async (values: SignUpInput) => {
+    setIsSubmitting(true)
+    setSubmitError(null)
     try {
-      // Supabaseクライアントを使ってユーザー登録
-      const { data, error } = await signUp(email, password)
-
-      // デバッグ用：詳細ログ出力
-      console.log('=== Signup Response Debug ===')
-      console.log('Error:', error)
-      console.log('Data:', data)
-      console.log('User created:', data?.user)
-      console.log('Session:', data?.session)
-      console.log('===============================')
-
-      if (error) {
-        console.error('登録エラー:', error.message)
-        console.error('エラー詳細:', error)
-        
-        // エラーの種類に応じた処理
-        if (error.message.includes('User already registered') || 
-            error.message.includes('already been registered') ||
-            error.message.includes('already exists')) {
-          // 登録済みメールアドレスの場合
-          setErrorMessage('このメールアドレスは既に登録されています。ログインしてください。')
-        } else if (error.message.includes('Password should be at least')) {
-          // パスワード強度不足
-          setErrorMessage('パスワードは6文字以上で設定してください。')
-        } else if (error.message.includes('Invalid email')) {
-          // 無効なメールアドレス
-          setErrorMessage('有効なメールアドレスを入力してください。')
-        } else {
-          // その他のエラー
-          setErrorMessage(`登録に失敗しました: ${error.message}`)
-        }
-        return
-      }
-
-      // 成功の場合
-      console.log('登録成功:', data)
-      
-      // 確認メール送信メッセージを表示
-      alert('確認メールを送信しました。メールを確認してアカウントを有効化してください。')
-
-    } catch (error) {
-      console.error('予期しないエラー:', error)
-      setErrorMessage('予期しないエラーが発生しました。しばらくしてから再試行してください。')
+      // 認証完了後に遷移させたいパス（redirect_to が優先、なければ /mypage）
+      const nextAfterVerify = redirectTo || '/mypage'
+      const { error } = await signUp(values.email, values.password, nextAfterVerify)
+      if (error) throw error
+      // サインアップ直後は未認証ページへ（メールをクエリで引き渡す）
+      router.push(`/unverified?email=${encodeURIComponent(values.email)}`)
+    } catch (e: any) {
+      setSubmitError(mapAuthError(e))
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
+  const termsChecked = useWatch({ control, name: 'termsAccepted' })
+  const privacyChecked = useWatch({ control, name: 'privacyAccepted' })
+  const emailVal = useWatch({ control, name: 'email' })
+  const passwordVal = useWatch({ control, name: 'password' })
+
+  const canSubmit = useMemo(() => {
+    const emailOk = typeof emailVal === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)
+    const hasMinPassword = typeof passwordVal === 'string' && passwordVal.length >= 8
+    const termsOk = !!termsChecked
+    const privacyOk = !requirePrivacy || !!privacyChecked
+    return emailOk && hasMinPassword && termsOk && privacyOk && !isSubmitting
+  }, [emailVal, passwordVal, termsChecked, privacyChecked, requirePrivacy, isSubmitting])
+
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      <div className="rounded-md shadow-sm -space-y-px">
-        <div>
-          <label htmlFor="email-address" className="sr-only">
-            メールアドレス
-          </label>
-          <input
-            id="email-address"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="メールアドレス"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading}
-          />
+    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="email" className="text-sm font-medium text-gray-700">メールアドレス</label>
+          <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} placeholder="you@example.com" {...register('email')} />
+          {errors.email && <p id="email-error" className="text-sm text-red-600" aria-live="polite">{errors.email.message}</p>}
         </div>
-        <div>
-          <label htmlFor="password" className="sr-only">
-            パスワード
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="パスワード（6文字以上）"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            disabled={isLoading}
-          />
+        <div className="space-y-2">
+          <label htmlFor="password" className="text-sm font-medium text-gray-700">パスワード</label>
+          <Input id="password" type="password" autoComplete="new-password" aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} placeholder="8文字以上" {...register('password')} />
+          {errors.password && <p id="password-error" className="text-sm text-red-600" aria-live="polite">{errors.password.message}</p>}
         </div>
       </div>
 
-      {errorMessage && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{errorMessage}</span>
+      <div className="space-y-3">
+        <Controller
+          name="termsAccepted"
+          control={control}
+          render={({ field }) => (
+            <label className="flex items-start gap-3">
+              <Checkbox checked={!!field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} aria-invalid={!!errors.termsAccepted} />
+              <span className="text-sm text-gray-700">利用規約に同意する（<Link href="/terms" className="underline" target="_blank" rel="noreferrer">/terms</Link>）</span>
+            </label>
+          )}
+        />
+        {errors.termsAccepted && <p className="text-sm text-red-600" aria-live="polite">{errors.termsAccepted.message as string}</p>}
+
+        <Controller
+          name="privacyAccepted"
+          control={control}
+          render={({ field }) => (
+            <label className="flex items-start gap-3">
+              <Checkbox checked={!!field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} aria-invalid={!!errors.privacyAccepted} />
+              <span className="text-sm text-gray-700">プライバシーポリシーに同意する（<Link href="/privacy" className="underline" target="_blank" rel="noreferrer">/privacy</Link>）（必須）</span>
+            </label>
+          )}
+        />
+        {errors.privacyAccepted && <p className="text-sm text-red-600" aria-live="polite">{errors.privacyAccepted.message as string}</p>}
+      </div>
+
+      {submitError && (
+        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" aria-live="polite">
+          <p>{submitError}</p>
+          <div className="mt-2 space-x-3">
+            <Link href="/login" className="underline">ログインへ</Link>
+            {emailVal && (
+              <Link href={`/unverified?email=${encodeURIComponent(String(emailVal))}`} className="underline">確認メールを再送</Link>
+            )}
+          </div>
         </div>
       )}
 
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'アカウント作成中...' : 'アカウント作成'}
-        </button>
-      </div>
-
-      <div className="text-sm text-gray-600">
-        <p>パスワードは以下の条件を満たしてください：</p>
-        <ul className="list-disc list-inside mt-1">
-          <li>6文字以上</li>
-          <li>英数字を含む</li>
-        </ul>
-      </div>
+      <Button type="submit" className="w-full h-11" disabled={!canSubmit}>
+        {isSubmitting ? '作成中…' : 'アカウントを作成'}
+      </Button>
     </form>
   )
-} 
+}

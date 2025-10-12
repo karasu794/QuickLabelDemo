@@ -24,7 +24,9 @@ export async function GET() {
           .select('role,is_admin')
           .eq('id', user.id)
           .maybeSingle()
-        isAdmin = Boolean((profile as any)?.is_admin) || ((profile as any)?.role || '').toLowerCase() === 'admin'
+        const p: any = profile || {}
+        const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+        isAdmin = p.is_admin === true || roleNormalized === 'admin'
       }
     }
 

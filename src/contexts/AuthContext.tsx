@@ -12,6 +12,7 @@ interface AuthContextType {
   loading: boolean
   isAuthenticated: boolean
   isAdmin: boolean
+  isEmailVerified: boolean
   authStatus: AuthStatus
   signOut: () => Promise<void>
 }
@@ -82,7 +83,9 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
               console.error('[AUTH_CONTEXT] Error fetching profile:', error)
               setIsAdmin(false)
             } else {
-              const isUserAdmin = !!profile && (((profile as any).role === 'admin') || (profile as any).is_admin === true)
+              const p: any = profile || {}
+              const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+              const isUserAdmin = p.is_admin === true || roleNormalized === 'admin'
               setIsAdmin(isUserAdmin)
             }
           } catch (error) {
@@ -133,7 +136,9 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
                 if (pErr) {
                   setIsAdmin(false)
                 } else {
-                  const isUserAdmin = !!profile && (((profile as any).role === 'admin') || (profile as any).is_admin === true)
+                  const p: any = profile || {}
+                  const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+                  const isUserAdmin = p.is_admin === true || roleNormalized === 'admin'
                   setIsAdmin(isUserAdmin)
                 }
               } catch {
@@ -178,6 +183,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     loading,
     isAuthenticated: !!user,
     isAdmin,
+    isEmailVerified: !!user?.email_confirmed_at,
     authStatus,
     signOut,
   }

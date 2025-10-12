@@ -1,14 +1,16 @@
 export type AdminLike = { role?: string | null; is_admin?: boolean | null }
 
 export const isAdmin = (p?: AdminLike | null): boolean => {
-  return !!p && (p.role === 'admin' || p.is_admin === true)
+  if (!p) return false
+  const roleNormalized = String(p.role ?? '').trim().toLowerCase()
+  return roleNormalized === 'admin' || p.is_admin === true
 }
 
 // 共通: SSRクッキーから現在ユーザーを取得し、ADMIN_EMAILS/プロフィールで管理者判定
-import { createSSRClient } from '@/lib/supabase/ssrClient'
+import { createClient } from '@/lib/supabase/server'
 
 export async function getAdminContext() {
-  const supabase = createSSRClient()
+  const supabase = createClient()
   const adminEmails = (process.env.ADMIN_EMAILS || '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
@@ -32,7 +34,7 @@ export async function getAdminContext() {
     .eq('id', user.id)
     .maybeSingle()
 
-  const admin = Boolean((profile as any)?.is_admin) || ((profile as any)?.role || '').toLowerCase() === 'admin'
+  const admin = Boolean((profile as any)?.is_admin) || String(((profile as any)?.role ?? '')).trim().toLowerCase() === 'admin'
   return { isAuthenticated: true, isAdmin: admin, user }
 }
 

@@ -2,10 +2,11 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase/server'
+import { createRouteClient } from '@/lib/supabase/routeClient'
 
 export async function POST(req: NextRequest) {
-  const supabase = createRouteHandlerClient()
+  // Use Next.js Route Handler friendly client to ensure Set-Cookie works reliably
+  const supabase = createRouteClient()
 
   let body: { email?: string; password?: string }
   try {
