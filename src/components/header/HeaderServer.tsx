@@ -2,6 +2,7 @@ import { getAdminContext } from '@/lib/auth/isAdmin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const runtime = 'nodejs'
 
 export default async function HeaderServer() {
   const HeaderClient = (await import('./HeaderClient')).default
