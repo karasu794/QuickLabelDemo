@@ -14,6 +14,11 @@ export async function GET() {
   const env = {
     url: Boolean(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL),
     anon: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+    projectRef: (() => {
+      const url = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '')
+      const m = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
+      return m?.[1] || null
+    })(),
   }
 
   const cookieStore = cookies()
@@ -22,6 +27,13 @@ export async function GET() {
   for (const n of names) {
     if (n.toLowerCase().includes('sb')) cookiesFlags[n] = true
   }
+  const cookiesProjectRef = (() => {
+    for (const n of names) {
+      const m = n.match(/^sb-([a-zA-Z0-9]+)-/)
+      if (m && m[1]) return m[1]
+    }
+    return null
+  })()
 
   let serverHasUser = false
   try {
@@ -45,7 +57,8 @@ export async function GET() {
     env,
     serverComponent: { hasUser: serverHasUser },
     routeHandler: { hasUser: routeHasUser },
-    cookies: cookiesFlags,
+    cookies: { projectRef: cookiesProjectRef, ...cookiesFlags },
+    match: { projectRef: Boolean(cookiesProjectRef && env.projectRef && cookiesProjectRef === env.projectRef) },
   })
 }
 
