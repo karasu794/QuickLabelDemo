@@ -7,7 +7,13 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  if (process.env.NODE_ENV === 'production') {
+  // 本番/プレビュー環境では 404。DEV_DUMP=1 のときのみ有効化
+  const isProdLike =
+    process.env.VERCEL_ENV === 'production' ||
+    process.env.VERCEL_ENV === 'preview' ||
+    process.env.NODE_ENV === 'production'
+
+  if (isProdLike && process.env.DEV_DUMP !== '1') {
     return NextResponse.json({ disabled: true }, { status: 404 })
   }
 
