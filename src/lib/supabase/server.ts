@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerComponentClient, createRouteHandlerClient as createRouteHelperClient } from '@supabase/auth-helpers-nextjs'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Session } from '@supabase/supabase-js'
@@ -9,43 +9,8 @@ import { Database } from '@/types/supabase'
  * Cookie経由でセッション情報を管理
  */
 export const createClient = () => {
-  const cookieStore = cookies()
-
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  const match = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
-  const projectRef = match?.[1]
-  const cookieName = projectRef ? `sb-${projectRef}-auth-token` : 'sb-access-token'
-
-  return createServerClient<Database>(
-    url,
-    anon,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            // SSR中にSet-Cookieヘッダーを設定できない場合のエラーハンドリング
-            // これはサーバーコンポーネントで起こる可能性がある
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options })
-          } catch (error) {
-            // SSR中にSet-Cookieヘッダーを設定できない場合のエラーハンドリング
-          }
-        },
-      },
-      cookieOptions: {
-        name: cookieName,
-      },
-    }
-  )
+  // Server Component 用クライアント（helpers流儀 / middlewareと統一）
+  return createServerComponentClient<Database>({ cookies })
 }
 
 /**
@@ -74,34 +39,8 @@ export const createServiceRoleClient = () => {
  * Cookie操作が可能なコンテキストで使用
  */
 export const createRouteHandlerClient = () => {
-  const cookieStore = cookies()
-
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  const match = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
-  const projectRef = match?.[1]
-  const cookieName = projectRef ? `sb-${projectRef}-auth-token` : 'sb-access-token'
-
-  return createServerClient<Database>(
-    url,
-    anon,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options })
-        },
-      },
-      cookieOptions: {
-        name: cookieName,
-      },
-    }
-  )
+  // Route Handler 用クライアント（helpers流儀 / middlewareと統一）
+  return createRouteHelperClient<Database>({ cookies })
 }
 
 /**
