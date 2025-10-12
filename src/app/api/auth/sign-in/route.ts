@@ -22,7 +22,9 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 })
+    // 401 応答は包括的な文言に統一（内部情報は出さない）
+    console.warn('[sign-in] failed:', { code: (error as any)?.status || 401 })
+    return NextResponse.json({ error: 'メールアドレスまたはパスワードをご確認ください。' }, { status: 401 })
   }
 
   return NextResponse.json({

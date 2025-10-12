@@ -13,14 +13,9 @@ export async function GET(request: NextRequest) {
     try {
       // 認証コードを使ってセッションを確立
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-      
       if (error) {
-        console.error('認証コールバックエラー:', error.message)
-        // 失敗時はログインへ遷移しエラートースト表示
         return NextResponse.redirect(`${requestUrl.origin}/login?verify_error=1`)
       }
-      
-      console.log('認証コールバック成功:', data.user?.email)
       
       // 成功時は指定されたページに verified=1 を付与してリダイレクト
       const redirectUrl = new URL(`${requestUrl.origin}${next}`)
@@ -29,7 +24,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(redirectUrl.toString())
       
     } catch (error) {
-      console.error('予期しない認証エラー:', error)
       return NextResponse.redirect(`${requestUrl.origin}/login?verify_error=1`)
     }
   }

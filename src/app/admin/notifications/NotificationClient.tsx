@@ -82,6 +82,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       // 反映
       updateOptimisticNotifications({ id: notificationId, action: 'mark_read' })
       toast.success('既読にしました')
+      // 応急処置: 成功後に画面を更新
+      setTimeout(() => {
+        if (typeof window !== 'undefined') window.location.reload()
+      }, 50)
 
     } catch (error) {
       console.error('通知更新エラー:', error)
@@ -118,6 +122,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       }
 
       toast.success('全ての未読を既読にしました')
+      // 応急処置: 成功後に画面を更新
+      setTimeout(() => {
+        if (typeof window !== 'undefined') window.location.reload()
+      }, 50)
 
     } catch (error) {
       console.error('一括既読処理エラー:', error)
@@ -176,6 +184,10 @@ export default function NotificationClient({ initialNotifications }: Notificatio
       // 成功後に選択解除
       setSelected(new Set())
       setSelectAll(false)
+      // 応急処置: 成功後に画面を更新
+      setTimeout(() => {
+        if (typeof window !== 'undefined') window.location.reload()
+      }, 50)
     } catch (e) {
       console.error('bulk操作エラー:', e)
       toast.error('一括操作に失敗しました')

@@ -56,7 +56,8 @@ export default function UnverifiedPage() {
         toast.success('確認メールを再送しました')
         startCooldown()
       } catch (ee: any) {
-        toast.error(ee?.message || '再送に失敗しました')
+        // 包括メッセージに統一
+        toast.error('再送に失敗しました。時間を置いて再度お試しください。')
       }
     } finally {
       setIsSending(false)

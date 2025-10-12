@@ -183,7 +183,8 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     loading,
     isAuthenticated: !!user,
     isAdmin,
-    isEmailVerified: !!user?.email_confirmed_at,
+    // confirmed_at 互換も許容
+    isEmailVerified: !!(user as any)?.email_confirmed_at || !!(user as any)?.confirmed_at,
     authStatus,
     signOut,
   }

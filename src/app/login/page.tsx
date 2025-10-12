@@ -1,69 +1,58 @@
 'use client'
 
-import { Suspense } from 'react'
+// /login ページ。フラグで新UIを切り替え。
+
+import { Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import LoginForm from './LoginForm'
+import LoginFormNew from './LoginFormNew'
 
 function LoginFallback() {
   return (
-    <div style={{ textAlign: 'center', padding: '2rem' }}>
-      <p style={{ color: '#666' }}>ログインフォームを読み込み中...</p>
-    </div>
+    <div className="text-center p-8 text-gray-600">ログインフォームを読み込み中...</div>
   )
 }
 
 function LoginPageContent() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect_to')
-  
-  // サインアップページへのリンクにredirect_toパラメータを含める
+
   const signupUrl = redirectTo ? `/signup?redirect_to=${encodeURIComponent(redirectTo)}` : '/signup'
+  const enableNew = useMemo(() => {
+    if (typeof process !== 'undefined' && typeof process.env !== 'undefined' && process.env.NEXT_PUBLIC_ENABLE_NEW_LOGIN) {
+      return String(process.env.NEXT_PUBLIC_ENABLE_NEW_LOGIN).toLowerCase() === 'true'
+    }
+    if (typeof window !== 'undefined') {
+      // ブラウザ環境の環境変数参照は難しいため、ビルド時注入前提。未設定ならfalse。
+      return false
+    }
+    return false
+  }, [])
 
   return (
-    <div style={{ 
-      padding: '2rem', 
-      fontFamily: 'system-ui', 
-      maxWidth: '500px', 
-      margin: '0 auto',
-      marginTop: '4rem'
-    }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>ログイン</h1>
-      
-      <Suspense fallback={<LoginFallback />}>
-        <LoginForm />
-      </Suspense>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold text-gray-900">ログイン</h1>
+          </div>
 
-      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-        <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
-          アカウントをお持ちでない方
-        </p>
-        <a 
-          href={signupUrl}
-          style={{ 
-            color: '#0070f3', 
-            textDecoration: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          新規登録はこちら
-        </a>
-      </div>
+          <Suspense fallback={<LoginFallback />}>
+            {enableNew ? <LoginFormNew /> : <LoginForm />}
+          </Suspense>
 
-      <div style={{ marginTop: '2rem' }}>
-        <a 
-          href="/" 
-          style={{ 
-            display: 'inline-block',
-            padding: '0.5rem 1rem', 
-            background: '#f8f9fa', 
-            color: '#333', 
-            textDecoration: 'none', 
-            borderRadius: '4px',
-            border: '1px solid #dee2e6'
-          }}
-        >
-          ← ホームに戻る
-        </a>
+          <div className="pt-2 text-center text-sm text-gray-600">
+            <span className="block mb-2">アカウントをお持ちでない方</span>
+            <Link href={signupUrl} className="font-medium text-indigo-600 hover:text-indigo-500">新規登録はこちら</Link>
+          </div>
+
+          <div className="pt-2 text-center text-sm text-gray-600">
+            <Link href="/forgot-password" className="underline mr-3">パスワードをお忘れですか？</Link>
+            <Link href="/terms" target="_blank" rel="noreferrer" className="underline mr-3">利用規約</Link>
+            <Link href="/privacy" target="_blank" rel="noreferrer" className="underline">プライバシーポリシー</Link>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -75,4 +64,4 @@ export default function LoginPage() {
       <LoginPageContent />
     </Suspense>
   )
-} 
+}

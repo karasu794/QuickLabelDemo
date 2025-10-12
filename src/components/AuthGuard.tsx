@@ -28,8 +28,16 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
     )
   }
 
-  // 認証が必要で未認証の場合は何も表示しない（middleware.tsがリダイレクトを処理）
+  // 認証が必要で未認証の場合、フラグが有効なら /login に自動遷移
   if (requireAuth && !isAuthenticated) {
+    if (typeof window !== 'undefined') {
+      const enabled = String(process.env.NEXT_PUBLIC_ENABLE_AUTHGUARD_REDIRECT || '').toLowerCase() === 'true'
+      if (enabled) {
+        const here = window.location.pathname + window.location.search + window.location.hash
+        const url = `/login?redirect_to=${encodeURIComponent(here)}`
+        window.location.replace(url)
+      }
+    }
     return null
   }
 
