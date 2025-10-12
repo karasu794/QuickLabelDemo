@@ -35,6 +35,36 @@ export async function GET() {
     return null
   })()
 
+  // sb-<ref>-auth-token の実体検査（DEV限定）。分割(.0/.1)があれば結合
+  const baseName = env.projectRef ? `sb-${env.projectRef}-auth-token` : 'sb-access-token'
+  const tokenCookieNames = names.filter(n => n === baseName || n.startsWith(baseName + '.')).sort()
+  let combined = ''
+  if (tokenCookieNames.length > 0) {
+    for (const n of tokenCookieNames) {
+      const val = cookieStore.get(n)?.value || ''
+      combined += val
+    }
+  }
+  const rawPreview = combined ? combined.slice(0, 100) : ''
+
+  type AnyObj = Record<string, any>
+  const safeParse = (s: string): AnyObj | null => {
+    try { return JSON.parse(s) as AnyObj } catch { return null }
+  }
+  const deepHas = (obj: AnyObj | null, key: string): boolean => {
+    if (!obj || typeof obj !== 'object') return false
+    if (Object.prototype.hasOwnProperty.call(obj, key) && !!obj[key]) return true
+    for (const v of Object.values(obj)) {
+      if (typeof v === 'object' && v) {
+        if (deepHas(v as AnyObj, key)) return true
+      }
+    }
+    return false
+  }
+  const parsedObj = safeParse(combined)
+  const hasAccessToken = deepHas(parsedObj, 'access_token')
+  const hasRefreshToken = deepHas(parsedObj, 'refresh_token')
+
   let serverHasUser = false
   try {
     const ssr = createSSRClient()
@@ -57,7 +87,13 @@ export async function GET() {
     env,
     serverComponent: { hasUser: serverHasUser },
     routeHandler: { hasUser: routeHasUser },
-    cookies: { projectRef: cookiesProjectRef, ...cookiesFlags },
+    cookies: {
+      projectRef: cookiesProjectRef,
+      'sb-auth-token': tokenCookieNames.length > 0,
+      raw: rawPreview, // DEVのみ（本番ではエンドポイント自体が404）
+      parsed: { hasAccessToken, hasRefreshToken },
+      ...cookiesFlags,
+    },
     match: { projectRef: Boolean(cookiesProjectRef && env.projectRef && cookiesProjectRef === env.projectRef) },
   })
 }
