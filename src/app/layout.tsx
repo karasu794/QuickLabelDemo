@@ -35,27 +35,30 @@ export default async function RootLayout({
             {children}
           </main>
         </AuthProvider>
-        {/* トースト通知用コンポーネント */}
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
+        {/* トースト通知用コンポーネント（クリック透過のため pointer-events: none を適用）*/}
+        <div style={{ pointerEvents: 'none' }}>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
               style: {
-                background: '#10b981',
+                background: '#363636',
+                color: '#fff',
+                pointerEvents: 'auto', // トースト自体の操作（閉じる等）は可能にする
               },
-            },
-            error: {
-              style: {
-                background: '#ef4444',
+              success: {
+                style: {
+                  background: '#10b981',
+                },
               },
-            },
-          }}
-        />
+              error: {
+                style: {
+                  background: '#ef4444',
+                },
+              },
+            }}
+          />
+        </div>
         {/* URLクエリに応じた自動トースト */}
         <ToastOnQuery />
       </body>

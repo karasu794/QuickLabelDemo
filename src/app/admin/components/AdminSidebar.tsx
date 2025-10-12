@@ -50,7 +50,7 @@ export default function AdminSidebar() {
   }
 
   return (
-    <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 flex flex-col bg-white shadow-lg border-r border-gray-200">
+    <div className="fixed top-16 left-0 z-50 h-[calc(100vh-4rem)] w-64 flex flex-col bg-white shadow-lg border-r border-gray-200">
       {/* ヘッダー */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800">管理画面</h2>

@@ -317,7 +317,7 @@ export default function NotificationClient({ initialNotifications }: Notificatio
           <p className="text-gray-600">システムからの通知を管理します</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 z-10 relative">
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200"
