@@ -11,9 +11,15 @@ import { Database } from '@/types/supabase'
 export const createClient = () => {
   const cookieStore = cookies()
 
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const match = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
+  const projectRef = match?.[1]
+  const cookieName = projectRef ? `sb-${projectRef}-auth-token` : 'sb-access-token'
+
   return createServerClient<Database>(
-    (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anon,
     {
       cookies: {
         get(name: string) {
@@ -34,6 +40,9 @@ export const createClient = () => {
             // SSR中にSet-Cookieヘッダーを設定できない場合のエラーハンドリング
           }
         },
+      },
+      cookieOptions: {
+        name: cookieName,
       },
     }
   )
@@ -67,9 +76,15 @@ export const createServiceRoleClient = () => {
 export const createRouteHandlerClient = () => {
   const cookieStore = cookies()
 
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const match = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
+  const projectRef = match?.[1]
+  const cookieName = projectRef ? `sb-${projectRef}-auth-token` : 'sb-access-token'
+
   return createServerClient<Database>(
-    (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anon,
     {
       cookies: {
         get(name: string) {
@@ -81,6 +96,9 @@ export const createRouteHandlerClient = () => {
         remove(name: string, options: CookieOptions) {
           cookieStore.set({ name, value: '', ...options })
         },
+      },
+      cookieOptions: {
+        name: cookieName,
       },
     }
   )

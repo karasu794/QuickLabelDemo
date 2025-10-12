@@ -8,6 +8,11 @@ export function createSSRClient() {
 
   if (!url || !anon) throw new Error('SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing')
 
+  // SUPABASE_URL から projectRef を抽出し、サーバが参照するクッキー名を統一
+  const match = url.match(/^https?:\/\/([^.]+)\.supabase\.co/i)
+  const projectRef = match?.[1]
+  const cookieName = projectRef ? `sb-${projectRef}-auth-token` : 'sb-access-token'
+
   return createServerClient(url, anon, {
     cookies: {
       get(name: string) {
@@ -27,6 +32,9 @@ export function createSSRClient() {
           // Server Component では remove は許可されないことがある
         }
       },
+    },
+    cookieOptions: {
+      name: cookieName,
     },
   })
 }
