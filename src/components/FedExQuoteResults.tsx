@@ -146,6 +146,11 @@ export default function FedExQuoteResults({
   }
 
   // 料金の計算とフォーマット
+  const formatJPY = (val: number | string) => {
+    const n = typeof val === 'string' ? parseFloat(val) : val
+    const i = Number.isFinite(n) ? Math.floor(n) : 0
+    return `¥${i.toLocaleString('ja-JP', { maximumFractionDigits: 0 })}`
+  }
   const calculateDiscount = (rate: FedExRate) => {
     const totalCharge = parseInt(rate.totalNetFedExCharge)
     const baseRate = rate.breakdown?.baseRate || totalCharge * 1.3 // 仮の定価（30%割引と仮定）
@@ -317,7 +322,7 @@ export default function FedExQuoteResults({
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
                         <div className="text-sm text-gray-500 line-through">
-                          ¥{baseRate.toLocaleString()}
+                          {formatJPY(baseRate)}
                         </div>
                         <div
                           className="bg-orange-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-orange-600 transition-colors"
@@ -327,7 +332,7 @@ export default function FedExQuoteResults({
                           }}
                         >
                           <span className="text-lg font-bold">
-                            ¥{parseInt(rate.totalNetFedExCharge).toLocaleString()}
+                            {formatJPY(rate.totalNetFedExCharge)}
                           </span>
                         </div>
                       </div>
@@ -348,7 +353,7 @@ export default function FedExQuoteResults({
                             <div className="flex justify-between items-center">
                               <span className="text-gray-700">基本料金</span>
                               <span className="font-medium text-gray-900">
-                                ¥{(rate.breakdown?.baseRate || baseRate).toLocaleString()}
+                                {formatJPY(rate.breakdown?.baseRate || baseRate)}
                               </span>
                             </div>
                             
@@ -356,7 +361,7 @@ export default function FedExQuoteResults({
                             <div className="flex justify-between items-center">
                               <span className="text-red-600 font-medium">フェニックス割引</span>
                               <span className="font-medium text-red-600">
-                                -¥{Math.abs(rate.breakdown?.volumeDiscount || discountAmount).toLocaleString()}
+                                -{formatJPY(Math.abs(rate.breakdown?.volumeDiscount || discountAmount))}
                               </span>
                             </div>
                             
@@ -365,7 +370,7 @@ export default function FedExQuoteResults({
                               <div className="flex justify-between items-center">
                                 <span className="text-red-600 font-medium">追加フェニックス割引</span>
                                 <span className="font-medium text-red-600">
-                                  -¥{Math.abs(rate.breakdown.phoenixDiscount).toLocaleString()}
+                                  -{formatJPY(Math.abs(rate.breakdown.phoenixDiscount))}
                                 </span>
                               </div>
                             )}
@@ -374,7 +379,7 @@ export default function FedExQuoteResults({
                             <div className="flex justify-between items-center">
                               <span className="text-gray-700">燃料割増金</span>
                               <span className="font-medium text-gray-900">
-                                ¥{(rate.breakdown?.fuelSurcharge || 0).toLocaleString()}
+                                {formatJPY(rate.breakdown?.fuelSurcharge || 0)}
                               </span>
                             </div>
                             
@@ -383,7 +388,7 @@ export default function FedExQuoteResults({
                               <div className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-gray-900">見積り合計</span>
                                 <span className="text-lg font-bold text-orange-600">
-                                  ¥{parseInt(rate.totalNetFedExCharge).toLocaleString()}
+                                  {formatJPY(rate.totalNetFedExCharge)}
                                 </span>
                               </div>
                             </div>

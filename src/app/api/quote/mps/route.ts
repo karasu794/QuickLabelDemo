@@ -41,15 +41,15 @@ export async function POST(request: NextRequest) {
     // バリデーション
     if (!shipperInfo.countryCode || !recipientInfo.countryCode) {
       return NextResponse.json(
-        { error: '出荷地と仕向地の国を選択してください' },
-        { status: 400 }
+        { ok: false, code: 'VALIDATION_ERROR', errors: { countryCode: ['出荷地と仕向地の国を選択してください'] } },
+        { status: 422 }
       )
     }
 
     if (!packages || packages.length === 0) {
       return NextResponse.json(
-        { error: 'パッケージ情報が必要です' },
-        { status: 400 }
+        { ok: false, code: 'PACKAGES_REQUIRED', errors: { packages: ['パッケージ情報が必要です'] } },
+        { status: 422 }
       )
     }
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       const rates = await getFedExRates(rateInfo)
       
       return NextResponse.json({
-        success: true,
+        ok: true,
         type: 'standard',
         packageCount: 1,
         rates: rates.map(rate => ({
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     console.log(`✅ MPS料金計算完了: ${mpsRates.length}件のサービス`)
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       type: 'mps',
       packageCount: packages.length,
       totalWeight,
@@ -175,10 +175,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ MPS料金見積もりエラー:', error)
     
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'MPS料金見積もりに失敗しました',
-        success: false
-      },
+      { ok: false, code: 'INTERNAL_ERROR', error: error instanceof Error ? error.message : 'MPS料金見積もりに失敗しました' },
       { status: 500 }
     )
   }

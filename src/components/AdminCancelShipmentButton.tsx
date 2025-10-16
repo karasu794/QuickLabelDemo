@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Loader2 } from 'lucide-react'
 import { adminCancelShipmentAction } from '@/app/actions/adminActions'
+import useSWRMutation from 'swr/mutation'
 
 interface AdminCancelShipmentButtonProps {
   trackingNumber: string
@@ -30,6 +31,18 @@ export default function AdminCancelShipmentButton({
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<CancelResult | null>(null)
 
+  const { trigger, isMutating } = useSWRMutation(
+    '/api/ship/cancel',
+    async (_, { arg }: { arg: string }) => {
+      const res = await fetch('/api/ship/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackingNumber: arg })
+      })
+      return res
+    }
+  )
+
   // キャンセル不可能なステータスをチェック
   const isCancellable = currentStatus !== 'CANCELED' && 
                        currentStatus !== 'CANCELLED' && 
@@ -48,44 +61,17 @@ export default function AdminCancelShipmentButton({
 
     setIsLoading(true)
     setResult(null)
-
     try {
-      console.log('🚫 管理者による発送キャンセル・返金処理開始:', trackingNumber)
-      
-      // Admin Server Actionを呼び出し
-      const response = await adminCancelShipmentAction(trackingNumber)
-      
-      if (response.success) {
-        console.log('✅ 管理者キャンセル・返金成功:', response.message)
-        setResult({
-          type: 'success',
-          message: response.message
-        })
-        
-        // 成功時のコールバック
-        if (onSuccess) {
-          onSuccess()
-        }
-        
-        // 2秒後にページをリロードして最新状態を反映
-        setTimeout(() => {
-          window.location.reload()
-        }, 2000)
-        
+      const res = await trigger(trackingNumber)
+      if ([200, 204, 207].includes(res.status)) {
+        setResult({ type: 'success', message: '出荷をキャンセルしました。' })
+        if (onSuccess) onSuccess()
+        setTimeout(() => window.location.reload(), 1000)
       } else {
-        console.error('❌ 管理者キャンセル・返金失敗:', response.message)
-        setResult({
-          type: 'error',
-          message: response.message
-        })
+        setResult({ type: 'error', message: `キャンセルに失敗しました（${res.status}）` })
       }
-      
-    } catch (error) {
-      console.error('❌ 管理者キャンセル・返金処理エラー:', error)
-      setResult({
-        type: 'error',
-        message: '管理者キャンセル・返金処理中にエラーが発生しました'
-      })
+    } catch (e) {
+      setResult({ type: 'error', message: 'キャンセル処理中にエラーが発生しました' })
     } finally {
       setIsLoading(false)
     }
@@ -100,10 +86,11 @@ export default function AdminCancelShipmentButton({
     <div className="space-y-2">
       <Button
         onClick={handleCancel}
-        disabled={isLoading}
+        disabled={isLoading || isMutating}
         variant="outline"
         size={size}
         className={`min-w-[100px] bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:text-red-800 ${className}`}
+        data-test="admin-cancel"
       >
         {isLoading ? (
           <>

@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Package, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
+import AddressHistoryPicker from '@/components/address/AddressHistoryPicker'
+import AddressBookPicker from '@/components/address/AddressBookPicker'
 
 // ストアの値から表示用住所を構築する関数
 const buildDisplayAddress = (recipientInfo: any) => {
@@ -74,7 +76,8 @@ export default function RecipientInfoPage() {
     return hasAddress;
   })
   const [error, setError] = useState('')
-  const [htsError, setHtsError] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+  const [showAddressBook, setShowAddressBook] = useState(false)
   
   // ハイドレーション完了後に住所フィールドを更新
   useEffect(() => {
@@ -341,18 +344,6 @@ export default function RecipientInfoPage() {
 
   // バリデーション
   const validateForm = () => {
-    // HTS (US only)
-    if (recipientInfo.countryCode === 'US') {
-      const code = (recipientInfo as any).htsCode || ''
-      if (!/^\d{1,10}$/.test(code)) {
-        setError('HTSコードを半角数字1〜10桁で入力してください')
-        setHtsError('HTSコードは必須です（半角数字1〜10桁）')
-        return false
-      }
-    } else {
-      setHtsError('')
-    }
-
     if (!recipientInfo.contactName.trim()) {
       setError('担当者名を入力してください')
       return false
@@ -399,6 +390,40 @@ export default function RecipientInfoPage() {
   // 戻るボタン
   const handlePrevious = () => {
     router.push('/shipping/new/shipper')
+  }
+
+  const handleSelectFromHistory = (addr: any) => {
+    updateRecipientInfo('contactName', addr.name || '')
+    updateRecipientInfo('companyName', addr.company || '')
+    updateRecipientInfo('phoneNumber', addr.phone || '')
+    updateRecipientInfo('email', addr.email || '')
+    updateRecipientInfo('countryCode', addr.country || 'JP')
+    updateRecipientInfo('postalCode', addr.zip || '')
+    updateRecipientInfo('stateCode', addr.state || '')
+    updateRecipientInfo('cityName', addr.city || '')
+    updateRecipientInfo('address1', addr.address1 || '')
+    updateRecipientInfo('address2', addr.address2 || '')
+    const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
+    setAddressInput(displayAddress)
+    setIsAddressSelected(true)
+    setShowHistory(false)
+  }
+
+  const handleSelectFromAddressBook = (addr: any) => {
+    updateRecipientInfo('contactName', addr.name || '')
+    updateRecipientInfo('companyName', addr.company || '')
+    updateRecipientInfo('phoneNumber', addr.phone || '')
+    updateRecipientInfo('email', addr.email || '')
+    updateRecipientInfo('countryCode', addr.country || 'JP')
+    updateRecipientInfo('postalCode', addr.zip || '')
+    updateRecipientInfo('stateCode', addr.state || '')
+    updateRecipientInfo('cityName', addr.city || '')
+    updateRecipientInfo('address1', addr.address1 || '')
+    updateRecipientInfo('address2', addr.address2 || '')
+    const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
+    setAddressInput(displayAddress)
+    setIsAddressSelected(true)
+    setShowAddressBook(false)
   }
 
   return (
@@ -521,8 +546,26 @@ export default function RecipientInfoPage() {
                   <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <Label className="text-sm md:text-base">住所検索</Label>
-                      
-                      {/* フェニックス住所自動入力ボタン（fromモードでない場合のみ表示） */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowHistory(true)}
+                        className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+                        data-test="btn-history-picker"
+                      >
+                        履歴から入力
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAddressBook(true)}
+                        className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+                        data-test="btn-addressbook-picker"
+                      >
+                        保存した宛先から入力
+                      </Button>
                       {phoenixMode !== 'shipper' && (
                         <Button
                           type="button"
@@ -535,7 +578,6 @@ export default function RecipientInfoPage() {
                         </Button>
                       )}
                     </div>
-                    
                     <GooglePlaceAutocomplete
                       value={addressInput}
                       onChange={handleAddressInputChange}
@@ -642,30 +684,7 @@ export default function RecipientInfoPage() {
                   </div>
                 </div>
 
-                {/* HTSコード（US宛てのみ） */}
-                {recipientInfo.countryCode === 'US' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="htsCode" className="text-sm md:text-base">
-                      HTS コード <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="htsCode"
-                      name="htsCode"
-                      value={(recipientInfo as any).htsCode || ''}
-                      onChange={(e) => {
-                        const v = e.target.value
-                        setHtsError('')
-                        updateRecipientInfo('htsCode' as any, v)
-                      }}
-                      placeholder="例: 0101102030"
-                      data-test="hts-code"
-                      className="h-11 md:h-10 text-base"
-                    />
-                    {htsError && (
-                      <p className="text-red-600 text-sm" data-test="hts-error">{htsError}</p>
-                    )}
-                  </div>
-                )}
+                {/* HTS 入力は Package ステップへ移設済み */}
 
                 {/* エラーメッセージ */}
                 {error && (
@@ -688,7 +707,6 @@ export default function RecipientInfoPage() {
                   <Button 
                     type="submit"
                     className="h-11 md:h-10 text-sm md:text-base font-medium bg-purple-600 hover:bg-purple-700 order-1 sm:order-2"
-                    disabled={recipientInfo.countryCode === 'US' && !/^\d{1,10}$/.test(((recipientInfo as any).htsCode||''))}
                     data-test="submit-ship"
                   >
                     次へ
@@ -697,6 +715,20 @@ export default function RecipientInfoPage() {
               </form>
             </CardContent>
           </Card>
+          )}
+          {showHistory && (
+            <AddressHistoryPicker
+              role="recipient"
+              onSelect={handleSelectFromHistory}
+              onClose={() => setShowHistory(false)}
+            />
+          )}
+          {showAddressBook && (
+            <AddressBookPicker
+              role="recipient"
+              onSelect={handleSelectFromAddressBook}
+              onClose={() => setShowAddressBook(false)}
+            />
           )}
         </div>
       </div>

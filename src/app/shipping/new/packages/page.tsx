@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useShippingFormStore, type PackageInfo, useWaitForHydration } from '@/store/shippingFormStore'
+import { isUS } from '@/lib/utils/isUS'
 import AuthGuard from '@/components/AuthGuard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +21,7 @@ export default function PackageDetailsForm() {
   const updatePackage = useShippingFormStore((state) => state.updatePackage)
   const removePackage = useShippingFormStore((state) => state.removePackage)
   const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
+  
 
   // 荷物情報を更新する関数
   const handlePackageChange = (index: number, field: keyof PackageInfo, value: string) => {
@@ -36,7 +38,9 @@ export default function PackageDetailsForm() {
     e.preventDefault()
     // 荷物詳細ステップを完了としてマーク
     markStepCompleted('/shipping/new/packages')
-    router.push('/shipping/new/contents')
+    const cc = useShippingFormStore.getState().recipientInfo?.countryCode
+    if (isUS(cc)) router.push('/shipping/new/contents/hts')
+    else router.push('/shipping/new/contents')
   }
 
   return (
@@ -130,6 +134,8 @@ export default function PackageDetailsForm() {
                               required
                             />
                           </div>
+
+                          
 
                           {/* Conditional Dimensions - お客様ご用意の梱包材の場合のみ表示 */}
                           {pkg.type === 'YOUR_PACKAGING' && (

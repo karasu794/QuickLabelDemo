@@ -24,31 +24,34 @@ export async function POST(request: NextRequest) {
       try { rawBody = await request.json() } catch { return NextResponse.json({ error: '無効なリクエスト形式です' }, { status: 400 }) }
       const validationResult = validateQuoteRequest(rawBody)
       if (!validationResult.success) {
+        // 仕様: flatten() をWARNで詳細出力
+        try { console.warn('Zod validation error:', JSON.stringify(validationResult.error.flatten(), null, 2)) } catch {}
         const formattedErrors = formatValidationErrors(validationResult.error.format())
-        return NextResponse.json({ error: '入力データが不正です', validationErrors: formattedErrors }, { status: 400 })
+        return NextResponse.json({ ok: false, code: 'VALIDATION_ERROR', errors: formattedErrors }, { status: 422 })
       }
       // packages を正規化して最低限のバリデーション
       const pkgsIn = toArray<any>(rawBody?.packages)
       const norm = pkgsIn.map((p: any, i: number) => ({
-        id: p?.id ?? i + 1,
+        id: Number(p?.id ?? i + 1),
         packagingType: p?.packagingType || 'YOUR_PACKAGING',
         weight: Number(p?.weight ?? 0),
         length: Number(p?.length ?? 0),
         width: Number(p?.width ?? 0),
         height: Number(p?.height ?? 0),
+        declaredValue: Number(p?.declaredValue ?? 0),
       }))
       const validPackages = norm.filter((p) => p.weight > 0 && p.length >= 0 && p.width >= 0 && p.height >= 0)
       if (validPackages.length === 0) {
         return NextResponse.json(
-          { ok: false, code: 'PACKAGES_REQUIRED', message: '少なくとも1件の荷物（重さ・サイズ）が必要です。' },
-          { status: 400 }
+          { ok: false, code: 'PACKAGES_REQUIRED', errors: { packages: ['少なくとも1件の荷物（重さ・サイズ）が必要です。'] } },
+          { status: 422 }
         )
       }
 
       const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
       await checkRate(`ip:${ip}`)
       const jobId = `core-${randomUUID()}`
-      return NextResponse.json({ success: true, jobId, message: 'CORE_MODE: 見積もりを受け付けました（擬似ジョブ）。' })
+      return NextResponse.json({ ok: true, jobId })
     }
     // Rate limit (per user if available, otherwise per IP)
     const opt = await getOptionalUser()
@@ -106,16 +109,13 @@ export async function POST(request: NextRequest) {
     const validationResult = validateQuoteRequest(rawBody);
 
     if (!validationResult.success) {
-      console.error('🚫 バリデーションエラー:', validationResult.error.format());
-      
+      // 仕様: flatten() をWARNで詳細出力
+      try { console.warn('Zod validation error:', JSON.stringify(validationResult.error.flatten(), null, 2)); } catch {}
       const formattedErrors = formatValidationErrors(validationResult.error.format());
-      
-      return NextResponse.json({
-        error: '入力データが不正です',
-        details: 'リクエストデータの形式または内容に問題があります',
-        validationErrors: formattedErrors,
-        timestamp: new Date().toISOString()
-      }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, code: 'VALIDATION_ERROR', errors: formattedErrors },
+        { status: 422 }
+      );
     }
 
     // ✅ バリデーション成功 - 型安全なデータとして使用
@@ -123,20 +123,33 @@ export async function POST(request: NextRequest) {
     // packages を正規化し最低限のバリデーション
     const pkgsIn = toArray<any>(packages)
     const norm = pkgsIn.map((p: any, i: number) => ({
-      id: p?.id ?? i + 1,
+      id: Number(p?.id ?? i + 1),
       packagingType: p?.packagingType || 'YOUR_PACKAGING',
       weight: Number(p?.weight ?? 0),
       length: Number(p?.length ?? 0),
       width: Number(p?.width ?? 0),
       height: Number(p?.height ?? 0),
+      declaredValue: Number(p?.declaredValue ?? 0),
     }))
     const validPackages = norm.filter((p) => p.weight > 0 && p.length >= 0 && p.width >= 0 && p.height >= 0)
     if (validPackages.length === 0) {
       return NextResponse.json(
-        { ok: false, code: 'PACKAGES_REQUIRED', message: '少なくとも1件の荷物（重さ・サイズ）が必要です。' },
-        { status: 400 }
+        { ok: false, code: 'PACKAGES_REQUIRED', errors: { packages: ['少なくとも1件の荷物（重さ・サイズ）が必要です。'] } },
+        { status: 422 }
       )
     }
+    // higherInsurance を補完（declaredValue > 0 が一つでもあればON）
+    const anyDeclared = norm.some((p) => Number(p.declaredValue ?? 0) > 0)
+    let effectiveHigherInsurance = (quoteParams as any).higherInsurance ?? false
+    effectiveHigherInsurance = Boolean(effectiveHigherInsurance || anyDeclared)
+    const totalDeclaredValue = norm.reduce((sum, p) => sum + Number(p.declaredValue ?? 0), 0)
+    if (effectiveHigherInsurance && totalDeclaredValue <= 0) {
+      console.warn('higherInsurance=true but declaredValue=0: coerced to false')
+      effectiveHigherInsurance = false
+    }
+
+    const effectiveParams = { ...(quoteParams as any), higherInsurance: effectiveHigherInsurance }
+
     console.log('✅ バリデーション成功。処理を続行します。');
 
     console.log('Supabaseクライアント作成完了');
@@ -171,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     // リクエストペイロードを準備（保存用は非PIIに限定）
     const requestPayload = {
-      quoteParams,
+      quoteParams: effectiveParams,
       packages: validPackages,
       timestamp: new Date().toISOString()
     };
@@ -185,8 +198,30 @@ export async function POST(request: NextRequest) {
     };
 
     if (userId) {
-      // ログイン時: 従来どおり user_id を付与（org_id はDB側トリガや後続で解決される前提）
+      // ログイン時: 組織IDを解決（なければPublic Quotes orgにフォールバック）
+      let orgIdForInsert: string | null = null;
+      try {
+        const { data: mem } = await (supabase
+          .from('organization_members') as any)
+          .select('org_id')
+          .eq('user_id', userId as any)
+          .limit(1)
+          .maybeSingle();
+        orgIdForInsert = (mem as any)?.org_id ?? null;
+      } catch {}
+
+      if (!orgIdForInsert) {
+        orgIdForInsert = getPublicQuotesOrgId();
+      }
+
+      if (!orgIdForInsert) {
+        // ENV未設定など想定外は匿名NODBでフォールバック（core- jobId を返す）。
+        const jobId = `core-${randomUUID()}`
+        return NextResponse.json({ success: true, jobId, mode: 'user-fallback' })
+      }
+
       insertData.user_id = userId;
+      insertData.org_id = orgIdForInsert;
       insertData.request_payload = requestPayload; // 既存互換: ただし保存先でPII取り扱いに注意
       console.log('ユーザーID追加:', userId);
     } else {
@@ -280,7 +315,7 @@ export async function POST(request: NextRequest) {
               packages: (requestPayload as any).packages,
               commodities: Array.isArray((rawBody as any)?.commodities) ? (rawBody as any).commodities : [],
               services: Array.isArray((rawBody as any)?.services) ? (rawBody as any).services : [],
-              quoteParams,
+              quoteParams: effectiveParams,
             }),
             signal: controller.signal
           });
@@ -321,11 +356,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ジョブIDをすぐに返却
-    return NextResponse.json({
-      success: true,
-      jobId: jobIdCreated,
-      message: '見積もりリクエストを受け付けました。処理中です...'
-    });
+    return NextResponse.json({ ok: true, jobId: jobIdCreated });
 
   } catch (error) {
     console.error('見積もりジョブ作成エラー:', error);

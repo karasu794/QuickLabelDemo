@@ -16,6 +16,8 @@ export interface TableAction {
   onClick: (row: any) => void
   className?: string
   disabled?: (row: any) => boolean
+  // 任意のdata-test等を許容
+  [key: string]: any
 }
 
 interface ResponsiveTableProps {
@@ -120,6 +122,7 @@ export default function ResponsiveTable({
                   ${onRowClick ? 'cursor-pointer' : ''}
                 `}
                 onClick={() => onRowClick?.(row)}
+                data-test="user-row"
               >
                 {columns.map((column) => {
                   const value = row[column.key]
@@ -157,6 +160,7 @@ export default function ResponsiveTable({
                             disabled:text-gray-400 disabled:cursor-not-allowed
                             transition-colors
                           `}
+                          data-test={action['data-test']}
                         >
                           {action.label}
                         </button>

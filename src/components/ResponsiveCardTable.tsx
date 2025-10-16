@@ -21,6 +21,8 @@ export interface CardAction {
   className?: string
   disabled?: (row: any) => boolean
   icon?: ReactNode
+  // 任意のdata-test等を許容
+  [key: string]: any
 }
 
 interface ResponsiveCardTableProps {
@@ -146,6 +148,7 @@ export default function ResponsiveCardTable({
                     text-xs font-medium px-3 py-1.5 rounded-full transition-colors
                     flex items-center gap-1
                   `}
+                  data-test={action['data-test']}
                 >
                   {action.icon}
                   {action.label}

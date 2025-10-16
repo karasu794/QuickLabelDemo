@@ -7,29 +7,24 @@ interface SquarePaymentFormProps {
   amount: number // 決済金額（表示用）
   onTokenReceived?: (token: string) => void // トークン取得時のコールバック
   onPaymentError?: (error: string) => void // エラー時のコールバック
+  locationId?: string // 任意: 明示指定があれば最優先
 }
 
 export default function SquarePaymentForm({ 
   amount, 
   onTokenReceived,
-  onPaymentError 
+  onPaymentError,
+  locationId: locationIdProp,
 }: SquarePaymentFormProps) {
   const [isProcessing, setIsProcessing] = useState(false)
 
   // 環境変数から設定値を取得
-  const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID
-  const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID
+  const applicationId = process.env.NEXT_PUBLIC_SQUARE_APP_ID
+  const locationId = locationIdProp ?? process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID ?? process.env.SQUARE_LOCATION_ID
 
   // 環境変数の確認
-  if (!applicationId || !locationId) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700 text-sm">
-          Square設定が不完全です。NEXT_PUBLIC_SQUARE_APPLICATION_IDとNEXT_PUBLIC_SQUARE_LOCATION_IDを設定してください。
-        </p>
-      </div>
-    )
-  }
+  if (!applicationId) throw new Error('Squareの公開用アプリIDが未設定です。NEXT_PUBLIC_SQUARE_APP_ID を設定してください。')
+  if (!locationId) throw new Error('SquareのロケーションIDが未設定です。props もしくは NEXT_PUBLIC_SQUARE_LOCATION_ID / SQUARE_LOCATION_ID を設定してください。')
 
   // カード情報がトークン化された際の処理
   const cardTokenizeResponseReceived = async (token: any, buyer: any) => {

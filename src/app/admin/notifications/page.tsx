@@ -33,7 +33,7 @@ async function getNotifications(): Promise<{ notifications: Notification[]; erro
 
     // データを型安全に変換
     const notifications: Notification[] = data?.map((item: any) => ({
-      id: item.id,
+      id: String(item.id),
       type: item.type || 'system',
       message: item.message || '',
       is_read: item.is_read || false,

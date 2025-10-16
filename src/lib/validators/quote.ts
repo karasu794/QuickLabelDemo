@@ -4,17 +4,15 @@ import { z } from 'zod'
  * 📦 パッケージのバリデーションスキーマ
  */
 const packageSchema = z.object({
-  id: z.number().int().positive({ message: "パッケージIDは正の整数である必要があります。" }),
+  // idは数値へ強制変換（呼び出し側で1始まりを付与）
+  id: z.coerce.number(),
   packagingType: z.string().min(1, { message: "梱包タイプは必須です。" }),
-  weight: z.string()
-    .min(1, { message: "重量は必須です。" })
-    .refine((val) => {
-      const weight = parseFloat(val)
-      return !isNaN(weight) && weight > 0
-    }, { message: "重量は0より大きい数値である必要があります。" }),
-  length: z.string().optional(),
-  width: z.string().optional(),
-  height: z.string().optional(),
+  // 数値入力揺れ対策: z.coerce.number() で強制変換
+  weight: z.coerce.number().nonnegative({ message: "重量は0以上の数値である必要があります。" }),
+  length: z.coerce.number().nonnegative().optional().default(0),
+  width: z.coerce.number().nonnegative().optional().default(0),
+  height: z.coerce.number().nonnegative().optional().default(0),
+  declaredValue: z.coerce.number().nonnegative().optional().default(0),
 })
 
 /**
@@ -60,10 +58,13 @@ const quoteParamsSchema = z.object({
       today.setHours(0, 0, 0, 0)
       return date >= today
     }, { message: "発送日は今日以降の日付である必要があります。" }),
-  
-  isResidential: z.boolean(),
-  
-  higherInsurance: z.boolean(),
+  // 画面側の選択状態フラグ（任意）
+  originSelected: z.boolean().optional().default(false),
+  destinationSelected: z.boolean().optional().default(false),
+  // 住居判定は任意 + 既定false
+  isResidential: z.boolean().optional().default(false),
+  // 高額保険は任意 + 既定false（サーバ側でdeclaredValue>0なら自動ON）
+  higherInsurance: z.boolean().optional().default(false),
 })
 
 /**

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
+import { isUS } from '@/lib/utils/isUS'
 import SquarePaymentForm from '@/components/SquarePaymentForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -84,7 +85,7 @@ export default function ReviewPage() {
       const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
       console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
 
-      // 送信データを構築
+      // 送信データを構築（MPS: 数値化）
       const requestData = {
         shipperInfo: {
           countryCode: shipperInfo.countryCode,
@@ -100,12 +101,12 @@ export default function ReviewPage() {
           isResidential: recipientInfo.isResidential
         },
         packages: packages.map(pkg => ({
-          weight: parseFloat(pkg.weight || '0'),
+          weight: Number(pkg.weight || '0'),
           type: pkg.type || 'YOUR_PACKAGING',
-          length: parseFloat(pkg.length || '0'),
-          width: parseFloat(pkg.width || '0'),
-          height: parseFloat(pkg.height || '0'),
-          declaredValue: parseFloat(pkg.declaredValue || '0')
+          length: Number(pkg.length || '0'),
+          width: Number(pkg.width || '0'),
+          height: Number(pkg.height || '0'),
+          declaredValue: Number(pkg.declaredValue || '0')
         })),
         shipDate: new Date().toISOString().split('T')[0]
       }
@@ -122,17 +123,19 @@ export default function ReviewPage() {
           destinationStateCode: recipientInfo.stateCode,
           destinationCityName: recipientInfo.cityName,
           destinationSelected: true,
-          isResidential: recipientInfo.isResidential,
+          isResidential: !!recipientInfo.isResidential,
+          // higherInsurance を常に含める（未指定時は declaredValue>0 で true）
+          higherInsurance: packages.some(p => Number(p.declaredValue || '0') > 0),
           shipDate: new Date().toISOString().split('T')[0]
         },
         packages: packages.map((pkg, index) => ({
-          id: index + 1,
+          id: Number(index + 1),
           packagingType: pkg.type || 'YOUR_PACKAGING',
-          weight: pkg.weight || '0',
-          length: pkg.length || '0',
-          width: pkg.width || '0',
-          height: pkg.height || '0',
-          declaredValue: pkg.declaredValue || '0'
+          weight: Number(pkg.weight || '0'),
+          length: Number(pkg.length || '0'),
+          width: Number(pkg.width || '0'),
+          height: Number(pkg.height || '0'),
+          declaredValue: Number(pkg.declaredValue || '0')
         }))
       }
 
@@ -260,22 +263,54 @@ export default function ReviewPage() {
 
       console.log(`🚀 ${packages.length}個口の送り状作成処理開始 (${calculations.serviceType})`)
       
-      // 統合APIエンドポイントを使用（パッケージ数に応じて自動判定）
-      const response = await fetch('/api/ship-unified', {
+      // 1) 決済: /api/payments/charge（idempotent）
+      const orderId = `ord-${Date.now()}`
+      const chargeRes = await fetch('/api/payments/charge', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(shippingData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, amount: calculations.total, currency: 'JPY', token, locationId: 'unused' })
       })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || '送り状作成に失敗しました')
+      const chargeJson = await chargeRes.json()
+      if (!chargeRes.ok || !chargeJson.ok) {
+        throw new Error(chargeJson.message || '決済に失敗しました')
       }
-      
+
+      // 2) 出荷作成（単品/MPSは内部で分岐せず、既存の ship/create を利用）
+      const shipBody: any = {
+        orderId,
+        reference: undefined,
+        serviceType: selectedRate?.serviceType || 'FEDEX_INTERNATIONAL_PRIORITY',
+        bill: { payer: 'SENDER' },
+        shipper: {
+          name: shipperInfo.contactName || 'Shipper', phone: shipperInfo.phoneNumber || '000',
+          address1: shipperInfo.address1 || '', address2: shipperInfo.address2 || '',
+          city: shipperInfo.cityName || '', state: shipperInfo.stateCode || '', postalCode: shipperInfo.postalCode || '', country: shipperInfo.countryCode || 'JP'
+        },
+        recipient: {
+          name: recipientInfo.contactName || 'Recipient', phone: recipientInfo.phoneNumber || '000',
+          address1: recipientInfo.address1 || '', address2: recipientInfo.address2 || '',
+          city: recipientInfo.cityName || '', state: recipientInfo.stateCode || '', postalCode: recipientInfo.postalCode || '', country: recipientInfo.countryCode || 'US'
+        },
+        packages: packages.map(p => ({
+          weight: { value: Number(p.weight || '0'), unit: 'KG' },
+          dimensions: { length: Number(p.length || '0'), width: Number(p.width || '0'), height: Number(p.height || '0'), unit: 'CM' }
+        })),
+        htsCode: isUS(recipientInfo.countryCode) ? String((items?.[0] as any)?.htsCode || '') || undefined : undefined
+      }
+
+      const response = await fetch('/api/ship/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `fql-${orderId}` },
+        body: JSON.stringify(shipBody),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || errorData.message || '送り状作成に失敗しました')
+      }
+
       const result = await response.json()
-      console.log(`✅ ${result.type}送り状作成成功:`, result)
+      console.log(`✅ 出荷作成成功:`, result)
       
       // 確認画面ステップを完了としてマーク
       markStepCompleted('/shipping/new/review')
@@ -285,10 +320,9 @@ export default function ReviewPage() {
       // 成功ページにリダイレクト
       const successUrl = new URL('/shipping/new/success', window.location.origin)
       successUrl.searchParams.set('trackingNumber', result.trackingNumber)
-      successUrl.searchParams.set('paymentId', result.paymentId)
-      successUrl.searchParams.set('shipmentId', result.shipmentId)
-      successUrl.searchParams.set('type', result.type)
-      successUrl.searchParams.set('packageCount', result.packageCount.toString())
+      successUrl.searchParams.set('paymentId', chargeJson.paymentId)
+      successUrl.searchParams.set('type', packages.length > 1 ? 'mps' : 'standard')
+      successUrl.searchParams.set('packageCount', String(packages.length))
       
       if (result.labelUrls && result.labelUrls.length > 0) {
         successUrl.searchParams.set('labelUrls', JSON.stringify(result.labelUrls))
@@ -541,12 +575,16 @@ export default function ReviewPage() {
                       <p className="font-medium">{item.currency} {(item.unitPrice * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
-                  {item.hsCode && (
-                    <div className="mt-3">
-                      <p className="text-sm text-gray-600">HSコード</p>
-                      <p className="font-medium">{item.hsCode}</p>
-                    </div>
-                  )}
+                  {(() => {
+                    const code = isUS(recipientInfo.countryCode) ? (item as any).htsCode : item.hsCode
+                    if (!code) return null
+                    return (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600">{isUS(recipientInfo.countryCode) ? 'HTSコード' : 'HSコード'}</p>
+                        <p className="font-medium">{code}</p>
+                      </div>
+                    )
+                  })()}
                 </div>
               ))}
 

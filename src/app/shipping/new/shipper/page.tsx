@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Building2, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
+import AddressHistoryPicker from '@/components/address/AddressHistoryPicker'
+import AddressBookPicker from '@/components/address/AddressBookPicker'
 
 // ストアの値から表示用住所を構築する関数
 const buildDisplayAddress = (shipperInfo: any) => {
@@ -74,6 +76,8 @@ export default function ShipperInfoPage() {
     return hasAddress;
   })
   const [error, setError] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+  const [showAddressBook, setShowAddressBook] = useState(false)
   
   // ハイドレーション完了後に住所フィールドを更新
   useEffect(() => {
@@ -330,6 +334,41 @@ export default function ShipperInfoPage() {
     }
   }
 
+  const handleSelectFromHistory = (addr: any) => {
+    updateShipperInfo('contactName', addr.name || '')
+    updateShipperInfo('companyName', addr.company || '')
+    updateShipperInfo('phoneNumber', addr.phone || '')
+    updateShipperInfo('email', addr.email || '')
+    updateShipperInfo('countryCode', addr.country || 'JP')
+    updateShipperInfo('postalCode', addr.zip || '')
+    updateShipperInfo('stateCode', addr.state || '')
+    updateShipperInfo('cityName', addr.city || '')
+    updateShipperInfo('address1', addr.address1 || '')
+    updateShipperInfo('address2', addr.address2 || '')
+    // 表示用アドレスと選択状態
+    const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
+    setAddressInput(displayAddress)
+    setIsAddressSelected(true)
+    setShowHistory(false)
+  }
+
+  const handleSelectFromAddressBook = (addr: any) => {
+    updateShipperInfo('contactName', addr.name || '')
+    updateShipperInfo('companyName', addr.company || '')
+    updateShipperInfo('phoneNumber', addr.phone || '')
+    updateShipperInfo('email', addr.email || '')
+    updateShipperInfo('countryCode', addr.country || 'JP')
+    updateShipperInfo('postalCode', addr.zip || '')
+    updateShipperInfo('stateCode', addr.state || '')
+    updateShipperInfo('cityName', addr.city || '')
+    updateShipperInfo('address1', addr.address1 || '')
+    updateShipperInfo('address2', addr.address2 || '')
+    const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
+    setAddressInput(displayAddress)
+    setIsAddressSelected(true)
+    setShowAddressBook(false)
+  }
+
   return (
     <AuthGuard requireAuth={false}>
       <div className="p-4 md:p-8">
@@ -450,8 +489,26 @@ export default function ShipperInfoPage() {
                   <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <Label className="text-sm md:text-base">住所検索</Label>
-                      
-                      {/* フェニックス住所自動入力ボタン（toモードでない場合のみ表示） */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowHistory(true)}
+                        className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+                        data-test="btn-history-picker"
+                      >
+                        履歴から入力
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAddressBook(true)}
+                        className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+                        data-test="btn-addressbook-picker"
+                      >
+                        保存した宛先から入力
+                      </Button>
                       {phoenixMode !== 'recipient' && (
                         <Button
                           type="button"
@@ -472,6 +529,21 @@ export default function ShipperInfoPage() {
                       placeholder="住所を入力すると自動補完されます"
                     />
                   </div>
+
+                  {showHistory && (
+                    <AddressHistoryPicker
+                      role="shipper"
+                      onSelect={handleSelectFromHistory}
+                      onClose={() => setShowHistory(false)}
+                    />
+                  )}
+                  {showAddressBook && (
+                    <AddressBookPicker
+                      role="shipper"
+                      onSelect={handleSelectFromAddressBook}
+                      onClose={() => setShowAddressBook(false)}
+                    />
+                  )}
 
                   {/* 国選択 */}
                   <div className="space-y-2">

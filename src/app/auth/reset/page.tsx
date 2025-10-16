@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'react-hot-toast'
 import { supabase } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -15,10 +16,26 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
   const [initializing, setInitializing] = useState(true)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const canSubmit = useMemo(() => newPassword.length >= 8 && confirm === newPassword && !busy, [newPassword, confirm, busy])
 
   useEffect(() => {
+    // リカバリリンクのURLにエラークエリが付与されている場合は即エラー表示
+    if (typeof window !== 'undefined' && window.location.search) {
+      const q = new URLSearchParams(window.location.search)
+      const err = q.get('error')
+      const errCode = q.get('error_code')
+      if (err) {
+        const msg = errCode === 'otp_expired'
+          ? 'リンクの有効期限が切れています。再度パスワード再設定メールを送信してください。'
+          : 'リンクが無効です。再度パスワード再設定メールを送信してください。'
+        setErrorMsg(msg)
+        setInitializing(false)
+        return
+      }
+    }
+
     // リカバリリンクのURLハッシュ(#access_token, #refresh_token)からセッションを確立
     ;(async () => {
       try {
@@ -62,8 +79,8 @@ export default function ResetPasswordPage() {
 
         const { data: { session } } = await supabase.auth.getSession()
         if (!sessionEstablished && !session) {
-          // セッションが無い場合はログインへ誘導
-          router.replace('/login')
+          // セッションが無い場合はエラー表示に切り替える
+          setErrorMsg('リンクが無効か、既に使用済みです。再度パスワード再設定メールを送信してください。')
           return
         }
       } finally {
@@ -80,7 +97,15 @@ export default function ResetPasswordPage() {
       toast.success('パスワードを更新しました。ログインしてください。')
       router.replace('/login?reset=1')
     } catch (e) {
-      toast.error('更新に失敗しました。時間を置いて再度お試しください。')
+      const raw = e as any
+      const msg = String(raw?.message || raw || '').toLowerCase()
+      let ui = '更新に失敗しました。時間を置いて再度お試しください。'
+      if (msg.includes('same') || msg.includes('previous') || msg.includes('identical') || msg.includes('reuse')) {
+        ui = '以前と同じパスワードは使用できません。別のパスワードを設定してください。'
+      } else if (msg.includes('least') || msg.includes('too short')) {
+        ui = 'パスワードは8文字以上で入力してください。'
+      }
+      toast.error(ui)
     } finally {
       setBusy(false)
     }
@@ -90,6 +115,27 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-gray-600">セッションを準備しています...</div>
+      </div>
+    )
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">パスワードの再設定</h1>
+              <p className="text-sm text-red-600 mt-2">{errorMsg}</p>
+            </div>
+            <div className="space-y-3">
+              <Link href="/forgot-password" className="block">
+                <Button className="w-full h-11">再設定メールを再送</Button>
+              </Link>
+              <Link href="/login" className="block text-center text-sm text-gray-600 underline">ログインに戻る</Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

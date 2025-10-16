@@ -46,12 +46,21 @@ export default function ApiTestPage() {
         body: JSON.stringify(requestBody)
       })
 
+      if (!res.ok) {
+        if (res.status === 422) {
+          const data = await res.json().catch(() => ({} as any))
+          const errs = (data && data.errors) || {}
+          const flat = Object.keys(errs).flatMap((k) => errs[k]).join(' / ')
+          setError(`エラー: ${flat || '入力に不備があります'}`)
+          return
+        }
+        const data = await res.json().catch(() => ({} as any))
+        setError(`エラー: ${data.error || 'APIリクエストが失敗しました'}`)
+        return
+      }
+
       const data = await res.json()
       setResponse(data)
-
-      if (!res.ok) {
-        setError(`エラー: ${data.error || 'APIリクエストが失敗しました'}`)
-      }
     } catch (error) {
       console.error('APIテストエラー:', error)
       setError('ネットワークエラーが発生しました')

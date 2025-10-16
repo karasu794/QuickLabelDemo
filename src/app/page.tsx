@@ -435,14 +435,23 @@ export default function Home() {
       console.log(`ジョブ作成レスポンス: ${response.status} ${response.statusText}`)
 
       if (!response.ok) {
-        const errorData = await response.json()
+        // 422のときはエラーマップをユーザーに提示してリトライ可能にする
+        if (response.status === 422) {
+          const err = await response.json().catch(() => ({} as any))
+          const errs = (err && err.errors) || {}
+          const flat = Object.keys(errs).flatMap((k) => errs[k]).join(' / ')
+          setIsLoading(false)
+          setError(flat || '入力に不備があります。修正して再度お試しください。')
+          return
+        }
+        const errorData = await response.json().catch(() => ({} as any))
         throw new Error(errorData.error || `HTTP ${response.status}: リクエストに失敗しました`)
       }
 
       const result = await response.json()
       console.log('ジョブ作成成功:', result)
 
-      if (result.success && result.jobId) {
+      if (result.ok && result.jobId) {
         setCurrentJobId(result.jobId)
         console.log(`✅ ジョブ作成成功: ${result.jobId}`)
         

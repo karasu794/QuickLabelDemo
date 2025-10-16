@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { useShippingFormStore } from '@/store/shippingFormStore'
 import { ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 type InitialAuth = { user: { id: string; email: string | null } | null; isAdmin: boolean }
@@ -40,7 +41,22 @@ export default function HeaderClient({ initialAuth, showAdminNav = true }: Props
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.refresh()
+    // 配送フォームの状態と永続ストレージをクリア
+    try {
+      const store = useShippingFormStore.getState()
+      store?.resetForm()
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('shipping-form-storage')
+      }
+    } catch {}
+    // ログアウト後はトップへ遷移（戻るで保護ページに戻れないよう replace）
+    router.replace('/')
+    // 念のためのフォールバック
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
+    }, 100)
   }
 
   // SSRの初期ユーザーを短時間維持してフリッカーを防ぐ

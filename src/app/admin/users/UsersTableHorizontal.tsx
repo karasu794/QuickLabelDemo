@@ -1,6 +1,8 @@
 'use client'
 
 import ResponsiveTable, { TableColumn, TableAction } from '@/components/ResponsiveTable'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { UserProfile } from './page'
 
 // 日時フォーマット用のヘルパー関数
@@ -19,6 +21,8 @@ interface UsersTableHorizontalProps {
 }
 
 export default function UsersTableHorizontal({ users }: UsersTableHorizontalProps) {
+  const router = useRouter()
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set())
   // テーブル列定義
   const columns: TableColumn[] = [
     {
@@ -69,6 +73,87 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
       },
       className: 'text-green-600 hover:text-green-900',
       disabled: (row: UserProfile) => !row.email
+    },
+    {
+      label: '削除',
+      onClick: async (row: UserProfile) => {
+        if (!confirm('このユーザーを論理削除します。よろしいですか？')) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: '' }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-red-600 hover:text-red-900',
+      disabled: (row: UserProfile) => busyIds.has(row.id),
+      'data-test': 'user-delete' as any
+    },
+    {
+      label: '永久停止',
+      onClick: async (row: UserProfile) => {
+        const reason = prompt('理由（任意）を入力してください') || ''
+        if (!confirm('このユーザーを永久停止します。よろしいですか？')) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/ban`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-amber-600 hover:text-amber-900',
+      disabled: (row: UserProfile) => busyIds.has(row.id),
+      'data-test': 'user-ban' as any
+    },
+    {
+      label: '一時停止',
+      onClick: async (row: UserProfile) => {
+        const until = prompt('停止期限を ISO 形式（例: 2025-12-31T15:00:00Z）で入力')
+        if (!until) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/suspend`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ until, reason: '' }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-yellow-700 hover:text-yellow-900',
+      disabled: (row: UserProfile) => busyIds.has(row.id),
+      'data-test': 'user-suspend' as any
+    },
+    {
+      label: '再開',
+      onClick: async (row: UserProfile) => {
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/resume`, { method: 'POST' })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-indigo-600 hover:text-indigo-900',
+      disabled: (row: UserProfile) => busyIds.has(row.id),
+      'data-test': 'user-resume' as any
     }
   ]
 

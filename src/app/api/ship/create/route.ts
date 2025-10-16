@@ -135,11 +135,11 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 			.select('*')
 			.filter('order_id', 'eq', input.orderId as any)
 			.maybeSingle()
-        if (existing && (existing as any).tracking_number && (existing as any).label_blob_url) {
+		if (existing && (existing as any).tracking_number && ((existing as any).label_blob_url || (existing as any).label_url)) {
 			logInfo('ship_create_idempotent', { orderId: input.orderId, orgId })
 			return NextResponse.json({
-                trackingNumber: (existing as any).tracking_number as string,
-				labelUrl: (existing as any).label_blob_url as string,
+				trackingNumber: (existing as any).tracking_number as string,
+				labelUrl: ((existing as any).label_blob_url || (existing as any).label_url) as string,
                 serviceType: (existing as any).service_type || input.serviceType,
                 rate: Number((existing as any).rate_total ?? 0),
                 currency: (existing as any).currency || 'JPY',
@@ -182,10 +182,10 @@ try {
 				.select('*')
 				.filter('order_id', 'eq', input.orderId as any)
 				.maybeSingle()
-            if (existing && (existing as any).tracking_number && (existing as any).label_blob_url) {
+			if (existing && (existing as any).tracking_number && ((existing as any).label_blob_url || (existing as any).label_url)) {
 				return NextResponse.json({
-                    trackingNumber: (existing as any).tracking_number as string,
-					labelUrl: (existing as any).label_blob_url as string,
+					trackingNumber: (existing as any).tracking_number as string,
+					labelUrl: ((existing as any).label_blob_url || (existing as any).label_url) as string,
                     serviceType: (existing as any).service_type || input.serviceType,
                     rate: Number((existing as any).rate_total ?? 0),
                     currency: (existing as any).currency || 'JPY',
@@ -299,6 +299,7 @@ try {
 				rate_total: rate,
 				currency,
 				label_blob_url: labelUrl,
+				label_url: labelUrl,
 				square_payment_id: pay.paymentId,
 				payment_status: 'completed',
 				hts_code: input.htsCode ?? null,
@@ -310,10 +311,10 @@ try {
 					.select('*')
 					.filter('order_id', 'eq', input.orderId as any)
 					.maybeSingle()
-                if (existing) {
+				if (existing) {
 					return NextResponse.json({
                         trackingNumber: (existing as any).tracking_number as string,
-						labelUrl: (existing as any).label_blob_url as string,
+						labelUrl: ((existing as any).label_blob_url || (existing as any).label_url) as string,
 						serviceType: (existing as any).service_type || input.serviceType,
                         rate: Number((existing as any).rate_total ?? rate),
 						currency: (existing as any).currency || currency,

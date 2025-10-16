@@ -70,12 +70,16 @@ export async function POST(request: NextRequest) {
 export async function GET() {
 	try {
 		const { supabase, user } = await getUserOrThrow()
+		const who = user.id
 
-		const { data, error } = await supabase
-			.from('address_book')
-			.select('*')
-			// TODO(org-removed): org filter removed
+		let q = (supabase
+			.from('address_book') as any)
+			.select('contact_name,company_name,phone_number,country_code,postal_code,state_code,city,address1,address2,created_at,user_id,created_by', { count: 'exact' })
+			.or(`user_id.eq.${who},created_by.eq.${who}`)
 			.order('created_at', { ascending: false })
+			.limit(50)
+
+		const { data, error } = await q
 
 		if (error) {
 			return NextResponse.json({ code: 'QL-DB', message: error.message }, { status: 500 })

@@ -1,6 +1,8 @@
 'use client'
 
 import ResponsiveCardTable, { CardColumn, CardAction } from '@/components/ResponsiveCardTable'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { UserProfile } from './page'
 
 // 日時フォーマット用のヘルパー関数
@@ -19,6 +21,8 @@ interface UsersTableCardProps {
 }
 
 export default function UsersTableCard({ users }: UsersTableCardProps) {
+  const router = useRouter()
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set())
   // カード列定義
   const columns: CardColumn[] = [
     {
@@ -105,6 +109,103 @@ export default function UsersTableCard({ users }: UsersTableCardProps) {
         console.log('ユーザー情報をコピーしました')
       },
       className: 'text-purple-600 hover:text-purple-700'
+    },
+    {
+      label: '削除',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ),
+      onClick: async (row: UserProfile) => {
+        if (!confirm('このユーザーを論理削除します。よろしいですか？')) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: '' }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-red-600 hover:text-red-700',
+      disabled: (row: UserProfile) => busyIds.has(row.id)
+    },
+    {
+      label: '永久停止',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" />
+        </svg>
+      ),
+      onClick: async (row: UserProfile) => {
+        const reason = prompt('理由（任意）を入力してください') || ''
+        if (!confirm('このユーザーを永久停止します。よろしいですか？')) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/ban`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-amber-600 hover:text-amber-700',
+      disabled: (row: UserProfile) => busyIds.has(row.id)
+    },
+    {
+      label: '一時停止',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6M6 19h12" />
+        </svg>
+      ),
+      onClick: async (row: UserProfile) => {
+        const until = prompt('停止期限を ISO 形式（例: 2025-12-31T15:00:00Z）で入力')
+        if (!until) return
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/suspend`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ until, reason: '' }) })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-yellow-700 hover:text-yellow-800',
+      disabled: (row: UserProfile) => busyIds.has(row.id)
+    },
+    {
+      label: '再開',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M4 10a10 10 0 0116 0M20 14a10 10 0 01-16 0" />
+        </svg>
+      ),
+      onClick: async (row: UserProfile) => {
+        setBusyIds(prev => new Set(prev).add(row.id))
+        try {
+          const res = await fetch(`/api/admin/users/${row.id}/resume`, { method: 'POST' })
+          const j = await res.json().catch(() => ({}))
+          if (!res.ok || j?.ok !== true) throw new Error(j?.error || 'failed')
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setBusyIds(prev => { const n = new Set(prev); n.delete(row.id); return n })
+          router.refresh()
+        }
+      },
+      className: 'text-indigo-600 hover:text-indigo-700',
+      disabled: (row: UserProfile) => busyIds.has(row.id)
     }
   ]
 

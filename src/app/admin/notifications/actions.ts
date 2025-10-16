@@ -27,13 +27,14 @@ export async function markNotificationAsRead(notificationId: string): Promise<{ 
     }
 
     // 既読状態に更新
+    const targetId = Number.isFinite(Number(notificationId)) ? Number(notificationId) : notificationId
     const { data, error } = await supabaseAdmin
       .from('notifications')
       .update({
         is_read: true,
         read_at: new Date().toISOString()
       })
-      .eq('id', notificationId)
+      .eq('id', targetId)
       .select('id, is_read')
       .single()
 
@@ -106,10 +107,11 @@ export async function deleteNotification(notificationId: string): Promise<{ succ
     }
 
     // 通知を削除
+    const targetId = Number.isFinite(Number(notificationId)) ? Number(notificationId) : notificationId
     const { error } = await supabaseAdmin
       .from('notifications')
       .delete()
-      .eq('id', notificationId)
+      .eq('id', targetId)
 
     if (error) {
       console.error('❌ 通知削除エラー:', error)
