@@ -17,7 +17,14 @@ import AddressHistoryPicker from '@/components/address/AddressHistoryPicker'
 import AddressBookPicker from '@/components/address/AddressBookPicker'
 
 // ストアの値から表示用住所を構築する関数
-const buildDisplayAddress = (recipientInfo: any) => {
+type RecipientAddr = {
+  address1?: string
+  cityName?: string
+  postalCode?: string
+  stateCode?: string
+}
+
+const buildDisplayAddress = (recipientInfo: RecipientAddr) => {
   console.log('🏗️ buildDisplayAddress (recipient) called with:', recipientInfo);
   
   // stateCodeの状態をチェック
@@ -92,7 +99,7 @@ export default function RecipientInfoPage() {
         setIsAddressSelected(hasAddress);
       }
     }
-  }, [isReady, recipientInfo.address1, recipientInfo.cityName, recipientInfo.postalCode]);
+  }, [isReady, recipientInfo?.address1, recipientInfo?.cityName, recipientInfo?.postalCode]);
 
   // stateCodeが空で郵便番号がある場合、郵便番号から都道府県を自動判定
   useEffect(() => {
@@ -392,7 +399,18 @@ export default function RecipientInfoPage() {
     router.push('/shipping/new/shipper')
   }
 
-  const handleSelectFromHistory = (addr: any) => {
+  const handleSelectFromHistory = (addr: {
+    name?: string
+    company?: string
+    phone?: string
+    email?: string
+    country?: string
+    zip?: string
+    state?: string
+    city?: string
+    address1?: string
+    address2?: string
+  }) => {
     updateRecipientInfo('contactName', addr.name || '')
     updateRecipientInfo('companyName', addr.company || '')
     updateRecipientInfo('phoneNumber', addr.phone || '')
@@ -409,17 +427,29 @@ export default function RecipientInfoPage() {
     setShowHistory(false)
   }
 
-  const handleSelectFromAddressBook = (addr: any) => {
-    updateRecipientInfo('contactName', addr.name || '')
-    updateRecipientInfo('companyName', addr.company || '')
-    updateRecipientInfo('phoneNumber', addr.phone || '')
+  const handleSelectFromAddressBook = (addr: {
+    name?: string, name_ascii?: string
+    company?: string, company_ascii?: string
+    phone?: string, phone_ascii?: string
+    email?: string
+    country?: string, country_ascii?: string
+    zip?: string, zip_ascii?: string
+    state?: string, state_ascii?: string
+    city?: string, city_ascii?: string
+    address1?: string, address1_ascii?: string
+    address2?: string, address2_ascii?: string
+  }) => {
+    // ASCII優先で適用（不足時は原文）
+    updateRecipientInfo('contactName', addr.name_ascii || addr.name || '')
+    updateRecipientInfo('companyName', addr.company_ascii || addr.company || '')
+    updateRecipientInfo('phoneNumber', addr.phone_ascii || addr.phone || '')
     updateRecipientInfo('email', addr.email || '')
-    updateRecipientInfo('countryCode', addr.country || 'JP')
-    updateRecipientInfo('postalCode', addr.zip || '')
-    updateRecipientInfo('stateCode', addr.state || '')
-    updateRecipientInfo('cityName', addr.city || '')
-    updateRecipientInfo('address1', addr.address1 || '')
-    updateRecipientInfo('address2', addr.address2 || '')
+    updateRecipientInfo('countryCode', addr.country_ascii || addr.country || 'JP')
+    updateRecipientInfo('postalCode', addr.zip_ascii || addr.zip || '')
+    updateRecipientInfo('stateCode', addr.state_ascii || addr.state || '')
+    updateRecipientInfo('cityName', addr.city_ascii || addr.city || '')
+    updateRecipientInfo('address1', addr.address1_ascii || addr.address1 || '')
+    updateRecipientInfo('address2', addr.address2_ascii || addr.address2 || '')
     const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
     setAddressInput(displayAddress)
     setIsAddressSelected(true)

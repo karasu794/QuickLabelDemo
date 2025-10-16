@@ -17,6 +17,16 @@ export type AddressDTO = {
   city: string | null
   address1: string | null
   address2: string | null
+  // ASCII 正規化フィールド（優先使用）
+  name_ascii?: string | null
+  company_ascii?: string | null
+  phone_ascii?: string | null
+  country_ascii?: string | null
+  zip_ascii?: string | null
+  state_ascii?: string | null
+  city_ascii?: string | null
+  address1_ascii?: string | null
+  address2_ascii?: string | null
 }
 
 type Props = {
@@ -55,6 +65,16 @@ export default function AddressBookPicker({ role, onSelect, onClose }: Props) {
           city: r.city || null,
           address1: r.address1 || null,
           address2: r.address2 || null,
+          // ASCII 正規化値（あれば）
+          name_ascii: r.contact_name_ascii || null,
+          company_ascii: r.company_name_ascii || null,
+          phone_ascii: r.phone_number_ascii || null,
+          country_ascii: r.country_code_ascii || null,
+          zip_ascii: r.postal_code_ascii || null,
+          state_ascii: r.state_code_ascii || null,
+          city_ascii: r.city_ascii || null,
+          address1_ascii: r.address1_ascii || null,
+          address2_ascii: r.address2_ascii || null,
         }))
         if (!canceled) setItems(mapped)
       } catch (e: any) {

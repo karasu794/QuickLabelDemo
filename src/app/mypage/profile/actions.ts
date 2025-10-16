@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 
 interface ProfileData {
   full_name: string
@@ -19,8 +20,19 @@ export async function updateProfile(userId: string, profileData: ProfileData) {
     const supabase = createClient()
 
     // プロフィールを更新
-    const { error } = await (supabase
-      .from('profiles') as any)
+    const ascii = {
+      full_name_ascii: toAsciiForShipping(profileData.full_name),
+      company_name_ascii: toAsciiForShipping(profileData.company_name),
+      phone_number_ascii: toAsciiForShipping(profileData.phone_number),
+      address_ascii: toAsciiForShipping(profileData.address),
+      postal_code_ascii: toAsciiForShipping(profileData.postal_code),
+      city_ascii: toAsciiForShipping(profileData.city),
+      state_ascii: toAsciiForShipping(profileData.state),
+      country_ascii: toAsciiForShipping(profileData.country),
+    }
+
+    const { error } = await (supabase as any)
+      .from('profiles')
       .update({
         full_name: profileData.full_name,
         company_name: profileData.company_name,
@@ -30,9 +42,10 @@ export async function updateProfile(userId: string, profileData: ProfileData) {
         city: profileData.city,
         state: profileData.state,
         country: profileData.country,
+        ...ascii,
         updated_at: new Date().toISOString()
       } as any)
-      .eq('id', userId as any)
+      .eq('id', userId)
 
     if (error) {
       console.error('プロフィール更新エラー:', error)

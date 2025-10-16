@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
+import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 import { z } from 'zod'
 // TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
 // import { requireOrg } from '@/lib/org'
@@ -43,19 +45,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 			return NextResponse.json({ code: 'QL-VALIDATION', message: '入力値が不正です' }, { status: 400 })
 		}
 
-		const updateInput = parsed.data
+    const updateInput = parsed.data
+
+    // ASCII 正規化（提供されたフィールドのみ）
+    const asciiPart: Record<string, string> = {}
+    if (typeof updateInput.contact_name === 'string') asciiPart.contact_name_ascii = toAsciiForShipping(updateInput.contact_name)
+    if (typeof updateInput.company_name === 'string') asciiPart.company_name_ascii = toAsciiForShipping(updateInput.company_name || '')
+    if (typeof updateInput.phone_number === 'string') asciiPart.phone_number_ascii = toAsciiForShipping(updateInput.phone_number || '')
+    if (typeof updateInput.country_code === 'string') asciiPart.country_code_ascii = toAsciiForShipping(updateInput.country_code)
+    if (typeof updateInput.postal_code === 'string') asciiPart.postal_code_ascii = toAsciiForShipping(updateInput.postal_code || '')
+    if (typeof updateInput.state_code === 'string') asciiPart.state_code_ascii = toAsciiForShipping(updateInput.state_code || '')
+    if (typeof updateInput.city === 'string') asciiPart.city_ascii = toAsciiForShipping(updateInput.city || '')
+    if (typeof updateInput.address1 === 'string') asciiPart.address1_ascii = toAsciiForShipping(updateInput.address1 || '')
+    if (typeof updateInput.address2 === 'string') asciiPart.address2_ascii = toAsciiForShipping(updateInput.address2 || '')
 		if (Object.keys(updateInput).length === 0) {
 			return NextResponse.json({ code: 'QL-EMPTY', message: '更新フィールドが空です' }, { status: 400 })
 		}
 
 		const { supabase } = await getUserOrThrow()
 		// Supabase の型推論が .update(...) の引数で never になるのを回避
-		type Update = Database['public']['Tables']['address_book']['Update']
-		const payload = updateInput as Partial<Update>
+    type Update = Database['public']['Tables']['address_book']['Update']
+    const payload: Partial<Update & Record<string, string>> = { ...(updateInput as Partial<Update>), ...(asciiPart as Record<string, string>) }
 
-		const { data, error } = await (supabase
-			.from('address_book') as any)
-			.update(payload)
+		const { data, error } = await (supabase as any)
+			.from('address_book')
+			.update(payload as any)
 			.match({ id })
 			// TODO(org-removed): org filter removed
 			.select('*')

@@ -4,10 +4,11 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Phone, Building, MapPin, Save, Loader2 } from 'lucide-react'
+import { User, Building, MapPin, Save, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { updateProfile } from './actions'
+import AsciiPreviewField from '@/components/AsciiPreviewField'
 
 interface ProfileData {
   full_name: string
@@ -42,17 +43,7 @@ export default function ProfilePage() {
 
       try {
         const supabase = createClient()
-        type ProfileRow = {
-          id: string
-          full_name: string | null
-          company_name: string | null
-          phone_number: string | null
-          address_prefecture: string | null
-          address_city: string | null
-          address_line1: string | null
-          address_line2: string | null
-          updated_at: string | null
-        }
+        // NOTE: 型はSupabase型定義に依存しない簡易読み取りのため省略
         const { data: profile, error } = await (supabase
           .from('profiles')
           .select('*')
@@ -169,8 +160,10 @@ export default function ProfilePage() {
                   onChange={(e) => handleInputChange('full_name', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="山田太郎"
+                  data-test="jp-full-name"
                 />
               </div>
+              <AsciiPreviewField label="氏名" jpValue={profileData.full_name} testId="ascii-full-name" />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -182,8 +175,10 @@ export default function ProfilePage() {
                   onChange={(e) => handleInputChange('phone_number', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="090-1234-5678"
+                  data-test="jp-phone"
                 />
               </div>
+              <AsciiPreviewField label="電話番号" jpValue={profileData.phone_number} testId="ascii-phone" />
             </div>
           </div>
 
@@ -194,17 +189,21 @@ export default function ProfilePage() {
               会社情報
             </h2>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                会社名
-              </label>
-              <input
-                type="text"
-                value={profileData.company_name}
-                onChange={(e) => handleInputChange('company_name', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="株式会社サンプル"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  会社名
+                </label>
+                <input
+                  type="text"
+                  value={profileData.company_name}
+                  onChange={(e) => handleInputChange('company_name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="株式会社サンプル"
+                  data-test="jp-company"
+                />
+              </div>
+              <AsciiPreviewField label="会社名" jpValue={profileData.company_name} testId="ascii-company" />
             </div>
           </div>
 
@@ -226,6 +225,7 @@ export default function ProfilePage() {
                   onChange={(e) => handleInputChange('postal_code', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="123-4567"
+                  data-test="jp-postal"
                 />
               </div>
 
@@ -273,17 +273,21 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                住所
-              </label>
-              <textarea
-                value={profileData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="丁目番地、ビル名・マンション名・部屋番号など"
-              />
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  住所
+                </label>
+                <textarea
+                  value={profileData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="丁目番地、ビル名・マンション名・部屋番号など"
+                  data-test="jp-address1"
+                />
+              </div>
+              <AsciiPreviewField label="住所" jpValue={profileData.address} testId="ascii-address1" />
             </div>
           </div>
 

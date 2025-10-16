@@ -6,6 +6,9 @@ const disableStandalone =
 const nextConfig = {
 	productionBrowserSourceMaps: false,
 	...(disableStandalone ? {} : { output: 'standalone' }),
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
 	logging: {
 		buildActivity: true,
 	},

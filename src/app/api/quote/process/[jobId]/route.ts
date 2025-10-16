@@ -869,7 +869,7 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           .catch(error => console.error('特別オファー検知でエラー:', error));
       }
 
-      // レスポンスを変換（Residentialサーチャージ抽出を含む）
+      // レスポンスを変換（Residentialサーチャージ抽出 + 診断ログを含む）
       const rates = mapOrEmpty<any, any>(fedexResponse.output?.rateReplyDetails, (detail) => {
         const ratedShipment = detail.ratedShipmentDetails?.[0] || { totalNetCharge: 0 }
         const residentialSurcharge = extractResidentialSurchargeFromRateDetail(detail)
@@ -878,6 +878,56 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
             isResidential: quoteParams.isResidential,
             residentialSurcharge
           })
+        }
+
+        // 診断ログ（フラグON時のみ）: サーチャージ生一覧 + Residential候補
+        const DIAG = String(process.env.QUOTE_DIAG_RESIDENTIAL || '').trim() === '1'
+        if (DIAG) {
+          try {
+            type SurchargeLike = { type?: string; code?: string; name?: string; description?: string; amount?: number }
+            const collectAllSurcharges = (rateDetail: any): SurchargeLike[] => {
+              const arrays: any[][] = []
+              const rsdArr = Array.isArray(rateDetail?.ratedShipmentDetails) ? rateDetail.ratedShipmentDetails : []
+              for (const rsd of rsdArr) {
+                const srdArr = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
+                for (const srd of srdArr) {
+                  if (Array.isArray(srd?.surcharges)) arrays.push(srd.surcharges)
+                  if (Array.isArray(srd?.surCharges)) arrays.push(srd.surCharges)
+                }
+                if (Array.isArray(rsd?.surcharges)) arrays.push(rsd.surcharges)
+                if (Array.isArray(rsd?.surCharges)) arrays.push(rsd.surCharges)
+              }
+              if (Array.isArray(rateDetail?.surcharges)) arrays.push(rateDetail.surcharges)
+              if (Array.isArray(rateDetail?.surCharges)) arrays.push(rateDetail.surCharges)
+
+              return arrays
+                .flat()
+                .filter(Boolean)
+                .map((s: any) => ({
+                  type: s?.type ?? s?.surchargeType ?? s?.code,
+                  code: s?.code ?? s?.surchargeType ?? s?.type,
+                  name: s?.name,
+                  description: s?.description,
+                  amount: Number(s?.amount ?? s?.totalAmount ?? s?.price ?? 0) || 0,
+                }))
+            }
+            const looksResidential = (s: SurchargeLike): boolean => {
+              const t = `${s.type ?? ''} ${s.code ?? ''} ${s.name ?? ''} ${s.description ?? ''}`.toLowerCase()
+              return /\bresidential\b/.test(t) || /\bresidential[_\s-]*delivery\b/.test(t)
+            }
+            const surs = collectAllSurcharges(detail)
+            const resi = surs.filter(looksResidential)
+            console.debug('[quote][diag][surcharges]', {
+              jobId,
+              serviceName: detail?.serviceName || detail?.serviceType,
+              rateType: ratedShipment?.rateType,
+              totalNetCharge: ratedShipment?.totalNetCharge,
+              surcharges: surs,
+              residentialCandidates: resi,
+            })
+          } catch (e) {
+            console.debug('[quote][diag][surcharges][error]', String(e))
+          }
         }
         return {
           serviceType: detail.serviceName,

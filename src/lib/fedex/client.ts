@@ -133,8 +133,8 @@ export async function request<T>(options: { endpoint: string; method?: 'GET' | '
 	}
 	if (correlationId) headers['X-Correlation-Id'] = correlationId
 
-  // SR-D: 生ログ出力（PIIマスク撤去）
-  logInfo('fedex.request', { endpoint: url.pathname, method, kind, body })
+  // 観測性: body はログしない（PII/巨大オブジェクト防止）。corrId は記録。
+  logInfo('fedex.request', { endpoint: url.pathname, method, kind, corrId: correlationId })
 	const res = await fetch(url.toString(), {
 		method,
 		headers,
@@ -144,10 +144,10 @@ export async function request<T>(options: { endpoint: string; method?: 'GET' | '
 	const text = await res.text().catch(() => '')
 	const parsed = text ? safeJson(text) : undefined
 	if (!res.ok) {
-		logWarn('fedex.response.error', { endpoint: url.pathname, status: res.status, body: parsed })
+		logWarn('fedex.response.error', { endpoint: url.pathname, status: res.status, corrId: res.headers.get('x-correlation-id') || correlationId })
 		throw new FedExError(res.status, 'FedEx request failed', parsed)
 	}
-	logInfo('fedex.response.ok', { endpoint: url.pathname, status: res.status })
+	logInfo('fedex.response.ok', { endpoint: url.pathname, status: res.status, corrId: res.headers.get('x-correlation-id') || correlationId })
 	return (parsed as T) as T
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import 'server-only'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -6,24 +7,18 @@ import { z } from 'zod'
 import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { withOrderAdvisoryLock } from '@/lib/db/locks'
 import { createClient } from '@/lib/supabase/server'
-import { logError, logInfo, logWarn } from '@/lib/logging'
-// CORE_MODE
-import { CORE_MODE } from '@/lib/config/coreMode'
 import { assertRateConsistency as assertRG, RateGuardError, loadRGConfig, fetchReferenceTotal as fetchRGRef } from '@/lib/ship/rateGuard'
-import { determineAccountKind, getAccessToken, postShipment, FedExError, AccountKind } from '@/lib/fedex/client'
+import { getAccessToken, postShipment, FedExError, AccountKind } from '@/lib/fedex/client'
 import { put } from '@vercel/blob'
 // ensurePost
 import { ensurePost } from '@/lib/http/ensurePost'
+import { createLogger, withTiming } from '@/lib/observability/logger'
+import { randomUUID } from 'crypto'
+import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 
 // DIAG: 免責事項のサーバサイド検証や、terms_accepted_at/terms_version/payment_tx_id の保存が未実装。
 // DIAG: verifyPaymentはSquareからの確認を行うが、draftとの関連チェックなし。
 // DIAG: リクエストスキーマに payment_tx_id が含まれていない。
-
-function envBool(name: string, def = false): boolean {
-	const v = process.env[name]
-	if (v == null) return def
-	return ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase())
-}
 
 // MW-REMOVED: middleware撤去に伴い、CSRF等の前処理は行わない
 
@@ -105,17 +100,20 @@ export async function POST(req: NextRequest) {
   const early = ensurePost(req)
   if (early) return early
 
+  const diagId = randomUUID()
+  const log = createLogger('ship.create', diagId)
+  log.info({ step: 'start', ok: true })
+
 	if (process.env.SHIP_API_WRITE_ENABLED !== 'true') {
-    const snapshot = await req.json().catch(() => ({}))
-    // SR-D: 生ログ出力（PIIマスク撤去）
-    logInfo('ship_create_blocked', { reason: 'WRITE_DISABLED', input: snapshot })
+    log.warn({ step: 'blocked', ok: false, context: { reason: 'WRITE_DISABLED' } })
 		return NextResponse.json({ code: 'WRITE_DISABLED' }, { status: 503 })
 	}
 
 	let input: CreateShipRequest
 	try {
-		input = bodySchema.parse(await req.json())
+		input = await withTiming(log, 'input.parse', async () => bodySchema.parse(await req.json()))
 	} catch (e) {
+		log.error({ step: 'input.parse', ok: false, error_message: (e as any)?.message, upstream: 'validation' })
 		return NextResponse.json({ code: 'BAD_REQUEST', message: 'Invalid payload' }, { status: 400 })
 	}
 
@@ -130,31 +128,35 @@ export async function POST(req: NextRequest) {
 
 const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 	const userId: string = user.id
-	const orgId: string | null = null // TODO(org-removed): previously persisted; drop column later
+	// TODO(org-removed): previously persisted; drop column later
 
   const supabase = createClient()
 
 	// Idempotency: return existing if present
 	{
-		const { data: existing } = await supabase
-			.from('shipments')
-			.select('*')
-			.filter('order_id', 'eq', input.orderId as any)
-			.maybeSingle()
-		if (existing && (existing as any).tracking_number && ((existing as any).label_blob_url || (existing as any).label_url)) {
-			logInfo('ship_create_idempotent', { orderId: input.orderId, orgId })
+		const existing = await withTiming(log, 'db.read.shipments.idempotent', async () => {
+			const { data } = await supabase
+				.from('shipments')
+				.select('*')
+				.filter('order_id', 'eq', input.orderId as any)
+				.maybeSingle()
+			return data as any
+		}, { orderId: input.orderId })
+		if (existing && existing.tracking_number && (existing.label_blob_url || existing.label_url)) {
+			log.info({ step: 'idempotent.hit', ok: true, context: { orderId: input.orderId } })
 			return NextResponse.json({
-				trackingNumber: (existing as any).tracking_number as string,
-				labelUrl: ((existing as any).label_blob_url || (existing as any).label_url) as string,
-                serviceType: (existing as any).service_type || input.serviceType,
-                rate: Number((existing as any).rate_total ?? 0),
-                currency: (existing as any).currency || 'JPY',
+				trackingNumber: existing.tracking_number as string,
+				labelUrl: (existing.label_blob_url || existing.label_url) as string,
+			        serviceType: (existing.service_type || input.serviceType) as string,
+			        rate: Number((existing.rate_total ?? 0) as number),
+			        currency: (existing.currency || 'JPY') as string,
 			} satisfies CreateShipResponse)
 		}
 	}
 
-	const pay = await verifyPayment(input.orderId)
+	const pay = await withTiming(log, 'payment.verify', async () => verifyPayment(input.orderId), { orderId: input.orderId })
 	if (!pay) {
+		log.warn({ step: 'payment.verify', ok: false, context: { orderId: input.orderId } })
 		return NextResponse.json({ code: 'PAYMENT_REQUIRED' }, { status: 402 })
 	}
 
@@ -164,32 +166,35 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
   const paymentTxId = (input as any).payment_tx_id || pay.paymentId
 
   // FIX: サーババリデーション - 直近のユーザードラフトに同意があるか検証
-  try {
-    const d = await (supabase as any)
-      .from('drafts')
-      .select('id, disclaimer_agreed')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    const agreed = Boolean(d?.data?.disclaimer_agreed)
-    if (!agreed) {
-      return NextResponse.json({ code: 'DISCLAIMER_REQUIRED' }, { status: 400 })
-    }
-  } catch (e) {
-    logWarn('ship_create_draft_check_failed', { userId })
-  }
+	try {
+		const agreed = await withTiming(log, 'db.read.drafts', async () => {
+			const d = await (supabase as any)
+				.from('drafts')
+				.select('id, disclaimer_agreed')
+				.eq('user_id', userId)
+				.order('updated_at', { ascending: false })
+				.limit(1)
+				.maybeSingle()
+			return Boolean(d?.data?.disclaimer_agreed)
+		}, { userId })
+		if (!agreed) {
+			return NextResponse.json({ code: 'DISCLAIMER_REQUIRED' }, { status: 400 })
+		}
+	} catch (e) {
+		log.warn({ step: 'db.read.drafts', ok: false, context: { userId } })
+	}
 
 // RateGuard: new env names + fallback, standard error 400+code
 try {
-  const cfg = loadRGConfig(process.env as any)
-  const refTotal = await fetchRGRef({ supabase: supabaseFromAuth, userId })
-  const rgRes = assertRG(refTotal, pay.amount, cfg)
-  if ((rgRes as any)?.warnings) {
-    // NOTE: warningsを応答に含める場合は、下のJSONにマージする
-  }
+  await withTiming(log, 'rateguard.assert', async () => {
+    const cfg = loadRGConfig(process.env as any)
+    const refTotal = await fetchRGRef({ supabase: supabaseFromAuth, userId })
+    const rgRes = assertRG(refTotal, pay.amount, cfg)
+    return rgRes
+  })
 } catch (e: any) {
   if (e instanceof RateGuardError || e?.code === 'RATE_GUARD_MISMATCH' || e?.code === 'RATE_GUARD_NO_REFERENCE') {
+    log.warn({ step: 'rateguard.assert', ok: false, context: { code: e.code } })
     return NextResponse.json({ code: e.code ?? 'RATE_GUARD_MISMATCH', ...(e.payload || {}), diff: e.payload?.diff }, { status: e.status ?? 400 })
   }
   throw e
@@ -205,11 +210,13 @@ try {
 	async function doShip(): Promise<NextResponse> {
 		// Narrow race window by re-checking
 		{
-			const { data: existing } = await supabase
-				.from('shipments')
-				.select('*')
-				.filter('order_id', 'eq', input.orderId as any)
-				.maybeSingle()
+			const { data: existing } = await (await withTiming(log, 'db.read.shipments.recheck', async () =>
+				supabase
+					.from('shipments')
+					.select('*')
+					.filter('order_id', 'eq', input.orderId as any)
+					.maybeSingle()
+			)) as any
 			if (existing && (existing as any).tracking_number && ((existing as any).label_blob_url || (existing as any).label_url)) {
 				return NextResponse.json({
 					trackingNumber: (existing as any).tracking_number as string,
@@ -221,30 +228,32 @@ try {
 			}
 		}
 
-		// Build minimal FedEx payload and call
-		const payload = {
+    // Build minimal FedEx payload and call
+    // 入力を配送用ASCIIに正規化（日本語が送られても安全化）
+    const norm = (s?: string | null) => toAsciiForShipping(String(s ?? ''))
+    const payload = {
 			accountNumber: { value: process.env[kind === 'export' ? 'FEDEX_EXPORT_ACCOUNT_NUMBER' : 'FEDEX_IMPORT_ACCOUNT_NUMBER']! },
 			labelResponseOptions: 'URL_ONLY',
 			requestedShipment: {
 				shipper: {
-					contact: { personName: input.shipper.name, phoneNumber: input.shipper.phone },
+          contact: { personName: norm(input.shipper.name), phoneNumber: norm(input.shipper.phone) },
 					address: {
-						streetLines: [input.shipper.address1, input.shipper.address2 || ''].filter(Boolean),
-						city: input.shipper.city,
-						stateOrProvinceCode: input.shipper.state || undefined,
-						postalCode: input.shipper.postalCode,
-						countryCode: input.shipper.country,
+            streetLines: [norm(input.shipper.address1), norm(input.shipper.address2) || ''].filter(Boolean),
+            city: norm(input.shipper.city),
+            stateOrProvinceCode: norm(input.shipper.state) || undefined,
+            postalCode: norm(input.shipper.postalCode),
+            countryCode: norm(input.shipper.country),
 					},
 				},
 				recipients: [
 					{
-						contact: { personName: input.recipient.name, phoneNumber: input.recipient.phone },
+            contact: { personName: norm(input.recipient.name), phoneNumber: norm(input.recipient.phone) },
 						address: {
-							streetLines: [input.recipient.address1, input.recipient.address2 || ''].filter(Boolean),
-							city: input.recipient.city,
-							stateOrProvinceCode: input.recipient.state || undefined,
-							postalCode: input.recipient.postalCode,
-							countryCode: input.recipient.country,
+              streetLines: [norm(input.recipient.address1), norm(input.recipient.address2) || ''].filter(Boolean),
+              city: norm(input.recipient.city),
+              stateOrProvinceCode: norm(input.recipient.state) || undefined,
+              postalCode: norm(input.recipient.postalCode),
+              countryCode: norm(input.recipient.country),
 							residential: false,
 						},
 					},
@@ -276,8 +285,13 @@ try {
 		let trackingNumbers: string[] = []
 		let responseLabelUrls: string[] = []
 
-    try {
-			const res = await postShipment<any>(payload, kind)
+		try {
+			const res = await withTiming(log, 'fedex.request.shipment', async () => postShipment<any>(payload, kind, diagId), {
+				service: input.serviceType,
+				packageCount: normPackages.length,
+				countryFrom: input.shipper.country,
+				countryTo: input.recipient.country,
+			})
 			const ts = res?.output?.transactionShipments?.[0]
 			const pieces: Array<any> = Array.isArray(ts?.pieceResponses) ? ts!.pieceResponses : []
 			const master = ts?.masterTrackingNumber || pieces?.[0]?.trackingNumber || ''
@@ -291,7 +305,9 @@ try {
 			const fedexLabelUrl: string | undefined = firstFedexUrl
 			if (!fedexLabelUrl) throw new Error('LABEL_URL_MISSING')
 			const token = await getAccessToken(kind)
-			const pdfResp = await fetch(fedexLabelUrl, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/pdf' } })
+			const pdfResp = await withTiming(log, 'label.fetch', async () =>
+				fetch(fedexLabelUrl, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/pdf' } })
+			)
 			if (!pdfResp.ok) throw new Error(`LABEL_FETCH_${pdfResp.status}`)
 			const buf = Buffer.from(await pdfResp.arrayBuffer())
 			const now = new Date()
@@ -300,19 +316,19 @@ try {
 			const path = `labels/${yyyy}/${mm}/${input.orderId}-${tracking}.pdf`
 			const blobToken = process.env.BLOB_READ_WRITE_TOKEN
 			if (!blobToken) {
-				logError('ship_create_blob_missing', { orderId: input.orderId })
+				log.error({ step: 'blob.put.label', ok: false, error_message: 'BLOB_CONFIG' })
 				return NextResponse.json({ code: 'BLOB_CONFIG' }, { status: 500 })
 			}
-			const blob = await put(path, buf, { access: 'public', contentType: 'application/pdf', token: blobToken })
+			const blob = await withTiming(log, 'blob.put.label', async () => put(path, buf, { access: 'public', contentType: 'application/pdf', token: blobToken }))
 			labelUrl = blob.url
 			// Build labelUrls array for response: first is blob url, rest are raw FedEx urls (not persisted)
 			responseLabelUrls = [labelUrl, ...rawUrls.slice(1)]
 		} catch (e) {
 			if (e instanceof FedExError) {
-				logError('ship_create_failed', { orderId: input.orderId, code: e.code, details: e.details })
+				log.error({ step: 'fedex.request.shipment', ok: false, error_code: e.code, error_message: e.message, upstream: 'fedex' })
 				return NextResponse.json({ code: e.code, message: e.message }, { status: e.code || 502 })
 			}
-			logError('ship_create_failed', { orderId: input.orderId, error: String((e as Error)?.message || e) })
+			log.error({ step: 'fedex.request.shipment', ok: false, error_message: String((e as Error)?.message || e), upstream: 'fedex' })
 			return NextResponse.json({ code: 'SHIP_FAILED' }, { status: 502 })
 		}
 
@@ -335,14 +351,17 @@ try {
         terms_accepted_at: nowIso,
         terms_version: termsVersion,
       }
-      logInfo('ship_create_terms_saved', { userId, orderId: input.orderId, paymentTxId, termsVersion })
-			const ins = await supabase.from('shipments').insert([row] as any).select('*').maybeSingle()
+			const ins = await withTiming(log, 'db.write.shipments', async () =>
+				supabase.from('shipments').insert([row] as any).select('*').maybeSingle()
+			)
 			if (ins.error && String(ins.error?.message || '').includes('duplicate')) {
-				const { data: existing } = await supabase
-					.from('shipments')
-					.select('*')
-					.filter('order_id', 'eq', input.orderId as any)
-					.maybeSingle()
+				const { data: existing } = await (await withTiming(log, 'db.read.shipments.on-dup', async () =>
+					supabase
+						.from('shipments')
+						.select('*')
+						.filter('order_id', 'eq', input.orderId as any)
+						.maybeSingle()
+				)) as any
 				if (existing) {
 					return NextResponse.json({
                         trackingNumber: (existing as any).tracking_number as string,
@@ -354,12 +373,11 @@ try {
 				}
 			}
 		} catch (e) {
-      // SR-D: 生ログ出力
-      logError('ship_create_persist_failed', { orderId: input.orderId, labelUrl })
+			log.error({ step: 'db.write.shipments', ok: false, error_message: String((e as Error)?.message || e), upstream: 'db' })
 			return NextResponse.json({ code: 'PERSIST_FAILED' }, { status: 500 })
 		}
 
-		logInfo('ship_create_succeeded', { orderId: input.orderId, trackingNumber: tracking, accountKind: kind })
+		log.info({ step: 'done', ok: true, context: { orderId: input.orderId, trackingNumber: tracking, service: input.serviceType } })
 		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency, htsCode: input.htsCode,
 			masterTrackingNumber: tracking,
 			trackingNumbers,

@@ -19,11 +19,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${requestUrl.origin}/login?verify_error=1`)
       }
       
-      // 成功時は安全な next に verified=1 を付与してリダイレクト
-      const redirectUrl = new URL(`${requestUrl.origin}${safeNext}`)
-      redirectUrl.searchParams.set('verified', '1')
-      if (type) redirectUrl.searchParams.set('type', type)
-      return NextResponse.redirect(redirectUrl.toString())
+      // 成功時は確認完了ページに遷移（next と type を引き継ぎ）
+      const verifiedUrl = new URL(`${requestUrl.origin}/auth/verified`)
+      verifiedUrl.searchParams.set('verified', '1')
+      if (type) verifiedUrl.searchParams.set('type', type)
+      if (safeNext) verifiedUrl.searchParams.set('next', safeNext)
+      return NextResponse.redirect(verifiedUrl.toString())
       
     } catch (error) {
       return NextResponse.redirect(`${requestUrl.origin}/login?verify_error=1`)

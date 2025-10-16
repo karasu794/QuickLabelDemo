@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import AsciiPreviewField from '@/components/AsciiPreviewField'
+import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -145,11 +147,23 @@ async function updateCompanyInfoAction(formData: FormData) {
 
   try {
     // ★★★ tryブロックはDB操作のみを囲む ★★★
+    // ASCII 正規化値もJSONに含めて保存
+    const ascii = {
+      contactNameAscii: toAsciiForShipping(companyInfo.contactName),
+      companyNameAscii: toAsciiForShipping(companyInfo.companyName),
+      taxIdAscii: toAsciiForShipping(companyInfo.taxId),
+      postalCodeAscii: toAsciiForShipping(companyInfo.postalCode),
+      address1Ascii: toAsciiForShipping(companyInfo.address1),
+      address2Ascii: toAsciiForShipping(companyInfo.address2),
+      phoneNumberAscii: toAsciiForShipping(companyInfo.phoneNumber),
+      emailAscii: toAsciiForShipping(companyInfo.email),
+    }
+
     const { data, error } = await supabaseAdmin
       .from('app_settings')
       .upsert({
         key: 'phoenix_address',
-        value: JSON.stringify(companyInfo)
+        value: JSON.stringify({ ...companyInfo, ...ascii })
       })
       .select('value')
       .single()
@@ -315,34 +329,42 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
       <div className="p-6">
         <form action={updateCompanyInfoAction} className="space-y-6">
           {/* 担当者名 */}
-          <div>
-            <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
-              担当者名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="contactName"
-              name="contactName"
-              defaultValue={currentCompanyInfo.contactName}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 山田太郎"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+                担当者名 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="contactName"
+                name="contactName"
+                defaultValue={currentCompanyInfo.contactName}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 山田太郎"
+                data-test="jp-contact"
+              />
+            </div>
+            <AsciiPreviewField label="担当者名" jpValue={currentCompanyInfo.contactName} testId="ascii-contact" />
           </div>
 
           {/* 会社名 */}
-          <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
-              会社名
-            </label>
-            <input
-              type="text"
-              id="companyName"
-              name="companyName"
-              defaultValue={currentCompanyInfo.companyName}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 株式会社サンプル"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+                会社名
+              </label>
+              <input
+                type="text"
+                id="companyName"
+                name="companyName"
+                defaultValue={currentCompanyInfo.companyName}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 株式会社サンプル"
+                data-test="jp-company"
+              />
+            </div>
+            <AsciiPreviewField label="会社名" jpValue={currentCompanyInfo.companyName} testId="ascii-company" />
           </div>
 
           {/* 税務番号（法人番号） */}
@@ -361,81 +383,101 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
           </div>
 
           {/* 郵便番号 */}
-          <div>
-            <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-2">
-              郵便番号 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="postalCode"
-              name="postalCode"
-              defaultValue={currentCompanyInfo.postalCode}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 123-4567"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-2">
+                郵便番号 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                defaultValue={currentCompanyInfo.postalCode}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 123-4567"
+                data-test="jp-postal"
+              />
+            </div>
+            <AsciiPreviewField label="郵便番号" jpValue={currentCompanyInfo.postalCode} testId="ascii-postal" />
           </div>
 
           {/* 住所1 */}
-          <div>
-            <label htmlFor="address1" className="block text-sm font-medium text-gray-700 mb-2">
-              住所1（都道府県・市区町村） <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="address1"
-              name="address1"
-              defaultValue={currentCompanyInfo.address1}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 東京都渋谷区"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="address1" className="block text-sm font-medium text-gray-700 mb-2">
+                住所1（都道府県・市区町村） <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="address1"
+                name="address1"
+                defaultValue={currentCompanyInfo.address1}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 東京都渋谷区"
+                data-test="jp-address1"
+              />
+            </div>
+            <AsciiPreviewField label="住所1" jpValue={currentCompanyInfo.address1} testId="ascii-address1" />
           </div>
 
           {/* 住所2 */}
-          <div>
-            <label htmlFor="address2" className="block text-sm font-medium text-gray-700 mb-2">
-              住所2（番地・建物名）
-            </label>
-            <input
-              type="text"
-              id="address2"
-              name="address2"
-              defaultValue={currentCompanyInfo.address2}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 1-2-3 サンプルビル4F"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="address2" className="block text-sm font-medium text-gray-700 mb-2">
+                住所2（番地・建物名）
+              </label>
+              <input
+                type="text"
+                id="address2"
+                name="address2"
+                defaultValue={currentCompanyInfo.address2}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 1-2-3 サンプルビル4F"
+                data-test="jp-address2"
+              />
+            </div>
+            <AsciiPreviewField label="住所2" jpValue={currentCompanyInfo.address2} testId="ascii-address2" />
           </div>
 
           {/* 電話番号 */}
-          <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-              電話番号 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              defaultValue={currentCompanyInfo.phoneNumber}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: 03-1234-5678"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                電話番号 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                defaultValue={currentCompanyInfo.phoneNumber}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: 03-1234-5678"
+                data-test="jp-phone"
+              />
+            </div>
+            <AsciiPreviewField label="電話番号" jpValue={currentCompanyInfo.phoneNumber} testId="ascii-phone" />
           </div>
 
           {/* メールアドレス */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              メールアドレス
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              defaultValue={currentCompanyInfo.email}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
-              placeholder="例: info@example.com"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                メールアドレス
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                defaultValue={currentCompanyInfo.email}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#4D148C] focus:border-[#4D148C]"
+                placeholder="例: info@example.com"
+                data-test="jp-email"
+              />
+            </div>
+            <AsciiPreviewField label="メール" jpValue={currentCompanyInfo.email} testId="ascii-email" />
           </div>
 
           {/* 更新ボタン */}

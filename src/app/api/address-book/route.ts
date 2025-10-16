@@ -3,7 +3,8 @@ import { z } from 'zod'
 // TODO(org-removed): deprecated. single-user tenancy; will be removed in Stage2.
 // import { requireOrg } from '@/lib/org'
 import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
-import type { Database } from '@/types/supabase'
+import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
+// import type { Database } from '@/types/supabase'
 
 // org_id と created_by はサーバー側で自動付与する
 // クライアントから受け取らないこと
@@ -35,22 +36,36 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ code: 'QL-VALIDATION', message: '入力値が不正です' }, { status: 400 })
 		}
 
-		const { supabase, user } = await getUserOrThrow()
+    const { supabase, user } = await getUserOrThrow()
 		const userId = user.id
 		const orgId = null // TODO(org-removed)
 
-		const body: AddressInput = parsed.data
+    const body: AddressInput = parsed.data
+
+    // ASCII 正規化フィールドを生成
+    const asciiPayload = {
+      contact_name_ascii: toAsciiForShipping(body.contact_name),
+      company_name_ascii: toAsciiForShipping(body.company_name ?? ''),
+      phone_number_ascii: toAsciiForShipping(body.phone_number ?? ''),
+      country_code_ascii: toAsciiForShipping(body.country_code ?? ''),
+      postal_code_ascii: toAsciiForShipping(body.postal_code ?? ''),
+      state_code_ascii: toAsciiForShipping(body.state_code ?? ''),
+      city_ascii: toAsciiForShipping(body.city ?? ''),
+      address1_ascii: toAsciiForShipping(body.address1 ?? ''),
+      address2_ascii: toAsciiForShipping(body.address2 ?? ''),
+    }
 
 		// サーバーが created_by を付与する（org_idは撤去）
-		const insertPayload = {
+    const insertPayload = {
 			...body,
+      ...asciiPayload,
 			// TODO(org-removed): org_id deprecated
 			created_by: userId,
 		}
 
-		const { data, error } = await (supabase
-			.from('address_book') as any)
-			.insert(insertPayload)
+    const { data, error } = await supabase
+      .from('address_book')
+      .insert(insertPayload as any)
 			.select()
 			.single()
 
@@ -58,7 +73,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ code: 'QL-DB', message: error.message }, { status: 500 })
 		}
 
-		return NextResponse.json(data, { status: 200 })
+    return NextResponse.json(data, { status: 200 })
 	} catch (e: unknown) {
 		if (isKnownError(e)) {
 			return NextResponse.json({ code: e.code, message: e.message }, { status: e.status })
@@ -72,14 +87,14 @@ export async function GET() {
 		const { supabase, user } = await getUserOrThrow()
 		const who = user.id
 
-		let q = (supabase
-			.from('address_book') as any)
-			.select('contact_name,company_name,phone_number,country_code,postal_code,state_code,city,address1,address2,created_at,user_id,created_by', { count: 'exact' })
+    const q = supabase
+      .from('address_book')
+      .select('contact_name,company_name,phone_number,country_code,postal_code,state_code,city,address1,address2,contact_name_ascii,company_name_ascii,phone_number_ascii,country_code_ascii,postal_code_ascii,state_code_ascii,city_ascii,address1_ascii,address2_ascii,created_at,user_id,created_by', { count: 'exact' })
 			.or(`user_id.eq.${who},created_by.eq.${who}`)
 			.order('created_at', { ascending: false })
 			.limit(50)
 
-		const { data, error } = await q
+    const { data, error } = await q
 
 		if (error) {
 			return NextResponse.json({ code: 'QL-DB', message: error.message }, { status: 500 })
