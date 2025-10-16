@@ -3,6 +3,9 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+// DIAG: 同意保存との連携なし。paymentIdは返却しているが、同意状態（draftやterms_version）とは未連携。
+// DIAG: レスポンスに paymentId はあるため payment_tx_id として流用可能。
+
 const schema = z.object({
   orderId: z.string().min(1),
   amount: z.number().int().positive(),
@@ -32,8 +35,9 @@ export async function POST(req: NextRequest) {
   const sb = createServiceRoleClient()
 
   // Idempotency: if a shipment already has a payment id for this order, reuse it
-  const { data: existing } = await sb.from('shipments').select('square_payment_id').eq('order_id', orderId).maybeSingle()
+  const { data: existing } = await (sb as any).from('shipments').select('square_payment_id').eq('order_id', orderId).maybeSingle()
   if (existing?.square_payment_id) {
+    // FIX: 既存paymentIdを payment_tx_id としても利用可能
     return NextResponse.json({ ok: true, paymentId: existing.square_payment_id, status: 'PENDING', amount, currency, orderId })
   }
 
@@ -62,8 +66,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Persist lightweight pending info on shipments (方式B) for now
-  await sb.from('shipments').update({ square_payment_id: paymentId, payment_status: status.toLowerCase() }).eq('order_id', orderId)
+  await (sb as any)
+    .from('shipments')
+    .update({ square_payment_id: paymentId, payment_status: status.toLowerCase() } as any)
+    .eq('order_id', orderId as any)
 
+  // FIX: paymentId を明示返却（payment_tx_id として利用）
   return NextResponse.json({ ok: true, paymentId, status, amount, currency, orderId })
 }
 

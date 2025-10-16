@@ -6,9 +6,16 @@ import { useRouter } from "next/navigation"
 import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
 import { isUS } from '@/lib/utils/isUS'
 import SquarePaymentForm from '@/components/SquarePaymentForm'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { isReviewDisclaimerEnabled } from '@/lib/config/featureFlags'
+
+// DIAG: 免責事項（同意チェック/本文リンク/同意保存）が未実装。
+// DIAG: 現状は決済トークン取得→/api/payments/charge→/api/ship/create 直行。
+// DIAG: 未同意時に主要ボタンをdisabledにする処理や、data-test属性（disclaimer-* / confirm-button）が存在しない。
+// DIAG: 同意事実をdrafts/shipmentsに保存する処理・terms_versionの参照も未実装。
 
 export default function ReviewPage() {
   const router = useRouter()
@@ -33,7 +40,12 @@ export default function ReviewPage() {
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesError, setRatesError] = useState<string | null>(null)
 
-  // 手数料率の取得（優先度: quote応答 > 専用API）
+  // 免責事項 同意状態
+  const [disclaimerAgreed, setDisclaimerAgreed] = useState(false)
+  const [termsVersion, setTermsVersion] = useState<string>('v1')
+  const [disclaimerError, setDisclaimerError] = useState<string | null>(null)
+
+  // 手数料率の取得（優先度: quote応答 > 専用API、ただし専用APIで常に最新を確認）
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -42,9 +54,8 @@ export default function ReviewPage() {
         const pctFromQuote = (actualShippingRates as any)?.serviceFeePercentage
         if (typeof pctFromQuote === 'number' && !Number.isNaN(pctFromQuote)) {
           if (!cancelled) setServiceFeePercentage(pctFromQuote)
-          return
         }
-        // フォールバック: 専用APIから取得
+        // 常に専用APIから最新値を取得（no-store）
         const res = await fetch('/api/app-settings/service-fee', { cache: 'no-store' })
         if (res.ok) {
           const json = await res.json()
@@ -60,6 +71,40 @@ export default function ReviewPage() {
     load()
     return () => { cancelled = true }
   }, [actualShippingRates])
+
+  // 利用規約/免責事項のバージョン取得
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      try {
+        const res = await fetch('/api/app-settings/terms-version', { cache: 'no-store' })
+        if (!res.ok) return
+        const j = await res.json()
+        if (!cancelled) setTermsVersion(String(j?.termsVersion || 'v1'))
+      } catch {}
+    }
+    run()
+    return () => { cancelled = true }
+  }, [])
+
+  // FIX: 最新ドラフトから同意状態を復元
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/drafts', { cache: 'no-store' })
+        if (!res.ok) return
+        const j = await res.json()
+        const d = j?.draft
+        if (!cancelled && d) {
+          if (typeof d.disclaimer_agreed === 'boolean') setDisclaimerAgreed(Boolean(d.disclaimer_agreed))
+          if (typeof d.terms_version === 'string' && d.terms_version) setTermsVersion(d.terms_version)
+        }
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
 
   // 実際の配送料金を取得（パッケージ数に応じて自動判定）
   const fetchActualRates = useCallback(async () => {
@@ -260,6 +305,11 @@ export default function ReviewPage() {
     setPaymentError(null)
     
     try {
+      if (!disclaimerAgreed) {
+        setDisclaimerError('免責事項への同意が必要です')
+        setIsProcessingPayment(false)
+        return
+      }
       // 統合送り状データを準備
       const shippingData = {
         sourceId: token,
@@ -286,12 +336,16 @@ export default function ReviewPage() {
         throw new Error(chargeJson.message || '決済に失敗しました')
       }
 
+      const paymentTxId = String(chargeJson.paymentId)
+
       // 2) 出荷作成（単品/MPSは内部で分岐せず、既存の ship/create を利用）
       const shipBody: any = {
         orderId,
         reference: undefined,
         serviceType: selectedRate?.serviceType || 'FEDEX_INTERNATIONAL_PRIORITY',
         bill: { payer: 'SENDER' },
+        payment_tx_id: paymentTxId,
+        terms_version: termsVersion,
         shipper: {
           name: shipperInfo.contactName || 'Shipper', phone: shipperInfo.phoneNumber || '000',
           address1: shipperInfo.address1 || '', address2: shipperInfo.address2 || '',
@@ -799,12 +853,42 @@ export default function ReviewPage() {
                   </div>
                 )}
 
+                {isReviewDisclaimerEnabled() && (
+                  <>
+                    {/* 同意UI */}
+                    {disclaimerError && (
+                      <div data-test="disclaimer-error" className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p className="text-red-700 text-sm">{disclaimerError}</p>
+                      </div>
+                    )}
+
+                    <div className="mb-6">
+                      <label className="flex items-start gap-3" htmlFor="disclaimer-checkbox">
+                        <Checkbox
+                          id="disclaimer-checkbox"
+                          checked={disclaimerAgreed}
+                          onCheckedChange={(v) => setDisclaimerAgreed(Boolean(v))}
+                          aria-label="免責事項に同意する"
+                          data-test="disclaimer-checkbox"
+                        />
+                        <span className="text-sm text-gray-700">
+                          免責事項に同意する（
+                          <Link href="/terms" className="underline" target="_blank" rel="noreferrer" data-test="disclaimer-link">免責事項を読む</Link>
+                          ）
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">バージョン: {termsVersion}</p>
+                    </div>
+                  </>
+                )}
+
                 {/* Square決済フォーム */}
                 {!paymentCompleted && !isProcessingPayment && (
                   <SquarePaymentForm
                     amount={calculations.total}
                     onTokenReceived={handleTokenReceived}
                     onPaymentError={handlePaymentError}
+                    disabled={isReviewDisclaimerEnabled() ? !disclaimerAgreed : false}
                   />
                 )}
               </>

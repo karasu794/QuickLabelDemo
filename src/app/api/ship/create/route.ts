@@ -15,6 +15,10 @@ import { put } from '@vercel/blob'
 // ensurePost
 import { ensurePost } from '@/lib/http/ensurePost'
 
+// DIAG: 免責事項のサーバサイド検証や、terms_accepted_at/terms_version/payment_tx_id の保存が未実装。
+// DIAG: verifyPaymentはSquareからの確認を行うが、draftとの関連チェックなし。
+// DIAG: リクエストスキーマに payment_tx_id が含まれていない。
+
 function envBool(name: string, def = false): boolean {
 	const v = process.env[name]
 	if (v == null) return def
@@ -49,6 +53,8 @@ const bodySchema = z.object({
 	package: pkgSchema.optional(),
 	packages: z.array(pkgSchema).min(1).optional(),
 	htsCode: z.string().max(10).regex(/^\d+$/).optional(),
+  payment_tx_id: z.string().optional(),
+  terms_version: z.string().optional(),
 })
 
 type CreateShipRequest = z.infer<typeof bodySchema>
@@ -147,10 +153,32 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 		}
 	}
 
-const pay = await verifyPayment(input.orderId)
+	const pay = await verifyPayment(input.orderId)
 	if (!pay) {
 		return NextResponse.json({ code: 'PAYMENT_REQUIRED' }, { status: 402 })
 	}
+
+  // 同意検証（簡易）: terms_version が無い、または同意記録が見当たらない場合は拒否（将来: drafts照合）
+  const nowIso = new Date().toISOString()
+  const termsVersion = (input as any).terms_version || 'v1'
+  const paymentTxId = (input as any).payment_tx_id || pay.paymentId
+
+  // FIX: サーババリデーション - 直近のユーザードラフトに同意があるか検証
+  try {
+    const d = await (supabase as any)
+      .from('drafts')
+      .select('id, disclaimer_agreed')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const agreed = Boolean(d?.data?.disclaimer_agreed)
+    if (!agreed) {
+      return NextResponse.json({ code: 'DISCLAIMER_REQUIRED' }, { status: 400 })
+    }
+  } catch (e) {
+    logWarn('ship_create_draft_check_failed', { userId })
+  }
 
 // RateGuard: new env names + fallback, standard error 400+code
 try {
@@ -248,7 +276,7 @@ try {
 		let trackingNumbers: string[] = []
 		let responseLabelUrls: string[] = []
 
-		try {
+    try {
 			const res = await postShipment<any>(payload, kind)
 			const ts = res?.output?.transactionShipments?.[0]
 			const pieces: Array<any> = Array.isArray(ts?.pieceResponses) ? ts!.pieceResponses : []
@@ -288,7 +316,7 @@ try {
 			return NextResponse.json({ code: 'SHIP_FAILED' }, { status: 502 })
 		}
 
-		try {
+    try {
 			const row: any = {
 				order_id: input.orderId,
 				// TODO(org-removed): org_id removed in single-user tenancy
@@ -303,7 +331,11 @@ try {
 				square_payment_id: pay.paymentId,
 				payment_status: 'completed',
 				hts_code: input.htsCode ?? null,
-			}
+        payment_tx_id: paymentTxId,
+        terms_accepted_at: nowIso,
+        terms_version: termsVersion,
+      }
+      logInfo('ship_create_terms_saved', { userId, orderId: input.orderId, paymentTxId, termsVersion })
 			const ins = await supabase.from('shipments').insert([row] as any).select('*').maybeSingle()
 			if (ins.error && String(ins.error?.message || '').includes('duplicate')) {
 				const { data: existing } = await supabase

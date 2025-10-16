@@ -3,11 +3,15 @@
 import React, { useState } from 'react'
 import { CreditCard, PaymentForm } from 'react-square-web-payments-sdk'
 
+// DIAG: 決済ボタンのdisabled制御は isProcessing のみ。免責事項チェックによるdisabledは未連動。
+// DIAG: data-test="confirm-button" 属性未付与。
+
 interface SquarePaymentFormProps {
   amount: number // 決済金額（表示用）
   onTokenReceived?: (token: string) => void // トークン取得時のコールバック
   onPaymentError?: (error: string) => void // エラー時のコールバック
   locationId?: string // 任意: 明示指定があれば最優先
+  disabled?: boolean // 同意未チェック等でボタン無効化
 }
 
 export default function SquarePaymentForm({ 
@@ -15,6 +19,7 @@ export default function SquarePaymentForm({
   onTokenReceived,
   onPaymentError,
   locationId: locationIdProp,
+  disabled = false,
 }: SquarePaymentFormProps) {
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -67,8 +72,9 @@ export default function SquarePaymentForm({
           {/* 決済ボタン */}
           <button
             type="submit"
-            disabled={isProcessing}
+            disabled={isProcessing || disabled}
             className="w-full h-14 text-lg font-semibold bg-[#4D148C] hover:bg-[#3D0F6B] disabled:bg-purple-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-200 flex items-center justify-center gap-3"
+            data-test="confirm-button"
           >
             {isProcessing ? (
               <>

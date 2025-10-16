@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'react-hot-toast'
 import { supabase } from '@/lib/supabase/client'
+import { buildAuthCallbackUrl } from '@/lib/auth/redirect'
 
 const COOLDOWN_SEC = 60
 
@@ -39,8 +40,8 @@ export default function UnverifiedPage() {
   const handleResend = useCallback(async () => {
     try {
       setIsSending(true)
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '')
-      const redirect = `${siteUrl}/auth/callback?type=signup`
+      const nextFromReferrer = typeof window !== 'undefined' ? window.sessionStorage.getItem('signup_next') : null
+      const redirect = buildAuthCallbackUrl(nextFromReferrer || undefined, 'signup')
       // Supabaseの再送API（サインアップ確認）
       const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirect } } as any)
       if (error) throw error
@@ -49,8 +50,8 @@ export default function UnverifiedPage() {
     } catch (e: any) {
       // 代替: OTP送信にフォールバック
       try {
-        const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '')
-        const redirect = `${siteUrl}/auth/callback?type=signup`
+        const nextFromReferrer2 = typeof window !== 'undefined' ? window.sessionStorage.getItem('signup_next') : null
+        const redirect = buildAuthCallbackUrl(nextFromReferrer2 || undefined, 'signup')
         const { error: otpErr } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } })
         if (otpErr) throw otpErr
         toast.success('確認メールを再送しました')

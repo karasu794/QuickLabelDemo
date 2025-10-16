@@ -509,13 +509,14 @@ export default function Home() {
           <div ref={resultsRef}>
             <FedExQuoteResults 
               rates={quoteResults.map(result => ({
-                serviceType: result.serviceType,
-                totalNetFedExCharge: result.totalNetFedExCharge,
-                estimatedDeliveryTimestamp: result.estimatedDeliveryTimestamp,
-                deliveryDate: result.deliveryDate,
-                deliveryDayOfWeek: result.deliveryDayOfWeek,
-                packagingType: result.packagingType,
-                rateType: result.rateType
+                serviceType: result.serviceType as any,
+                totalNetFedExCharge: (result as any).totalNetFedExCharge,
+                estimatedDeliveryTimestamp: (result as any).estimatedDeliveryTimestamp,
+                deliveryDate: (result as any).deliveryDate,
+                deliveryDayOfWeek: (result as any).deliveryDayOfWeek,
+                packagingType: (result as any).packagingType,
+                rateType: (result as any).rateType,
+                breakdown: (result as any).breakdown,
               }))}
               isLoading={false}
               isUserLoggedIn={isAuthenticated}

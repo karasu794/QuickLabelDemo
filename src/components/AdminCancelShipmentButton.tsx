@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Loader2 } from 'lucide-react'
 import { adminCancelShipmentAction } from '@/app/actions/adminActions'
-import useSWRMutation from 'swr/mutation'
+// 避難: 依存追加なしで簡易ミューテーションを内製
 
 interface AdminCancelShipmentButtonProps {
   trackingNumber: string
@@ -31,17 +31,20 @@ export default function AdminCancelShipmentButton({
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<CancelResult | null>(null)
 
-  const { trigger, isMutating } = useSWRMutation(
-    '/api/ship/cancel',
-    async (_, { arg }: { arg: string }) => {
+  const [isMutating, setIsMutating] = useState(false)
+  const trigger = async (arg: string) => {
+    setIsMutating(true)
+    try {
       const res = await fetch('/api/ship/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ trackingNumber: arg })
       })
       return res
+    } finally {
+      setIsMutating(false)
     }
-  )
+  }
 
   // キャンセル不可能なステータスをチェック
   const isCancellable = currentStatus !== 'CANCELED' && 

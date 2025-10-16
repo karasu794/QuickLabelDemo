@@ -40,9 +40,15 @@ export async function POST(req: NextRequest) {
   // Update shipments by order_id if present; otherwise by square_payment_id
   const appStatus = toAppStatus(status || '')
   if (orderId) {
-    await sb.from('shipments').update({ payment_status: appStatus }).eq('order_id', orderId)
+    await (sb as any)
+      .from('shipments')
+      .update({ payment_status: appStatus } as any)
+      .eq('order_id', orderId as any)
   } else {
-    await sb.from('shipments').update({ payment_status: appStatus }).eq('square_payment_id', paymentId)
+    await (sb as any)
+      .from('shipments')
+      .update({ payment_status: appStatus } as any)
+      .eq('square_payment_id', paymentId as any)
   }
 
   return NextResponse.json({ ok: true })

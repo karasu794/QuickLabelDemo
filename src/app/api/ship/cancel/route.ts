@@ -11,7 +11,10 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdminAuthRoute()
-  if (!auth.ok) return NextResponse.json({ ok: false, code: auth.status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN' }, { status: auth.status })
+  if (!auth.ok) {
+    const status = 'status' in auth ? auth.status : 403
+    return NextResponse.json({ ok: false, code: status === 401 ? 'UNAUTHORIZED' : 'FORBIDDEN' }, { status })
+  }
   try {
     const json = await req.json().catch(() => ({}))
     const trackingNumber = String(json?.trackingNumber || json?.tracking_number || '')

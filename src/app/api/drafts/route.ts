@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceRoleClient } from '@/lib/supabase/server'
+import { createServiceRoleClient, createRouteHandlerClient } from '@/lib/supabase/server'
 import { randomUUID } from 'crypto'
 
 // Supabase client（サービスロール・ラッパ）
 const supabase = createServiceRoleClient()
+
+// DIAG: 下書き保存はあるが、disclaimer_agreed / disclaimer_agreed_at / terms_version の保存項目が存在しない。
+// DIAG: review画面の同意情報を保持して決済前の二段階保存に使える拡張余地あり。
 
 // リクエストの型定義
 interface DraftRequest {
@@ -56,6 +59,10 @@ interface DraftRequest {
     transitTime?: string
     serviceType?: string
   }
+  // consent
+  disclaimer_agreed?: boolean
+  disclaimer_agreed_at?: string
+  terms_version?: string
 }
 
 // ユーザー認証の取得（ship/route.tsから借用）
@@ -131,6 +138,11 @@ export async function POST(request: NextRequest) {
       
       // 選択された料金情報（JSON形式）
       selected_rate: data.selectedRate ? JSON.stringify(data.selectedRate) : null,
+
+      // 同意情報
+      disclaimer_agreed: Boolean(data.disclaimer_agreed) || false,
+      disclaimer_agreed_at: data.disclaimer_agreed_at ? new Date(data.disclaimer_agreed_at) : null,
+      terms_version: data.terms_version || null,
     }
 
     const { error: insertError } = await supabase
@@ -167,3 +179,33 @@ export async function POST(request: NextRequest) {
     )
   }
 } 
+
+// FIX: 最新ドラフトを返すGETを追加し、同意状態の復元に利用
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createRouteHandlerClient()
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
+    if (error) {
+      return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+    }
+    if (!user) {
+      return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
+    }
+    const { data } = await supabase
+      .from('drafts' as any)
+      .select('id, disclaimer_agreed, disclaimer_agreed_at, terms_version, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    return NextResponse.json({
+      ok: true,
+      draft: data || null,
+    })
+  } catch (e) {
+    return NextResponse.json({ ok: false }, { status: 500 })
+  }
+}

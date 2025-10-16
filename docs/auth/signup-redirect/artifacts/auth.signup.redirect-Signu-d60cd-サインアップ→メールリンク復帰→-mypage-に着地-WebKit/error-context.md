@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e4]:
+      - link "QuickLabel" [ref=e5]:
+        - /url: /
+      - generic [ref=e6]:
+        - link "ログイン" [ref=e7]:
+          - /url: /login
+        - link "新規登録" [ref=e8]:
+          - /url: /signup
+  - main [ref=e9]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - heading "アカウント作成" [level=2] [ref=e14]
+        - paragraph [ref=e15]:
+          - text: 既にアカウントをお持ちですか？
+          - link "ログイン" [ref=e16]:
+            - /url: /login
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: メールアドレス
+            - textbox "メールアドレス" [ref=e21]
+          - generic [ref=e22]:
+            - generic [ref=e23]: パスワード
+            - textbox "パスワード" [ref=e24]
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - checkbox "利用規約に同意する（/terms）" [ref=e27]
+            - generic [ref=e28]:
+              - text: 利用規約に同意する（
+              - link "/terms" [ref=e29]:
+                - /url: /terms
+              - text: ）
+          - generic [ref=e30]:
+            - checkbox "プライバシーポリシーに同意する（/privacy）（必須）" [ref=e31]
+            - generic [ref=e32]:
+              - text: プライバシーポリシーに同意する（
+              - link "/privacy" [ref=e33]:
+                - /url: /privacy
+              - text: ）（必須）
+        - button "アカウントを作成" [disabled]
+```

@@ -1,10 +1,12 @@
 import { createRouteHandlerClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { resolveSafeNext } from '@/lib/auth/redirect'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') ?? '/mypage'
+  const rawNext = requestUrl.searchParams.get('next')
+  const safeNext = resolveSafeNext(rawNext, '/mypage')
   const type = requestUrl.searchParams.get('type') ?? undefined
 
   if (code) {
@@ -17,8 +19,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${requestUrl.origin}/login?verify_error=1`)
       }
       
-      // 成功時は指定されたページに verified=1 を付与してリダイレクト
-      const redirectUrl = new URL(`${requestUrl.origin}${next}`)
+      // 成功時は安全な next に verified=1 を付与してリダイレクト
+      const redirectUrl = new URL(`${requestUrl.origin}${safeNext}`)
       redirectUrl.searchParams.set('verified', '1')
       if (type) redirectUrl.searchParams.set('type', type)
       return NextResponse.redirect(redirectUrl.toString())

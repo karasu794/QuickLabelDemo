@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { extractResidentialSurchargeFromRateDetail } from '@/lib/quote/breakdown'
 import { toArray, withDefaults, mapOrEmpty } from '@/lib/utils/safe'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -868,9 +869,16 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           .catch(error => console.error('特別オファー検知でエラー:', error));
       }
 
-      // レスポンスを変換
+      // レスポンスを変換（Residentialサーチャージ抽出を含む）
       const rates = mapOrEmpty<any, any>(fedexResponse.output?.rateReplyDetails, (detail) => {
-        const ratedShipment = detail.ratedShipmentDetails?.[0] || { totalNetCharge: 0 };
+        const ratedShipment = detail.ratedShipmentDetails?.[0] || { totalNetCharge: 0 }
+        const residentialSurcharge = extractResidentialSurchargeFromRateDetail(detail)
+        if (typeof quoteParams.isResidential === 'boolean') {
+          console.debug('[quote][residential]', {
+            isResidential: quoteParams.isResidential,
+            residentialSurcharge
+          })
+        }
         return {
           serviceType: detail.serviceName,
           totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge || 0).toString(),
@@ -878,9 +886,13 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           deliveryDate: detail.commit?.dateDetail?.dayFormat,
           deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
           packagingType: detail.packagingType || 'YOUR_PACKAGING',
-          rateType: 'ACCOUNT'
-        };
-      });
+          rateType: 'ACCOUNT',
+          breakdown: {
+            // 既存UIが任意の項目を許容する前提で residential を付与
+            residentialSurcharge,
+          }
+        }
+      })
 
       // 結果をデータベースに保存
       const responsePayload = {

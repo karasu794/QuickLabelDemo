@@ -12,7 +12,7 @@ export async function logAdminAction(params: {
   payload?: Record<string, unknown> | null
 }): Promise<void> {
   const supabase = createServiceRoleClient()
-  await supabase.from('admin_actions').insert({
+  await (supabase as any).from('admin_actions').insert({
     actor_id: params.actorId,
     target_user_id: params.targetUserId,
     action: params.action,

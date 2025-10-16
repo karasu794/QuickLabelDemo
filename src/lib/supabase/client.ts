@@ -1,5 +1,6 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/types/supabase'
+import { buildAuthCallbackUrl } from '@/lib/auth/redirect'
 
 // Next.jsクライアント用（auth-helpers推奨API）
 export const supabase = createClientComponentClient<Database>()
@@ -17,16 +18,12 @@ const getSiteUrl = () => {
 }
 
 export const signUp = (email: string, password: string, nextPath?: string) => {
-  const siteUrl = getSiteUrl()
-  const base = siteUrl?.replace(/\/$/, '') || ''
-  const redirect = new URL(base + '/auth/callback')
-  if (nextPath) redirect.searchParams.set('next', nextPath)
-  redirect.searchParams.set('type', 'signup')
+  const redirectTo = buildAuthCallbackUrl(nextPath, 'signup')
   return supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: redirect.toString(),
+      emailRedirectTo: redirectTo,
     },
   })
 }

@@ -59,6 +59,8 @@ export default function SignUpForm() {
     try {
       // 認証完了後に遷移させたいパス（redirect_to が優先、なければ /mypage）
       const nextAfterVerify = redirectTo || '/mypage'
+      // 復帰時に next を再送メールにも引き継げるよう一時保存
+      try { if (typeof window !== 'undefined' && nextAfterVerify) sessionStorage.setItem('signup_next', nextAfterVerify) } catch {}
       const { error } = await signUp(values.email, values.password, nextAfterVerify)
       if (error) throw error
       // サインアップ直後は未認証ページへ（メールをクエリで引き渡す）

@@ -65,6 +65,7 @@ export interface FedExRate {
     fuelSurcharge: number
     volumeDiscount: number
     phoenixDiscount?: number
+    residentialSurcharge?: number
   }
 }
 
@@ -382,6 +383,16 @@ export default function FedExQuoteResults({
                                 {formatJPY(rate.breakdown?.fuelSurcharge || 0)}
                               </span>
                             </div>
+
+                            {/* 個人宅加算（存在時のみ） */}
+                            {typeof rate.breakdown?.residentialSurcharge === 'number' && (
+                              <div className="flex justify-between items-center" data-test="breakdown-item-residential">
+                                <span className="text-gray-700">個人宅加算</span>
+                                <span className="font-medium text-gray-900">
+                                  {formatJPY(rate.breakdown.residentialSurcharge)}
+                                </span>
+                              </div>
+                            )}
                             
                             {/* 区切り線 */}
                             <div className="border-t border-gray-300 pt-3 mt-4">
