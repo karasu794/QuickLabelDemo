@@ -27,29 +27,39 @@ export default function ReviewPage() {
   const selectedRate = useShippingFormStore((state) => state.selectedRate)
   const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
 
-  // 動的手数料率の状態
-  const [serviceFeePercentage, setServiceFeePercentage] = useState(15) // デフォルト15%
+  // 動的手数料率の状態（初期はnull、後述のAPIで取得）
+  const [serviceFeePercentage, setServiceFeePercentage] = useState<number | null>(null)
   const [actualShippingRates, setActualShippingRates] = useState<any>(null)
   const [ratesLoading, setRatesLoading] = useState(false)
   const [ratesError, setRatesError] = useState<string | null>(null)
 
-  // 手数料率を取得
+  // 手数料率の取得（優先度: quote応答 > 専用API）
   useEffect(() => {
-    const fetchServiceFeePercentage = async () => {
+    let cancelled = false
+    const load = async () => {
       try {
-        const response = await fetch('/api/settings')
-        if (response.ok) {
-          const data = await response.json()
-          setServiceFeePercentage(data.service_fee_percentage || 15)
+        // 直近の見積結果に含まれていればそれを使用
+        const pctFromQuote = (actualShippingRates as any)?.serviceFeePercentage
+        if (typeof pctFromQuote === 'number' && !Number.isNaN(pctFromQuote)) {
+          if (!cancelled) setServiceFeePercentage(pctFromQuote)
+          return
         }
-      } catch (error) {
-        console.error('手数料率の取得に失敗:', error)
-        // エラー時はデフォルトの15%を使用
+        // フォールバック: 専用APIから取得
+        const res = await fetch('/api/app-settings/service-fee', { cache: 'no-store' })
+        if (res.ok) {
+          const json = await res.json()
+          const pct = Number(json?.serviceFeePercentage)
+          if (!Number.isNaN(pct)) {
+            if (!cancelled) setServiceFeePercentage(pct)
+          }
+        }
+      } catch (e) {
+        console.error('手数料率の取得に失敗:', e)
       }
     }
-    
-    fetchServiceFeePercentage()
-  }, [])
+    load()
+    return () => { cancelled = true }
+  }, [actualShippingRates])
 
   // 実際の配送料金を取得（パッケージ数に応じて自動判定）
   const fetchActualRates = useCallback(async () => {
@@ -209,8 +219,9 @@ export default function ReviewPage() {
       selectedService = selectedRate.serviceName
     }
     
-    // サービス手数料（動的な手数料率を使用）
-    const serviceFee = Math.round(shippingFee * (serviceFeePercentage / 100))
+    // サービス手数料（動的な手数料率を使用、未取得時は0）
+    const pct = typeof serviceFeePercentage === 'number' ? serviceFeePercentage : 0
+    const serviceFee = Math.round(shippingFee * (pct / 100))
     
     // 税金（消費税10%）
     const subtotal = shippingFee + serviceFee
@@ -226,7 +237,7 @@ export default function ReviewPage() {
       subtotal,
       total,
       totalWeight,
-      serviceFeePercentage,
+      serviceFeePercentage: pct,
       selectedService,
       serviceType,
       packageCount: packages.length,

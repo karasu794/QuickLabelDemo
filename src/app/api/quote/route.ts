@@ -11,6 +11,7 @@ import { getPublicQuotesOrgId } from '@/lib/config/guestOrg'
 import { CORE_MODE } from '@/lib/config/coreMode'
 import { randomUUID } from 'crypto'
 import { toArray } from '@/lib/utils/safe'
+import { getServiceFeePercentage } from '@/lib/settings/getServiceFeePercentage'
 
 // 📝 注意: 型定義はZodから自動生成されるValidatedQuoteRequestを使用します
 // 以前のQuoteParams, Package, QuoteRequestインターフェースは
@@ -355,8 +356,10 @@ export async function POST(request: NextRequest) {
       console.error('バックグラウンド処理トリガーエラー:', error);
     }
 
+    // サービス手数料率を同梱
+    const serviceFeePercentage = await getServiceFeePercentage()
     // ジョブIDをすぐに返却
-    return NextResponse.json({ ok: true, jobId: jobIdCreated });
+    return NextResponse.json({ ok: true, jobId: jobIdCreated, serviceFeePercentage });
 
   } catch (error) {
     console.error('見積もりジョブ作成エラー:', error);
