@@ -46,7 +46,10 @@
     "smoke": "pnpm -s build && tsx scripts/probe/smoke.ts",
     "health": "cross-env BASE_URL=${BASE_URL:-http://localhost:3000} node -e \"fetch(process.env.BASE_URL+'/api/health').then(r=>r.text()).then(console.log).catch(e=>{console.error(e);process.exit(1)})\"",
     "smoke:ci": "start-server-and-test \"npm run build && npm run start\" http://localhost:3000 \"pnpm -s smoke\"",
-    "smoke:dev": "start-server-and-test \"npm run dev\" http://localhost:3000 \"pnpm -s smoke\""
+    "smoke:dev": "start-server-and-test \"npm run dev\" http://localhost:3000 \"pnpm -s smoke\"",
+    "ping:openai": "node scripts/ping-openai.mjs",
+    "ping:openai:web": "OPENAI_BASE_URL=https://api.openai.com/v1 node scripts/ping-openai.mjs",
+    "test:ping": "OPENAI_PING=1 jest --runInBand tests/contracts/openai.ping.contract.test.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
