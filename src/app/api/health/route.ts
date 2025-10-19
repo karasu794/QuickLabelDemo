@@ -1,6 +1,7 @@
 // STAB: lightweight health endpoint
 import { NextResponse } from "next/server";
 import { decideBackendsFromHealth } from '@/lib/runtime/health'
+import { getCommitSha7, getEnvName } from '@/lib/version'
 
 export async function GET() {
   try {
@@ -12,7 +13,8 @@ export async function GET() {
       jobsBackend: d.JOBS_BACKEND,
       paymentsBackend: d.PAYMENTS_BACKEND,
       details: d.health.details,
-      version: process.env.npm_package_version ?? 'dev',
+      version: getCommitSha7() ?? (process.env.npm_package_version ?? 'dev'),
+      env: getEnvName(),
       time: new Date().toISOString(),
     })
   } catch (e: any) {
