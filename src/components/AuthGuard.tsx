@@ -10,6 +10,7 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const { isAuthenticated, loading, user, isEmailVerified } = useAuth()
+  const force = process.env.NODE_ENV === 'production' ? true : requireAuth
 
   // AuthGuardの状態確認（デバッグ用、必要時のみ有効化）
   if (process.env.NODE_ENV === 'development' && false) {
@@ -29,7 +30,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   }
 
   // 認証が必要で未認証の場合、フラグが有効なら /login に自動遷移
-  if (requireAuth && !isAuthenticated) {
+  if (force && !isAuthenticated) {
     if (typeof window !== 'undefined') {
       const enabled = String(process.env.NEXT_PUBLIC_ENABLE_AUTHGUARD_REDIRECT || '').toLowerCase() === 'true'
       if (enabled) {
@@ -42,7 +43,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   }
 
   // 認証済みだがメール未確認の場合は注意表示に導線（強制ではなく非ブロッキング）。
-  if (requireAuth && isAuthenticated && !isEmailVerified) {
+  if (force && isAuthenticated && !isEmailVerified) {
     // 非ブロッキング表示: ページ側で UnverifiedNotice を使うのを推奨
   }
 

@@ -10,6 +10,16 @@
 2) 自orgのみON → SLI監視（SLO-SLI.md）
 3) 問題なければ段階拡大
 
+### Hotfix Pack: Go/No-Go 切替手順
+- フラグ: `FQL_HOTFIX_SUCCESS_PAGE`
+- Staging → カナリア → 全体ON の順で適用
+- 手順:
+  1. `bash scripts/go_nogo/10_preflight_staging.sh` をStagingで実行し、`docs/GoNoGo/REPORT_staging.md` を確認
+  2. カナリアON: `bash scripts/go_nogo/30_canary_on.sh`
+  3. 監視: `node scripts/go_nogo/40_monitor_canary.cjs`（実メトリクス取得処理に差し替え可）
+  4. 閾値OK → `node scripts/go_nogo/41_notify_discord.cjs "GO: thresholds OK"`（全体ONへ）
+  5. 閾値NG → `bash scripts/go_nogo/31_canary_off.sh`（即オフ）→ Stagingで再現＆修正
+
 ## ロールバック
 - まず Flag OFF（即時）
 - なお復旧不可は `revert:latest` 実行

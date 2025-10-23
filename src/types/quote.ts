@@ -66,3 +66,12 @@ export interface JobStatus {
   }
   error?: string
 } 
+
+export type NormalizedQuote = {
+  id: string
+  service: string
+  total: number
+  currency: string
+  eta?: string | null
+  accountType?: 'standard' | 'preferred' | string
+}

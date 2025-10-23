@@ -54,8 +54,8 @@ export async function decideBackendsFromHealth(): Promise<DecidedBackends> {
   const forcedPayments = process.env.PAYMENTS_BACKEND as 'db' | 'memory' | undefined
   const health = await getHealthReportOnce()
 
-  let j: 'db' | 'memory' = forcedJobs ?? (health.jobsOk ? 'db' : 'memory')
-  let p: 'db' | 'memory' = forcedPayments ?? (health.paymentsOk ? 'db' : 'memory')
+  const j: 'db' | 'memory' = forcedJobs ?? (health.jobsOk ? 'db' : 'memory')
+  const p: 'db' | 'memory' = forcedPayments ?? (health.paymentsOk ? 'db' : 'memory')
 
   if (forcedJobs === 'db' && !health.jobsOk) console.warn('[health] JOBS_BACKEND=db but jobs RPC unhealthy → staying db (forced)')
   if (forcedPayments === 'db' && !health.paymentsOk) console.warn('[health] PAYMENTS_BACKEND=db but payments table unhealthy → staying db (forced)')

@@ -1,0 +1,6 @@
+{
+  "phase": "prod",
+  "idempotency": true,
+  "e2e": true,
+  "rls": true
+}

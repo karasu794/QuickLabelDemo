@@ -15,7 +15,7 @@ export async function GET() {
 		const { supabase, user } = await getUserOrThrow()
 		const userId = user.id
 
-		let query = supabase
+		const query = supabase
 			.from('shipments')
 			.select('*')
 			.eq('user_id', userId)

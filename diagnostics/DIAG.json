@@ -1,0 +1,37 @@
+{
+  "summary": "UI待機設計の不一致と成功ページの必須パラメータ不整合によりスピナー継続。メール送信は実装未接続のため未着。MPSの複数ラベルはshipmentsへ未永続化。",
+  "rootCauses": [
+    {
+      "id": "RC1",
+      "title": "見積りUIが非同期ジョブをポーリングせずshape不一致で固定化",
+      "details": "POST /api/quote は {jobId} を返すが、UIは rates を即時想定し setActualShippingRates に代入。/api/quote/[jobId] ポーリング無し。"
+    },
+    {
+      "id": "RC2",
+      "title": "成功ページが shipmentId を必須とするがAPIが返却しない",
+      "details": "SuccessPage は trackingNumber/paymentId/shipmentId がURLに必要。/api/ship/create は shipmentId を返却していない。"
+    },
+    {
+      "id": "RC3",
+      "title": "メール送信機能が未実装/未接続",
+      "details": "email/mailerエンドポイントやベンダ連携が見当たらず、発行後の通知メールは送られない。"
+    },
+    {
+      "id": "RC4",
+      "title": "MPS系で複数ラベルURL未永続化",
+      "details": "レスポンスに labelUrls[] が含まれるが shipments には単一 label_url のみ。open_shipments には label_urls がある。"
+    }
+  ],
+  "evidence": [
+    { "type": "code", "ref": "src/app/api/quote/route.ts", "lines": "291-331,359-363" },
+    { "type": "code", "ref": "src/app/api/quote/[jobId]/route.ts", "lines": "25-63" },
+    { "type": "code", "ref": "src/app/shipping/new/review/page.tsx", "lines": "197-216,242-291" },
+    { "type": "code", "ref": "src/app/shipping/new/success/page.tsx", "lines": "145-166,188-199" },
+    { "type": "code", "ref": "src/app/api/ship/create/route.ts", "lines": "343-349,380-385" }
+  ],
+  "nextActions": [
+    { "category": "no-code", "action": "出荷完了メール文面の手動送付と、成功ページでshipmentId不足時の一時的URL付与運用。" },
+    { "category": "low-risk", "action": "UIで /api/quote/[jobId] をポーリング（45-60sタイムアウト）。/api/quote/mps の薄いフォワーダ追加。" },
+    { "category": "proposal", "action": "ship/create 応答に shipmentId 追加、SuccessPageでtrackingNumberから補完、shipmentsにlabel_urls列追加。" }
+  ]
+}

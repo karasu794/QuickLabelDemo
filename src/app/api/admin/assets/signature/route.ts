@@ -34,7 +34,7 @@ function getMaxBytes(): number {
 export async function GET() {
   if (!(await isAdminServer())) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   const supabase = createClient()
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('admin_assets_signature')
     .select('id, storage_url, content_type, file_name, created_at')
     .order('created_at', { ascending: false })
@@ -83,7 +83,7 @@ export async function DELETE(req: Request) {
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'bad_request', code: 'NO_ID' }, { status: 400 })
   const supabase = createClient()
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('admin_assets_signature')
     .delete()
     .eq('id', id)

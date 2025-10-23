@@ -34,7 +34,8 @@ function getMaxBytes(): number {
 export async function GET() {
   if (!(await isAdminServer())) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   const supabase = createClient()
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
+    // TODO(stage5): Database types に admin_assets_letterhead を追加し、from を厳密型に戻す
     .from('admin_assets_letterhead')
     .select('id, storage_url, content_type, file_name, created_at')
     .order('created_at', { ascending: false })
@@ -83,7 +84,8 @@ export async function DELETE(req: Request) {
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'bad_request', code: 'NO_ID' }, { status: 400 })
   const supabase = createClient()
-  const { error } = await supabase
+  const { error } = await (supabase as any)
+    // TODO(stage5): Database types に admin_assets_letterhead を追加し、from を厳密型に戻す
     .from('admin_assets_letterhead')
     .delete()
     .eq('id', id)

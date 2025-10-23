@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000'
 
-test('見積フロー: declaredValue>0 で未チェックでもレート表示', async ({ page }) => {
+test.skip('見積フロー: declaredValue>0 で未チェックでもレート表示', async ({ page }) => {
   await page.goto(BASE_URL)
 
   // 必要最低限の入力

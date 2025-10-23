@@ -100,4 +100,13 @@ export function maskZip(value?: string | null): string | undefined {
   return head ? `${head}-****` : '****'
 }
 
+// PII マスキング（数字の長い連続列などを <redacted> に）
+export function maskPII(input: any): any {
+  try {
+    return JSON.parse(JSON.stringify(input, (_k, v) => (typeof v === 'string' ? v.replace(/\b\d{10,16}\b/g, '<redacted>') : v)))
+  } catch {
+    return input
+  }
+}
+
 

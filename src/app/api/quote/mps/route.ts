@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withTrace } from '@/lib/trace'
+import { normalizeToQuotes } from '@/lib/quote/normalize'
+import { randomUUID } from 'crypto'
 import { getFedExRates, type RateRequestInfo } from '@/lib/fedex/auth'
 
 /**
@@ -32,8 +35,16 @@ interface MPSQuoteRequest {
 }
 
 export async function POST(request: NextRequest) {
+  return withTrace('api.quote.mps', request as any, async ({ isMock, headers }) => {
   try {
-    const body: MPSQuoteRequest = await request.json()
+    const body: MPSQuoteRequest = await request.json().catch(() => ({}) as any)
+    if (isMock) {
+      const quotes = [
+        { id: 'mock-ECON', service: 'FEDEX_INTERNATIONAL_ECONOMY', total: 9876, currency: 'JPY', eta: '2025-10-27' },
+        { id: 'mock-PRIO', service: 'FEDEX_INTERNATIONAL_PRIORITY', total: 13200, currency: 'JPY', eta: '2025-10-24' },
+      ]
+      return NextResponse.json({ ok: true, type: 'mps', quotes }, { headers })
+    }
     console.log('🚚 MPS料金見積もりリクエスト:', JSON.stringify(body, null, 2))
 
     const { shipperInfo, recipientInfo, packages, shipDate } = body
@@ -80,21 +91,8 @@ export async function POST(request: NextRequest) {
       }
 
       const rates = await getFedExRates(rateInfo)
-      
-      return NextResponse.json({
-        ok: true,
-        type: 'standard',
-        packageCount: 1,
-        rates: rates.map(rate => ({
-          serviceType: rate.serviceType,
-          serviceName: rate.serviceName,
-          amount: rate.amount,
-          currency: rate.currency,
-          deliveryDate: rate.deliveryDate,
-          deliveryDayOfWeek: rate.deliveryDayOfWeek,
-          isMPS: false
-        }))
-      })
+      const quotes = normalizeToQuotes({ rates })
+      return NextResponse.json({ ok: true, type: 'standard', quotes }, { headers })
     }
 
     // 2個以上の場合はMPS処理として料金を計算
@@ -163,20 +161,17 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ MPS料金計算完了: ${mpsRates.length}件のサービス`)
 
-    return NextResponse.json({
-      ok: true,
-      type: 'mps',
-      packageCount: packages.length,
-      totalWeight,
-      rates: mpsRates
-    })
+    const quotes = normalizeToQuotes({ rates: mpsRates })
+    return NextResponse.json({ ok: true, type: 'mps', quotes }, { headers })
 
   } catch (error) {
     console.error('❌ MPS料金見積もりエラー:', error)
-    
+    const msg = error instanceof Error ? error.message : 'MPS料金見積もりに失敗しました'
+    const status = /QUOTE_(TOTAL|CURRENCY)_MISSING|QUOTE_NORMALIZATION_ERROR/.test(msg) ? 400 : 500
     return NextResponse.json(
-      { ok: false, code: 'INTERNAL_ERROR', error: error instanceof Error ? error.message : 'MPS料金見積もりに失敗しました' },
-      { status: 500 }
+      { ok: false, code: status === 400 ? 'QUOTE_NORMALIZATION_ERROR' : 'INTERNAL_ERROR', error: msg },
+      { status, headers }
     )
   }
-} 
+  })
+}

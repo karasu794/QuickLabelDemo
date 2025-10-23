@@ -1,6 +1,9 @@
 # FQL Projects Setup (Solo Dev)
 
 > 個人開発前提の軽量構成。Staging/R&D の2プロジェクトで運用。
+## Projects Summary
+- **FQL-Staging**: 実装・テスト・Cursor / My GPTs / Vercel で使用
+- **FQL-R&D**: 実験用。構成変更や新GPTテストはこちらで検証
 
 ## プロジェクトとキー
 
@@ -12,14 +15,16 @@
 - **ACTIONS_TOKEN**: My GPTs Actions 認証用（Bearer）。Staging 環境に設定。
 - **.env 切替**: `cp .env.local.stg .env.local` / `cp .env.local.rnd .env.local`
 
-## 変数一覧（.env/.vercel）
-```
-OPENAI_API_KEY=
-ACTIONS_TOKEN=
-APP_ENV=staging
+## 変数一覧（.env / Vercel）
+```bash
+# --- OpenAI ---
+OPENAI_API_KEY=        # 各環境のProject Key
+ACTIONS_TOKEN=         # My GPTs Actions認証
+APP_ENV=staging        # or rnd
+# --- Supabase ---
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
-```
+
 
 ## 疎通チェック（OpenAI API）
 - ローカル: `npm run ping:openai`
@@ -35,3 +40,9 @@ SUPABASE_SERVICE_ROLE_KEY=
 ## 参考
 - `/api/dev/health` は `{ok, env, openai, supabase, guarded, ts}` を返す
 - Guard 導入時は Bearer 未指定で 401、指定で 200
+
+## 安全運用メモ
+- FQL-Staging: 月額上限 \$100 程度、Code Interpreter / File Search は無効化
+- FQL-R&D: 月額上限 \$200 程度、重機能（Code Interpreter / File Search / Assistants Write）を許可
+- 環境切替時は `APP_ENV` を確認して誤送信防止
+- `ACTIONS_TOKEN` は Bearer ヘッダ経由でのみ使用、ログやGitに残さない

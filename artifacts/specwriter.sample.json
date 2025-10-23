@@ -1,0 +1,10 @@
+{
+  "files": [
+    { "path": "docs/demo.md", "content": "demo" }
+  ],
+  "diffs": [],
+  "tests": [],
+  "manualQA": [
+    { "description": "Open the demo page" }
+  ]
+}

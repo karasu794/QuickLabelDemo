@@ -7,6 +7,27 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
     const { jobId } = params;
     console.log(`ジョブステータス確認 - ジョブID: ${jobId}`);
 
+    // E2E/開発用モック: Cookie `core-mode=mock` または env `CORE_MODE=mock`、もしくは jobId が `mock-` で始まる場合
+    const cookieHeader = request.headers.get('cookie') || ''
+    const hasMockCookie = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader)
+    const envCoreMode = String(process.env.CORE_MODE || '').toLowerCase()
+    if (hasMockCookie || envCoreMode === 'mock' || jobId.startsWith('mock-')) {
+      // jobId 形式は任意（mock-UUID など）を許容し、DB照会をせず即 completed を返す
+      const mockData = {
+        rates: [
+          {
+            serviceType: 'FEDEX_INTERNATIONAL_PRIORITY',
+            totalNetFedExCharge: '12345',
+            deliveryDate: '2025-10-24',
+            deliveryDayOfWeek: 'Fri',
+            packagingType: 'YOUR_PACKAGING',
+            rateType: 'ACCOUNT',
+          }
+        ]
+      }
+      return NextResponse.json({ status: 'completed', message: 'mock completed', jobId, data: mockData })
+    }
+
     const supa = createServiceRoleClient()
     const { data: job, error: fetchError } = await supa
       .from('quote_jobs')

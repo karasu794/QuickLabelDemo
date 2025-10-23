@@ -1,0 +1,10 @@
+{
+  "summary": "Sample diagnosis",
+  "rootCauses": [
+    { "code": "SAMPLE", "category": "App", "description": "demo" }
+  ],
+  "evidence": [],
+  "fixDiffs": [],
+  "retest": { "steps": ["run schema tests"] },
+  "questions": ["Is the demo stable?"]
+}

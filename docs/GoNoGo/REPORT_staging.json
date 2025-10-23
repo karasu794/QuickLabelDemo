@@ -1,0 +1,6 @@
+{
+  "phase": "staging",
+  "idempotency": true,
+  "e2e": true,
+  "rls": true
+}

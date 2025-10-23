@@ -15,7 +15,7 @@ export async function GET() {
     const { supabase, user } = await getUserOrThrow()
     const orgId = null // TODO(org-removed)
 
-		let query = supabase
+		const query = supabase
 			.from('quote_jobs')
 			.select('*')
 			// TODO(org-removed): org filter removed

@@ -1,0 +1,121 @@
+{
+  "status": "ok",
+  "summary": {
+    "stage": "Stage2-Final-Check",
+    "timestamp": "2025-10-19T18:21:40.764Z"
+  },
+  "env": {
+    "envFile": ".env.local",
+    "APP_ENV": "staging",
+    "NEXT_PUBLIC_SUPABASE_URL": true,
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": true,
+    "OPENAI_API_KEY": true,
+    "ACTIONS_TOKEN": true
+  },
+  "versions": {
+    "node": "v23.6.0",
+    "npm": "10.9.2"
+  },
+  "build": {
+    "success": true,
+    "durationMs": 33522
+  },
+  "tests": {
+    "schema": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "contracts": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0
+    }
+  },
+  "api": {
+    "health": {
+      "url": "http://localhost:3000/api/dev/health",
+      "status": 200,
+      "okFlag": true
+    },
+    "runtimeLogs422": {
+      "url": "http://localhost:3000/api/diagnostics/runtime-logs?limit=-1",
+      "status": 422,
+      "hasIssues": true
+    },
+    "runtimeLogs200": {
+      "url": "http://localhost:3000/api/diagnostics/runtime-logs?since=2025-01-01T00:00:00Z&limit=1&status=ERROR",
+      "status": 200,
+      "itemsSample": "keys:jobId,step,status,cause,created_at"
+    }
+  },
+  "artifacts": {
+    "schemasDir": [
+      "debug-report.schema.ts",
+      "hts.schema.ts",
+      "index.ts",
+      "logdoctor.schema.ts",
+      "specwriter.schema.ts"
+    ],
+    "hasValidateUtil": true,
+    "hasDocsSchemasMd": true,
+    "testFiles": [
+      "tests/contracts/actions.guard.contract.test.ts",
+      "tests/contracts/admin.assets.stage3.contract.test.ts",
+      "tests/contracts/admin.settings.stage3.contract.test.ts",
+      "tests/contracts/admin.users.actions.contract.test.ts",
+      "tests/contracts/api.cancel.contract.test.ts",
+      "tests/contracts/api.cancel.route.contract.test.ts",
+      "tests/contracts/api.contract.test.ts",
+      "tests/contracts/api.disclaimer.contract.test.ts",
+      "tests/contracts/api.quote.contract.test.ts",
+      "tests/contracts/api.quote.residential.contract.test.ts",
+      "tests/contracts/api.schema.contract.test.ts",
+      "tests/contracts/api.stage4.preview.contract.test.ts",
+      "tests/contracts/app-settings.service-fee.contract.test.ts",
+      "tests/contracts/auth.contract.test.ts",
+      "tests/contracts/auth.signup.redirect.contract.test.ts",
+      "tests/contracts/db.contract.test.ts",
+      "tests/contracts/db.disclaimer.contract.test.ts",
+      "tests/contracts/db.rls.contract.test.ts",
+      "tests/contracts/db.stage1.contract.test.ts",
+      "tests/contracts/features.address_book.contract.test.ts",
+      "tests/contracts/features.address_history.contract.test.ts",
+      "tests/contracts/fedex.mps.contract.test.ts",
+      "tests/contracts/health.contract.test.ts",
+      "tests/contracts/health.exists.contract.test.ts",
+      "tests/contracts/helpers.effectiveAssets.stage3.contract.test.ts",
+      "tests/contracts/mypage.assets.stage3.contract.test.ts",
+      "tests/contracts/mypage.profile.ascii.contract.test.ts",
+      "tests/contracts/openai.ping.contract.test.ts",
+      "tests/contracts/payments.charge.contract.test.ts",
+      "tests/contracts/payments.webhook.contract.test.ts",
+      "tests/contracts/pdf.stage3.invoice.assets.contract.test.ts",
+      "tests/contracts/pdf.stage4.invoice.layout.contract.test.ts",
+      "tests/contracts/pdf.stage4.invoice.pdflib.contract.test.ts",
+      "tests/contracts/rateGuard.api.contract.test.ts",
+      "tests/contracts/rateGuard.lib.contract.test.ts",
+      "tests/contracts/runtime.health.contract.test.ts",
+      "tests/contracts/schema.contract.test.ts",
+      "tests/contracts/stage4.1.jobs.db.contract.test.ts",
+      "tests/contracts/stage4.2.payments.db.contract.test.ts",
+      "tests/contracts/stage4.payments.cancel.contract.test.ts",
+      "tests/contracts/ui.contract.test.ts",
+      "tests/contracts/ui.stage3.invoice.contract.test.tsx",
+      "tests/e2e/schema.assertion.spec.ts",
+      "tests/ui/debug-tab.schema.test.ts",
+      "tests/unit/schemas/debug-report.schema.test.ts",
+      "tests/unit/schemas/hts.schema.test.ts",
+      "tests/unit/schemas/logdoctor.schema.test.ts",
+      "tests/unit/schemas/specwriter.schema.test.ts"
+    ],
+    "reportPath": "artifacts/fql_stage2_final_report.json"
+  },
+  "errors": [
+    {
+      "step": "contractTest",
+      "message": "contract tests failed",
+      "details": "FAIL tests/contracts/api.schema.contract.test.ts (8.841 s)\n  ● Schema-validated APIs › GET /api/diagnostics/runtime-logs: minimal -> 200\n\n\n\n\n\n  ● Schema-validated APIs › GET /api/diagnostics/runtime-logs: bad limit -> 422\n\n\n\n\n\n  ● Schema-validated APIs › POST /api/run-e2e: minimal -> 200\n\n\n\n\n\n  ● Schema-validated APIs › POST /api/run-e2e: missing suite -> 422\n\n\n\n\n\n  ● Schema-validated APIs › GET /api/runs/[jobId]: minimal -> 200\n\n\n\n\n\n  ● Schema-validated APIs › GET /api/runs/[jobId]: missing -> 422\n\n\n\n\n\n  ● Schema-validated APIs › POST /api/hts/suggest: minimal -> 200\n\n\n\n\n\n  ● Schema-validated APIs › POST /api/hts/suggest: missing fields -> 422\n\n\n\n\n\n(node:20132) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\nFAIL tests/contracts/payments.webhook.contract.test.ts\n  ● payments.webhook contract › COMPLETED updates shipments.payment_status to completed (idempotent)\n\n    Supabase URL または Service Role Key が設定されていません\n\n      24 |\n      25 |   if (!supabaseUrl || !serviceRoleKey) {\n    > 26 |     throw new Error('Supabase URL または Service Role Key が設定されていません');\n         |           ^\n      27 |   }\n      28 |\n      29 |   return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {\n\n      at createServiceRoleClient (src/lib/supabase/server.ts:26:11)\n      at src/app/api/payments/charge/route.ts:35:37\n      at fulfilled (src/app/api/payments/charge/route.ts:38:58)\n\nC:\\project\\QuickLabel\\node_modules\\next\\dist\\client\\components\\request-async-storage.external.js:28\r\n    throw new Error(\"`\" + callingExpression + \"` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context\");\r\n          ^\r\n\r\nError: `cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context\r\n    at getExpectedRequestStore (C:\\project\\QuickLabel\\node_modules\\n"
+    }
+  ]
+}

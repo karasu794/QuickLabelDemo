@@ -12,13 +12,29 @@ import { CORE_MODE } from '@/lib/config/coreMode'
 import { randomUUID } from 'crypto'
 import { toArray } from '@/lib/utils/safe'
 import { getServiceFeePercentage } from '@/lib/settings/getServiceFeePercentage'
+import { withTrace } from '@/lib/trace'
+import { normalizeToQuotes } from '@/lib/quote/normalize'
 
 // 📝 注意: 型定義はZodから自動生成されるValidatedQuoteRequestを使用します
 // 以前のQuoteParams, Package, QuoteRequestインターフェースは
 // /lib/validators/quote.ts のZodスキーマから自動生成される型に置き換えられました
 
 export async function POST(request: NextRequest) {
+  return withTrace('api.quote', request, async ({ isMock, headers: traceHeaders }) => {
   try {
+    // E2E/開発用モック: Cookie `core-mode=mock` または env `CORE_MODE=mock` でダミーレートを返す
+    if (isMock) {
+      let rawBody: any
+      try { rawBody = await request.json() } catch { rawBody = {} }
+      const pkgs = Array.isArray(rawBody?.packages) && rawBody.packages.length > 0
+        ? rawBody.packages
+        : [{ id: 1, packagingType: 'YOUR_PACKAGING', weight: 1, length: 10, width: 10, height: 10, declaredValue: 0 }]
+      const jobId = `mock-${randomUUID()}`
+      // 直接レート返却ではなく、既存UIに合わせてジョブIDを返し、GET /api/quote/{jobId} のポーリング側で拾わせる
+      // ただし service_step では即時レートが必要なため、テストは /api/quote を直接叩かず /api/quote/mps or ポーリングの完了を待つ
+      return NextResponse.json({ ok: true, jobId, mock: true, packages: pkgs }, { headers: traceHeaders })
+    }
+
     // CORE_MODE: 未ログイン許可・擬似ジョブ応答（DB書き込みなし、Service Role未使用）
     if (CORE_MODE) {
       let rawBody: any
@@ -52,7 +68,7 @@ export async function POST(request: NextRequest) {
       const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
       await checkRate(`ip:${ip}`)
       const jobId = `core-${randomUUID()}`
-      return NextResponse.json({ ok: true, jobId })
+      return NextResponse.json({ ok: true, jobId }, { headers: traceHeaders })
     }
     // Rate limit (per user if available, otherwise per IP)
     const opt = await getOptionalUser()
@@ -218,7 +234,7 @@ export async function POST(request: NextRequest) {
       if (!orgIdForInsert) {
         // ENV未設定など想定外は匿名NODBでフォールバック（core- jobId を返す）。
         const jobId = `core-${randomUUID()}`
-        return NextResponse.json({ success: true, jobId, mode: 'user-fallback' })
+      return NextResponse.json({ success: true, jobId, mode: 'user-fallback' }, { headers: traceHeaders })
       }
 
       insertData.user_id = userId;
@@ -245,7 +261,7 @@ export async function POST(request: NextRequest) {
       } else {
         // ENV未設定など想定外は匿名NODBでフォールバック（core- jobId を返す）。
         const jobId = `core-${randomUUID()}`
-        return NextResponse.json({ success: true, jobId, mode: 'anon-fallback' })
+        return NextResponse.json({ success: true, jobId, mode: 'anon-fallback' }, { headers: traceHeaders })
       }
     }
 
@@ -358,8 +374,20 @@ export async function POST(request: NextRequest) {
 
     // サービス手数料率を同梱
     const serviceFeePercentage = await getServiceFeePercentage()
-    // ジョブIDをすぐに返却
-    return NextResponse.json({ ok: true, jobId: jobIdCreated, serviceFeePercentage });
+    // 既存動作: jobId を返す
+    // 追加: 即時見積結果（あれば）を正規化して添付（将来UIが利用）
+    const quotes = (() => {
+      try { return normalizeToQuotes({ rates: [] }) } catch { return [] }
+    })()
+    // 最終チェック: quotes の total/currency が欠落していたら非mockでは400
+    if (!isMock && Array.isArray(quotes)) {
+      for (const q of quotes) {
+        if (typeof q?.total !== 'number' || !q?.currency) {
+          return NextResponse.json({ ok: false, code: 'QUOTE_NORMALIZATION_ERROR' }, { status: 400, headers: traceHeaders })
+        }
+      }
+    }
+    return NextResponse.json({ ok: true, jobId: jobIdCreated, serviceFeePercentage, quotes }, { headers: traceHeaders });
 
   } catch (error) {
     console.error('見積もりジョブ作成エラー:', error);
@@ -374,6 +402,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+  })
 }
 
 // SMOKE-FIX: add lightweight GET for /api/quote

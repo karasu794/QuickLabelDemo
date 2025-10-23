@@ -65,15 +65,11 @@ interface DraftRequest {
   terms_version?: string
 }
 
-// ユーザー認証の取得（ship/route.tsから借用）
-async function getUserFromRequest(request: NextRequest): Promise<string | null> {
+// ユーザー認証の取得（Route HandlerのCookieベース認証）
+async function getUserFromRequest(_request: NextRequest): Promise<string | null> {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) return null
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-    
+    const rt = createRouteHandlerClient()
+    const { data: { user }, error } = await rt.auth.getUser()
     if (error || !user) return null
     return user.id
   } catch (error) {
@@ -102,8 +98,8 @@ export async function POST(request: NextRequest) {
     // 下書きIDの生成
     const draftId = randomUUID()
 
-    // Supabaseへの下書き保存
-    const draftData = {
+    // Supabaseへの下書き保存（同意列は存在しない環境に配慮）
+    const draftDataBase: any = {
       id: draftId,
       status: 'draft',
       user_id: userId,
@@ -138,26 +134,48 @@ export async function POST(request: NextRequest) {
       
       // 選択された料金情報（JSON形式）
       selected_rate: data.selectedRate ? JSON.stringify(data.selectedRate) : null,
-
-      // 同意情報
+    }
+    // 同意列がある環境では付与する（存在しない場合はPGRST204が返るためフォールバック）
+    const draftDataWithConsent: any = {
+      ...draftDataBase,
       disclaimer_agreed: Boolean(data.disclaimer_agreed) || false,
       disclaimer_agreed_at: data.disclaimer_agreed_at ? new Date(data.disclaimer_agreed_at) : null,
       terms_version: data.terms_version || null,
     }
 
-    const { error: insertError } = await supabase
-      .from('drafts')
-      .insert([draftData])
-
-    if (insertError) {
-      console.error('下書き保存エラー:', insertError)
-      return NextResponse.json(
-        { 
-          error: '下書きの保存に失敗しました',
-          details: insertError.message
-        },
-        { status: 500 }
-      )
+    let insertedOk = false
+    {
+      const { error: insertWithConsentErr } = await supabase
+        .from('drafts' as any)
+        .insert([draftDataWithConsent])
+      if (!insertWithConsentErr) {
+        insertedOk = true
+      } else {
+        // PGRST204: スキーマに列が存在しない環境 → 同意列を除いて再試行
+        const needsFallback = String(insertWithConsentErr?.code || '') === 'PGRST204' ||
+          /disclaimer_agreed|terms_version/i.test(String(insertWithConsentErr?.message || ''))
+        if (needsFallback) {
+          console.warn('drafts: 同意列が存在しないためフォールバック挿入を実行します')
+          const { error: insertFallbackErr } = await supabase
+            .from('drafts' as any)
+            .insert([draftDataBase])
+          if (!insertFallbackErr) {
+            insertedOk = true
+          } else {
+            console.error('下書き保存エラー(FALLBACK失敗):', insertFallbackErr)
+            return NextResponse.json(
+              { error: '下書きの保存に失敗しました', details: insertFallbackErr.message },
+              { status: 500 }
+            )
+          }
+        } else {
+          console.error('下書き保存エラー:', insertWithConsentErr)
+          return NextResponse.json(
+            { error: '下書きの保存に失敗しました', details: insertWithConsentErr.message },
+            { status: 500 }
+          )
+        }
+      }
     }
 
     console.log('✅ 下書き保存完了:', draftId)

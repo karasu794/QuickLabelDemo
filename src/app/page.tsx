@@ -12,6 +12,7 @@ import { usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/loc
 import { useAuth } from "@/hooks/useAuth"
 import { Package as PackageIcon, Zap, Clock, Users, ArrowRight } from "lucide-react"
 import type { Package, ExtendedQuoteParams } from "@/types/quote"
+import QuotePickerShared from "@/components/quotes/QuotePickerShared"
 
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG']
 const POLLING_INTERVAL = 2000 // 2秒ごとにポーリング
@@ -408,7 +409,13 @@ export default function Home() {
 
       // 📍 FedEx API送信用の住所データ準備
       // 郵便番号不要国で郵便番号が空の場合、ダミー値を設定
-      const apiQuoteParams = { ...quoteParams };
+      const apiQuoteParams: any = { ...quoteParams };
+      // 追加フィールドの保全（初期値/バリデーション済み）
+      const dv = Math.max(0, Number((apiQuoteParams as any).declaredValue || 0))
+      apiQuoteParams.higherInsurance = dv > 0
+      apiQuoteParams.declaredValue = dv
+      apiQuoteParams.isResidential = Boolean(apiQuoteParams.isResidential)
+      // shipDate は既に YYYY-MM-DD 初期化済み
       
       if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originPostalCode) {
         apiQuoteParams.originPostalCode = '00000';

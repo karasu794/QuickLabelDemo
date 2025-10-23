@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useShippingFormStore, useWaitForHydration } from '@/store/shippingFormStore'
 import { isUS } from '@/lib/utils/isUS'
@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { isReviewDisclaimerEnabled } from '@/lib/config/featureFlags'
+import { isReviewDisclaimerEnabled, isReviewRateUiHidden, isServiceStepEnabled } from '@/lib/config/featureFlags'
 
 // DIAG: 免責事項（同意チェック/本文リンク/同意保存）が未実装。
 // DIAG: 現状は決済トークン取得→/api/payments/charge→/api/ship/create 直行。
@@ -32,30 +32,44 @@ export default function ReviewPage() {
   const contents = useShippingFormStore((state) => state.contents)
   const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
   const selectedRate = useShippingFormStore((state) => state.selectedRate)
+  const setSelectedRate = useShippingFormStore((state) => state.setSelectedRate)
   const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
+  // Step5 導入時のガード: 未選択なら service へ
+  useEffect(() => {
+    if (!isReady) return
+    if (isServiceStepEnabled() && !selectedRate) {
+      try { router.replace('/shipping/new/service') } catch {}
+    }
+  }, [isReady, selectedRate, router])
+
+  // ドラフトID検出（セッション/ローカルから）
+  const [draftId, setDraftId] = useState<string | null>(null)
+  useEffect(() => {
+    try {
+      const id = sessionStorage.getItem('currentDraftId') || localStorage.getItem('currentDraftId')
+      if (id) setDraftId(id)
+    } catch {}
+  }, [])
+
+  const [serviceConfirmed, setServiceConfirmed] = useState<boolean>(false)
+  const [isChangingService, setIsChangingService] = useState(false)
+  const [draftRecoveryAttempted, setDraftRecoveryAttempted] = useState(false)
 
   // 動的手数料率の状態（初期はnull、後述のAPIで取得）
   const [serviceFeePercentage, setServiceFeePercentage] = useState<number | null>(null)
-  const [actualShippingRates, setActualShippingRates] = useState<any>(null)
-  const [ratesLoading, setRatesLoading] = useState(false)
-  const [ratesError, setRatesError] = useState<string | null>(null)
+  
 
   // 免責事項 同意状態
   const [disclaimerAgreed, setDisclaimerAgreed] = useState(false)
   const [termsVersion, setTermsVersion] = useState<string>('v1')
   const [disclaimerError, setDisclaimerError] = useState<string | null>(null)
 
-  // 手数料率の取得（優先度: quote応答 > 専用API、ただし専用APIで常に最新を確認）
+  // 手数料率の取得（専用APIから最新を取得）
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       try {
-        // 直近の見積結果に含まれていればそれを使用
-        const pctFromQuote = (actualShippingRates as any)?.serviceFeePercentage
-        if (typeof pctFromQuote === 'number' && !Number.isNaN(pctFromQuote)) {
-          if (!cancelled) setServiceFeePercentage(pctFromQuote)
-        }
-        // 常に専用APIから最新値を取得（no-store）
+        // 専用APIから最新値を取得（no-store）
         const res = await fetch('/api/app-settings/service-fee', { cache: 'no-store' })
         if (res.ok) {
           const json = await res.json()
@@ -70,7 +84,7 @@ export default function ReviewPage() {
     }
     load()
     return () => { cancelled = true }
-  }, [actualShippingRates])
+  }, [])
 
   // 利用規約/免責事項のバージョン取得
   useEffect(() => {
@@ -87,7 +101,7 @@ export default function ReviewPage() {
     return () => { cancelled = true }
   }, [])
 
-  // FIX: 最新ドラフトから同意状態を復元
+  // FIX: 最新ドラフトから同意状態とdraftIdを復元
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -99,6 +113,51 @@ export default function ReviewPage() {
         if (!cancelled && d) {
           if (typeof d.disclaimer_agreed === 'boolean') setDisclaimerAgreed(Boolean(d.disclaimer_agreed))
           if (typeof d.terms_version === 'string' && d.terms_version) setTermsVersion(d.terms_version)
+          if (d.id) {
+            setDraftId(String(d.id))
+            try { sessionStorage.setItem('currentDraftId', String(d.id)) } catch {}
+          }
+        } else if (!cancelled) {
+          // 下書きが存在しない場合は、現在のフォーム値から自動保存してdraftIdを確保
+          try {
+            const body = {
+              shipperInfo: {
+                companyName: shipperInfo.companyName,
+                contactName: shipperInfo.contactName,
+                postalCode: shipperInfo.postalCode,
+                phoneNumber: shipperInfo.phoneNumber,
+                countryCode: shipperInfo.countryCode,
+                stateCode: shipperInfo.stateCode,
+                cityName: shipperInfo.cityName,
+                address1: shipperInfo.address1,
+                address2: shipperInfo.address2,
+              },
+              recipientInfo: {
+                companyName: recipientInfo.companyName,
+                contactName: recipientInfo.contactName,
+                postalCode: recipientInfo.postalCode,
+                phoneNumber: recipientInfo.phoneNumber,
+                email: recipientInfo.email,
+                countryCode: recipientInfo.countryCode,
+                stateCode: recipientInfo.stateCode,
+                cityName: recipientInfo.cityName,
+                address1: recipientInfo.address1,
+                address2: recipientInfo.address2,
+              },
+              packages,
+              items,
+              shippingPurpose,
+            }
+            const save = await fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+            if (save.ok) {
+              const sj = await save.json()
+              const newId = sj?.draftId
+              if (newId) {
+                setDraftId(String(newId))
+                try { sessionStorage.setItem('currentDraftId', String(newId)) } catch {}
+              }
+            }
+          } catch {}
         }
       } catch {}
     }
@@ -106,160 +165,84 @@ export default function ReviewPage() {
     return () => { cancelled = true }
   }, [])
 
-  // 実際の配送料金を取得（パッケージ数に応じて自動判定）
-  const fetchActualRates = useCallback(async () => {
-    // ハイドレーション完了を待つ
-    if (!isReady || isLoading) {
-      console.log(`⏳ Waiting for hydration... isReady: ${isReady}, isLoading: ${isLoading}`)
-      return
-    }
-
-    // データの有効性をチェック
-    if (!shipperInfo.countryCode || !recipientInfo.countryCode || packages.length === 0) {
-      console.log(`❌ Required data missing:`, {
-        shipperCountry: shipperInfo.countryCode,
-        recipientCountry: recipientInfo.countryCode,
-        packagesCount: packages.length
-      })
-      return
-    }
-
-    console.log(`🔍 Data check:`, {
-      shipperInfo: shipperInfo,
-      recipientInfo: recipientInfo,
-      packagesCount: packages.length
-    })
-
-    setRatesLoading(true)
-    setRatesError(null)
-
-    try {
-      console.log(`💰 ${packages.length}個パッケージの実際の料金を取得中...`)
-      
-      // パッケージ数に応じてAPIを選択
-      const apiEndpoint = packages.length >= 2 ? '/api/quote/mps' : '/api/quote'
-      console.log(`📡 Using ${apiEndpoint} for ${packages.length} packages`)
-
-      // 送信データを構築（MPS: 数値化）
-      const requestData = {
-        shipperInfo: {
-          countryCode: shipperInfo.countryCode,
-          postalCode: shipperInfo.postalCode,
-          stateCode: shipperInfo.stateCode,
-          cityName: shipperInfo.cityName
-        },
-        recipientInfo: {
-          countryCode: recipientInfo.countryCode,
-          postalCode: recipientInfo.postalCode,
-          stateCode: recipientInfo.stateCode,
-          cityName: recipientInfo.cityName,
-          isResidential: recipientInfo.isResidential
-        },
-        packages: packages.map(pkg => ({
-          weight: Number(pkg.weight || '0'),
-          type: pkg.type || 'YOUR_PACKAGING',
-          length: Number(pkg.length || '0'),
-          width: Number(pkg.width || '0'),
-          height: Number(pkg.height || '0'),
-          declaredValue: Number(pkg.declaredValue || '0')
-        })),
-        shipDate: new Date().toISOString().split('T')[0]
-      }
-
-      const requestBody = packages.length >= 2 ? requestData : {
-        quoteParams: {
-          originCountry: shipperInfo.countryCode,
-          originPostalCode: shipperInfo.postalCode,
-          originStateCode: shipperInfo.stateCode,
-          originCityName: shipperInfo.cityName,
-          originSelected: true,
-          destinationCountry: recipientInfo.countryCode,
-          destinationPostalCode: recipientInfo.postalCode,
-          destinationStateCode: recipientInfo.stateCode,
-          destinationCityName: recipientInfo.cityName,
-          destinationSelected: true,
-          isResidential: !!recipientInfo.isResidential,
-          // higherInsurance を常に含める（未指定時は declaredValue>0 で true）
-          higherInsurance: packages.some(p => Number(p.declaredValue || '0') > 0),
-          shipDate: new Date().toISOString().split('T')[0]
-        },
-        packages: packages.map((pkg, index) => ({
-          id: Number(index + 1),
-          packagingType: pkg.type || 'YOUR_PACKAGING',
-          weight: Number(pkg.weight || '0'),
-          length: Number(pkg.length || '0'),
-          width: Number(pkg.width || '0'),
-          height: Number(pkg.height || '0'),
-          declaredValue: Number(pkg.declaredValue || '0')
-        }))
-      }
-
-      console.log(`📤 Request body for ${apiEndpoint}:`, JSON.stringify(requestBody, null, 2))
-
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      if (!response.ok) {
-        console.error(`❌ API Error ${response.status}:`, await response.text())
-        throw new Error('料金の取得に失敗しました')
-      }
-
-      const ratesData = await response.json()
-      console.log(`✅ 料金取得成功:`, ratesData)
-      
-      setActualShippingRates(ratesData)
-
-    } catch (error) {
-      console.error('❌ 料金取得エラー:', error)
-      setRatesError(error instanceof Error ? error.message : '料金の取得に失敗しました')
-    } finally {
-      setRatesLoading(false)
-    }
-  }, [
-    shipperInfo.countryCode,
-    shipperInfo.postalCode,
-    shipperInfo.stateCode,
-    shipperInfo.cityName,
-    recipientInfo.countryCode,
-    recipientInfo.postalCode,
-    recipientInfo.stateCode,
-    recipientInfo.cityName,
-    recipientInfo.isResidential,
-    packages,
-    isReady,
-    isLoading
-  ])
-
+  // ドラフト選択状態の取得（serviceConfirmed を決定）
   useEffect(() => {
-    fetchActualRates()
-  }, [fetchActualRates])
+    let cancelled = false
+    const fetchDraftSelected = async () => {
+      if (!draftId) return
+      try {
+        const res = await fetch(`/api/drafts/${encodeURIComponent(draftId)}`, { cache: 'no-store' })
+        if (!res.ok) {
+          // 404時は古いドラフトIDをクリアし、現在のフォーム値から新規ドラフトを自動作成
+          if (res.status === 404 && !draftRecoveryAttempted) {
+            setDraftRecoveryAttempted(true)
+            try { sessionStorage.removeItem('currentDraftId'); localStorage.removeItem('currentDraftId') } catch {}
+            // 一旦state上のdraftIdもクリアしてフォールバック描画に切替
+            setDraftId(null)
+            const body = {
+              shipperInfo: {
+                companyName: shipperInfo.companyName,
+                contactName: shipperInfo.contactName,
+                postalCode: shipperInfo.postalCode,
+                phoneNumber: shipperInfo.phoneNumber,
+                countryCode: shipperInfo.countryCode,
+                stateCode: shipperInfo.stateCode,
+                cityName: shipperInfo.cityName,
+                address1: shipperInfo.address1,
+                address2: shipperInfo.address2,
+              },
+              recipientInfo: {
+                companyName: recipientInfo.companyName,
+                contactName: recipientInfo.contactName,
+                postalCode: recipientInfo.postalCode,
+                phoneNumber: recipientInfo.phoneNumber,
+                email: recipientInfo.email,
+                countryCode: recipientInfo.countryCode,
+                stateCode: recipientInfo.stateCode,
+                cityName: recipientInfo.cityName,
+                address1: recipientInfo.address1,
+                address2: recipientInfo.address2,
+              },
+              packages,
+              items,
+              shippingPurpose,
+            }
+            try {
+              const save = await fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) })
+              if (save.ok) {
+                const sj = await save.json()
+                const newId = sj?.draftId
+                if (newId) {
+                  setDraftId(String(newId))
+                  try { sessionStorage.setItem('currentDraftId', String(newId)) } catch {}
+                }
+              }
+            } catch {}
+          }
+          return
+        }
+        const j = await res.json()
+        const draft = j?.draft
+        if (!cancelled && draft) {
+          const confirmed = Boolean(draft?.selected_rate?.service_code)
+          setServiceConfirmed(confirmed)
+        }
+      } catch {}
+      finally {
+        // no-op
+      }
+    }
+    fetchDraftSelected()
+    return () => { cancelled = true }
+  }, [draftId])
+  
 
-  // 料金計算ロジック（統合版）
+  // 料金計算ロジック（選択済みレートのみで計算）
   const calculations = useMemo(() => {
-    // 荷物の総重量を計算
     const totalWeight = packages.reduce((sum, pkg) => sum + parseFloat(pkg.weight || '0'), 0)
-    
     let shippingFee = 0
-    let selectedService = '見積もり中...'
-    let serviceType = 'standard'
-
-    // 実際の料金が取得できている場合
-    if (actualShippingRates && actualShippingRates.rates && actualShippingRates.rates.length > 0) {
-      // 最も安い料金を選択（または指定されたサービス）
-      const bestRate = selectedRate 
-        ? actualShippingRates.rates.find((r: any) => r.serviceType === selectedRate.serviceType) || actualShippingRates.rates[0]
-        : actualShippingRates.rates[0]
-      
-      shippingFee = Math.round(bestRate.amount)
-      selectedService = bestRate.serviceName
-      serviceType = actualShippingRates.type // 'standard' or 'mps'
-    } else if (selectedRate) {
-      // フォールバック：選択された料金を使用
+    let selectedService = '未選択'
+    if (selectedRate) {
       shippingFee = Math.round(selectedRate.amount)
       selectedService = selectedRate.serviceName
     }
@@ -284,12 +267,17 @@ export default function ReviewPage() {
       totalWeight,
       serviceFeePercentage: pct,
       selectedService,
-      serviceType,
-      packageCount: packages.length,
-      isLoading: ratesLoading,
-      error: ratesError
+      packageCount: packages.length
     }
-  }, [packages, serviceFeePercentage, selectedRate, actualShippingRates, ratesLoading, ratesError])
+  }, [packages, serviceFeePercentage, selectedRate])
+
+  const formatCurrency = useMemo(() => {
+    try {
+      return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: selectedRate?.currency || 'JPY' })
+    } catch {
+      return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' })
+    }
+  }, [selectedRate?.currency])
 
   // 戻るボタンハンドラー
   const handlePrevious = () => {
@@ -322,7 +310,7 @@ export default function ReviewPage() {
         shippingPurpose
       }
 
-      console.log(`🚀 ${packages.length}個口の送り状作成処理開始 (${calculations.serviceType})`)
+      console.log(`🚀 ${packages.length}個口の送り状作成処理開始`)
       
       // 1) 決済: /api/payments/charge（idempotent）
       const orderId = `ord-${Date.now()}`
@@ -365,7 +353,7 @@ export default function ReviewPage() {
 
       const response = await fetch('/api/ship/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `fql-${orderId}` },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `fql-${orderId}`, ...(draftId ? { 'x-draft-id': draftId } : {}) },
         body: JSON.stringify(shipBody),
       })
 
@@ -673,8 +661,30 @@ export default function ReviewPage() {
           </div>
         </div>
 
+        {/* 見積もり（未選択なら上に表示） */}
+        {(!serviceConfirmed || isChangingService) && (
+          isReviewRateUiHidden() ? (
+            <div className="mb-6" data-test="review-rate-placeholder">
+              <Card>
+                <CardHeader>
+                  <CardTitle>サービス選択が未完了です</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 mb-4">次のステップでFedExサービスを選択して料金を確定してください。</p>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:text-gray-600"
+                  >
+                    見積ページへ
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null
+        )}
+
         {/* 料金詳細 */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200" data-test="review-price">
           <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
             <h2 className="text-xl font-semibold">料金詳細</h2>
             <p className="text-purple-100 text-sm">
@@ -684,38 +694,10 @@ export default function ReviewPage() {
             </p>
           </div>
           <div className="p-6">
-            {/* 料金計算中ローディング */}
-            {calculations.isLoading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4D148C] mx-auto mb-4"></div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  最適料金を計算中...
-                </h3>
-                <p className="text-gray-600">
-                  {calculations.packageCount > 1 
-                    ? `${calculations.packageCount}個口の最適化されたMPS料金を取得しています`
-                    : '最新の配送料金を取得しています'}
-                </p>
-              </div>
-            )}
+            {/* ローディング/エラーの概念は撤去 */}
 
-            {/* 料金計算エラー */}
-            {calculations.error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center">
-                  <svg className="h-5 w-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <div>
-                    <p className="text-red-700 text-sm font-medium">料金計算エラー</p>
-                    <p className="text-red-600 text-sm">{calculations.error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 料金が選択されていない場合の警告 */}
-            {!selectedRate && !actualShippingRates && !calculations.isLoading && (
+            {/* 料金が未選択の場合の警告 */}
+            {!selectedRate && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">
                   <svg className="h-5 w-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -732,49 +714,59 @@ export default function ReviewPage() {
             )}
 
             {/* 料金詳細表示 */}
-            {!calculations.isLoading && (
-              <div className="space-y-4">
-                {/* パッケージ情報サマリー */}
-                {calculations.packageCount > 1 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                      <span className="text-blue-800 text-sm font-medium">
-                        複数パッケージ配送（MPS）- 最適化された料金体系
-                      </span>
-                    </div>
+            <div className="space-y-4">
+              {/* パッケージ情報サマリー */}
+              {calculations.packageCount > 1 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span className="text-blue-800 text-sm font-medium">
+                      複数パッケージ配送（MPS）- 最適化された料金体系
+                    </span>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* 選択されたサービス表示 */}
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700">選択されたサービス</span>
-                  <span className="font-medium text-blue-600">{calculations.selectedService}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700">配送料金</span>
-                  <span className="font-medium">
-                    {calculations.shippingFee > 0 ? `¥${calculations.shippingFee.toLocaleString()}` : '計算中...'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700">サービス手数料 ({calculations.serviceFeePercentage}%)</span>
-                  <span className="font-medium">¥{calculations.serviceFee.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700">消費税（10%）</span>
-                  <span className="font-medium">¥{calculations.tax.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-t-2 border-[#4D148C]">
-                  <span className="text-lg font-semibold text-gray-900">最終請求額</span>
-                  <span className="text-2xl font-bold text-[#4D148C]">
-                    {calculations.total > 0 ? `¥${calculations.total.toLocaleString()}` : '計算中...'}
-                  </span>
-                </div>
+              {/* 選択されたサービス表示 */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-700">選択されたサービス</span>
+                <span className="font-medium text-blue-600">{calculations.selectedService}</span>
               </div>
-            )}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-700">配送料金</span>
+                <span className="font-medium">
+                  {!selectedRate ? '—' : formatCurrency.format(calculations.shippingFee)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-700">サービス手数料 ({calculations.serviceFeePercentage}%)</span>
+                <span className="font-medium">{!selectedRate ? '—' : formatCurrency.format(calculations.serviceFee)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-700">消費税（10%）</span>
+                <span className="font-medium">{!selectedRate ? '—' : formatCurrency.format(calculations.tax)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-t-2 border-[#4D148C]">
+                <span className="text-lg font-semibold text-gray-900">最終請求額</span>
+                <span className="text-2xl font-bold text-[#4D148C]">
+                  {!selectedRate ? '—' : formatCurrency.format(calculations.total)}
+                </span>
+              </div>
+              <div className="flex justify-end">
+                {serviceConfirmed && (
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    data-test="change-service"
+                    onClick={() => setIsChangingService(true)}
+                  >
+                    変更する
+                  </button>
+                )}
+              </div>
+            </div>
             
             <p className="text-sm text-gray-500 mt-4">※ 関税・諸税は含まれておりません</p>
           </div>
@@ -788,42 +780,32 @@ export default function ReviewPage() {
           </div>
           <div className="p-6">
             {/* 料金計算中またはエラー時の案内 */}
-            {(calculations.isLoading || calculations.error || (!selectedRate && !actualShippingRates)) && (
+            {(!selectedRate) && (
               <div className="text-center py-8">
                 <div className="mb-4">
-                  {calculations.isLoading ? (
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#4D148C] mx-auto"></div>
-                  ) : (
-                    <svg className="h-16 w-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                  )}
+                  <svg className="h-16 w-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {calculations.isLoading ? '料金計算中...' : 
-                   calculations.error ? '料金計算エラー' : 
-                   '配送サービスを選択してください'}
+                  配送サービスを選択してください
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {calculations.isLoading ? 
-                    `${calculations.packageCount}個口の最適な配送料金を計算しています。しばらくお待ちください。` :
-                   calculations.error ? 
-                    '料金の計算に失敗しました。ページを更新してやり直してください。' :
-                   '決済を進めるには、まずホームページで料金を見積もり、配送サービスを選択してください。'}
+                  決済を進めるには、まずホームページで料金を見積もり、配送サービスを選択してください。
                 </p>
-                {!calculations.isLoading && !calculations.error && (
+                {
                   <Link
                     href="/"
                     className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200"
                   >
                     ← ホームページに戻る
                   </Link>
-                )}
+                }
               </div>
             )}
 
             {/* 料金が確定している場合の決済フォーム */}
-            {!calculations.isLoading && !calculations.error && calculations.total > 0 && (
+            {selectedRate && calculations.total > 0 && (
               <>
                 {/* エラーメッセージ */}
                 {paymentError && (
@@ -888,7 +870,7 @@ export default function ReviewPage() {
                     amount={calculations.total}
                     onTokenReceived={handleTokenReceived}
                     onPaymentError={handlePaymentError}
-                    disabled={isReviewDisclaimerEnabled() ? !disclaimerAgreed : false}
+                    disabled={(isReviewDisclaimerEnabled() ? !disclaimerAgreed : false) || !serviceConfirmed}
                   />
                 )}
               </>

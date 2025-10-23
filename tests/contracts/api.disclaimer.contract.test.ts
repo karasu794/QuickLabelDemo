@@ -9,7 +9,7 @@ function mockSupabaseUser() {
         supabase: {
           from() {
             return {
-              select() { return { filter() { return { maybeSingle() { return { data: null } } } }, maybeSingle() { return { data: null } } },
+              select() { return { filter() { return { maybeSingle() { return { data: null } } } }, maybeSingle() { return { data: null } } } },
               insert() { return { select() { return { maybeSingle() { return { data: null, error: null } } } } } },
             }
           },

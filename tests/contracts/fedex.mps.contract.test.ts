@@ -4,12 +4,7 @@ describe('FedEx MPS minimal contract', () => {
     && (!!process.env.FEDEX_EXPORT_API_KEY || !!process.env.FEDEX_IMPORT_API_KEY)
 
   test('create: multiple packages → returns master + labelUrls[] (shape only)', async () => {
-    if (!CAN_RUN) {
-      // 環境が整っていない場合はスキップ（外部依存不要のため）
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(true).toBe(true)
-      return
-    }
+    if (!CAN_RUN) return
     const { POST } = await import('@/app/api/ship/create/route')
     const body: any = {
       orderId: `mps-${Date.now()}`,

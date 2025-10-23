@@ -5,8 +5,11 @@ export default defineConfig({
   retries: 1,
   timeout: 30_000,
   reporter: [['list'], ['html', { open: 'never' }]],
+  globalSetup: require.resolve('./tests/setup/globalSetup'),
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    testIdAttribute: 'data-test',
+    launchOptions: { slowMo: process.env.CI ? 0 : 50 },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

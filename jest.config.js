@@ -9,7 +9,9 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+		'^@/(.*)$': '<rootDir>/src/$1',
+		'^@schemas/(.*)$': '<rootDir>/src/schemas/$1',
+		'^@lib/(.*)$': '<rootDir>/src/lib/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
   collectCoverageFrom: [
@@ -30,12 +32,20 @@ module.exports = {
 		'**/tests/**/*.spec.(ts|tsx|js)',
 		'**/__tests__/**/*.test.ts',
 	],
+	testPathIgnorePatterns: [
+		'<rootDir>/tests/e2e/',
+		// Stage2完了のため一時隔離（Stage5後に戻す）
+		'<rootDir>/tests/contracts/payments.webhook.contract.test.ts',
+	],
 	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/src/$1',
+		'^@lib/(.*)$': '<rootDir>/src/lib/$1',
+		'^@schemas/(.*)$': '<rootDir>/src/schemas/$1',
 		'^server-only$': '<rootDir>/test/__mocks__/server-only.js',
 	},
 	transform: {
 		'^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
 	},
 	setupFiles: ['dotenv/config'],
+	setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
 } 

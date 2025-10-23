@@ -82,6 +82,10 @@ interface FedExQuoteResultsProps {
   quoteParams?: ExtendedQuoteParams
   /** 見積もりフォームの荷物情報 */
   packages?: QuotePackage[]
+  /** 選択時のコールバック（共通ピッカーから差し替え可能） */
+  onSelectRate?: (rate: FedExRate) => void
+  /** アカウント種別表示（export/import） */
+  accountType?: 'export' | 'import'
 }
 
 export default function FedExQuoteResults({
@@ -90,7 +94,9 @@ export default function FedExQuoteResults({
   error,
   isUserLoggedIn = false,
   quoteParams,
-  packages
+  packages,
+  onSelectRate,
+  accountType
 }: FedExQuoteResultsProps) {
   const router = useRouter()
   const setSelectedRate = useShippingFormStore((state) => state.setSelectedRate)
@@ -216,8 +222,12 @@ export default function FedExQuoteResults({
     return nameMap[serviceType] || serviceType
   }
 
-  // 配送オプション選択時の処理
+  // 配送オプション選択時の処理（差し替え可能）
   const handleRateSelect = (rate: FedExRate) => {
+    if (onSelectRate) {
+      onSelectRate(rate)
+      return
+    }
     const { baseRate, discountAmount } = calculateDiscount(rate)
     const deliveryInfo = formatDeliveryInfo(rate)
     
@@ -240,7 +250,7 @@ export default function FedExQuoteResults({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6" data-test="quote-container">
       {/* 未ログイン時の案内のみ表示 */}
       {!isUserLoggedIn && (
         <Card className="bg-blue-50 border-blue-200">
@@ -269,7 +279,14 @@ export default function FedExQuoteResults({
 
       {/* 配送オプション */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">配送オプション</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-semibold text-gray-900">配送オプション</h2>
+          {accountType && (
+            <Badge data-test={`quote-account-badge-${accountType}`} className={accountType === 'export' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}>
+              {accountType === 'export' ? 'export' : 'import'}
+            </Badge>
+          )}
+        </div>
         
         <Accordion type="multiple" collapsible className="space-y-3">
           {rates
@@ -284,6 +301,7 @@ export default function FedExQuoteResults({
                 key={`${rate.serviceType}-${index}`}
                 value={`rate-${index}`}
                 className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                data-test="quote-card"
               >
                 <AccordionTrigger className="hover:bg-gray-50 p-0">
                   <div className="flex items-center justify-between w-full p-4">
@@ -327,6 +345,7 @@ export default function FedExQuoteResults({
                         </div>
                         <div
                           className="bg-orange-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-orange-600 transition-colors"
+                          data-test="quote-select"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleRateSelect(rate)
@@ -430,6 +449,7 @@ export default function FedExQuoteResults({
                         </div>
                         
                         <Button
+                          data-test="quote-select"
                           onClick={() => handleRateSelect(rate)}
                           className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                         >

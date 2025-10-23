@@ -34,6 +34,7 @@
     "flag-deadlines:warn": "FLAG_DEADLINE_MODE=warn node scripts/check-flag-deadlines.js",
     "drift:weekly": "node scripts/drift-weekly.js",
     "test:contracts": "jest --runInBand --testMatch \"**/tests/contracts/**/*.(contract|spec|test).(ts|tsx|js)\"",
+    "test:schema": "jest --runInBand --testMatch \"**/tests/**/schema.*.(contract|spec|test).(ts|tsx|js)\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -49,7 +50,8 @@
     "smoke:dev": "start-server-and-test \"npm run dev\" http://localhost:3000 \"pnpm -s smoke\"",
     "ping:openai": "node scripts/ping-openai.mjs",
     "ping:openai:web": "OPENAI_BASE_URL=https://api.openai.com/v1 node scripts/ping-openai.mjs",
-    "test:ping": "OPENAI_PING=1 jest --runInBand tests/contracts/openai.ping.contract.test.ts"
+    "test:ping": "OPENAI_PING=1 jest --runInBand tests/contracts/openai.ping.contract.test.ts",
+    "validate:gpt": "tsx scripts/validate-gpt-json.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -84,14 +86,14 @@
     "tailwindcss-animate": "^1.0.7",
     "use-places-autocomplete": "^4.0.1",
     "wanakana": "^5.0.2",
-    "zod": "^3.23.8",
+    "zod": "^3.25.76",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
     "@types/google.maps": "^3.58.1",
     "@types/jest": "30.0.0",
-    "@types/node": "^20",
+    "@types/node": "^20.19.22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "cross-env": "^7.0.3",
@@ -107,6 +109,7 @@
     "tailwindcss": "^3.4.1",
     "ts-jest": "29.1.2",
     "ts-node": "10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
     "typescript": "^5"
   }

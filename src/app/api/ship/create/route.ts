@@ -14,6 +14,9 @@ import { put } from '@vercel/blob'
 import { ensurePost } from '@/lib/http/ensurePost'
 import { createLogger, withTiming } from '@/lib/observability/logger'
 import { randomUUID } from 'crypto'
+import { withTrace } from '@/lib/trace'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { markProcessing, markCompleted, markFailed } from '@/server/db/shipments'
 import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 
 // DIAG: 免責事項のサーバサイド検証や、terms_accepted_at/terms_version/payment_tx_id の保存が未実装。
@@ -96,13 +99,21 @@ function toCm(value: number, unit: 'CM' | 'IN'): number {
 }
 
 export async function POST(req: NextRequest) {
+  return withTrace('api.ship.create', req as any, async ({ requestId }) => {
   // ensurePost: POST以外は405
   const early = ensurePost(req)
   if (early) return early
 
-  const diagId = randomUUID()
+  const reqId = req.headers.get('x-request-id') || req.headers.get('X-Request-Id') || randomUUID()
+  const idempKey = req.headers.get('Idempotency-Key') || req.headers.get('idempotency-key') || undefined
+  const diagId = String(reqId)
   const log = createLogger('ship.create', diagId)
   log.info({ step: 'start', ok: true })
+  if (idempKey) log.info({ step: 'idempotency.key', ok: true, context: { idempKey } })
+
+  // Mock-fast path: allow instant processing response for E2E/dev
+  const cookieHeader = req.headers.get('cookie') || ''
+  const isMock = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader) || String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
 
 	if (process.env.SHIP_API_WRITE_ENABLED !== 'true') {
     log.warn({ step: 'blocked', ok: false, context: { reason: 'WRITE_DISABLED' } })
@@ -131,6 +142,7 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 	// TODO(org-removed): previously persisted; drop column later
 
   const supabase = createClient()
+  const svc = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 	// Idempotency: return existing if present
 	{
@@ -144,13 +156,21 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 		}, { orderId: input.orderId })
 		if (existing && existing.tracking_number && (existing.label_blob_url || existing.label_url)) {
 			log.info({ step: 'idempotent.hit', ok: true, context: { orderId: input.orderId } })
-			return NextResponse.json({
-				trackingNumber: existing.tracking_number as string,
-				labelUrl: (existing.label_blob_url || existing.label_url) as string,
-			        serviceType: (existing.service_type || input.serviceType) as string,
-			        rate: Number((existing.rate_total ?? 0) as number),
-			        currency: (existing.currency || 'JPY') as string,
-			} satisfies CreateShipResponse)
+			const attUrl = String((existing as any).label_blob_url || (existing as any).label_url || '')
+			const attachments = attUrl ? [{ url: attUrl, kind: 'label', contentType: 'application/pdf' }] : []
+			const trackingNum = String((existing as any).tracking_number || '')
+			const resp: any = {
+				ok: true,
+				shipmentId: (existing as any).id ?? null,
+				trackingNumber: trackingNum,
+				trackingNumbers: trackingNum ? [trackingNum] : [],
+				labelUrl: attUrl,
+				attachments,
+				serviceType: (existing as any).service_type || input.serviceType,
+				rate: Number((existing as any).rate_total ?? 0),
+				currency: (existing as any).currency || 'JPY',
+			}
+			return NextResponse.json(resp)
 		}
 	}
 
@@ -180,8 +200,8 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 		if (!agreed) {
 			return NextResponse.json({ code: 'DISCLAIMER_REQUIRED' }, { status: 400 })
 		}
-	} catch (e) {
-		log.warn({ step: 'db.read.drafts', ok: false, context: { userId } })
+  } catch {
+    log.warn({ step: 'db.read.drafts', ok: false, context: { userId } })
 	}
 
 // RateGuard: new env names + fallback, standard error 400+code
@@ -200,14 +220,34 @@ try {
   throw e
 }
 
-	const kind = chooseAccountKind(input.shipper.country, input.recipient.country)
+  const kind = chooseAccountKind(input.shipper.country, input.recipient.country)
+
+  // Guard: サービス未確定のドラフトは拒否（422）
+  try {
+    const draftIdHeader = req.headers.get('x-draft-id') || undefined
+    if (draftIdHeader) {
+      const { data: d } = await supabase
+        .from('drafts' as any)
+        .select('id, selected_rate')
+        .eq('id', draftIdHeader as any)
+        .eq('user_id', userId as any)
+        .maybeSingle()
+      if (!d) {
+        return NextResponse.json({ code: 'FORBIDDEN' }, { status: 403 })
+      }
+      const sr = (d as any)?.selected_rate
+      if (!sr || !sr.service_code) {
+        return NextResponse.json({ code: 'SERVICE_UNSELECTED' }, { status: 422 })
+      }
+    }
+  } catch {}
 
 	// Normalize packages: prefer input.packages; fallback to single package
 	const normPackages = (input.packages && input.packages.length > 0)
 		? input.packages
 		: (input.package ? [input.package] : [])
 
-	async function doShip(): Promise<NextResponse> {
+  async function doShip(): Promise<NextResponse> {
 		// Narrow race window by re-checking
 		{
 			const { data: existing } = await (await withTiming(log, 'db.read.shipments.recheck', async () =>
@@ -284,6 +324,7 @@ try {
 		let labelUrl = ''
 		let trackingNumbers: string[] = []
 		let responseLabelUrls: string[] = []
+		let insertedShipmentId: number | null = null
 
 		try {
 			const res = await withTiming(log, 'fedex.request.shipment', async () => postShipment<any>(payload, kind, diagId), {
@@ -326,10 +367,10 @@ try {
 		} catch (e) {
 			if (e instanceof FedExError) {
 				log.error({ step: 'fedex.request.shipment', ok: false, error_code: e.code, error_message: e.message, upstream: 'fedex' })
-				return NextResponse.json({ code: e.code, message: e.message }, { status: e.code || 502 })
+				return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: e.code, message: e.message }, { status: e.code || 502 })
 			}
 			log.error({ step: 'fedex.request.shipment', ok: false, error_message: String((e as Error)?.message || e), upstream: 'fedex' })
-			return NextResponse.json({ code: 'SHIP_FAILED' }, { status: 502 })
+			return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'SHIP_FAILED' }, { status: 502 })
 		}
 
     try {
@@ -354,6 +395,7 @@ try {
 			const ins = await withTiming(log, 'db.write.shipments', async () =>
 				supabase.from('shipments').insert([row] as any).select('*').maybeSingle()
 			)
+			insertedShipmentId = (ins as any)?.data?.id ?? null
 			if (ins.error && String(ins.error?.message || '').includes('duplicate')) {
 				const { data: existing } = await (await withTiming(log, 'db.read.shipments.on-dup', async () =>
 					supabase
@@ -363,31 +405,68 @@ try {
 						.maybeSingle()
 				)) as any
 				if (existing) {
+					const attUrl = String((existing as any).label_blob_url || (existing as any).label_url || '')
+					const attachments = attUrl ? [{ url: attUrl, kind: 'label', contentType: 'application/pdf' }] : []
+					const trackingNum = String((existing as any).tracking_number || '')
 					return NextResponse.json({
-                        trackingNumber: (existing as any).tracking_number as string,
-						labelUrl: ((existing as any).label_blob_url || (existing as any).label_url) as string,
+						ok: true,
+						shipmentId: (existing as any).id ?? null,
+						trackingNumber: trackingNum,
+						trackingNumbers: trackingNum ? [trackingNum] : [],
+						labelUrl: attUrl,
+						attachments,
 						serviceType: (existing as any).service_type || input.serviceType,
-                        rate: Number((existing as any).rate_total ?? rate),
+						rate: Number((existing as any).rate_total ?? rate),
 						currency: (existing as any).currency || currency,
-					} satisfies CreateShipResponse)
+					})
 				}
 			}
-		} catch (e) {
+    } catch (e) {
 			log.error({ step: 'db.write.shipments', ok: false, error_message: String((e as Error)?.message || e), upstream: 'db' })
-			return NextResponse.json({ code: 'PERSIST_FAILED' }, { status: 500 })
+			return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'PERSIST_FAILED' }, { status: 500 })
 		}
 
 		log.info({ step: 'done', ok: true, context: { orderId: input.orderId, trackingNumber: tracking, service: input.serviceType } })
-		return NextResponse.json({ trackingNumber: tracking, labelUrl, serviceType: input.serviceType, rate, currency, htsCode: input.htsCode,
+		const attachments = responseLabelUrls.map((url) => ({ url, kind: 'label', contentType: 'application/pdf' }))
+		return NextResponse.json({
+			ok: true,
+			shipmentId: insertedShipmentId,
+			trackingNumber: tracking,
+			labelUrl,
+			serviceType: input.serviceType,
+			rate,
+			currency,
+			htsCode: input.htsCode,
 			masterTrackingNumber: tracking,
 			trackingNumbers,
 			labelUrls: responseLabelUrls,
+			attachments,
 		} as any)
 	}
 
-	try {
-		return await withOrderAdvisoryLock(input.orderId, doShip)
-	} catch {
-		return await doShip()
-	}
+  // 非同期化（最小）: まずDBにprocessing確定→バックグラウンドで発送→早期レス
+  const generatedShipmentId = randomUUID()
+  await markProcessing(svc, generatedShipmentId, requestId)
+  ;(async () => {
+    try {
+      if (isMock) {
+        // 簡易遅延後にcompletedに更新
+        await new Promise((r) => setTimeout(r, 300))
+        await markCompleted(svc, generatedShipmentId, { labelUrl: `https://example.com/labels/${generatedShipmentId}.pdf`, tracking: '999999999999', requestId })
+        return
+      }
+      // 実運用: 既存のdoShip()処理で作成し、結果でDB更新
+      const resp = await doShip()
+      if (resp.ok) {
+        const j: any = await resp.json()
+        await markCompleted(svc, generatedShipmentId, { labelUrl: String(j?.labelUrl || ''), tracking: String(j?.trackingNumber || ''), requestId })
+      } else {
+        await markFailed(svc, generatedShipmentId, `HTTP_${resp.status}`, requestId)
+      }
+    } catch (e: any) {
+      await markFailed(svc, generatedShipmentId, String(e?.message || e), requestId)
+    }
+  })()
+  return NextResponse.json({ status: 'processing', shipmentId: generatedShipmentId, requestId }, { status: 202 })
+  })
 }

@@ -7,6 +7,7 @@ import { useWaitForHydration } from '@/store/shippingFormStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, CheckCircle, Package } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface ShipmentResult {
   trackingNumber: string
@@ -22,6 +23,10 @@ function SuccessContent() {
   const searchParams = useSearchParams()
   const { isLoading, isReady } = useWaitForHydration()
   const [shipmentData, setShipmentData] = useState<ShipmentResult | null>(null)
+  const requestId = searchParams.get('rid') || searchParams.get('requestId') || null
+  const [isFetchingConsistency, setIsFetchingConsistency] = useState(false)
+  const [consistencyError, setConsistencyError] = useState<string | null>(null)
+  const [isSlow, setIsSlow] = useState(false)
 
   // 📄 送り状PDFの直接印刷機能（単一ラベル）
   const handlePrintLabel = async (labelUrl: string) => {
@@ -143,27 +148,73 @@ function SuccessContent() {
   }
 
   useEffect(() => {
+    if (!isReady) return
     // URLパラメータから送り状データを取得
     const trackingNumber = searchParams.get('trackingNumber')
     const labelUrl = searchParams.get('labelUrl')
-    const labelUrls = searchParams.get('labelUrls')?.split(',') || [] // 複数ラベルの場合
+    const labelUrls = searchParams.get('labelUrls')?.split(',').filter(Boolean) || []
     const paymentId = searchParams.get('paymentId')
     const shipmentId = searchParams.get('shipmentId')
     const type = searchParams.get('type')
     const packageCount = searchParams.get('packageCount')
 
-    if (trackingNumber && paymentId && shipmentId) {
+    // 1) URLに十分な情報があれば即確定（shipmentIdが無くてもラベル/追跡番号があれば可）
+    if (!shipmentData && trackingNumber && paymentId && (shipmentId || labelUrl || labelUrls.length > 0)) {
       setShipmentData({
         trackingNumber,
         labelUrl: labelUrl ?? undefined,
-        labelUrls: labelUrls, // 複数ラベルの場合
+        labelUrls: labelUrls,
         paymentId,
-        shipmentId,
-        type: type ?? undefined,
+        shipmentId: shipmentId || 'unknown',
+        type: type ?? (packageCount && Number(packageCount) > 1 ? 'mps' : 'standard'),
         packageCount: packageCount ? parseInt(packageCount, 10) : undefined
       })
+      return
     }
-  }, [searchParams])
+
+    // 2) shipmentId が無いが trackingNumber がある場合は consistency API で補完
+    const shouldFetchConsistency = !shipmentData && trackingNumber && !shipmentId
+    if (!shouldFetchConsistency) return
+
+    let cancelled = false
+    setIsFetchingConsistency(true)
+    setConsistencyError(null)
+
+    // スローノーティス（12秒超過で表示）
+    const slowTimer = setTimeout(() => { if (!cancelled) setIsSlow(true) }, 12000)
+
+    ;(async () => {
+      try {
+        const res = await fetch('/api/ship/consistency', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trackingNumber })
+        })
+        if (!res.ok) throw new Error(`CONSISTENCY_${res.status}`)
+        const j = await res.json()
+        if (!cancelled && j?.ok) {
+          const firstAttachment = Array.isArray(j.attachments) && j.attachments.length > 0 ? j.attachments[0] : null
+          const lblUrls: string[] = Array.isArray(j.labelUrls) ? j.labelUrls : (firstAttachment ? [firstAttachment.url] : [])
+          setShipmentData({
+            trackingNumber: j.trackingNumber || trackingNumber,
+            labelUrl: firstAttachment?.url || labelUrl || undefined,
+            labelUrls: lblUrls,
+            paymentId: paymentId || 'unknown',
+            shipmentId: j.shipmentId || shipmentId || 'unknown',
+            type: type ?? (packageCount && Number(packageCount) > 1 ? 'mps' : 'standard'),
+            packageCount: packageCount ? parseInt(packageCount, 10) : undefined
+          })
+        }
+      } catch (e) {
+        if (!cancelled) setConsistencyError((e as Error)?.message || 'CONSISTENCY_ERROR')
+      } finally {
+        clearTimeout(slowTimer)
+        if (!cancelled) setIsFetchingConsistency(false)
+      }
+    })()
+
+    return () => { cancelled = true; clearTimeout(slowTimer) }
+  }, [isReady, searchParams, shipmentData])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -192,6 +243,15 @@ function SuccessContent() {
               <div className="flex flex-col items-center justify-center space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-green-600" />
                 <p className="text-gray-600">送り状情報を読み込み中...</p>
+                {isFetchingConsistency && (
+                  <p className="text-xs text-gray-500">最終整合チェックを実行しています...</p>
+                )}
+                {isSlow && (
+                  <p className="text-xs text-yellow-700">結果の取得に時間がかかっています。少々お待ちください。</p>
+                )}
+                {consistencyError && (
+                  <p className="text-xs text-red-600">整合性チェックで問題が発生しました: {consistencyError}</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -209,6 +269,9 @@ function SuccessContent() {
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">処理が完了しました</h2>
                   <p className="text-gray-600">送り状が正常に作成され、決済も完了しています</p>
+                  {requestId && (
+                    <p className="text-xs text-gray-500 mt-2" data-test="request-id">Request ID: {requestId}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -373,6 +436,24 @@ function SuccessContent() {
                     <li>• 国際発送の場合、関税・諸税が別途発生する場合があります</li>
                     <li>• 配送に関するお問い合わせは、追跡番号をお知らせください</li>
                   </ul>
+                  <div className="mt-4">
+                    <Button
+                      data-test="resend-mail"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch('/api/email/resend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shipmentId: shipmentData?.shipmentId }) })
+                          if (!res.ok) throw new Error('RESEND_FAILED')
+                          toast.success('再送しました')
+                        } catch {
+                          toast.error('再送に失敗しました')
+                        }
+                      }}
+                    >
+                      通知を再送
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 

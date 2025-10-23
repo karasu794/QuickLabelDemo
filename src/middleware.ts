@@ -17,6 +17,10 @@ function isProtectedPath(pathname: string) {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  // x-request-id の強制貫通（受信→次のハンドラ/レスポンスへ）
+  const rid = req.headers.get('x-request-id') || req.headers.get('X-Request-Id') || `rid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('x-request-id', rid)
 
   // 1) Guard protected endpoints with ACTIONS_TOKEN
   if (isProtectedPath(pathname)) {
@@ -24,18 +28,21 @@ export async function middleware(req: NextRequest) {
     const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : ''
     const valid = process.env.ACTIONS_TOKEN || ''
     if (!valid || token !== valid) {
-      return new NextResponse(JSON.stringify({ error: 'unauthorized' }), {
+      const unauthorized = new NextResponse(JSON.stringify({ error: 'unauthorized' }), {
         status: 401,
         headers: {
           'Content-Type': 'application/json',
           'WWW-Authenticate': 'Bearer',
         },
       })
+      unauthorized.headers.set('x-request-id', rid)
+      return unauthorized
     }
   }
 
   // 2) Preserve existing Supabase auth refresh behavior for other routes
-  const res = NextResponse.next()
+  const res = NextResponse.next({ request: { headers: requestHeaders } })
+  res.headers.set('x-request-id', rid)
   const supabase = createMiddlewareClient<Database>({ req, res })
   await supabase.auth.getSession()
   return res

@@ -5,15 +5,27 @@ import Link from 'next/link'
 import { useShippingFormStore } from '@/store/shippingFormStore'
 import { useState, useEffect } from 'react'
 import MobileStepProgress from '@/components/MobileStepProgress'
+import { isServiceStepEnabled } from '@/lib/config/featureFlags'
 
-const steps = [
+const baseSteps = [
   { id: 1, name: '荷送人情報', href: '/shipping/new/shipper' },
   { id: 2, name: '荷受人情報', href: '/shipping/new/recipient' },
   { id: 3, name: '荷物情報', href: '/shipping/new/packages' },
   { id: 4, name: '内容品の詳細', href: '/shipping/new/contents' },
-  { id: 5, name: '確認画面', href: '/shipping/new/review' },
-  { id: 6, name: '完了', href: '/shipping/new/success' }
 ]
+
+const steps = isServiceStepEnabled()
+  ? [
+      ...baseSteps,
+      { id: 5, name: 'サービス別見積', href: '/shipping/new/service' },
+      { id: 6, name: '確認画面', href: '/shipping/new/review' },
+      { id: 7, name: '完了', href: '/shipping/new/success' }
+    ]
+  : [
+      ...baseSteps,
+      { id: 5, name: '確認画面', href: '/shipping/new/review' },
+      { id: 6, name: '完了', href: '/shipping/new/success' }
+    ]
 
 export default function ShippingNewLayout({
   children,

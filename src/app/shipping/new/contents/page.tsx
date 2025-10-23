@@ -1,15 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useItems, useWaitForHydration, useRecipientInfo } from '@/store/shippingFormStore'
-import { getCountryOptions } from '@/lib/data/locations'
+import { useEffect } from 'react'
+import { useItems, useWaitForHydration, useRecipientInfo, useShippingFormStore } from '@/store/shippingFormStore'
 import { useRouter, usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Package, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 import { isUS } from '@/lib/utils/isUS'
 import ContentsForm from '@/components/contents/ContentsForm'
+import { isServiceStepEnabled } from '@/lib/config/featureFlags'
 import type { ContentsFormValue } from '@/components/contents/validation'
 
 export default function ContentsPage() {
@@ -17,6 +16,7 @@ export default function ContentsPage() {
   const { isLoading, isReady } = useWaitForHydration()
   const { items, setItems } = useItems()
   const { recipientInfo } = useRecipientInfo()
+  const selectedRate = useShippingFormStore((s) => s.selectedRate)
   
 
   // US宛は HTS ページへ誘導（直リンク/国変更時の整合性確保）
@@ -30,16 +30,21 @@ export default function ContentsPage() {
     }
   }, [isReady, recipientInfo?.countryCode, pathname, router])
 
-  const defaultValues: ContentsFormValue = { items: items as any }
+  const defaultValues: ContentsFormValue = { items: items as unknown as ContentsFormValue['items'] }
 
   const handleSubmit = async (values: ContentsFormValue) => {
     // Zustandへ反映
-    setItems(values.items as any)
-    router.push('/shipping/new/review')
+    setItems(values.items as unknown as typeof items)
+    try {
+      const markStepCompleted = useShippingFormStore.getState().markStepCompleted
+      markStepCompleted?.('/shipping/new/contents')
+    } catch {}
+    const next = (isServiceStepEnabled() && !selectedRate) ? '/shipping/new/service' : '/shipping/new/review'
+    router.push(next)
   }
 
   return (
-    <AuthGuard>
+    <AuthGuard requireAuth={false}>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">

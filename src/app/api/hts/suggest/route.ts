@@ -1,4 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { z } from 'zod'
+import { jsonErr, jsonOk } from '@/lib/http'
+import { validateOrThrow } from '@/lib/validate'
+import { HTSInputSchema, HTSOutputSchema } from '@/schemas/hts.schema'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const RequestSchema = HTSInputSchema
+
+export async function POST(req: NextRequest) {
+  let input: z.infer<typeof RequestSchema>
+  try {
+    const body = await req.json()
+    input = validateOrThrow(RequestSchema, body)
+  } catch (e: any) {
+    let issues: unknown = [{ message: String(e?.message ?? e) }]
+    try { issues = JSON.parse(String(e?.message)) } catch {}
+    return jsonErr(422, { error: 'validation_error', issues })
+  }
+
+  // Dummy suggestion (placeholder)
+  const items = [
+    { code: '0000.00', label: 'Dummy', confidence: 0.5, evidenceUrls: [] },
+  ]
+
+  const out = HTSOutputSchema.safeParse(items)
+  if (!out.success) {
+    return jsonErr(500, { error: 'schema_mismatch', issues: out.error.issues })
+  }
+  return jsonOk<typeof items>(items)
+}
+
+import { NextResponse } from 'next/server'
 import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
 import { fetchHtsSuggestions } from '@/lib/hts/suggest'
 

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { jsonErr, jsonOk } from '@/lib/http'
+import { validateOrThrow } from '@/lib/validate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,6 +16,26 @@ type PublicLogItem = {
 }
 
 type InternalLogItem = PublicLogItem & { id: string }
+
+const QuerySchema = z.object({
+  since: z.string().datetime().optional(),
+  until: z.string().datetime().optional(),
+  jobId: z.string().optional(),
+  status: z.enum(['OK','ERROR']).optional(),
+  limit: z.coerce.number().min(1).max(100).optional(),
+  cursor: z.string().optional(),
+}).strict()
+
+const ResponseSchema = z.object({
+  items: z.array(z.object({
+    jobId: z.string(),
+    step: z.string(),
+    status: z.enum(['OK','ERROR']),
+    cause: z.string().nullable(),
+    created_at: z.string(),
+  })),
+  nextCursor: z.string().nullable(),
+}).strict()
 
 function authenticateIfRequired(req: NextRequest): NextResponse | null {
   const requiredToken = process.env.ACTIONS_TOKEN
@@ -87,22 +110,30 @@ export async function GET(req: NextRequest) {
   if (authErr) return authErr
 
   const { searchParams } = new URL(req.url)
-  const sinceRaw = searchParams.get('since')
-  const untilRaw = searchParams.get('until')
-  const jobId = searchParams.get('jobId') || 'dummy-job'
-  const statusFilter = (searchParams.get('status') || '').toUpperCase() as LogStatus | ''
-  const limitRaw = searchParams.get('limit')
-  const cursorRaw = searchParams.get('cursor')
+  const raw = {
+    since: searchParams.get('since') || undefined,
+    until: searchParams.get('until') || undefined,
+    jobId: searchParams.get('jobId') || undefined,
+    status: searchParams.get('status') || undefined,
+    limit: searchParams.get('limit') || undefined,
+    cursor: searchParams.get('cursor') || undefined,
+  }
+  let parsed: z.infer<typeof QuerySchema>
+  try {
+    parsed = validateOrThrow(QuerySchema, raw)
+  } catch (e: any) {
+    let issues: unknown = [{ message: String(e?.message ?? e) }]
+    try { issues = JSON.parse(String(e?.message)) } catch {}
+    return jsonErr(422, { error: 'validation_error', issues })
+  }
 
   const now = new Date()
-  const since = toIsoLike(sinceRaw, new Date(now.getTime() - 60 * 60 * 1000)) // default: 1h ago
-  const until = toIsoLike(untilRaw, now)
-  const limit = (() => {
-    const n = Math.max(1, Math.min(1000, Number(limitRaw) || 100))
-    return n
-  })()
-
-  const cursor = decodeCursor(cursorRaw)
+  const since = toIsoLike(parsed.since ?? null, new Date(now.getTime() - 60 * 60 * 1000)) // default: 1h ago
+  const until = toIsoLike(parsed.until ?? null, now)
+  const limit = parsed.limit ?? 100
+  const jobId = parsed.jobId || 'dummy-job'
+  const statusFilter = parsed.status ?? ''
+  const cursor = decodeCursor(parsed.cursor ?? null)
 
   // Generate dummy dataset and apply filters
   let data = generateDummyItems({ sinceIso: since, untilIso: until, jobId })
@@ -121,10 +152,12 @@ export async function GET(req: NextRequest) {
 
   const publicItems: PublicLogItem[] = page.map(({ id: _omit, ...rest }) => rest)
 
-  return NextResponse.json(
-    { items: publicItems, nextCursor },
-    { headers: { 'Cache-Control': 'no-store' } }
-  )
+  const body = { items: publicItems, nextCursor }
+  const out = ResponseSchema.safeParse(body)
+  if (!out.success) {
+    return jsonErr(500, { error: 'schema_mismatch', issues: out.error.issues })
+  }
+  return jsonOk<typeof body>(body)
 }
 
 
