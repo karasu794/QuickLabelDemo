@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { isReviewDisclaimerEnabled, isReviewRateUiHidden, isServiceStepEnabled } from '@/lib/config/featureFlags'
+import { isReviewDisclaimerEnabled, isServiceStepEnabled } from '@/lib/config/featureFlags'
 
 // DIAG: 免責事項（同意チェック/本文リンク/同意保存）が未実装。
 // DIAG: 現状は決済トークン取得→/api/payments/charge→/api/ship/create 直行。
@@ -32,7 +32,6 @@ export default function ReviewPage() {
   const contents = useShippingFormStore((state) => state.contents)
   const shippingPurpose = useShippingFormStore((state) => state.shippingPurpose)
   const selectedRate = useShippingFormStore((state) => state.selectedRate)
-  const setSelectedRate = useShippingFormStore((state) => state.setSelectedRate)
   const markStepCompleted = useShippingFormStore((state) => state.markStepCompleted)
   // Step5 導入時のガード: 未選択なら service へ
   useEffect(() => {
@@ -51,9 +50,7 @@ export default function ReviewPage() {
     } catch {}
   }, [])
 
-  const [serviceConfirmed, setServiceConfirmed] = useState<boolean>(false)
-  const [isChangingService, setIsChangingService] = useState(false)
-  const [draftRecoveryAttempted, setDraftRecoveryAttempted] = useState(false)
+  
 
   // 動的手数料率の状態（初期はnull、後述のAPIで取得）
   const [serviceFeePercentage, setServiceFeePercentage] = useState<number | null>(null)
@@ -165,76 +162,7 @@ export default function ReviewPage() {
     return () => { cancelled = true }
   }, [])
 
-  // ドラフト選択状態の取得（serviceConfirmed を決定）
-  useEffect(() => {
-    let cancelled = false
-    const fetchDraftSelected = async () => {
-      if (!draftId) return
-      try {
-        const res = await fetch(`/api/drafts/${encodeURIComponent(draftId)}`, { cache: 'no-store' })
-        if (!res.ok) {
-          // 404時は古いドラフトIDをクリアし、現在のフォーム値から新規ドラフトを自動作成
-          if (res.status === 404 && !draftRecoveryAttempted) {
-            setDraftRecoveryAttempted(true)
-            try { sessionStorage.removeItem('currentDraftId'); localStorage.removeItem('currentDraftId') } catch {}
-            // 一旦state上のdraftIdもクリアしてフォールバック描画に切替
-            setDraftId(null)
-            const body = {
-              shipperInfo: {
-                companyName: shipperInfo.companyName,
-                contactName: shipperInfo.contactName,
-                postalCode: shipperInfo.postalCode,
-                phoneNumber: shipperInfo.phoneNumber,
-                countryCode: shipperInfo.countryCode,
-                stateCode: shipperInfo.stateCode,
-                cityName: shipperInfo.cityName,
-                address1: shipperInfo.address1,
-                address2: shipperInfo.address2,
-              },
-              recipientInfo: {
-                companyName: recipientInfo.companyName,
-                contactName: recipientInfo.contactName,
-                postalCode: recipientInfo.postalCode,
-                phoneNumber: recipientInfo.phoneNumber,
-                email: recipientInfo.email,
-                countryCode: recipientInfo.countryCode,
-                stateCode: recipientInfo.stateCode,
-                cityName: recipientInfo.cityName,
-                address1: recipientInfo.address1,
-                address2: recipientInfo.address2,
-              },
-              packages,
-              items,
-              shippingPurpose,
-            }
-            try {
-              const save = await fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) })
-              if (save.ok) {
-                const sj = await save.json()
-                const newId = sj?.draftId
-                if (newId) {
-                  setDraftId(String(newId))
-                  try { sessionStorage.setItem('currentDraftId', String(newId)) } catch {}
-                }
-              }
-            } catch {}
-          }
-          return
-        }
-        const j = await res.json()
-        const draft = j?.draft
-        if (!cancelled && draft) {
-          const confirmed = Boolean(draft?.selected_rate?.service_code)
-          setServiceConfirmed(confirmed)
-        }
-      } catch {}
-      finally {
-        // no-op
-      }
-    }
-    fetchDraftSelected()
-    return () => { cancelled = true }
-  }, [draftId])
+  // 旧: ドラフト由来のサービス確定状態取得は撤去
   
 
   // 料金計算ロジック（選択済みレートのみで計算）
@@ -661,27 +589,7 @@ export default function ReviewPage() {
           </div>
         </div>
 
-        {/* 見積もり（未選択なら上に表示） */}
-        {(!serviceConfirmed || isChangingService) && (
-          isReviewRateUiHidden() ? (
-            <div className="mb-6" data-test="review-rate-placeholder">
-              <Card>
-                <CardHeader>
-                  <CardTitle>サービス選択が未完了です</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 mb-4">次のステップでFedExサービスを選択して料金を確定してください。</p>
-                  <Link
-                    href="/"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:text-gray-600"
-                  >
-                    見積ページへ
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
-          ) : null
-        )}
+        {/* 旧サービス選択カードは撤去 */}
 
         {/* 料金詳細 */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200" data-test="review-price">
@@ -754,18 +662,7 @@ export default function ReviewPage() {
                   {!selectedRate ? '—' : formatCurrency.format(calculations.total)}
                 </span>
               </div>
-              <div className="flex justify-end">
-                {serviceConfirmed && (
-                  <button
-                    type="button"
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
-                    data-test="change-service"
-                    onClick={() => setIsChangingService(true)}
-                  >
-                    変更する
-                  </button>
-                )}
-              </div>
+              {/* 旧: サービス変更リンクは撤去 */}
             </div>
             
             <p className="text-sm text-gray-500 mt-4">※ 関税・諸税は含まれておりません</p>
@@ -870,7 +767,7 @@ export default function ReviewPage() {
                     amount={calculations.total}
                     onTokenReceived={handleTokenReceived}
                     onPaymentError={handlePaymentError}
-                    disabled={(isReviewDisclaimerEnabled() ? !disclaimerAgreed : false) || !serviceConfirmed}
+                    disabled={(isReviewDisclaimerEnabled() ? !disclaimerAgreed : false) || !selectedRate}
                   />
                 )}
               </>
