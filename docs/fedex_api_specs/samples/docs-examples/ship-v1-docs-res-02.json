@@ -1,0 +1,3706 @@
+{
+	"errorList": [
+		{
+			"code": "SHIPMENT.VAGUECOMMODITYDESC.ERROR",
+			"errorDescription": "The description for commodity {COMMODITY_INDEX} is vague and is EXPORTDETAIL.B13AFILINGOPTION.INVALIDnot allowed."
+		},
+		{	"code": "RECIPIENTCONTACT.PHONENUMBER.NOTSUPPORTED",
+			"errorDescription": "Convenient Delivery Options will not be provided with recipient’s landline number. Moving forward, please provide valid mobile phone number."
+		},
+		{	"code": "RECIPIENTCONTACT.PHONENUMBER.INVALID",
+			"errorDescription": "Recipient’s phone number format is not matching with recipient's country code; hence, recipient will not receive Convenient Delivery Options. Moving forward, please provide valid mobile phone number."
+		},
+		{
+			"code": "EXPORTDETAIL.B13AFILLINGOPTION.REQUIRED",
+			"errorDescription": "The Canada export declaration is required for this shipment. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.B13AFILINGOPTION.INVALID",
+			"errorDescription": "Canada export declaration filing option is missing or invalid. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.B13AFILLINGOPTION.CANNOTBERETURNED",
+			"errorDescription": "EXPORT_DECLARATION document cannot be returned for canada export declaration. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.CANCELEDWITHOUTPICKUP.SUCCESS",
+			"errorDescription": "The shipment has been successfully canceled without pickup."
+		},
+		{
+			"code": "SHIPMENT.CANCELEDWITHOUTPICKUP.FAILURE",
+			"errorDescription": "The shipment can't be canceled."
+		},
+		{
+			"code": "SHIPMENT.PACKAGEDIMENSION.INVALID",
+			"errorDescription": "The dimensions entered for this package is invalid."
+		},
+		{
+			"code": "SHIPMENT.COUNT.INVALID",
+			"errorDescription": "The package count is blank or invalid."
+		},
+		{
+			"code": "SHIPMENT.POSTALANDCOUNTRYCODE.MISMATCH",
+			"errorDescription": "The postal or routing code and country do not match. Please correct and try again."
+		},
+		{
+			"code": "SHIPMENT.SHIPPERPHONENUMBER.REQUIRED",
+			"errorDescription": "A phone number is required."
+		},
+		{
+			"code": "SHIPMENT.CUSTOMERREFERANCEVALUE.TOOLONG",
+			"errorDescription": "Customer referance value is too long."
+		},
+		{
+			"code": "SHIPMENT.SPECIALSERVICE.NOTALLOWED",
+			"errorDescription": "{0} is not allowed with the pickupType method."
+		},
+		{
+			"code": "SHIPMENT.GROUNDORHOMEDELIVERY.NOTENABLED",
+			"errorDescription": "FedEx Ship Manager is unable to process your FedEx Ground&reg; or FedEx Home Delivery&reg; request at this time. Please try again or contact customer service at 1.800.GoFedEx 1.800.463.3339"
+		},
+		{
+			"code": "SHIPMENT.POSTALCODE.INVALID",
+			"errorDescription": "Invalid ZIP/Postal code.  Please correct and try again."
+		},
+		{
+			"code": "SHIPMENT.LOADCOUNT.INVALID",
+			"errorDescription": "Invalid shipper load and count."
+		},
+		{
+			"code": "SHIPMENT.POSTALCODE.NOSERVICE",
+			"errorDescription": "Service is not available to this ZIP/Postal Code. Please select another service or enter an alternate ZIP/Postal Code supported by this service."
+		},
+		{
+			"code": "SHIPMENT.SHIPPINGDOCUMENT.PROHIBITED",
+			"errorDescription": "A FedEx-generated {0} is prohibited for the shipment."
+		},
+		{
+			"code": "SHIPMENT.SERVICETYPE.INVALID",
+			"errorDescription": "Invalid service type"
+		},
+		{
+			"code": "SHIPMENT.PACKAGETYPE.INVALID",
+			"errorDescription": "Invalid packaging type"
+		},
+		{
+			"code": "SHIPMENT.CURRENCYCODE.INVALID",
+			"errorDescription": "Currency code is invalid. Only the following currencies are allowed: {CURRENCY_CODE_LIST}. Please correct and try again."
+		},
+		{
+			"code": "SHIPMENT.INCONSISTANTWEIGHTDIMENSION.ERROR",
+			"errorDescription": "Package {PACKAGE_INDEX} weight is inconsistent with dimension units , please use only English or Metric."
+		},
+		{
+			"code": "SHIPMENT.STATEPOSTAL.MISMATCH",
+			"errorDescription": "The state and postal code do not match."
+		},
+		{
+			"code": "ADDRESS.DETAILS.REQUIRED",
+			"errorDescription": "Address is required"
+		},
+		{
+			"code": "ADDRESS.MINIMUMLENGTH.REQUIRED",
+			"errorDescription": "Address must be at least 3 characters."
+		},
+		{
+			"code": "CARRIAGEVALUE.EXCEEDS.CUSTOMVALUE",
+			"errorDescription": "The carriage value cannot exceed the customs value. The carriage value is optional. Please refer to the FedEx Service Guide."
+		},
+		{
+			"code": "CARRIAGEVALUE.NONNUMERIC.REQUIRED",
+			"errorDescription": "Enter a numeric value for declared/carriage value"
+		},
+		{
+			"code": "CITYNAME.MINIMUMLENGTH.ERROR",
+			"errorDescription": "City name must be at least 3 characters."
+		},
+		{
+			"code": "COMPANYNAME.MINIMUMLENGTH.ERROR",
+			"errorDescription": "Company name must be at least 3 characters."
+		},
+		{
+			"code": "CONTACT.NAME.REQUIRED",
+			"errorDescription": "Contact name is required"
+		},
+		{
+			"code": "CONTACTNAME.MINIMUMLENGTH.ERROR",
+			"errorDescription": "Contact name must be at least 3 characters"
+		},
+		{
+			"code": "COUNTRY.LOCATION.REQUIRED",
+			"errorDescription": "Select a Country/Location."
+		},
+		{
+			"code": "COUNTRY.POSTALCODEORZIP.INVALID",
+			"errorDescription": "Invalid postal code/ZIP for the country selected. Please correct and try again."
+		},
+		{
+			"code": "CURRENCY.TYPE.INVALID",
+			"errorDescription": "The currency type you selected is invalid. Please select another currency type."
+		},
+		{
+			"code": "CURRENCYTYPE.CADORUSD.REQUIRED",
+			"errorDescription": "CAD or USD are the only currency types available. Please select CAD or USD as your currency type."
+		},
+		{
+			"code": "CUSTOMSVALUE.NONNUMERIC.ERROR",
+			"errorDescription": "Enter a numeric value for customs value."
+		},
+		{
+			"code": "CUSTOMVALUE.LIMITEXCEEDS.ERROR",
+			"errorDescription": "The total declared value for customs entered exceeds the limit for FedEx® International services.For additional information, including other services that may be available, please contact FedEx Customer Service."
+		},
+		{
+			"code": "DECLAREDVALUE.EXCEEDS.ERROR",
+			"errorDescription": "Declared Value exceeds allowed limit. Please update and try again."
+		},
+		{
+			"code": "ACCOUNT.NUMBER.INVALID",
+			"errorDescription": "Invalid account number."
+		},
+		{
+			"code": "SHIPPER.POSTALSTATE.MISMATCH",
+			"errorDescription": "Shipper Postal-State Mismatch. Please correct and try again."
+		},
+		{
+			"code": "ACCOUNT.AUTHORIZATION.ERROR",
+			"errorDescription": "Invalid Express account number"
+		},
+		{
+			"code": "ACCOUNT.NUMBER.NOTFOUND",
+			"errorDescription": "Account Number not in database.  Please check the number entered and try again.  If you continue to have problems, please contact your local FedEx Customer Service representative (in U.S. and Canada, call 1-800-GO-FEDEX&reg;)."
+		},
+		{
+			"code": "ACCOUNT.SERVICESPROHIBITED.ERROR",
+			"errorDescription": "This account is currently prohibited from shipping alcoholic beverages to this destination.  Please verify that the shipment is properly declared.  Contact 1.800.Go.FedEx  1.800.463.3339 to inquire about this prohibition."
+		},
+		{
+			"code": "ACCOUNT.THIRDPARTYPAYER.UNAUTHORIZED",
+			"errorDescription": "The 3rd party payer account is not authorized for this specific shipment. Please use another account or contact."
+		},
+		{
+			"code": "ACCOUNT.VIOLATION.ERROR",
+			"errorDescription": "This account has been identified to have previous {0} violations on file. Shipping via {1} from {2} to {3} has been disabled.  To reinstate your {1} shipping privileges from {2} to {3}, please contact the FedEx Dangerous Goods/Hazardous Materials Hotline."
+		},
+		{
+			"code": "ACCOUNTNUMBER.REGISTRATION.REQUIRED",
+			"errorDescription": "Please enter a valid 9-digit FedEx account number or register for a new FedEx account number."
+		},
+		{
+			"code": "ACCOUNTPRIVILEGE.DANGEROUSGOODS.NOTELIGIBLE",
+			"errorDescription": "Account not eligible for dangerous goods."
+		},
+		{
+			"code": "ACCOUNTPRIVILEGE.SHIPSMART.NOTALLOWED",
+			"errorDescription": "ShipSmart is only available for U.S. accounts. Please choose a different account or shipment method."
+		},
+		{
+			"code": "CARRIAGEVALUECURRENCY.CUSTOMSVALUECURRENCY.MISMATCH",
+			"errorDescription": "All Currency Types in the Requested Shipment must match.Please update and try again."
+		},
+		{
+			"code": "CITYCODE.ZIPCODE.NOTMATCH",
+			"errorDescription": "ZIP/Postal Code and City do not match.  Please correct and try again."
+		},
+		{
+			"code": "CITYNAME.POSTALCODE.INVALID",
+			"errorDescription": "Invalid city name or postal code. Please correct and try again."
+		},
+		{
+			"code": "CODAMT.LIMIT.REQUIRED",
+			"errorDescription": "COD Amount must be between $1.00 and $9,999,999.99"
+		},
+		{
+			"code": "CODFLGAMT.NOTFORNONCODSHIPMENT.VALIDATION",
+			"errorDescription": "COD flags/amount cannot be set for non-COD shipment."
+		},
+		{
+			"code": "SHIPPING.DOCUMENT.REQUIRED",
+			"errorDescription": "{0} is required to process your electronic trade document request."
+		},
+		{
+			"code": "COMMODITY.DESCRIPTION.REQUIRED",
+			"errorDescription": "A commodity description is required."
+		},
+		{
+			"code": "COMMODITYWEIGHT.GREATERTHAN.PACKAGEWEIGHT",
+			"errorDescription": "Total commodities weight is greater than the package weight. Please check each commodities weight entered."
+		},
+		{
+			"code": "PACKAGECOUNT.EXCEEDS.MAXIMUM",
+			"errorDescription": "Number of packages exceeds maximum."
+		},
+		{
+			"code": "COUNTRY.CODE.INVALID",
+			"errorDescription": "DEFAULT: Specified country code {country_code} is invalid"
+		},
+		{
+			"code": "COUNTRY.NONDOCSHIPPING.NOTAVAILABLE",
+			"errorDescription": "Non-Document shipping not available for this country."
+		},
+		{
+			"code": "SERVICETYPE.PICKUPMETHOD.UNSUPPORTED",
+			"errorDescription": "{SERVICE_TYPE} is not allowed with the pickup method."
+		},
+		{
+			"code": "SPECIALSERVICE.NOT.SUPPORTED.DESTINATION",
+			"errorDescription": "{0} is not supported for the destination."
+		},
+		{
+			"code": "COUNTRY.SELECTEDSERVICE.INVALID",
+			"errorDescription": "Invalid country/location for the service selected.Please contact FedEx Customer Service."
+		},
+		{
+			"code": "COUNTRYOFMANUFACTURE.COMMODITY.INVALID",
+			"errorDescription": "Invalid country of manufacture for commodity {0}"
+		},
+		{
+			"code": "DECLARED.VALUE.EXCEEDSLIMIT",
+			"errorDescription": "The maximum declared value is USD50,000. "
+		},
+		{
+			"code": "CUSTOMERPRIVILEGE.DANGEROUSGOODS.NOTELIGIBLE",
+			"errorDescription": "Customer is not eligible to ship dangerous goods."
+		},
+		{
+			"code": "CUSTOMS.DESCRIPTION.INCOMPLETE",
+			"errorDescription": "The description is incomplete and will not be accepted by customs.  Please enter a detailed description of the contents being shipped."
+		},
+		{
+			"code": "CUSTOMS.VALUE.INVALID",
+			"errorDescription": "Customs value must be numeric."
+		},
+		{
+			"code": "COMMODITY.COUNT.EXCEEDED",
+			"errorDescription": "The total count of commodities can not exceed 999."
+		},
+		{
+			"code": "DANGEROUSGOODS.DATA.INVALID",
+			"errorDescription": "The uploaded dangerous goods data is no longer valid for trackingnumber{0}.Please update the dangerous goods data and re-ship."
+		},
+		{
+			"code": "DANGEROUSGOODS.VIOLATIONS.ERROR",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods,hazardous materials or dry ice violations that limit your shipping options.If you have any questions,please call your local FedEx customer service."
+		},
+		{
+			"code": "POSTALCODE.ZIPCODE.REQUIRED",
+			"errorDescription": "Postal code/ZIP is required"
+		},
+		{
+			"code": "SHIPMENT.DANGEROUSGOODS.NOTALLOWED",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods, hazardous materials or dry ice violations that limit your shipping options.  If you have any questions, please call your local FedEx customer service."
+		},
+		{
+			"code": "SHIPPINGOPTION.DRYICE.VIOLATION",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods, hazardous materials or dry ice violations that limit your shipping options.  If you have any questions, please call your local FedEx customer service."
+		},
+		{
+			"code": "ACCOUNTNUMBER.MINIMUMLENGTH.REQUIRED",
+			"errorDescription": "Enter a valid 9-digit FedEx account number."
+		},
+		{
+			"code": "SHIPMENTVALIDATION.EEIEDIT.ERROR",
+			"errorDescription": "Products with a customs value over 2500 USD require an EEI.  Please visit <a href='#' class='link_advancedShipping'>Advanced Shipping</a> to complete your shipment."
+		},
+		{
+			"code": "HAL.LOCATIONID.REQUIRED",
+			"errorDescription": "Location Id is required for Hold At Location service."
+		},
+		{
+			"code": "PHONENUMBER.TOO.SHORT",
+			"errorDescription": "Phone no. must be 10 digits for U.S. and Canada."
+		},
+		{
+			"code": "PHONENUMBER.TOO.LONG",
+			"errorDescription": "Phone number too long."
+		},
+		{
+			"code": "PERSONNAME.EMPTY",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "ACCOUNT.NUMBERORKEY.INVALID",
+			"errorDescription": "Invalid account information. Account number and/or key is invalid"
+		},
+		{
+			"code": "ANONYMOUS.NOT.ALLOWED",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "ACCOUNT.VALIDATION.ERROR",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "PICKUPTYPE.REQUIRED",
+			"errorDescription": "PickupType element is required in input request."
+		},
+		{
+			"code": "INCORRECT.EXPIRATIONTIMESTAMP.FORMAT",
+			"errorDescription": "Please provide a valid expiration time stamp format like YYYY-MM-DD."
+		},
+		{
+			"code": "INCORRECT.LATESTPICKUPDATETIME.FORMAT",
+			"errorDescription": "Please provide a valid latest pickup date time format like YYYY-MM-DD."
+		},
+		{
+			"code": "INCORRECT.READYPICKUPDATETIME.FORMAT",
+			"errorDescription": "Please use the required ready pickup date time format: YYYY-MM-DD."
+		},
+		{
+			"code": "SHIPMENT.SPECIALSERVICETYPE.NOT.ALLOWED",
+			"errorDescription": "{0} is not allowed with the service selected. "
+		},
+		{
+			"code": "LOCATIONIDTYPE.INVALID",
+			"errorDescription": "{0} Location ID is not valid."
+		},
+		{
+			"code": "SHIPDATESTAMP.FORMAT.INVALID",
+			"errorDescription": "Please provide a valid shipDatestamp format YYYY-MM-DD."
+		},
+		{
+			"code": "INVALID.LOCALE.FORMAT",
+			"errorDescription": "Please provide a valid locale format in input request like en_US"
+		},
+		{
+			"code": "PERSONNAME.AND.CONTACTNAME.EMPTY",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.RECIPIENTS.REQUIRED",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.RECIPIENTSMAXLIMIT.EXCEEDED",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.RECIPIENTCOUNTRIES.INVALID",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.REQUESTEDPACKAGELINE.REQUIRED",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.SERVICETYPE.INVALID",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.SHIPMENTSPECIALSERVICETYPE.INVALID",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.PACKAGESPECIALSERVICETYPE.INVALID",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "GROUPSHIPMENT.HAZARDOUSCOMMODITY.NOTALLOWED",
+			"errorDescription": "We are unable to process this shipment for the moment. Try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "SHIPMENT.ACCOUNTNUMBER.REQUIRED",
+			"errorDescription": "Enter a valid 9-digit FedEx account number and verify the information you entered is correct, or register for a new FedEx account number."
+		},
+		{
+			"code": "INTERNAL.SERVER.ERROR",
+			"errorDescription": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+		},
+		{
+			"code": "SERVICETYPE.MAXLENGTHANDGIRTHCOMBINEDEXCEEDED.ERROR",
+			"errorDescription": "Dimensions exceed length and girth limit allowed. The length and girth of a package is length plus (2 times the height) plus (2 times the width). Please refer to FedEx Service Guide for more information."
+		},
+		{
+			"code": "WEIGHT.DIMENSION.MISMATCH",
+			"errorDescription": "Weight units are inconsistent with dimension units, please use only Imperial or Metric systems."
+		},
+		{
+			"code": "PACKAGINGTYPE.INVALID",
+			"errorDescription": "Invalid packaging type."
+		},
+		{
+			"code": "SHIPPER.COUNTRY.INVALID",
+			"errorDescription": "Shipper country code is invalid or missing. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.SHIPDATESTAMP.INVALID",
+			"errorDescription": "Requested shipDatestamp is prior to current date."
+		},
+		{
+			"code": "DUTIESPAYMENT.PAYMENTTYPE.INVALID",
+			"errorDescription": "Payment Type is invalid or missing."
+		},
+		{
+			"code": "SHIPMENT.FUTURESHIPMENTDATE.INVALID",
+			"errorDescription": "Future Shipment Date is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.WEIGHTUNITS.INCONSISTENT",
+			"errorDescription": "The weight units are inconsistent. Please update and try again."
+		},
+		{
+			"code": "PACKAGINGTYPE.VALIDATION.ERROR",
+			"errorDescription": "The packaging type is invalid for the service type. Please update and try again."
+		},
+		{
+			"code": "INCORRECT.DISPATCHDATE.FORMAT",
+			"errorDescription": "Please use the required dispatch date format: YYYY-MM-DD."
+		},
+		{
+			"code": "EXPORTLICENSE.EXPIRATIONDATE.INCORRECT",
+			"errorDescription": "Export License Expiration Date must be atleast one day in future."
+		},
+		{
+			"code": "RETURNSHIPMENTS.CUSTOMERREFERENCES.RMANUMBER.REQUIRED",
+			"errorDescription": "RMA number is required on this shipment due to restrictions."
+		},
+		{
+			"code": "SATURDAYDELIVERY.SELECTEDSERVICE.UNAVAILABLE",
+			"errorDescription": "Saturday Delivery is not allowed with selected service. Please update and try again."
+		},
+		{
+			"code": "DRYICE.WEIGHT.INVALID",
+			"errorDescription": "Dry Ice Weight is required field when Special Service Typpe is DRY_ICE.Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.SATURDAYPICKUP.NOTALLOWED",
+			"errorDescription": "This postal code is not supported. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.HOLDATLOCATIONDETAIL.MISSING",
+			"errorDescription": "Hold at location detail is required when Special Service Type is HOLD_AT_LOCATION or HOLD_AT_LOCATION with SATURDAY_DELIVERY"
+		},
+		{
+			"code": "SHIPMENT.HOLDATLOCATIONPOSTALCODE.MISSING",
+			"errorDescription": "The postal code is missing for Hold at Location Address. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.HOLDATLOCATIONADDRESS.REQUIRED",
+			"errorDescription": "Hold at Location  Street Line 1 Address is invalid. Please update and try again."
+		},
+		{
+			"code": "PACKAGECURRENCY.DECLAREDVALUE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Invalid currency for declared value."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODE.NOTFOUND",
+			"errorDescription": "Postal code not found. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODE.INVALID",
+			"errorDescription": "The postal code is invalid. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODE.NOTSERVICED",
+			"errorDescription": "The postal code is not serviced. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALSTATE.MISMATCH",
+			"errorDescription": "The postal code does not match the postal state. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODE.INVALIDINPUT",
+			"errorDescription": "The postal code input is invalid. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODE.REQUIRED",
+			"errorDescription": "A postal code is required. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODECOUNTRY.MISMATCH",
+			"errorDescription": "The postal code does not match the country. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.POSTALCODEMAXLENGTH.ERROR",
+			"errorDescription": "The postal code length exceeds the limit of 16 characters. Please update and try again."
+		},
+		{
+			"code": "PROCESSING.REQUEST.ERROR",
+			"errorDescription": "There is an issue processing your request. Please try again later or contact FedEx"
+		},
+		{
+			"code": "SHIPMENT.SPECIALSERVICE.UNAVAILABLE",
+			"errorDescription": "Package {PACKAGE_INDEX} - {SPECIAL_SERVICE_TYPE} is not valid for {PACKAGING_TYPE}."
+		},
+		{
+			"code": "ACCOUNT.VALIDATION.FAILED",
+			"errorDescription": "This account cannot be found. Please update and try again."
+		},
+		{
+			"code": "CA.DANGEROUSGOODS.VIOLATIONS",
+			"errorDescription": "Your shipment is not allowed because of {SPECIAL_SERVICE_TYPE}  violations."
+		},
+		{
+			"code": "TOTALCARRIAGEVALUE.EXCEEDS.CUSTOMSVALUE",
+			"errorDescription": "Total Declared value exceeds customs value. Please update and try again."
+		},
+		{
+			"code": "CASHIPPINGOPTION.DRYICE.VIOLATION",
+			"errorDescription": "Your shipment is not allowed because of {SPECIAL_SERVICE_TYPE}  violations."
+		},
+		{
+			"code": "EMAILLABEL.TIMESTAMP.INVALID",
+			"errorDescription": "The Email Label expiration date is invalid. Please update and try again."
+		},
+		{
+			"code": "EXPRESSACCOUNT.METERNUMBER.NOTCONSISTENT",
+			"errorDescription": "Express account and Meter number are not consistent. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSMATERIALS.VIOLATIONS.ERROR",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "FEDEXEXPRESS.ACCOUNT.AUTHORIZATIONERROR",
+			"errorDescription": " Express Account Number is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.PACKAGEWEIGHT.INVALID",
+			"errorDescription": "The package weight is less than the minimum for the requested service/packaging. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCE.FREIGHTONVALUE.INVALID",
+			"errorDescription": "CustomsClearance FreightOnValue is invalid. Please update and try again"
+		},
+		{
+			"code": "ITAR.LICENCENUMBER.REQUIRED",
+			"errorDescription": "ITAR Exemption or License Number is required field. Please update and try again."
+		},
+		{
+			"code": "MAXIMUMDECALAREDVALUE.PACKAGETYPE.EXCEEDED",
+			"errorDescription": "Declared value exceeds limit for the selected service in  package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "ORGORDEST.SPECIALSERVICES.NOTALLOWED",
+			"errorDescription": "This special service type is not allowed for the origin/destination pair. Please update and try again"
+		},
+		{
+			"code": "PACKAGE.WIDTHEXCEEDS.ERROR",
+			"errorDescription": "Weight - Package weight exceeds maximum for requested service/packaging in RequestedPackage {PACKAGE_INDEX}"
+		},
+		{
+			"code": "PACKAGING.NOT.ALLOWED",
+			"errorDescription": "Packaging type is not allowed for the shipment. Please update and try again."
+		},
+		{
+			"code": "RECIPIENT.ADDRESS.ERROR",
+			"errorDescription": "Shipments for Home Delivery Service must also be designated as Residential Delivery."
+		},
+		{
+			"code": "RETURN.ASSOCIATED.INVALID",
+			"errorDescription": "Outbound  tracking number associated with return is invalid. Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENT.TYPE.INVALID",
+			"errorDescription": "Pending shipment return type value  is invalid. Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENTSCUSTOMERREFERENCES.RMANUMBER.REQUIRED",
+			"errorDescription": "RMA number is required on this shipment due to restrictions. Please update and try again."
+		},
+		{
+			"code": "SERVICE.WEIGHT.INVALID",
+			"errorDescription": "Invalid Weight for Service Type [{0}]."
+		},
+		{
+			"code": "SERVICESELECTED.POSTALCODE.INVALID",
+			"errorDescription": "Postal Code is Invalid. Please update and try again."
+		},
+		{
+			"code": "SHIP.SPECIALSERVICE.INVALID",
+			"errorDescription": "Special Service is not valid for the package type provided.Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.COMMODITYDESC.HMZCODE.MISMATCH",
+			"errorDescription": "Weightvalue is below minimum requirement. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICE.NOT.SUPPORTED.REQUESTED.SHIPDAY",
+			"errorDescription": "This special service type is not suppored for the requested ship day of the week. Please update and try again."
+		},
+		{
+			"code": "TOTALCUSTOMSVALUE.REQUIRED",
+			"errorDescription": "Customs Value is required field. Please update and try again."
+		},
+		{
+			"code": "ACCOUNT.NUMBER.MISMATCH",
+			"errorDescription": "Account Number Mismatch -As the payment Type is SENDER, ShippingChargesPayment Payor AccountNumber should match the shipper account number .Please update and try again."
+		},
+		{
+			"code": "ACCOUNTNO.TYPE.NOTMATCHED",
+			"errorDescription": "The Billing Address for this account type does not match address on record. Please update and try again."
+		},
+		{
+			"code": "BROKER.COUNTRY.SAMEAS.RECIPIENT",
+			"errorDescription": "Broker country should be the same as Recipient country. Please update and try again."
+		},
+		{
+			"code": "BROKER.DETAILS.REQUIRED",
+			"errorDescription": "Company Name or Person Name of the Broker is required. Please update and try again"
+		},
+		{
+			"code": "BROKER.POSTALSTATE.MISMATCH",
+			"errorDescription": "There  is a mismatch between the postal code and state for the  broker. Please update and try again."
+		},
+		{
+			"code": "DESTINATION.SERVICETYPE.INVALID",
+			"errorDescription": "Carrier does not allow {SPECIAL_SERVICE_TYPE} special service."
+		},
+		{
+			"code": "DOCUMENT.SHIPPING.NOTAVAILABLE",
+			"errorDescription": "Destination country does not accept international document shipments."
+		},
+		{
+			"code": "DOCUMENTSHIPPING.LITHIUMBATTERIESCELL.NOTALLOWED",
+			"errorDescription": "This {SPECIAL_SERVICE_TYPE} is not available for document shipments. Please update and try again."
+		},
+		{
+			"code": "DRYICETOTALWEIGHT.GREATER.THAN.TOTALSHIPMENTWEIGHT",
+			"errorDescription": "Total weight of the Dry Ice is greater than total shipment weight. Please update and try again."
+		},
+		{
+			"code": "EVENTNOTIFICATION.LOCALE.INVALID",
+			"errorDescription": "Language Code is invalid for event notification {EVENT_NOTIFICATION_INDEX}.Please update and try again."
+		},
+		{
+			"code": "EXEMPTION.NUMBER.INVALID",
+			"errorDescription": " The ITAR License or Exemption Number is invalid. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.DATA.MISSING",
+			"errorDescription": "Export detail data is missing in this shipment. Please update and try again."
+		},
+		{
+			"code": "HOLDLOCATION.INSIDEDELIVERY.INVALID",
+			"errorDescription": "INSIDE_DELIVERY is not valid with HOLD_AT_LOCATION.Please update and try again."
+		},
+		{
+			"code": "INCOUNTRY.SERVICES.NOTALLOWED",
+			"errorDescription": "Intra-country service is not supported for this country. Please update and try again."
+		},
+		{
+			"code": "INTERNATIONALBROKER.POSTALCODE.FORMAT.INVALID",
+			"errorDescription": "International Broker {BROKER_INDEX}-Postal Code Format is invalid. Please update and try again"
+		},
+		{
+			"code": "INTERNATIONALBROKER.POSTALCODE.NOT.FOUND",
+			"errorDescription": "International Broker {BROKER_INDEX}-Posal Code not found. Please update and try again."
+		},
+		{
+			"code": "INVALID.NOTIFICATION.ERROR",
+			"errorDescription": "Notification role type for event notification  {EVENT_NOTIFICATION_INDEX} is missing or invalid.Please update and try again."
+		},
+		{
+			"code": "MAXIMUM.WEIGHTEXCEEDS.ERROR",
+			"errorDescription": "Package weight exceeds maximum for requested service/packaging  in Commodity {COMMODITY_INDEX}. Please update and try again."
+		},
+		{
+			"code": "ORGINORDESTCOUNTRY.ZIPCOMBINATION.INVALID",
+			"errorDescription": "This country is not served. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.DESTINATION.NOT.SUPPORTED",
+			"errorDescription": "Shipment from this origin to this destination is not allowed. Please update and try again."
+		},
+		{
+			"code": "PACKAGE.DECLAREDVALUE.EXCEEDED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Declared value exceeds limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE} for the packaging type."
+		},
+		{
+			"code": "PACKAGE.DIMENSION.ERROR",
+			"errorDescription": "Dimensions entered are invalid. Please update and try again."
+		},
+		{
+			"code": "PACKAGE.EXCEEDS.MAXVALUE",
+			"errorDescription": "Package weight value in package {PACKAGE_INDEX} exceeds maximum allowed for specified country.Please update and try again."
+		},
+		{
+			"code": "PACKAGINGTYPE.LIMIT.EXCEEDED",
+			"errorDescription": "{PACKAGING_TYPE} cannot exceed the limit of {WEIGHT} {WEIGHT_UNITS}.for Package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PAYMENT.TYPE.INVALID",
+			"errorDescription": "Payment Type is invalid. Please update and try again."
+		},
+		{
+			"code": "PHONE.MINIMUMLENGTH.REQUIRED",
+			"errorDescription": "Phone Number is invalid.Please update and try again."
+		},
+		{
+			"code": "PHONE.NUMBER.INVALID",
+			"errorDescription": "Phone Number is invalid.Please update and try again."
+		},
+		{
+			"code": "PHONE.NUMBER.REQUIRED",
+			"errorDescription": "Phone Number is a required field. Please update and try again."
+		},
+		{
+			"code": "PRODUCT.INFO.REQUIRED",
+			"errorDescription": " Insufficient information for commodity {COMMODITY_INDEX} to complete shipment. Please update and try again"
+		},
+		{
+			"code": "PROHIBITED.SHIPMENT.ERROR",
+			"errorDescription": "The {SHIPPING_DOCUMENT} is prohibited for the shipment. Please update and try again."
+		},
+		{
+			"code": "RATE.REQUESTFAILED.ERROR",
+			"errorDescription": "Rate Service call failed attempting to obtain shipment level rates. Please update and try again."
+		},
+		{
+			"code": "RECIPIENT.COUNTRY.INVALID",
+			"errorDescription": "Recipient Country Code is invalid. Please update and try again."
+		},
+		{
+			"code": "RECIPIENT.TAXID.INVALID",
+			"errorDescription": "Recipient TIN Number can not exceed 18 characters. Please update and try again."
+		},
+		{
+			"code": "PACKAGECOUNT.LIMIT.EXCEEDS",
+			"errorDescription": "The package count for this shipment exceeds limit. Please update and try again."
+		},
+		{
+			"code": "PACKAGEDRYICEWEIGHT.GREATER.THAN.PACKAGEWEIGHT",
+			"errorDescription": "Package dry ice weight cannot be greater than package weight.Please update and try again."
+		},
+		{
+			"code": "PACKAGETYPE.DECLAREDVALUE.EXCEEDED",
+			"errorDescription": "Declared value exceeds limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE} for package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "SATURDAY.DELIVERY.NOTAVAILABLE",
+			"errorDescription": "Package {PACKAGE_INDEX}-Saturday Delivery is not available with the selected service. Please update and try again."
+		},
+		{
+			"code": "SELECTED.DESTINATION.SERVICETYPE.INVALID",
+			"errorDescription": "{0} is not allowed for provided origin or destination. Please change the service type and try again."
+		},
+		{
+			"code": "SENDERTAXID.MAXIMUMLENGTH.EXCEEDS",
+			"errorDescription": "Shipper TIN Number can not exceed 18 characters. Please update and try again."
+		},
+		{
+			"code": "SERVICE.COD.UNAVAILABLE",
+			"errorDescription": "SpecialServicesRequested codDetail - COD not allowed for selected service type in in package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "SERVICE.NOTELIGIBLE.FORACCOUNT",
+			"errorDescription": "This Account is not eligible for  Smart Post Service. Please update and try again."
+		},
+		{
+			"code": "SERVICE.TYPE.INVALID",
+			"errorDescription": "ServiceType is invalid. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPE.NOT.ALLOWED",
+			"errorDescription": "This {SPECIAL_SERVICE_TYPE} is not available.Please update and try again."
+		},
+		{
+			"code": "STATEORPROVINCE.CODE.INVALID",
+			"errorDescription": "International Importer of Record - The length of the state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "TELEPHONE.NUMBER.REQUIRED",
+			"errorDescription": "Phone Number is required. Please update and try again."
+		},
+		{
+			"code": "US.DANGEROUSGOODS.VIOLATIONS",
+			"errorDescription": "This shipment is not allowed because of {SPECIAL_SERVICE_TYPE} violations that limit shipping options. For any questions, please call your local FedEx customer service"
+		},
+		{
+			"code": "WEIGHT.VALUE.REQUIRED",
+			"errorDescription": "Weight Value  is required and cannot be less than 1. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICE.NOT.ALLOWED",
+			"errorDescription": "{SPECIAL_SERVICE_TYPE} This special service is not allowed for the selected service type. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.ELECTRONICIMAGE.REQUIRED",
+			"errorDescription": "This {SHIPPING_DOCUMENT}  requires electronic image. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTLIMIT.VIOLATION.ERROR",
+			"errorDescription": "This shipment is not allowed because of dangerous goods  hazardous materials or dry ice violations that limit shipping options.  For any questions  please call your local FedEx customer service"
+		},
+		{
+			"code": "SHIPMENTSERVICES.ZIPCODE.NOTAVAILABLE",
+			"errorDescription": "The shipper country is not supported. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.STATEORPROVINCECODE.INVALID",
+			"errorDescription": "Shipper State or Province code is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPINGADDRESS.DETAILS.REQUIRED",
+			"errorDescription": "Shipping Address is required. Please update and try again."
+		},
+		{
+			"code": "SHIPPINGCOUNTRY.DANGEROUSGOODS.UNAVAILABLE",
+			"errorDescription": "In order to ship {UN_ID}, please set the {SUPPLEMENTAL_FIELD} to have a value of {REQUIRED_VALUE}. If you have any questions, please call your local FedEx customer service."
+		},
+		{
+			"code": "SHIPPINGCOUNTRY.DANGEROUSGOODS.VALIDATION",
+			"errorDescription": "In order to ship {UN_ID}, please set the {SUPPLEMENTAL_FIELD} to have a value of {REQUIRED_VALUE}. If you have any questions, please call your local FedEx customer service."
+		},
+		{
+			"code": "SHIPPINGDATE.SATURDAYPICKUPONLY.AVAILABLE",
+			"errorDescription": "Saturday Pickup for this service type is not available.Please update and try again. "
+		},
+		{
+			"code": "SHIPMENT.ACCOUNT.INVALID",
+			"errorDescription": "Account Type is invalid as Payor country code must match either Origin or Destination country code. Please update and try again."
+		},
+		{
+			"code": "SHIPDATE.PICKUPDATE.MISMATCH",
+			"errorDescription": "Ready date, pickup date and the shipment date are not the same. Please update and try again."
+		},
+		{
+			"code": "SERVICETYPE.MAXLENGTHEXCEED.ERROR",
+			"errorDescription": "Package size exceeds the maximum allowed length for package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "SERVICESTYPE.INSIDEDELIVERY.UNAVAILABLE",
+			"errorDescription": "Inside Delivery is not allowed with the selected service. Please update and try again"
+		},
+		{
+			"code": "SERVICESTYPE.INSIDEPICKUP.UNAVAILABLE",
+			"errorDescription": "Inside Pickup is not allowed with the selected service. Please update and try again."
+		},
+		{
+			"code": "SERVICETYPE.DANGEROUSGOODS.NOTALLOWED",
+			"errorDescription": "Dangerous Goods accessibility type is invalid. Please update and try again"
+		},
+		{
+			"code": "TAXIDNBR.CNPJCPF.INVALID",
+			"errorDescription": "The tax ID number and/or CNPJ/CPF is invalid. Please update and try again."
+		},
+		{
+			"code": "DATECERTAIN.DELIVERYDATE.INVALID",
+			"errorDescription": "Please select a valid Date Certain delivery date: {DATE_1}; {DATE_2}; {DATE_3}; {DATE_4}; {DATE_5}; {DATE_6}; {DATE_7}; {DATE_8}; {DATE_9}; {DATE_10}; {DATE_11}"
+		},
+		{
+			"code": "ZIPPOSTALCODE.POSTOFFICE.INVALID",
+			"errorDescription": "The postal code is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPING.POSTALCODE.REQUIRED",
+			"errorDescription": "Shipping postal code is required. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.COMMODITY.CLARIFICATION",
+			"errorDescription": "The description for commodity {COMMODITY_INDEX} is vague and needs clarification. Please update and try again."
+		},
+		{
+			"code": "SERVICE.DANGEROUSMATERIAL.NOTAVAILABLE",
+			"errorDescription": "Shipment not allowed due to  approval number mismatch.For any questions, Please contact local FedEx customer service"
+		},
+		{
+			"code": "MAXIMUMWEIGHT.ALLOWED.EXCEEDED",
+			"errorDescription": "Weight exceeds the allowed limit. Please update and try again."
+		},
+		{
+			"code": "VALUE.TOO.LONG",
+			"errorDescription": "CustomerReference value is invalid for customer reference {CUSTOMER_REFERENCE_INDEX} in requestedPackage {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SIGNATUREOPTIONDETAIL.REQUIRED",
+			"errorDescription": "Signature option detail is required when special service type is SIGNATURE_OPTION. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.PERMITNUMBER.INVALID",
+			"errorDescription": "Export permit number is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.RETURNSHIPMENT.REQUIRED",
+			"errorDescription": "Return shipment detail is required when special service type is RETURN_SHIPMENT. Please update and try again."
+		},
+		{
+			"code": "DUTIESPAYMENT.PAYMENTTYPE.NOTVALID",
+			"errorDescription": "Duties payment type is not valid for international, non-intra-canada non-document shipment. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "Destination country code is invalid. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRYCODE.NOTVALID",
+			"errorDescription": "Destination country code must be US for return shipments. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.MISSING",
+			"errorDescription": "Origin/shipper country code is invalid or missing. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRYCODE.NOTALLOWED",
+			"errorDescription": "Shipments to syria are not allowed from the specified origin country. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.SHIPMENTPURPOSE.INVALID",
+			"errorDescription": "Missing or invalid shipment purpose for commercial invoice.Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENTDETAIL.RETURNTYPE.NOTSUPPORTED",
+			"errorDescription": "Return type not supported. Please udate and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSCOUNTRYCODE.MISMATCH",
+			"errorDescription": "Payor country code must match either origin or destination country code. Pleaseupdate and try gain."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.INVALID",
+			"errorDescription": "Special service {SPECIAL_SERVICE_TYPE} is invalid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUEAMOUNT.EXCEEDED",
+			"errorDescription": "Declared value can not be greater than $1000 for express return shipments. Please update and try again."
+		},
+		{
+			"code": "LABELSPECIFICATION.LABELFORMATTYPE.NOTALLOWED",
+			"errorDescription": "Only 2D common label allowed with return or pending shipments. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMTYPE.APPOINTMENT.NOTALLOWED",
+			"errorDescription": "Appointment delivery not allowed with return shipments or service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.COD.NOTALLOWED",
+			"errorDescription": "COD not allowed with return or pending shipments. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.NOTALLOWED",
+			"errorDescription": "Origin country code must be US for return shipments. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUE.EXCEEDED",
+			"errorDescription": "Package {PACKAGE_INDEX} carriage value exceeds maximum declared value for intra-Canada shipping. Please update and try again."
+		},
+		{
+			"code": "DECLAREDVALUE.CURRENCY.INVALID",
+			"errorDescription": "Intra canada shipments must have canadian dollars as carriage value currency. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMODITIES.EXCEEDED",
+			"errorDescription": "Number of commodities exceeds min or max limit. Please update and try again."
+		},
+		{
+			"code": "SHIPPINGCHARGESPAYMENT.PAYMENTTYPE.NOTSUPPORTED",
+			"errorDescription": "Only bill sender or bill third party allowed with return or pending shipments. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTPERSONNAMEORCOMPANYNAME.REQUIRED",
+			"errorDescription": "CompanyName or personName is required. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Phone number must be valid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DIMENSIONSUNITS.INVALID",
+			"errorDescription": "Invalid units for dimensions of package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "MASTERTRACKINGID.TRACKINGNUMBER.INCORRECT",
+			"errorDescription": "Invalid tracking number. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.ACCESSIBILITY.REQUIRED",
+			"errorDescription": "Dangerous goods accessibility type is required. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.CUSTOMERREFERENCETYPE.INVALID",
+			"errorDescription": "Invalid customer reference type for customer reference {CUSTOMER_REFERENCE_INDEX} in requested package {PACKAGE_INDEX}. Pleae update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.HOMEDELIVERYPREMIUMDETAIL.REQUIRED",
+			"errorDescription": "Home delivery premium detail is required when special service type is HOME_DELIVERY_PREMIUM. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DANGEROUSGOODSDETAIL.REQUIRED",
+			"errorDescription": "Dangerous goods detail is  required when special service type is DANGEROUS_GOODS. Please update and try again."
+		},
+		{
+			"code": "CANCELSHIPMENT.TRACKINGNUMBER.DELETED",
+			"errorDescription": "Shipment delete was requested for tracking number which was already deleted. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SATURDAYDELIVERY.INVALID",
+			"errorDescription": "Special service is invalid. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "An invalid destination zip/postal code was entered. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "An invalid origin country was entered. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "An invalid origin zip/postal code was entered. Please update and try again."
+		},
+		{
+			"code": "WEIGHT.VALUE.INVALID",
+			"errorDescription": "An invalid weight was entered. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.PRIORITYALERTDETAIL.NOTELIGIBLE",
+			"errorDescription": "Customer not eligible for priority alert. Please update and try again."
+		},
+		{
+			"code": "DIMENSIONS.UNITS.MISMATCH",
+			"errorDescription": "Dim unit of measure must be the same for all packages. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMDETAIL.HOMEDELIVERYPREMIUMTYPE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Home delivery premium type is invalid. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMDETAIL.HOMEDELIVERYPREMIUMTYPE.REQUIRED",
+			"errorDescription": "Home delivery premium type is required and cannot be null. Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENTDETAIL.RETURNTYPE.INVALID",
+			"errorDescription": "Return type is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSSTATEORPROVINCE.EXCEEDED",
+			"errorDescription": "The length of the origin state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PACKAGINGTYPE.EXCEEDED",
+			"errorDescription": "Total packages cannot exceed 1 for fedex 10Kg/25Kg box. Please update and try again."
+		},
+		{
+			"code": "PACKAGINGTYPE.FEDEXENVELOPE.EXCEEDED",
+			"errorDescription": "Total packages cannot exceed 1 for fedex envelope. Please update and try again."
+		},
+		{
+			"code": "PACKAGINGTYPE.FEDEX_PAK.EXCEEDED",
+			"errorDescription": "Total packages cannot exceed 1 for fedex pak. Please update and try again."
+		},
+		{
+			"code": "SERVICETYPE.FEDEX_EXPRESSTAG.EXCEEDED",
+			"errorDescription": "Total packages cannot exceed 25 for fedex express tag. Please update and try again."
+		},
+		{
+			"code": "WEIGHT.UNIT.MISMATCH",
+			"errorDescription": "Weight unit of measure must be the same for all packages. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.CODANDSERVICETYPE.MISMATCH",
+			"errorDescription": "COD is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.CUTFLOWERANDSERVICETYPE.MISMATCH",
+			"errorDescription": "Cut flowers is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHT.REQUIRED",
+			"errorDescription": "Dry ice weight is required and cannot be null. Please update and try again."
+		},
+		{
+			"code": "DRYICEWEIGHT.VALUE.OVERLIMIT",
+			"errorDescription": "Dry Ice weight over limit of 2.5 kg for destination. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHTUNITS.INVALID",
+			"errorDescription": "Dry Ice weight (in kilograms) is required with dry ice special service. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSRESIDENTIAL.NOTALLOWED",
+			"errorDescription": "Residential delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEM.DIMENSIONSUNITS.INVALID",
+			"errorDescription": "Only IN and CM are valid values for linear units. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHTUNITS.INVALID",
+			"errorDescription": "Only LB and KG are valid values for weight units. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.CUTFLOWER.NOTALLOWED",
+			"errorDescription": "Cut flowers is not allowed. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.BROKERSELECTOPTION.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Broker select option is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.PACKAGECODDETAIL.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - COD is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.NOTALLOWED",
+			"errorDescription": " Package {PACKAGE_INDEX} - Dangerous goods is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SIGNATUREOPTION.MISMATCH",
+			"errorDescription": "The signature option cannot be different across packages. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "Postal code not found or invalid for hold at location in special services requested. Please udate and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSCOUNTRYCODE.NOTSERVED",
+			"errorDescription": "Country not served for hold at location in secial services requested. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSCOUNTRYCODE.EXCEEDED",
+			"errorDescription": "Country code is required and must not exceed the limit of 2 characters for hold at location in special services requested. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.EXCEEDED",
+			"errorDescription": "The length of the postal code exceeds the limit of 16 characters for hold at location in special services requested.Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "Invalid postal code format for COD recipient in special services requested.Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.EXCEEDED",
+			"errorDescription": "The length of the postal code exceeds the limit of 16 characters for COD recipient in special services requested. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "The length of the state or province exceeds the limit of 3 characters for COD recipient in special services requested. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALWEIGHT.INVALID",
+			"errorDescription": "Invalid total weight in requested shipment. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.WEIGHTUNITS.INVALID",
+			"errorDescription": "Invalid weight units in requested package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.WEIGHTUNITS.NOTSUPPORTED",
+			"errorDescription": "Invalid weight units in requested package {PACKAGE_INDEX} when special services requested is dry ice. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSSTREETLINES.INVALID",
+			"errorDescription": "Invalid street line in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "Invalid country code in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSSTATEORPROVINCECODE.INVALID",
+			"errorDescription": "Invalid state or province code in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCITY.INVALID",
+			"errorDescription": "Invalid city in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.NOTFOUND",
+			"errorDescription": "Postal code not found in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "Postal code not served in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCOUNTRYCODE.NOTSERVED",
+			"errorDescription": "Country not served in printed label of origin.Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCOUNTRYCODE.EXCEEDS",
+			"errorDescription": "Country code is required and must not exceed the limit of 2 characters in printed label of origin.Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.EXCEEDED",
+			"errorDescription": "The length of the postal code exceeds the limit of 16 characters in printed label of origin.Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "The length of the state or province exceeds the limit of 3 characters in printed label of origin. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.MISMATCH",
+			"errorDescription": "Postal or routing code and country do not match for cod recipient in special services requested.Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSCOUNTRYCODE.MISMATCH",
+			"errorDescription": "Postal or routing code and country do not match for hold at location as special services requested.Please update and try again."
+		},
+		{
+			"code": "RECIPIENT.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Recipient phone number in requested shipment is invalid.Please update and try again."
+		},
+		{
+			"code": "BROKERS.BROKERADDRESS.REQUIRED",
+			"errorDescription": "Requested shipment international detail broker {BROKER_INDEX} an address is required.Please update and try again."
+		},
+		{
+			"code": "FIXEDVALUE.AMOUNT.INVALID",
+			"errorDescription": "Fixed value amount is invalid in requested package {PACKAGE_INDEX}.Please update and try again."
+		},
+		{
+			"code": "TAXESORMISCELLANEOUSCHARGE.AMOUNT.INVALID",
+			"errorDescription": "Commercial invoice taxes or miscellaneous charge amount is invalid.Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.ACCESSIBILITY.INVALID",
+			"errorDescription": "Invalid accessibility type of dangerous goods detail in special services requested in requested package {PACKAGE_INDEX}.Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.CONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": "Contact phone number is required in cod detail of special services requested.Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Contact phone number is invalid in cod detail special services.Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Invalid contact phone number in label specification of printed label origin.Please update and try again."
+		},
+		{
+			"code": "BROKER.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Invalid contact phone number for international detail broker {BROKER_INDEX}.Please update and try again."
+		},
+		{
+			"code": "VARIABLEHANDLINGCHARGEDETAIL.RATEELEMENTBASIS.INVALID",
+			"errorDescription": "Invalid variable handling values for rate element basis and rate type.Please update ad try again."
+		},
+		{
+			"code": "FIXEDVALUE.CURRENCY.MISMATCH",
+			"errorDescription": "Variable handling currency {CURRENCY_TYPE_1} does not match the rate currency {CURRENCY_TYPE_2}, variable handling could not be calculated."
+		},
+		{
+			"code": "CODDETAIL.CODREFERENCEINDICATOR.INVALID",
+			"errorDescription": "Invalid cod reference indicator when cod detail is the special services requested.Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Invalid contact phone number for international detail improter of record.Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.HAZMATCERTIFICATEDATA.REQUIRED",
+			"errorDescription": "Hazmat certificate data is required when special services requested is dangerous goods detail.Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPPER.REQUIRED",
+			"errorDescription": "Shipper is required. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMDETAIL.DELIVERYDATE.REQUIRED",
+			"errorDescription": "Home delivery premium detail date must be supplied when requesting DATE_CERTAIN delivery. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "The length of the state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.STATEORPROVINCECODEANDPOSTALCODE.MISMATCH",
+			"errorDescription": "The state and postal code do not match. Please udate and try again."
+		},
+		{
+			"code": "ADDRESS.POSTALCODEANDCITY.MISMATCH",
+			"errorDescription": "The postal code and city in shipper is mismatch. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSSTREETLINES.INVALID",
+			"errorDescription": "Invalid street line 1 in the shipper. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCITY.INVALID",
+			"errorDescription": "The origin city is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.NOTFOUND",
+			"errorDescription": "The origin postal code not found. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.INVALIDFORMAT",
+			"errorDescription": "The origin postal code format is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "The origin postal code is not served. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.NOTSERVED",
+			"errorDescription": "The origin country not served. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.EXCEEDED",
+			"errorDescription": "The shipper country code is required and must not exceed the limit of 2 characters. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "The origin postal code or routing code is required. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODEANDCOUNTRYCODE.MISMATCH",
+			"errorDescription": "The origin postal or routing code and country do not match. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSPOSTALCODE.EXCEEDED",
+			"errorDescription": "The length of the shipper postal code exceeds the limit of 16 characters. Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSSTREETLINE.INVALID",
+			"errorDescription": "Invalid street lines for international broker. Please update and try again."
+		},
+		{
+			"code": "BROKERS.CONTACTCOMPANYNAME.INVALID",
+			"errorDescription": "Invalid broker company name for international broker. Please update and try again."
+		},
+		{
+			"code": "BROKERS.CONTACTPERSONNAME.INVALID",
+			"errorDescription": "Invalid person name for international broker. Please update and try again."
+		},
+		{
+			"code": "BROKERS.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Invalid phone number for international broker. Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSSTATEORPROVINCECODE.INVALID",
+			"errorDescription": "Invalid state or province code for international broker {BROKER_INDEX}. Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSCITY.INVALID",
+			"errorDescription": "Invalid city for international broker {BROKER_INDEX}. Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "Postal code not served for international broker {BROKER_INDEX} . Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSCOUNTRYCODE.NOTSERVED",
+			"errorDescription": "Country not served for international broker {BROKER_INDEX} . Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSCOUNTRYCODE.EXCEEDED",
+			"errorDescription": "Country code is required and must not exceed the limit of 2 characters for international broker {BROKER_INDEX} . Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "Invalid postal code or routing code for international broker {BROKER_INDEX} . Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "Postal code or routing code is required for international broker {BROKER_INDEX}. Please update and try again."
+		},
+		{
+			"code": "BROKERS.ADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "The length of the state or province exceeds the limit of 3 characters for international broker {BROKER_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SPECIALSERVICETYPESCOD.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} COD cannot be entered at the package level for the selected service. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPESCOD.INVALID",
+			"errorDescription": "COD cannot be entered at the shipment level for the selected service. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.HOMEDELIVERYPREMIUM.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} Home delivery premium is not allowed with the package service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.INSIDEDELIVERY.NOTALLOWED",
+			"errorDescription": "Inside delivery is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.INSIDEPICKUP.NOTALLOWED",
+			"errorDescription": "Inside pickup is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DRYICE.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} DRY_ICE is not allowed in the package. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.APPOINTMENT.NOTALLOWED",
+			"errorDescription": "Appointment delivery is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.PIECECOUNTVERIFICATION.NOTALLOWED",
+			"errorDescription": "Piece count verification is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.PRIORITYALERT.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} priority alert is not allowed with the service selected in the package. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPE.PRIORITYALERT.NOTALLOWED",
+			"errorDescription": "Priority alert is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SATURDAYPICKUP.NOTALLOWED",
+			"errorDescription": "Saturday pickup is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DATECERTAIN.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Please select a valid Date Certain delivery date  : {DATE_1}; {DATE_2}; {DATE_3}; {DATE_4}; {DATE_5}; {DATE_6}; {DATE_7}; {DATE_8}; {DATE_9}; {DATE_10}; {DATE_11}. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.PRIORITYALERT.INVALID",
+			"errorDescription": "Special service conflict. PRIORITY_ALERT is not valid with COD, COD_REMITTANCE, PRINT_RETURN_LABEL, EMAIL_LABEL or FEDEX_TAG. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.COD.INVALID",
+			"errorDescription": "Special service conflict. COD is not valid with COD_REMITTANCE, PRINT_RETURN_LABEL, EMAIL_LABEL, or FEDEX_TAG. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICESTYPE.SATURDAYDELIVERY.NOTAVAILABLE",
+			"errorDescription": "FedEx home delivery saturday service is not available to destination zip code. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICES.HOMEDELIVERYPREMIUM.NOTAVAILABLE",
+			"errorDescription": "FedEx home delivery premium services are not available to this destination. Please update and try again."
+		},
+		{
+			"code": "PENDINGSHIPMENTDETAIL.EMAILLABELDETAIL.NOTALLOWED",
+			"errorDescription": "Return shipment email label not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.REQUIRED",
+			"errorDescription": "Dry ice package count is required. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.HOLDATLOCATION.NOTALLOWED",
+			"errorDescription": "Hold at location is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.THIRDPARTYCONSIGNEE.NOTALLOWED",
+			"errorDescription": "Third party consignee is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SIGNATUREOPTIONTYPE.INDIRECT.NOTALLOWED",
+			"errorDescription": "Indirect signature is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SIGNATUREOPTIONTYPE.DIRECT.NOTALLOWED",
+			"errorDescription": "Direct signature is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SIGNATUREOPTIONTYPE.ADULT.NOTALLOWED",
+			"errorDescription": "Adult signature is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.INTERNATIONALCONTROLLEDEXPORT.NOTALLOWED",
+			"errorDescription": "Intl controlled export service is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMTYPE.EVENING.NOTALLOWED",
+			"errorDescription": "Home delivery premium evening is not allowed with the service selected or for return shipments. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMTYPE.DATECERTAIN.NOTALLOWED",
+			"errorDescription": "Home delivery premium date certain is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.ACCESSIBILITY.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Accessible Dangerous Goods is not allowed with the service selected..Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.NOTSUPPORTED",
+			"errorDescription": "Dangerous goods cannot be entered at the shipment level for the selected service. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.TERMSOFSALE.REQUIRED",
+			"errorDescription": "Terms of sale is required. Please update and try again."
+		},
+		{
+			"code": "DESTINATIONCONTROLDETAIL.STATEMENTTYPES.NOTALLOWED",
+			"errorDescription": "Destination control statement type not allowed for selected service. Please update and try again."
+		},
+		{
+			"code": "DESTINATIONCONTROLDETAIL.STATEMENTTYPES.INVALID",
+			"errorDescription": "Destination control statement type is not valid. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSOPTION.TYPE.INVALID",
+			"errorDescription": "Invalid customs option type. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTRIBUTES.INVALID",
+			"errorDescription": "Invalid etd detail attribute. Please update and try again."
+		},
+		{
+			"code": "DECLAREDVALUE.CURRENCY.INVALID",
+			"errorDescription": "Declaration INSURED_VALUE currency is invalid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPDATESTMP.INVALID",
+			"errorDescription": "Invalid associated outbound ship date. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.ETDDETAIL.NOTALLOWED",
+			"errorDescription": "Electronic trade documents are not allowed for shipments with ship date past 10 days. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTACHEDDOCUMENTSDOCUMENTTYPE.INVALID",
+			"errorDescription": "Electronic trade document file type or name is invalid. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTACHEDDOCUMENTS.EXCEEDED",
+			"errorDescription": "Number of electronic trade documents attached exceed the maximum allowed. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.ADDRESSCOUNTRYCODE.MISMATCH ",
+			"errorDescription": "Origin country code must be the same as sender country code. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSOPTION.errorDescription.REQUIRED",
+			"errorDescription": "Customs option errorDescription required. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.EXPORTCOMPLIANCESTATEMENT.INVALID",
+			"errorDescription": "Invalid statement data for export detail. Please update and try again."
+		},
+		{
+			"code": "COMMODOTIES.COUNTRYOFMANUFACTURE.INVALID",
+			"errorDescription": "Invalid country of manufacture for commodity {COMMODITY_INDEX}. Please correct the value as it will not be accepted in the future..Please update and try again."
+		},
+		{
+			"code": "HOLDATLOCATIONDETAIL.LOCATIONTYPE.INVALID",
+			"errorDescription": "Location type in hold at location detail is not valid. Please update and try again."
+		},
+		{
+			"code": "LABELSPECIFICATION.IMAGETYPE.INVALID",
+			"errorDescription": "Invalid image type requested for {REQUESTED_SHIPPING_DOCUMENT_TYPE}.Please update and try again."
+		},
+		{
+			"code": "LABELSPECIFICATION.LABELPRINTINGORIENTATION.INVALID",
+			"errorDescription": "Invalid values for label printing orientation type. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SHIPMENTDRYICEDETAIL.REQUIRED",
+			"errorDescription": "Shipment dry ice detail is required. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHT.INVALID",
+			"errorDescription": "Invalid total weight for shipment dry ice detail. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.INVALID",
+			"errorDescription": "Invalid pacakage count shipment dry ice detail. Please update and try again."
+		},
+		{
+			"code": "DISPOSITIONS.DISPOSITIONTYPE.INVALID",
+			"errorDescription": "Invalid disposition type for {REQUESTED_SHIPPING_DOCUMENT_TYPE}."
+		},
+		{
+			"code": "LABELSPECIFICATION.LABELFORMATTYPE.NOTSUPPORTED",
+			"errorDescription": "Label format type not supported for the supplied origin and destination. Please update and try again."
+		},
+		{
+			"code": "BROKER.COUNTRYCODE.MISMATCH",
+			"errorDescription": "Broker {BROKER_INDEX}, country should be the same as Shipper country. Please update and try again."
+		},
+		{
+			"code": "EXPORTDETAIL.PERMITNUMBER.REQUIRED",
+			"errorDescription": "The canada export permit number is required for this shipment. Please update and try again."
+		},
+		{
+			"code": "PROCESSINGOPTIONTYPE.ALLOW_ASYNCHRONOUS.INVALID",
+			"errorDescription": "Invalid asynchronous processing option. Please update and try again."
+		},
+		{
+			"code": "BROKERS.TYPE.INVALID",
+			"errorDescription": "International Broker {BROKER_INDEX}, - Invalid Broker Type..Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.PRIORITYALERT.CONFLICT",
+			"errorDescription": "Priority alert must be entered on all packages. Please pdate and try again."
+		},
+		{
+			"code": "CODRECIPIENT.TINSNUMBER.EXCEEDED",
+			"errorDescription": "TIN number can not exceed 18 characters for cod recipient. Please update and try again."
+		},
+		{
+			"code": "BROKER.TINSNUMBER.CANNOTEXCEED",
+			"errorDescription": "TIN number can not exceed 18 characters for international detail broker . Please update and try again."
+		},
+		{
+			"code": "TOTALWEIGHT.UNITS.INVALID",
+			"errorDescription": "Requested shipment total weight must be expressed in pound units (LB) for domestic express shipments. Please update and try again."
+		},
+		{
+			"code": "DRYICEWEIGHT.VALUE.INVALID",
+			"errorDescription": "Dry Ice Weight value cannot be < 1 in package {PACKAGE_INDEX},,. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.PRIORITYALERTDETAIL.CONFLICT",
+			"errorDescription": "Special service priority alert is not valid with delivery on invoice acceptance or third party consignee. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.ACCOUNTNUMBER.NOTFOUND",
+			"errorDescription": "{ACCOUNT_NUMBER_TYPE},, account number was not found.Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.ADDITIONALMEASURES.MISSING",
+			"errorDescription": "Additional measures are missing or invalid for commodity {COMMODITY_INDEX},,; estimated duties and taxes were not returned. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.COUNTRYOFMANUFACTURE.MISSING",
+			"errorDescription": "Country of manufacture is missing or invalid for commodity {COMMODITY_INDEX},; estimated duties and taxes were not returned. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.REQUIRED",
+			"errorDescription": "Shipment special service type {SPECIAL_SERVICE_TYPE}, is required for this shipment. Please update and try again."
+		},
+		{
+			"code": "CONTAINERS.QVALUE.INVALID",
+			"errorDescription": "Invalid Q-Value for dangerous goods container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "errorDescription.HAZARDCLASS.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - the hazard class is invalid for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "errorDescription.HAZARDCLASS.REQUIRED",
+			"errorDescription": "Hazard Class is required for dangerous goods commodity {COMMODITY_INDEX}, within  container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "errorDescription.PERCENT.INVALID",
+			"errorDescription": "Percentage is invalid for commodity {COMMODITY_INDEX}, in container {CONTAINER_INDEX}, in package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSPACKAGEDETAIL.CONTAINERS.REQUIRED",
+			"errorDescription": "Data in dangerous goods container {CONTAINER_INDEX}, within package {PACKAGE_INDEX}, is required. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.QUANTITY.INVALID",
+			"errorDescription": "Invalid quantity data for dangerous goods commodity {COMMODITY_INDEX}, within container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "errorDescription.PACKINGGROUP.INVALID",
+			"errorDescription": "Invalid packing group for dangerous goods commodity {COMMODITY_INDEX}, within container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "errorDescription.PACKINGINSTRUCTION.INVALID",
+			"errorDescription": "Invalid packing instruction for dangerous goods commodity {COMMODITY_INDEX}, within container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATING.SHIPMENTRATEDETAILS.NOTAVAILABLE",
+			"errorDescription": "Rate information will be provided on successful processing of the last piece of the multiple piece shipment. Please update and try again."
+		},
+		{
+			"code": "OPTIONSerrorDescription.TECHNICALNAME.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Invalid Technical name for dangerous goods commodity {COMMODITY_INDEX}, in container {CONTAINER_INDEX},. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.HARMONIZEDCODE.MISSING",
+			"errorDescription": "Harmonized code is missing or invalid for commodity {COMMODITY_INDEX},; estimated duties and taxes were not returned. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.VARIABLEHANDLINGCHARGEDETAIL.INVALID",
+			"errorDescription": "Variable handling cannot be calculated for the selected service. Please update and try again."
+		},
+		{
+			"code": "HAZADOUSCOMMODITIES.errorDescriptionAUTHORIZATION.REQUIRED",
+			"errorDescription": "Authorization is required for dangerous goods commodity {COMMODITY_INDEX}, within container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSPACKAGEDETAIL.CONTAINERS.NOTSPECIFIED",
+			"errorDescription": "Container type is not specified for dangerous goods container {CONTAINER_INDEX}, within package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.HARMONIZEDCODEANDNAME.MISMATCH",
+			"errorDescription": "Commodity {COMMODITY_INDEX}, harmonized code and commodity name/errorDescription does not match. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DIMENSIONS.EXCEEDED",
+			"errorDescription": "Total length or width of shipment exceeds the maximum allowed.  Please contact our Truckload Management Services team at {PHONE_NUMBER},. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DIMESNIONS.REQUIRED",
+			"errorDescription": "Dimensions are required for Package {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SIGNATUREOPTIONDETAIL.INVALID",
+			"errorDescription": "Signature option requested is not valid for this service type. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.QUANTITYAMOUNT.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Invalid hazardous commodity quantity amount. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.QUANTITYUNITS.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Invalid hazardous commodity quantity units. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTPERSONNAME.REQUIRED",
+			"errorDescription": "Shipper Company Name OR Person Name is required. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTPHONENUMNER.REQUIRED",
+			"errorDescription": "Shipper Phone Number is required. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.DUTIESPAYMENT.INVALID",
+			"errorDescription": "Invalid Duties Payment Type for Payor country code. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.QUANTITY.REQUIRED",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Quantity is required for hazardous commodity content. Please update and try again."
+		},		
+		{
+			"code": "SIGNATUREOPTIONDETAIL.SIGNATURERELEASENUMBER.REQUIRED",
+			"errorDescription": "signatureReleaseNumber is required for signature option NO_SIGNATURE_REQUIRED. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.CONTACTPERSONNAME.REQUIRED",
+			"errorDescription": "Origin - Company Name OR Person Name is required. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.CONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": "Origin - Phone Number is required. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Origin - Phone Number is invalid. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.ADDRESS.NOTFOUND",
+			"errorDescription": "Origin - Location Not Found. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.CONTACTCOMPANYNAME.INVALIDLENGTH",
+			"errorDescription": "Origin - Company Name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "ORIGIN.CONTACTPERSONNAME.INVALIDLENGTH",
+			"errorDescription": "Origin - Person Name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSSTATEORPROVINCE.EXCEEDED",
+			"errorDescription": "The length of the Hold at Location state or province exceeds the limit of 3 character. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESS.NOTFOUND",
+			"errorDescription": "Hold at location in special services requested location not found. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.MISMATCH",
+			"errorDescription": "Hold-at-Location Location-Zip mismatch. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSCITY.REQUIRED",
+			"errorDescription": "City is required for holdAtLocationDetail. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSSTREETLINES.REQUIRED",
+			"errorDescription": "Invalid streetLine  for holdAtLocationDetail. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSSTATEORPROVINCE.REQUIRED",
+			"errorDescription": "Invalid stateOrProvinceCode for holdAtLocationDetail. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODEANDCITY.INVALID",
+			"errorDescription": "Hold at Location Postal-City Mismatch. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SIGNATUREOPTIONTYPE.CHANGED",
+			"errorDescription": "Signature Option Type has been changed. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.NOTALLOWED",
+			"errorDescription": "Hold at Location zip is a P.O. Box - Not allowed. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.NOTFOUND",
+			"errorDescription": "Hold-at-Location Postal Code not found. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Third Party Consignee is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTID.FAILED",
+			"errorDescription": "Document {DOC_INDEX}, failed virus check. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTID.CONTENTMISSING",
+			"errorDescription": "Document {DOC_INDEX}, content is missing. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTID.FILENAMEMISSING",
+			"errorDescription": "Document {DOC_INDEX}, file name is missing. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTID.NOTSUPPORTED",
+			"errorDescription": "Document format not supported. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTTYPE.INVALID",
+			"errorDescription": "Invalid document type for document {DOC_INDEX},. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTTYPE.NOTALLOWED",
+			"errorDescription": "Document type is not allowed. Please update and try again."
+		},
+		{
+			"code": "WEIGHT.UNITS.INVALID",
+			"errorDescription": "Weight must be expressed in pound units LB for domestic express shipments. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.REQUESTEDPACKAGELINEITEMS.EXCEEDS",
+			"errorDescription": "Package count exceeds the maximum allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTAUTHORIZATIONDETAIL.ACCOUNTNUMBER.NOTALLOWED",
+			"errorDescription": "Shipment authorization detail accountNumber not allowed. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.PURPOSE.NOTALLOWED",
+			"errorDescription": "Purpose not allowed for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "TINS.NUMBER.INVALID",
+			"errorDescription": "Invalid tax id. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.VALUE.MISMATCH",
+			"errorDescription": "CustomerReference value must be same across all packages in requestedPackage {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.CUSTOMERREFERENCETYPE.MISMATCH",
+			"errorDescription": "CustomerReference type must be same across all packages in requestedPackage  {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "MASTERTRACKINGID.FORMID.REQUIRED",
+			"errorDescription": "Tracking number and form id required when manual airway bill processing option is present. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.CUSTOMERREFERENCETYPE.NOTSUPPORTED",
+			"errorDescription": "Invalid customer reference type for shipment mainfest detail. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.VALUE.NOTSUPPORTED",
+			"errorDescription": "Invalid customer reference value for shipment manifest detail. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTACHEDDOCUMENTS.NOTALLOWED",
+			"errorDescription": "Document {DOC_TYPE}, is not allowed for consolidation type. Please update and try again."
+		},
+		{
+			"code": "ALCOHOLDETAIL.ALCOHOLRECIPIENTTYPE.INVALID",
+			"errorDescription": "Missing or invalid alcohol recipient type. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.CANNOTMODIFY",
+			"errorDescription": "Shipment special service PHARMACY_DELIVERY cannot be modified. Please update and try again."
+		},
+		{
+			"code": "TRACKINGIDS.TRACKINGNUMBER.CLOSED",
+			"errorDescription": "Package cannot be deleted after a close. Please update and try again."
+		},
+		{
+			"code": "PENDINGSHIPMENTDETAIL.PROCESSINGOPTIONS.INVALID",
+			"errorDescription": "Invalid shipment processing option. Please update and try again."
+		},
+		{
+			"code": "PENDINGSHIPMENTDETAIL.PROCESSINGOPTIONS.CANNOTMODIFY",
+			"errorDescription": "Adding or removing {SHIPMENT_PROCESSING_OPTION_TYPE}, processing option is not allowed. Pease update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESS.INVALIDCHARACTER",
+			"errorDescription": "Invalid character in {PARTY}, address line 1. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCITY.INVALIDCHARACTER",
+			"errorDescription": "Invalid character in {PARTY}, city. Please update and try again."
+		},
+		{
+			"code": "SPECIALHANDLINGDETAIL.DAMAGEKNOWN.INVALID",
+			"errorDescription": "Invalid damage status in package special handling in package. Please update and try again."
+		},
+		{
+			"code": "CONTACTANDADDRESS.CONTACTCOMPANYNAME.REQUIRED",
+			"errorDescription": "Financial institution company name is required for COD. Please update and try again."
+		},
+		{
+			"code": "FINANCIALINSTITUTIONCONTACTANDADDRESS.ADDRESSCITY.REQUIRED",
+			"errorDescription": "Financial institution city name is required for COD. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTCODDETAIL.REMITTONAME.REQUIRED",
+			"errorDescription": "Remit to name is required for COD. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.VALUE.INVALID",
+			"errorDescription": "Invalid customer reference value for commercial invoice reference. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.WEIGHT.GREATERTHANZERO",
+			"errorDescription": "Weight - weight must be greater than 0 in Commodity {COMMODITY_INDEX}, in RequestedPackage {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.COMMODITIES.REQUIRED",
+			"errorDescription": "Commodities are required for RequestedPackage {PACKAGE_INDEX},. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.errorDescription.NOTVALID",
+			"errorDescription": "errorDescription not valid for documents with value. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.CUSTOMSVALUE.NONZERO",
+			"errorDescription": "Commodity customs value cannot be greater than zero if commodity errorDescription is correspondence or no commercial value. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.UNITPRICEVALUE.INVALID",
+			"errorDescription": "Commodity unit value cannot be greater than zero if commodity errorDescription is correspondence or no commercial value. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMERCIALINVOICE.NOTALLOWED",
+			"errorDescription": "A commercial invoice is not allowed if the country of manufacture is XX. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.errorDescription.INVALID",
+			"errorDescription": "Invalid errorDescription of contents for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.QUANTITY.REQUIRED",
+			"errorDescription": "Quantity is required for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.UNITPRICEVALUE.REQUIRED",
+			"errorDescription": "Unit value is required for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.ADDITIONALMEASURESUNITS.REQUIRED",
+			"errorDescription": "Unit of measurement required for commodity {COMMODITY_INDEX},. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.LATESTPICKUPDATETIME.REQUIRED",
+			"errorDescription": "Pickup date time is required. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.INVALID",
+			"errorDescription": "Invalid ready date time, must contain a time between 08:00am and 06:00pm. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALDECLAREDVALUE.INVALID",
+			"errorDescription": "Total declared value for express tag should be between 0 and 50000. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.INVALIDFORMAT",
+			"errorDescription": "Invalid date format at ready date time. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.LATESTPICKUPDATETIME.INVALIDFORMAT",
+			"errorDescription": "Invalid date format at latest pickup date time. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.INVALIDTIME",
+			"errorDescription": "For commercial pickup the ready date time should be before the business close time. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.COURIERINSTRUCTIONS.EXCEEDSLIMIT",
+			"errorDescription": "Courier instructions field should not be more than 30 characters. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.INVALIDDAY",
+			"errorDescription": "The requested pickup date is not a business day. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.INVALIDDATE",
+			"errorDescription": "The requested pickup date may not be more than 14 days from today. Please update and try again."
+		},
+		{
+			"code": "CANCELTAG.TRACKINGNUMBER.CANNOTCANCEL",
+			"errorDescription": "Call tag cannot be cancelled. Please update and try again."
+		},
+		{
+			"code": "COMPLETEDTAGDETAIL.CONFIRMATIONNUMBER.NOTFOUND",
+			"errorDescription": "Unable to retrieve details confirmation number not found. Please update and try again."
+		},
+		{
+			"code": "CANCELTAG.TRACKINGNUMBER.ALREADYCANCELLED",
+			"errorDescription": "Unable to cancel call tag it has been already cancelled. Please update and try again."
+		},
+		{
+			"code": "COMPLETEDTAGDETAIL.CONFIRMATIONNUMBER.REQUIRED",
+			"errorDescription": "Confirmation number required to cancel a tag transaction. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.TOOLATE",
+			"errorDescription": "Past cut off time. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.BEYONDONEDAY",
+			"errorDescription": "Cannot schedule pickup beyond 1 working day. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.PREVIOUSDAY",
+			"errorDescription": "Cannot schedule pickup request for previous day. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERREFERENCES.VALUE.INVALIDCHARACTER",
+			"errorDescription": "Customer reference number contains an invalid character. Please update and try again."
+		},
+		{
+			"code": "CANCELTAG.TRACKINGNUMBER.DUPLICATE",
+			"errorDescription": "Duplicate cancel request. Please update and try again."
+		},
+		{
+			"code": "HOLDATLOCATIONDETAIL.LOCATIONID.NOTSUPPORTED",
+			"errorDescription": "No dispatch found for this location. Please update and try again."
+		},
+		{
+			"code": "ADDRESS.POSTALCODEANDSTATEORPROVINCECODE.MISMATCH",
+			"errorDescription": "Zip state mismatch. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.RECIPIENTS.INCOMPLETE",
+			"errorDescription": "Incomplete recipient data. Please update and try again."
+		},
+		{
+			"code": "HOLDATLOCATIONDETAIL.LOCATIONID.DUPLICATE",
+			"errorDescription": "Dispatch already exists. Please update and try again."
+		},
+		{
+			"code": "PICKUPDETAIL.READYPICKUPDATETIME.TOOEARLY",
+			"errorDescription": "Difference between ready time and business close or last pickup time is too small. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESS.INVALID",
+			"errorDescription": "Destination address is not provided/ invalid."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PICKUPTYPE.INVALID",
+			"errorDescription": "Pickup detail request type pickup request type is invalid."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.SEQUENCENUMBER.DUPLICATE",
+			"errorDescription": "Duplicate sequence or missing sequence number in the package list. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.HARMONIZEDCODE.INVALID",
+			"errorDescription": "Harmonized code is invalid. Please update and try again."
+		},
+		{
+			"code": "HOLDATLOCATION.LOCATIONCONTACTANDADDRESSADDRESS.REQUIRED",
+			"errorDescription": "Unable to obtain a default hold at location address. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.HOLDATLOCATIONDETAIL.REQUIRED",
+			"errorDescription": "Default hold at location data might not be valid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPPINGDOCUMENTSPECIFICATION.NOTALLOWED",
+			"errorDescription": "Document shipment is not allowed with FICE. Please update and try again."
+		},
+		{
+			"code": "INTERNATIONALCONTROLLEDEXPORTDETAIL.ENTRYNUMBER.REQUIRED",
+			"errorDescription": "FICE entry number is required. Please update and try again."
+		},
+		{
+			"code": "PACKAGINGTYPE.VALUE.INVALID",
+			"errorDescription": "Invalid physical packaging. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMODITIES.EMPTY",
+			"errorDescription": "The commodity list is empty. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMODITIES.CANNOTADD",
+			"errorDescription": "Commodities can not be added to this shipment. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.PROHIBITED",
+			"errorDescription": "An electronic {IMAGE_USAGE}, is prohibited for a FedEx generated {SHIPPING_DOCUMENT}, for your shipping scenario.  The electronic {IMAGE_USAGE}, will be not be applied.. Please update and try again."
+		},
+		{
+			"code": "DISPOSITIONS.DISPOSITIONTYPE.NOTSUPPORTED",
+			"errorDescription": "Requested combination of the dispositions {DISPOSITION_TYPE1}, and {DISPOSITION_TYPE2}, for {REQUESTED_SHIPPING_DOCUMENT_TYPE}, is not supported. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERSPECIFIEDDETAIL.DOCTABCONTENT.NULL",
+			"errorDescription": "DocTabContent not present. No doc tab will be produced. Please update and try again."
+		},
+		{
+			"code": "LABELSPECIFICATION.LABELPRINTINGORIENTATION.NULL",
+			"errorDescription": "Label printing orientation type not specified, using default value of N. Please update and try again."
+		},
+		{
+			"code": "EMAILRECIPIENTS.EMAILADDRESS.INVALID",
+			"errorDescription": "Shipping document email recipient must contain a valid email address. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTID.TOOLARGE",
+			"errorDescription": "The requested document is too large to be emailed and will not be sent. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.OPTIONS.INVALIDCOMBINATION",
+			"errorDescription": "For package {PACKAGE_INDEX}, Commodity option Hazardous Material and Limited Quantities Commodities cannot be combined. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSCOUNTRYCODE.MISMATCHED",
+			"errorDescription": "Your Shipper or Origin Country Code does not match the previously uploaded dangerous goods information for tracking number {TRACKING_NUMBER},. Please update and try again."
+		},
+		{
+			"code": "ACCOUNTNUMBER.VALUE.MISMATCHED",
+			"errorDescription": "Shipper account number does not match the account number used to upload the dangerous goods information. Please update and try again."
+		},
+		{
+			"code": "ADDRESS.COUNTRYCODE.NOTMATCHED",
+			"errorDescription": "Your Recipient or Hold At Location Country Code does not match the previously uploaded dangerous goods information for tracking number {TRACKING_NUMBER},. Please update and try again."
+		},
+		{
+			"code": "ADDRESS.COUNTRYCODE.MISMATCHED",
+			"errorDescription": "Your recipient or hold at location country code does not match the previously uploaded dangerous goods information. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.INCONSISTENT",
+			"errorDescription": "Your service type is inconsistent with the previously uploaded dangerous goods information for tracking number{TRACKING_NUMBER},. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.NOTCONSISTENT",
+			"errorDescription": "Your service type is inconsistent with the previously uploaded dangerous goods information. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPDATESTAMP.CANNOTBEEARLIER",
+			"errorDescription": "The ship date cannot be earlier than the previously uploaded dangerous goods ship date for tracking number{TRACKING_NUMBER},. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPDATESTAMP.EARLIER",
+			"errorDescription": "The ship date cannot be earlier than the previously uploaded dangerous goods ship date. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SPECIALSERVICETYPES.VIOLATES",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods, hazardous materials or dry ice violations involving {UN_ID},.  If you have any questions, please call your local FedEx customer service. Please update and try again."
+		},
+		{
+			"code": "ACCOUNTNUMBER.VALUE.VIOLATES",
+			"errorDescription": "Your account has dangerous goods, hazardous materials or dry ice violations involving {UN_ID},.  Your account could be disabled for this service if any further violations occur.  If you have any questions, please call your local FedEx customer service. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.TRACKINGNUMBER.DUPLICATE",
+			"errorDescription": "Duplicate tracking number {TRACKING_NUMBER}, in request. Please update and try again."
+		},
+		{
+			"code": "ACCOUNTNUMBER.VALUE.NONSMARTPOSTENABLED",
+			"errorDescription": "Account is not smart post returns enabled. Please update and try again."
+		},
+		{
+			"code": "TRACKINGIDS.TRACKINGNUMBER.EXPIRED",
+			"errorDescription": "Package in expired status. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SPECIALSERVICETYPE.CONFLICT",
+			"errorDescription": "Package {PACKAGE_INDEX}, - Special service conflict. {SPECIAL_SERVICE_TYPE_1}, is not valid with {SPECIAL_SERVICE_TYPE_2},. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.EMAILNOTIFICATIONDETAIL.NOTALLOWED",
+			"errorDescription": "Pre delivery notification is not allowed. Please update and try again."
+		},
+		{
+			"code": "BATTERYDETAILS.BATTERYMATERIALTYPE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - BatteryMaterialType is invalid. Please update and try again."
+		},
+		{
+			"code": "BATTERYDETAILS.BATTERYPACKINGTYPE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - BatteryPackingType is invalid. Please update and try again."
+		},
+		{
+			"code": "BATTERYDETAILS.BATTERYREGULATORYTYPE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX}, - BatteryRegulatorySubType is invalid. Please update and try again."
+		},
+		{
+			"code": "SMARTPOSTINFODETAIL.ANCILLARYENDORSEMENT.INVALID",
+			"errorDescription": "Invalid smart post ancillary endosement. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUE.NOTSUPPORTED",
+			"errorDescription": "Declared value cannot be provided for smart post shipment. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.NOTALLOWED",
+			"errorDescription": "Electronic trade documents are not allowed. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.ETDDETAIL.NOTALLOWED",
+			"errorDescription": "Electronic trade documents cannot be requested on a package level. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DANGEROUSGOODSDETAIL.NOTALLOWED",
+			"errorDescription": "Hazardous materials dangerous goods is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.HOLDATLOCATIONDETAIL.CONFLICTS",
+			"errorDescription": "HOLD_AT_LOCATION conflicts with special services COD, DRY_ICE, DANGEROUS_GOODS, or SUNDAY_DELIVERY. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.RETURNSHIPMENTDETAIL.REQUIRED",
+			"errorDescription": "RETURN_SHIPMENT is required for the indicia PARCEL_RETURN. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.ADDRESS.INVALID",
+			"errorDescription": "Importer of record address is invalid. Please update and try again."
+		},
+		{
+			"code": "IMPORTEROFRECORD.ADDRESSCOUNTRY.INVALID",
+			"errorDescription": "Invalid importer of record country. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.IMPORTEROFRECORD.INVALID",
+			"errorDescription": "Importer of record is invalid with the shipper country. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRY.NOTSUPPORTED",
+			"errorDescription": "Recipient country is not supported by the clearance facility. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.HOLDATLOCATIONDETAIL.NOTALLOWED",
+			"errorDescription": "Hold at location is not allowed with residential delivery. Please update and try again."
+		},
+		{
+			"code": "ACCOUNTNUMBER.VALUE.NOTVALID",
+			"errorDescription": "Account number is not valid for the role selected. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESS.MISSING",
+			"errorDescription": "Printed label origin address is missing. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCOUNTRY.INVALID",
+			"errorDescription": "Printed label origin country code is invalid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPMENTSPECIALSERVICES.MISSING",
+			"errorDescription": "Special service is missing {FAILURE_CAUSE}. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSVALUE.CURRENCY.MISMATCH",
+			"errorDescription": "All customs value currency types must match. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPDATESTAMP.EXCEEDSLIMIT",
+			"errorDescription": "Ship date exceeds the limit allowed for the URSA file{DATE}. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUE.EXCEEDS",
+			"errorDescription": "Package {PACKAGE_INDEX} - Insured value amount cannot exceed total customs value amount. Please update and try again."
+		},
+		{
+			"code": "DECLAREDVALUE.CURRENCY.MISMATCH",
+			"errorDescription": "Package {PACKAGE_INDEX} - Insured value currency type must equals customs value currency type. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.LABELSPECIFICATION.INVALID",
+			"errorDescription": "The shipper country or service type does not allow all labels to be uploaded. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.INVALID",
+			"errorDescription": "ETD not allowed for shipper or recipient. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPDATESTAMP.NOTVALID",
+			"errorDescription": "Future day shipping not allowed with ETD. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTACHEDDOCUMENTS.EXCEEDSLIMIT",
+			"errorDescription": "The number of customer information documents is limited to {NUMBER_1} and the uploaded document references is limited to {NUMBER_2}. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.CONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": "Printed label of origin phone number is required. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.CONTACTCOMPANYNAME.INVALIDLENGTH",
+			"errorDescription": "Printed label of origin company name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.CONTACTPERSONNAME.INVALIDLENGTH",
+			"errorDescription": "Printed label of origin person name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESS.NOTFOUND",
+			"errorDescription": "Printed label of origin location not found. Please update and try again."
+		},
+		{
+			"code": "CONTACT.COMPANYNAME.INVALIDLENGTH",
+			"errorDescription": "Hold at location in special services requested company name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "CONTACT.PERSONNAME.INVALIDLENGTH",
+			"errorDescription": "Hold at location in special services requested person name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "CONTACT.PHONENUMBER.INVALID",
+			"errorDescription": "Hold at location in special services requested phone number is invalid. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSSTREETLINES.INVALID",
+			"errorDescription": "COD recipient in special services requested invalid streetLine 1. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "COD recipient in special services requested invalid country code. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.CONTACTCOMPANYNAME.INVALIDLENGTH",
+			"errorDescription": "COD recipient in special services requested company name must be at least 2 characters.Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.CONTACTPERSONNAME.INVALIDLENGTH",
+			"errorDescription": "COD recipient in special services requested person name must be at least 2 characters. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.CONTACTPHONENUMBER.INVALIED",
+			"errorDescription": "COD recipient in special services requested phone number  is invalid. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSCITY.INVALID",
+			"errorDescription": "COD recipient in special services requested invalid city. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.NOTFOUND",
+			"errorDescription": "COD recipient in special services requested postal code not found. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.INVALIDFORMAT",
+			"errorDescription": "COD recipient in special services requested invalid postal code format. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "COD recipient in special services requested postal code not served. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSSTATEORPROVINCECODEANDSTATECODE.MISMATCH",
+			"errorDescription": "COD recipient in special services requested postal state mismatch. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSCOUNTRYCODE.EXCEEDSLIMIT",
+			"errorDescription": "COD recipient in special services requested country code is required and must not exceed the limit of 2 characters. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "COD recipient in special services requested postal code or routing code is required. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODEANDCOUNTRYCODE.MISMATCH",
+			"errorDescription": "COD recipient in Special Services Requested - Postal/Routing code and country do not match. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSPOSTALCODE.EXCEEDSLIMIT",
+			"errorDescription": "COD recipient in special services requested the length of the postal code exceeds the limit of 16 characters. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSSTATEORPROVINCECODE.EXCEEDSLIMIT",
+			"errorDescription": "COD recipient in special services requested the length of the state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESS.NOTFOUND",
+			"errorDescription": "COD recipient in special services requested location not found. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.NOTAVAILABLE",
+			"errorDescription": "Electronic trade documents are not available for domestic shipments. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.CONFLICT",
+			"errorDescription": "Electronic trade documents are not allowed with the special services selected. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.TINSTINTYPE.INVALID",
+			"errorDescription": "Invalid recipient customs tax ID type. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.NOTVALID",
+			"errorDescription": "Invalid service type selected for FICE shipment. Please update and try again."
+		},
+		{
+			"code": "INTERNATIONALCONTROLLEDEXPORTDETAIL.ENTRYNUMBER.NOTREQUIRED",
+			"errorDescription": "FICE entry number isn't required. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRY.INVALID",
+			"errorDescription": "Invalid recipient country code. Please update and try again."
+		},
+		{
+			"code": "CUSTOMERIMAGEUSAGES.PROVIDEDIMAGETYPE.EXCEEDSSIZE",
+			"errorDescription": "The customer provided image exceeds maximum size allowed. Please update and try again."
+		},
+		{
+			"code": "EMAILRECIPIENTS.GROUPING.INVALID",
+			"errorDescription": "Invalid grouping type for {SHIPPING_DOCUMENT}. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.ALCOHOL.NOTALLOWED",
+			"errorDescription": "Alcohol shipments are not allowed with ITAR. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSCOUNTRYCODE.NOTMATCHED",
+			"errorDescription": "Duties payment payor country code must match either origin or destination country code. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSSTATEORPROVINCECODE.COULDNOTDETERMINE",
+			"errorDescription": "Could not determine origin state. Pease update and try again."
+		},
+		{
+			"code": "ACCOUNTNUMBER.VALUE.SPECIALSERVICEVIOLATIONS",
+			"errorDescription": "Your account has {SPECIAL_SERVICE_TYPE} violations.   Your account could be disabled for this service if any further violations occur.  If you have any questions, please call your local FedEx customer. Please update and try again."
+		},
+		{
+			"code": "EMAILRECIPIENT.ACCESSORROLETYPE.INVALID",
+			"errorDescription": "Invalid role in email label detail recipient {PENDING_EMAIL_RECIPIENT_INDEX}. Please update and try again."
+		},
+		{
+			"code": "EMAILRECIPIENT.ACCESSORROLETYPE.ALLOWED",
+			"errorDescription": "Only one {ACCESSOR_ROLE_TYPE} role is allowed. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTTYPE.INVALID",
+			"errorDescription": "Invalid recommended document type. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTTYPE.EXCEEDED",
+			"errorDescription": "Recommended document type exceeds maximum. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTREFERENCE.EXCEEDED",
+			"errorDescription": "Pending shipment detail document references exceeds maximum. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.errorDescription.INVALID",
+			"errorDescription": "Missing or invalid pending shipment detail document references errorDescription. Please update and try again."
+		},
+		{
+			"code": "PROCESSINGOPTIONS.OPTIONS.INVALID",
+			"errorDescription": "Invalid pending processing option type. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUEAMOUNT.EXCEDEED",
+			"errorDescription": "Insured value exceeds limit for the selected service in package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.SHIPACTION.REQUIRED",
+			"errorDescription": "Use create open shipment with CONFIRM action for consolidation. Please update and try again."
+		},
+		{
+			"code": "PRIORITYALERTDETAIL.CONTENT.EXCEEDED",
+			"errorDescription": "No more than two elements of the PriorityAlertDetail contents array will be used. Please update and try again."
+		},
+		{
+			"code": "EMAILLABELDETAIL.RECIPIENTS.MISSING",
+			"errorDescription": "Missing email label detail or recipients. Please update and try again."
+		},
+		{
+			"code": "EMAILLABELDETAIL.RECIPIENTSLOCALE.INVALID",
+			"errorDescription": "Invalid localization language code for role {ACCESSOR_ROLE_TYPE} in email recipient  {PENDING_EMAIL_RECIPIENT_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PROCESSINGOPTIONS.OPTIONS.NOTALLOWED",
+			"errorDescription": "{PENDING_SHIPMENT_PROCESSING_OPTION} not allowed. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ROLE.EXCEEDED",
+			"errorDescription": "{ACCESSOR_ROLE_TYPE} role exceeds maximum allowed. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ROLE.INVALID",
+			"errorDescription": "Invalid email option type  for {ACCESSOR_ROLE_TYPE} {PENDING_EMAIL_RECIPIENT_INDEX} . Please update and try again."
+		},
+		{
+			"code": "OPTIONSREQUESTED.OPTIONS.EXCEEDED",
+			"errorDescription": "Email option type exceeds maximum. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.GROUPPACKAGECOUNT.NOTALLOWED",
+			"errorDescription": "Group package count cannot be specified in dangerous goods data upload mode. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.REFERENCEID.NOTSUPPORTED",
+			"errorDescription": "Ability to configure dangerous goods data via referenceId is not supported with DG data upload mode. Please update and try again."
+		},
+		{
+			"code": "DRYICEDETAIL.TOTALWEIGHTVALUE.INVALID",
+			"errorDescription": "Dry ice total weight value cannot be < 1. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALWEIGHTVALUE.INVALID",
+			"errorDescription": "Shipment total weight value cannot be < 1. Please update and try again."
+		},
+		{
+			"code": "DRYICEDETAIL.TOTALWEIGHTUNITS.INVALID",
+			"errorDescription": "Invalid weight units for shipment dry ice detail. Please update and try again."
+		},
+		{
+			"code": "DRYICEDETAIL.TOTALWEIGHTVALUE.EXCEEDS",
+			"errorDescription": "Weight exceeds maximum for requested dry ice detail service. Please update and try again."
+		},
+		{
+			"code": "COMMODITY.WEIGHTVALUE.EXCEEDS",
+			"errorDescription": "Commodity weight value exceeds maximum allowed for specified country. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALWEIGHTVALUE.EXCEEDED",
+			"errorDescription": "Shipment total weight value exceeds maximum allowed for specified country. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.CONTACTCOMPANYNAMEORPERSONNAME.REQUIRED",
+			"errorDescription": "CompanyName or person name is required for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.CONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": " Phone number is required for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.CONTACTPHONENUMBER.INVALID",
+			"errorDescription": "Phone number is invalid for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSSTREETLINES.INVALID",
+			"errorDescription": "Invalid street lines for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSCITY.INVALID",
+			"errorDescription": "Invalid city for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSSTATEORPROVINCECODE.INVALID",
+			"errorDescription": "Invalid state or province code for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "RESPONSIBLEPARTY.ADDRESSCOUNTRYCODE.UNSUPPORTED",
+			"errorDescription": "Unsupported country code for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "PAYOR.RESPONSIBLEPARTY.REQUIRED",
+			"errorDescription": "Responsible party is required for shipping charges payment. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.NOTSUPPORTED",
+			"errorDescription": "{SERVICE_TYPE} is not supported for the destination. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.OPTIONS.NOTSUPPORTED",
+			"errorDescription": "{HAZARDOUS_COMMODITY_OPTION_TYPE} is not supported for package {PACKAGE_INDEX} . Please update and try again."
+		},
+		{
+			"code": "CREATESHIPMENT.REQUESTEDSHIPMENT.VIOLATION",
+			"errorDescription": "Your shipment is not allowed because of a violation that limits your shipping options. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.NOTAPPLICABLE",
+			"errorDescription": "{SPECIAL_SERVICE_TYPE} is not supported for the destination at package {PACKAGE_INDEX} . Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSCOUNTRYCODE.REQUIRED",
+			"errorDescription": "The destination country is required and must not exceed the limit of 2 characters. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.ADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "The length of the destination state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPE.NOTALLOWED",
+			"errorDescription": "{SPECIAL_SERVICE_TYPE} is not allowed. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.ORIGIN.NOTALLOWED",
+			"errorDescription": "Origin not allowed for fedex europe first. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.RECIPIENTS.NOTALLOWED",
+			"errorDescription": "Destination not allowed for fedex europe first. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHT.NOTALLOWED",
+			"errorDescription": "Dry ice is not allowed. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEM.GROUPPACKAGECOUNT.INVALIDLENGTH",
+			"errorDescription": "Group package count must be at least a value of 1 at package  {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "TINS.EXPIRATIONDATE.REQUIRED",
+			"errorDescription": "Expiration date is null. Please update and try again."
+		},
+		{
+			"code": "TINS.EXPIRATIONDATE.VALID",
+			"errorDescription": "Expiration date must be >= today and < {NUMBER} {CALENDAR_PARM} in future. Please update and try again."
+		},
+		{
+			"code": "PENDINGSHIPMENTDETAIL.TYPE.INVALID",
+			"errorDescription": "Pending type is missing or invalid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PICKUPDETAILREADYPICKUPDATETIME.INVALID",
+			"errorDescription": "Invalid ready date time for commercial pickup. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DECLAREDVALUE.LIMITEXCEEDED",
+			"errorDescription": "Insured value exceeds limit allowed at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPMENTSPECIALSERVICES.NOTREQUIRED",
+			"errorDescription": "Shipment special service entered at package level. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SIGNATUREOPTIONTYPE.REQUIRED",
+			"errorDescription": "Signature Option must be entered on all packages {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHT.NOTENTERED",
+			"errorDescription": "Dry Ice cannot be entered at the shipment level. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SHIPMENTCODDETAIL.NOTALLOWED",
+			"errorDescription": "COD is not allowed for the origin or destination pair. Please update and try again."
+		},
+		{
+			"code": "HOMEDELIVERYPREMIUMDETAIL.HOMEDELIVERYPREMIUMTYPE.NOTALLOWED",
+			"errorDescription": "Home delivery premium evening is not allowed for the origin or destination pair at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENTDETAIL.RETURNTYPE.NOTALLOWED",
+			"errorDescription": "Return shipment not allowed for the origin or destination pair. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SIGNATUREOPTIONTYPEADULT.INVALID",
+			"errorDescription": "Adult Signature is not allowed for the origin or destination pair for package {PACKAGE_INDEX}."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SIGNATUREOPTIONTYPEDIRECT.INVALID",
+			"errorDescription": "Special service conflict when DIRECT signature option type is not valid with COD at package {PACKAGE_INDEX}."
+		},
+		{
+			"code": "TINS.NUMBER.EXCEEDED",
+			"errorDescription": "TIN number can not exceed 18 characters.Please update and try again."
+		},
+		{
+			"code": "TINS.EXPIRATIONDATE.INVALID",
+			"errorDescription": "Expiration date is invalid. Please update and try again."
+		},
+		{
+			"code": "TINS.EXPIRATIONDATE.EXCEEDED",
+			"errorDescription": "Exceeded expiration date. Please update and try again."
+		},
+		{
+			"code": "TINS.EXPIRATIONDATE.NOTALLOWED",
+			"errorDescription": "Reprint is not allowed when expiration date is exceeded. Please update and try again."
+		},
+		{
+			"code": "MASTERTRACKINGID.TRACKINGNUMBER.CANCELLED",
+			"errorDescription": "Tracking number already cancelled. Please update and try again."
+		},
+		{
+			"code": "MASTERTRACKINGID.TRACKINGNUMBER.REQUIRED",
+			"errorDescription": "Tracking number required for cancel. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTEMAILADDRESS.INVALID",
+			"errorDescription": "Invalid shipper email address. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.CONTACTEMAILADDRESS.INVALID",
+			"errorDescription": "Invalid recipient email address. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.CONTACTPHONEEXTENSION.INVALID",
+			"errorDescription": "Invalid recipient phone extension. Please update and try again."
+		},
+		{
+			"code": "RECIPIENTS.DELIVERYINSTRUCTIONS.INVALID",
+			"errorDescription": "Delivery instructions length is invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.CONTACTPHONEEXTENSION.INVALID",
+			"errorDescription": "Invalid shipper phone extension. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.ADDRESSSTREETLINES.EXCEEDED",
+			"errorDescription": "Shipper address line exceeds maximum number of characters. Please update and try again."
+		},
+		{
+			"code": "CANCELTAG.PAYMENT.REQUIRED",
+			"errorDescription": "The payment details used to schedule the ground call tag is required for cancellation."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.REGULATION.NOTALLOWED",
+			"errorDescription": "For package {PACKAGE_INDEX} when ADR hazardous commodities are supplied the hazardous commodity option type must contain HAZARDOUS_MATERIALS or LIMITED_QUANTITIES_COMMODITIES. Please update and try again."
+		},
+		{
+			"code": "errorDescription.HAZARDCLASS.NOTMATCHED",
+			"errorDescription": "Hazard class does not match the selected UN ID for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "errorDescription.SUBSIDIARYCLASSES.NOTMATCHED",
+			"errorDescription": "Subsidiary risks do not match the selected un id for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.REGULATIONADR.NOTALLOWED",
+			"errorDescription": "At least one ADR regulated commodity is required for container {CONTAINER_INDEX} within package {PACKAGE_INDEX} . Please update and try again."
+		},
+		{
+			"code": "QUANTITY.QUANTITYTYPE.INVALID",
+			"errorDescription": "Inner receptacle quantity type for this commodity should be NET for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.INNERRECEPTACLES.NOTMATCHED",
+			"errorDescription": "Inner receptacles UOM does not match ADR regulations for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX} . Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.NETEXPLOSIVEDETAIL.REQUIRED",
+			"errorDescription": "The net explosive classification type, amount and units are required for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX} . Please update and try again."
+		},
+		{
+			"code": "NETEXPLOSIVEDETAIL.AMOUNT.NOTVALID",
+			"errorDescription": "Net explosive amount must be greater than zero for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "NETEXPLOSIVEDETAIL.AMOUNT.INVALID",
+			"errorDescription": "The net explosive amount must be less than or equal to the associated quantity amount for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "NETEXPLOSIVEDETAIL.UNITS.INVALID",
+			"errorDescription": "Net explosive units must be provided in g or kg for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "NETEXPLOSIVEDETAIL.TYPE.INVALID",
+			"errorDescription": "Net explosive classification type is invalid for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "QUANTITY.UNITS.INVALID",
+			"errorDescription": "Quantity units must be provided in g or kg for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.NETEXPLOSIVEDETAIL.MISMATCH",
+			"errorDescription": "The hazard class derived from regulation data is not valid with net explosive detail for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "errorDescription.TECHNICALNAME.NOTREQUIRED",
+			"errorDescription": "Technical name is not required for this un id for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "errorDescription.TECHNICALNAME.INVALID",
+			"errorDescription": "Technical name cannot be the same as the proper shipping name for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "errorDescription.PROPERSHIPPINGNAME.NOTALLOWED",
+			"errorDescription": "The qualifier word stabilized is not allowed with this Proper Shipping Name for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} at package {PACKAGE_INDEX}."
+		},
+		{
+			"code": "errorDescription.PROPERSHIPPINGNAME.EXISTED",
+			"errorDescription": "Qualifying word already exists in the Proper Shipping Name for commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX}."
+		},
+		{
+			"code": "errorDescription.PROPERSHIPPINGNAME.NOTSUPPORTED",
+			"errorDescription": "For commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX} both solution and mixture qualifying words are not allowed. Remove one of the qualifying words."
+		},
+		{
+			"code": "errorDescription.PROPERSHIPPINGNAME.CANNOTADD",
+			"errorDescription": "For commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX} cannot add the qualifying word to the Proper Shipping Name as the Proper Shipping Name already contains either solution or mixture."
+		},
+		{
+			"code": "CREDITCARDTRANSACTIONDETAIL.ATTRIBUTESDETAIL.INVALID",
+			"errorDescription": "Invalid credit card transaction attribute detail type. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.FLATBEDTRAILERDETAIL.NOTALLOWED",
+			"errorDescription": "Flatbed trailer is not allowed. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSCOUNTRY.NOTSUPPORTED",
+			"errorDescription": "Printed label origin country is not supported by the clearance facility location. Please update and try again."
+		},
+		{
+			"code": "EMAILDETAIL.EMAILADDRESS.EXCEEDED",
+			"errorDescription": "Email address for event notification {EVENT_NOTIFICATION_INDEX} cannot exceed 120 characters and it is invalid. Please update and try again."
+		},
+		{
+			"code": "EMAILDETAIL.EMAILADDRESS.INVALID",
+			"errorDescription": "Invalid or missing email address for event notification {EVENT_NOTIFICATION_INDEX}. Please update and try again."
+		},
+		{
+			"code": "NOTIFICATIONDETAIL.NOTIFICATIONTYPE.INVALID",
+			"errorDescription": "Invalid notification event type in event notification. Please update and try again."
+		},
+		{
+			"code": "SHIPPER.TINSNUMBER.INVALID",
+			"errorDescription": "Missing or invalid shipper tin number. Please update and try again."
+		},
+		{
+			"code": "EMAILNOTIFICATIONRECIPIENTS.NOTIFICATIONTYPE.INVALID",
+			"errorDescription": "Invalid notification type for event notification {EVENT_NOTIFICATION_INDEX}. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.CONTACT.REQUIRED",
+			"errorDescription": "Label specification printed label origin contact required for distribution shipment. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PACKAGINGTYPE.CHANGED",
+			"errorDescription": "Packaging type changed to YOUR_PACKAGING for EXPRESS_SAVER service. Please update and try again."
+		},
+		{
+			"code": "SMARTPOSTINFODETAIL.SPECIALSERVICES.INVALID",
+			"errorDescription": "Invalid smart post special service type. Please update and try again."
+		},
+		{
+			"code": "SMARTPOSTINFODETAIL.SPECIALSERVICES.CONFIRMATION",
+			"errorDescription": "USPS_DELIVERY_CONFIRMATION was added to the smart post special services. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.NOTALLOWED",
+			"errorDescription": "Dangerous goods is not allowed for the origin/destination pair. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SPECIALSERVICETYPES.NOTVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} shipment level special service cannot be entered at the package level. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.BLOCKINSIGHTVISIBILITY.NOTALLOWED",
+			"errorDescription": "Insight shipment fields are not allowed with ground return or pending shipments. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SPECIALSERVICETYPES.REQUIRED",
+			"errorDescription": "Special service types is required when package special services requested is present. Please correct the request data as future transactions may not be handled as desired and may result in ERROR notifications."
+		},
+		{
+			"code": "BARCODED.SYMBOLOGY.MISSING",
+			"errorDescription": "Barcode symbology missing from custom barcode entry. Please update and try again."
+		},
+		{
+			"code": "ADDRESS.POSTALCODE.INVALID",
+			"errorDescription": "Hold at location in special services requested P.O. Box zip invalid. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODEANDCOUNTRYCODE.MISMATCH",
+			"errorDescription": "Printed label of origin postal/routing code and country do not match. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "Printed label of origin postal code or routing code is required. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.MISMATCH",
+			"errorDescription": "Shipper postal code invalid for printed label of origin P.O. Box zip. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "Printed label of origin invalid postal code/routing code input. Please update and try again."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESSPOSTALCODEANDCITY.MISMATCH",
+			"errorDescription": "Printed label of origin postal city mismatch. Please update and try again."
+		},
+		{
+			"code": "BROKER.ADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "International broker {BROKER_INDEX} P.O. Box zip invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.RETURNSHIPMENTDETAIL.NOTALLOWED",
+			"errorDescription": "Return shipment not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.ALCOHOL.CONFLICT",
+			"errorDescription": "Package {PACKAGE_INDEX} special service conflict, alcohol is not valid with inaccessible dangerous goods. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMERCIALINVOICE.INVALID",
+			"errorDescription": "Customer provided CI is not allowed when the original FedEx generated shipping document request has a CI/PI. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMERCIALINVOICE.REQUIRED",
+			"errorDescription": "Customer should attach at least one CI or PI or select option to create FedEx generated CI or PI to ship ETD. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DOCUMENTREFERENCE.EXCEEDS",
+			"errorDescription": "Document {DOC_INDEX} size exceeds maximum allowed. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.PRIORITYALERTDETAIL.MISMATCH",
+			"errorDescription": "The priority alert type cannot be different across packages. Please udate and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.CANNOTCOMBINE",
+			"errorDescription": "The special service types selected cannot be combined. Please update and try again."
+		},
+		{
+			"code": "DRYICEWEIGHT.UNIT.INVALID",
+			"errorDescription": "Dry ice weight special services requested for requested package {PACKAGE_INDEX} must be expressed in pound units (LB) for domestic express shipments. Please update and try again."
+		},
+		{
+			"code": "SHIPPINGDOCUMENTSPECIFICATION.SHIPPINGDOCUMENTTYPE.EXCEEDS",
+			"errorDescription": "Allowed number of {REQUESTED_SHIPPING_DOCUMENT_TYPE} exceeded. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHT.NOTALLOWED",
+			"errorDescription": "Dry Ice is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "Hold at location in special services requested postal code not served. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.WEIGHTUNITS.INVALID",
+			"errorDescription": "Invalid weight units in Commodity {COMMODITY_INDEX}. Please update and try again."
+		},
+		{
+			"code": "VARIABLEHANDLINGCHARGEDETAIL.FIXEDVALUEAMOUNT.INVALID",
+			"errorDescription": "Fixed value amount is invalid.Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.REQUIRED",
+			"errorDescription": "Package {PACKAGE_INDEX} - dangerous goods special service type is required with a dangerous goods hazardous commodity option type. Please update and try again."
+		},
+		{
+			"code": "RECIPIENT.ADDRESSPOSTALCODEANDCITY.MISMATCH",
+			"errorDescription": "Recipient postal-city mismatch. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPPINGCHARGESPAYMENT.INVALID",
+			"errorDescription": "Invalid shipping charges payment for  {SPECIAL_SERVICE_TYPE}. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.EASTCOASTSPECIAL.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - east coast special is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PICKUPDETAIL.INVALID",
+			"errorDescription": "Pickup detail request source - pickup request source is invalid. Please update and try again."
+		},
+		{
+			"code": "RETURNSHIPMENTDETAIL.RETURNTYPE.NOTAVAILABLE",
+			"errorDescription": "PRINT_RETURN_LABEL is not available with FUTURE_DAY_SHIPMENT. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.ACCOUNTNUMBER.MISMATCH",
+			"errorDescription": "Account or meter does not match shipment creator account or meter. Please update and try again."
+		},
+		{
+			"code": "INNERRECEPTACLES.QUANTITY.REQUIRED",
+			"errorDescription": "For commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX} inner receptacle quantity is required. Please update and try again."
+		},
+		{
+			"code": "INNERRECEPTACLES.UNITS.REQUIRED",
+			"errorDescription": "For commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX} inner receptacle units is required. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSPACKAGEDETAIL.RADIOACTIVETRANSPORTINDEX.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - invalid dangerous goods transport index. Please update and try again."
+		},
+		{
+			"code": "COMPLETEDSHIPMENTDETAIL.CARRIERCODE.INVALID",
+			"errorDescription": "Invalid carrier code. Please update and try again."
+		},
+		{
+			"code": "INNERRECEPTACLES.QUANTITYAMOUNT.EXCEEDED",
+			"errorDescription": "Commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX} inner receptacles exceed limited quantities commodities amount. Please update and try again."
+		},
+		{
+			"code": "OPTIONS.HAZARDOUSMATERIALS.REQUIRED",
+			"errorDescription": "For package {PACKAGE_INDEX} when hazardous commodities are supplied the hazardous commodity option type must contain HAZARDOUS_MATERIALS. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DRYICE.REQUIRED",
+			"errorDescription": "Package {PACKAGE_INDEX} - dry ice must be specified as a hazardous commodity. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.BROKERS.INVALID",
+			"errorDescription": "Invalid broker combination. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.DRYICE.NOTALLOWED",
+			"errorDescription": "Dry Ice not allowed with Ground service, use Haz Mat instead. Please update and try again."
+		},
+		{
+			"code": "BROKER.ADDRESSSTREETLINES.INVALID",
+			"errorDescription": "International Broker - invalid street Line 1. Please update and try again."
+		},
+		{
+			"code": "BROKER.CONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": "International Broker - phone number is required. Please update and try again."
+		},
+		{
+			"code": "BROKER.ADDRESS.NOTFOUND",
+			"errorDescription": "International broker - location not found. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.PROCESSINGOPTIONTYPE.NOTALLOWED",
+			"errorDescription": "Processing option {SHIPMENT_PROCESSING_OPTION_TYPE} is not allowed for this request and was removed. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHT.MISMATCH",
+			"errorDescription": "The package dry ice weight does not match the package dry ice weight for UN1845 previously uploaded for tracking number {TRACKING_NUMBER}. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.DANGEROUSGOODS.NOTALLOWED",
+			"errorDescription": "Dangerous goods can not be specified at shipment level for ground shipments. Please update and try again."
+		},
+		{
+			"code": "DECLAREDVALUE.CURRENCY.DEFAULTED",
+			"errorDescription": "Currency of insured value defaulted to the currency of origin country. Please update and try again."
+		},
+		{
+			"code": "CONTENTTYPE.GAAFORM.NOTGENERATED",
+			"errorDescription": "GAA form could not be generated. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESLIMITEDACCESSDELIVERY.NOTALLOWED",
+			"errorDescription": "Limited access delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESLIMITEDACCESSPICKUP.NOTALLOWED",
+			"errorDescription": "Limited access pickup is not allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESPROTECTIONFROMFREEZING.NOTALLOWED",
+			"errorDescription": "Protection from freezing is not allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESREGIONALMALLDELIVERY.NOTALLOWED",
+			"errorDescription": "Regional mall delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESREGIONALMALLPICKUP.NOTALLOWED",
+			"errorDescription": "Regional mall pickup is not allowed. Please update and try again."
+		},
+		{
+			"code": "BROKER.ADDRESSPOSTALCODEANDCITY.MISMATCH",
+			"errorDescription": "International Broker {BROKER_INDEX} - postal-city mismatch. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTCODDETAIL.RETURNREFERENCEINDICATORTYPE.INVALID",
+			"errorDescription": "codReferenceIndicator is invalid. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSPACKAGEDETAIL.REFERENCEID.NOTFOUND",
+			"errorDescription": "Package {PACKAGE_INDEX} - dangerous goods configuration reference ID not found. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHT.INVALID",
+			"errorDescription": "Shipment total dry ice weight is less than the hazardous commodity total dry ice weight. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSPACKAGEDETAIL.HAZARDOUSCOMMODITIES.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Invalid dangerous goods commodity data for commodity {COMMODITY_INDEX} in container {CONTAINER_INDEX}. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.COMMODITIES.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Invalid combinations of commodities. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.OPTION.NOTSUPPORTED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Hazardous Commodity option type not supported. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.VARIABLEHANDLINGCHARGEDETAIL.INVALID",
+			"errorDescription": "Invalid shipment level variable handling charge detail. Both a rate element basis type and a rate type basis are required when a percent value is expected. Please update and try again."
+		},
+		{
+			"code": "DOCUMENTTYPE.COMMERCIALINVOICE.NOTALLOWED",
+			"errorDescription": "Electronic Commercial Invoice not allowed for non-dutiable document shipment. Please update and try again."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.OPTIONSHAZARDOUSMATERIALS.MISMATCH",
+			"errorDescription": "The presence or absence of the HAZARDOUS_MATERIALS option type must be the same across all dangerous goods packages in the shipment. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.NONSTANDARDCONTAINER.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Non Standard Container is not allowed for the origin/destination pair. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.HOLDATLOCATION.CONFLICT",
+			"errorDescription": "Special service conflict. HOLD_AT_LOCATION with SATURDAY_DELIVERY is not valid with  RESIDENTIAL_DELIVERY. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.PACKINGCOSTSAMOUNT.INVALID",
+			"errorDescription": "Request packing costs has invalid amount. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.PACKINGCOSTSCURRENCY.INVALID",
+			"errorDescription": "Request packing costs has invalid currency. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.HANDLINGCOSTSAMOUNT.INVALID",
+			"errorDescription": "Request handling costs has invalid amount. Please update and try again."
+		},
+		{
+			"code": "COMMERCIALINVOICE.HANDLINGCOSTSCURRENCY.INVALID",
+			"errorDescription": "Request handling costs has invalid currency. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTCODDETAIL.ADDTRANSPORTATIONCHARGESDETAIL.UNSATISFIED",
+			"errorDescription": "Unable to satisfy requested COD add transportation charges. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHT.MISMATCH",
+			"errorDescription": "The total shipment dry ice weight does not match the total shipment dry ice weight for UN1845 previously uploaded for this shipment. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.INVALID",
+			"errorDescription": "Shipment total dry ice package count does not match dry ice package count. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.MISMATCH",
+			"errorDescription": "The total number of dry ice packages does not match the total number of packages for UN1845 previously uploaded for this shipment. Please update and try again."
+		},
+		{
+			"code": "OPTION.LIMITEDQUANTITIESCOMMODITIES.INVALID",
+			"errorDescription": "Hazardous Materials or Limited Quantities Commodities cannot be specified with Process Shipment MPS. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.ACCOUNTNUMBER.INVALID",
+			"errorDescription": "Invalid ground account number. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.ETDDETAIL.NOTALLOWED",
+			"errorDescription": "ETD not allowed with document shipments with no commercial value. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.SATURDAYDELIVERY.INVALID",
+			"errorDescription": "Special service conflict. SATURDAY_DELIVERY is not valid with HOLD_AT_LOCATION. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.IMPORTEROFRECORD.INVALID",
+			"errorDescription": "Sender is the Importer of Record. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.ACCOUNTNUMBER.UNAVAILABLE",
+			"errorDescription": " Ground account data unavailable. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTRIBUTES.NOTALLOWED",
+			"errorDescription": "ETD Post Shipment Document Upload is not allowed. Please update and try again."
+		},
+		{
+			"code": "ETDDETAIL.ATTRIBUTES.UNAUTHORIZED",
+			"errorDescription": "Customer is not authorized for ETD Post Shipment Document Upload functionality. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.OPTIONS.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - Dangerous goods hazardous commodity option type is invalid or missing. Please update and try again."
+		},
+		{
+			"code": "OPTIONS.HAZARDOUSMATERIALS.INVALID",
+			"errorDescription": "Hazardous materials cannot be specified with Process Shipment MPS. Please update and try again."
+		},
+		{
+			"code": "errorDescription.PACKINGDETAILS.REQUIRED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Packaging is required for hazardous commodity content. Please update and try again."
+		},
+		{
+			"code": "USMCALOWVALUESTATEMENTDETAIL.CUSTOMSROLE.MISSING",
+			"errorDescription": "Nafta customs role type is missing or invalid. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.EXCEEDED",
+			"errorDescription": "The maximum special services allowed is 14. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSPECIALSERVICES.SPECIALSERVICETYPES.NOTALLOWED",
+			"errorDescription": "Broker Select Option is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALWEGHT.EXCEEDED",
+			"errorDescription": "Weight exceeds max limit for country specified. Please update and try again."
+		},
+		{
+			"code": "SHIPMENT.PROCESSINGOPTIONTYPE.NOTAVAILABLE",
+			"errorDescription": "{ASYNC_OPTION} processing is not available. Please update and try again."
+		},
+		{
+			"code": "DOCTABCONTENT.BARCODED.NOTSUPPORTED",
+			"errorDescription": "Selected Custom Content barcode is not supported in provided label image type. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.OPTIONS.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - Dangerous goods hazardous commodity option type is not allowed for the origin/destination pair. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.SIGNATUREOPTIONTYPE.NOTALLOWED",
+			"errorDescription": "Adult Signature is not allowed for the origin/destination pair. Please update and try again."
+		},
+		{
+			"code": "CANCELSHIPMENT.DELETIONCONTROL.INVALID",
+			"errorDescription": "Invalid deletion control type. Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.HARMONIZEDCODEANDNAME.INVALID",
+			"errorDescription": "Commodity {COMMODITY_INDEX} harmonized code and commodity name/errorDescription provided cannot generate duties and taxes. Please update and try again."
+		},
+		{
+			"code": "HAZARDOUSCOMMODITIES.PROPERSHIPPINGNAME.INVALID",
+			"errorDescription": "Invalid proper shipping name for dangerous goods commodity {COMMODITY_INDEX} within container {CONTAINER_INDEX} within package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESLIFTGATEDELIVERY.NOTALLOWED",
+			"errorDescription": "Liftgate delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTRATEDETAILS.SURCHARGESLIFTGATEPICKUP.NOTALLOWED",
+			"errorDescription": "Liftgate pickup is not allowed. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.NONSTANDARDCONTAINER.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - non standard container is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTSERVICES.ZIPCODE.NOTAVAILABLE",
+			"errorDescription": "Postal Code does not exist.Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSSTREETLINES.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid streetLine 1. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid countyCode. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSSTATEORPROVINCECODE.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid State or Province Code. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid Postal Code Format. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.NOTSERVED",
+			"errorDescription": "RequestedShipment diaRecipient - Postal Code not Served. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODEANDSTATE.MISMATCH",
+			"errorDescription": "RequestedShipment diaRecipient - Postal-State Mismatch. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODEANDCITY.MISMATCH",
+			"errorDescription": "RequestedShipment diaRecipient - Postal-City Mismatch. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSCOUNTRYCODE.NOTSERVED",
+			"errorDescription": "RequestedShipment diaRecipient - Country not served. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSCOUNTRYCODE.EXCEEDED",
+			"errorDescription": "RequestedShipment diaRecipient - Country code is required and must not exceed the limit of 2 characters. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid postal code/routing code input. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "RequestedShipment diaRecipient - Postal code or routing code is required. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODEANDCOUNTRYCODE.MISMATCH",
+			"errorDescription": "RequestedShipment diaRecipient - Postal/Routing code and country do not match. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.EXCEEDED",
+			"errorDescription": "RequestedShipment diaRecipient - The length of the postal code exceeds the limit of 16 characters. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSSTATEORPROVINCECODE.EXCEEDED",
+			"errorDescription": "RequestedShipment diaRecipient - The length of the state or province exceeds the limit of 3 characters. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTCONTACTCOMPANYNAMEORPERSONNAME.REQUIRED",
+			"errorDescription": "RequestedShipment diaRecipient - Company Name OR Person Name is required. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTCONTACTPHONENUMBER.REQUIRED",
+			"errorDescription": "RequestedShipment diaRecipient - Phone Number is required. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTCONTACTPHONENUMBER.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Phone Number is invalid. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTCONTACTCITY.INVALID",
+			"errorDescription": "RequestedShipment diaRecipient - Invalid city. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENT.RECIPIENTPOSTALCODE.NOTFOUND",
+			"errorDescription": "RequestedShipment diaRecipient - Postal Code not found. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESS.REQUIRED",
+			"errorDescription": "RequestedShipment diaRecipient - An address is required for a Party. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTCONTACT.REQUIRED",
+			"errorDescription": "RequestedShipment diaRecipient - A contact is required for a Party. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAIL.TOTALCUSTOMSVALUE.CANNOTBEMODIFIED",
+			"errorDescription": "TOTAL_CUSTOMS_VALUE consolidation data source cannot be modified. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.WEIGHT.COMMODITYTHRESHOLDEXCEEDED",
+			"errorDescription": "Package weight exceeds Limited Quantities Commodities threshold for package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+			"code": "DISPOSITIONS.DISPOSITIONTYPE.MISSING",
+			"errorDescription": "DEFERRED_RETURNED request data is missing. Please update and try again."
+		},
+		{
+			"code": "INTERNATIONALCONTROLLEDEXPORTDETAIL.TYPE.REQUIRED",
+			"errorDescription": "Invalid or blank FICE type. Please update and try again."
+		},
+		{
+			"code": "ICED.LICENSEORPERMITNUMBER.REQUIRED",
+			"errorDescription": "FICE license or permit number is required. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.THIRDPARTYCONSIGNEE.NOTELIGIBLE",
+			"errorDescription": "Customer not eligible for third party consignee. Please update and try again."
+		},
+		{
+			"code": "BROKER.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "International broker {BROKER_INDEX} - Invalid country code.  Please update and try again."
+		},
+		{
+			"code": "COMMODITIES.COUNTRYOFMANUFACTURE.REQUIRED",
+			"errorDescription": "Commodity country of manufacture is required"
+		},
+		{
+			"code": "SPECIALSERVICETYPES.COD.NOTELIGIBLE",
+			"errorDescription": "COD can not be specified at shipment level for ground shipments. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.WEIGHTSUNITS.INVALID",
+			"errorDescription": "Weight for requested package {PACKAGE_INDEX} must be expressed in pound units (LB) for domestic express shipments. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.DIMENSIONSSUNITS.INVALID",
+			"errorDescription": "Dimensions of package {PACKAGE_INDEX} must be expressed in inches (IN) for domestic express shipments. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAILS.IMPORTEROFRECORD.REQUIRED",
+			"errorDescription": "Recipient has been defaulted to the importer of record. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.LESSTHANREQUIRED",
+			"errorDescription": "The total number of dry ice packages must be greater than or equal to the total number of packages for UN1845 previously uploaded for this shipment. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHT.LESSTHANREQUIRED",
+			"errorDescription": "The total shipment dry ice weight must be greater than or equal to the total shipment dry ice weight for UN1845 previously uploaded for this shipment. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.EXTREMELENGTH.NOTALLOWED",
+			"errorDescription": "Extreme Length is not allowed. Please update and try again."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.COD.NOTALLOWED",
+			"errorDescription": "Package {PACKAGE_INDEX} - COD remittance is not allowed with the service selected. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.PACKAGESPECIALSERVICES.REQUIRED",
+			"errorDescription": "Package level special service cannot be entered at the shipment level. Please update and try again."
+		},
+		{
+			"code": "SHIPMENTCHARGESPAYMENT.ACCOUNTNUMBER.MISSING",
+			"errorDescription": "Shipping account used for missing shipping charges payment.Please update and try again."
+		},
+		{
+			"code": "EMAILNOTIFICATIONDETAIL.EMAILADDRESS.INVALID",
+			"errorDescription": "Shipping document access reference is invalid. Please update and try again."
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSPOSTALCODE.NOTALLOWED",
+			"errorDescription": "RequestedShipment dia recipient - po box zip.  Please update and try again."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.TOTALWEIGHT.EXCEEDED",
+			"errorDescription": "ShipmentDryIceDetail - total weight value exceeds maximum allowed for specified country"
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SERVICETYPE.INVALID",
+			"errorDescription": "Package {PACKAGE_INDEX} - {HAZARDOUS_COMMODITY_OPTION_TYPE} shipments with the selected origin and destination pair are not permitted using {SERVICE_TYPE}.  Please consider using FedEx Express dangerous goods service for this type shipment."
+		},
+		{
+			"code": "ICED.LICENSEORPERMITNUMBER.NOTREQUIRED",
+			"errorDescription": "FICE license or permit number is not required."
+		},
+		{
+			"code": "ICED.LICENSEORPERMITEXPIRATIONDATE.NOTREQUIRED",
+			"errorDescription": "FICE license or permit number expiration date is not required."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "Hold at Location in Special Services Requested - Postal code or routing code is required"
+		},
+		{
+			"code": "COMMODITIES.CUSTOMSVALUE.LESSTHANREQUIRED",
+			"errorDescription": "The sum of commodities customs value amounts do not the equal the total customs value amount; the greater customs value amount was used to rate."
+		},
+		{
+			"code": "DANGEROUSGOODSCOMMODITIES.TRACKINGNUMBERS.REQUIRED",
+			"errorDescription": "Dangerous goods commodities for all tracking numbers in the shipment must be uploaded in a single request."
+		},
+		{
+			"code": "DANGEROUSGOODS.SHIPPERADDRESS.MISMATCH",
+			"errorDescription": "Your Shipper or Origin Country Code does not match the previously uploaded dangerous goods information"
+		},
+		{
+			"code": "SHIPMENTDRYICEWEIGHT.PACKAGEDRYICEWEIGHT.MISMATCH",
+			"errorDescription": "Shipment dry ice weight does not match package dry ice weight."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.LESSTHANNEEDED",
+			"errorDescription": "You must have {NUMBER} more dry ice packages to process this shipment."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHTVALUE.EXCEEDED",
+			"errorDescription": "Sum of package dry ice weight cannot exceed shipment dry ice weight."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHTVALUE.MISMATCH",
+			"errorDescription": "Sum of package dry ice weight does not match shipment dry ice weight."
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.FEDEXFREIGHTACCOUNTNUMBER.REQUIRED",
+			"errorDescription": "Either FedEx Freight or Alternate account number and the associated address is required."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.REQUESTEDPACKAGELINEITEMS.MUSTBEONE",
+			"errorDescription": "The number of RequestedPackages in the RequestedShipment must be equal to 1"
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.NOTSUPPORTED",
+			"errorDescription": "Dangerous goods data upload mode is not supported for shipping for this service."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DANGEROUSGOODSDETAIL.LESSTHANREQUIRED",
+			"errorDescription": "You must have  {NUMBER } more dangerous good packages to process this shipment."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.REQUESTEDPACKAGELINEITEMS.LIMITEXCEEDED",
+			"errorDescription": "Number of packages exceeds total package count."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DRYICE.NOTREQUIRED",
+			"errorDescription": "The Dry Ice information should only be provided when uploading the dangerous goods commodity data under this regulation. The Dry Ice Special Service information must be removed from this transaction."
+		},
+		{
+			"code": "PRINTEDLABELORIGIN.ADDRESS.NOTALLOWED",
+			"errorDescription": "Alternate sender not allowed with return or pending shipments"
+		},
+		{
+			"code": "SPECIALSERVICETYPES.COD.REQUIRED",
+			"errorDescription": "COD must be entered on all packages."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.REQUESTEDPACKAGELINEITEMS.COUNTMISMATCH",
+			"errorDescription": "Total uploaded handling units exceed package count."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.TOTALPACKAGECOUNT.HANDLINGUNITSMISMATCH",
+			"errorDescription": "Total uploaded handling units exceed MPS limit."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.NECESSARY",
+			"errorDescription": "Dangerous Goods special service cannot be removed from a DG data upload mode package."
+		},
+		{
+			"code": "SHIPPINGCHARGESPAYMENT.PAYMENTTYPETHIRDPARTY.DEFAULTED",
+			"errorDescription": "Importer has been defaulted to the Third Party"
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.LESSTHANREQUIRED",
+			"errorDescription": "Shipment total dry ice package count is less than the hazardous commodity total dry ice package count"
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPPERORRECIPIENTCOUNTRYCODE.INVALID",
+			"errorDescription": "Intra-country open shipment cannot be changed to nonintra-country and vice versa"
+		},
+		{
+			"code": "ALTERNATEBILLINGPARTY.ADDRESS.INVALID",
+			"errorDescription": "Alternate billing account number contains invalid third-party reference."
+		},
+		{
+			"code": "SHIPMENT.ONELABELATATIME.EXPECTED",
+			"errorDescription": "Expected MPS Shipment, found only 1 piece"
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.VARIABLEHANDLINGCHARGEDETAIL.APPLICABLE",
+			"errorDescription": "Package level variable handling charges cannot be calculated for FedEx Express multi-piece shipments; only shipment level values will be applied."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.SHIPPERORRECIPIENTCOUNTRYCODE.NOTSUPPORTED",
+			"errorDescription": "The requested  {ORIGIN_OR_DESTINATION } country is not supported for estimated duties and taxes."
+		},
+		{
+			"code": "FEDEXFREIGHTBILLINGCONTACTANDADDRESS.POSTALCODE.INVALID",
+			"errorDescription": "This bill-to account cannot be used to obtain a rate quote for the originating zip/postal code.� Please select a different bill-to account."
+		},
+		{
+			"code": "FREIGHTSHIPMENTSPECIALSERVICES.FREIGHTGUARANTEE.NOCHARGE",
+			"errorDescription": "Guaranteed Date service was applied to this shipment at no extra charge."
+		},
+		{
+			"code": "DANGEROUSGOODSDETAIL.TRACKINGNUMBER.MODIFIED",
+			"errorDescription": "Uploaded tracking number cannot be modified."
+		},
+		{
+			"code": "SHIPMENT.ACCOUNTNUMBER.MISMATCHED",
+			"errorDescription": "For tracking number  {TRACKING_NUMBER }, the uploaded dangerous goods data has already begun shipping on a different meter number and account.� Please use that meter number and account to process this shipment"
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.VARIABLEHANDLINGCHARGEDETAIL.REQUIRED",
+			"errorDescription": "Package level variable handling charges cannot be calculated for FedEx Express non US domestic multi-piece shipments; only shipment level values will be applied."
+		},
+		{
+			"code": "COMMODITIES.CUSTOMSVALUE.LESSTHANREQUIRED",
+			"errorDescription": "The sum of commodities customs value amounts do not the equal the total customs value amount; the greater customs value amount was used to rate."
+		},
+		{
+			"code": "DANGEROUSGOODSCOMMODITIES.TRACKINGNUMBERS.REQUIRED",
+			"errorDescription": "Dangerous goods commodities for all tracking numbers in the shipment must be uploaded in a single request."
+		},
+		{
+			"code": "DANGEROUSGOODS.SHIPPERADDRESS.MISMATCH",
+			"errorDescription": "Your Shipper or Origin Country Code does not match the previously uploaded dangerous goods information"
+		},
+		{
+			"code": "SHIPMENTDRYICEWEIGHT.PACKAGEDRYICEWEIGHT.MISMATCH",
+			"errorDescription": "Shipment dry ice weight does not match package dry ice weight."
+		},
+		{
+			"code": "SHIPMENTDRYICEDETAIL.PACKAGECOUNT.LESSTHANNEEDED",
+			"errorDescription": "You must have  {NUMBER } more dry ice packages to process this shipment."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHTVALUE.EXCEEDED",
+			"errorDescription": "Sum of package dry ice weight cannot exceed shipment dry ice weight."
+		},
+		{
+			"code": "PACKAGESPECIALSERVICES.DRYICEWEIGHTVALUE.MISMATCH",
+			"errorDescription": "Sum of package dry ice weight does not match shipment dry ice weight."
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.FEDEXFREIGHTACCOUNTNUMBER.REQUIRED",
+			"errorDescription": "Either FedEx Freight or Alternate account number and the associated address is required."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.REQUESTEDPACKAGELINEITEMS.MUSTBEONE",
+			"errorDescription": "The number of RequestedPackages in the RequestedShipment must be equal to 1"
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.ASSOCIATEDFREIGHTLINEITEMS.INVALID",
+			"errorDescription": "Package  {PACKAGE_INDEX } - Associated freight line item id must have a matching FreightShipmentLineItem id.Please update and try again"
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.SUBPACKAGINGTYPE.MISSING",
+			"errorDescription": "Package  {PACKAGE_INDEX } - Physical packaging type is missing or invalid.Please update and try again"
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.ROLE.MISSING",
+			"errorDescription": "Freight shipment role type invalid or missing.Please update and try again"
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.TOTALHANDLINGUNITS.MISSING",
+			"errorDescription": "FreightShipmentDetail - Total handling units does not match requested shipment package count.Please update and try again"
+		},
+		{
+			"code": "LINEITEM.DESCRIPTION.MISSING",
+			"errorDescription": "Freight shipment line item  {FREIGHT_SHIPMENT_LINE_ITEM } -commodity description is required.Please update and try again"
+		},
+		{
+			"code": "LINEITEM.ID.MISSING",
+			"errorDescription": "FreightLineItemId for Freight shipment line item  {FREIGHT_SHIPMENT_LINE_ITEM } is missing or invalid.Please update and try again"
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.BILLINGCONTACTANDADDRESS.INVALID",
+			"errorDescription": "Invalid data in the billing address for account  {ACCOUNT_NUMBER_TYPE }. Please update and try again"
+		},
+		{
+			"code": "FREIGHTSHIPMENTDETAIL.BILLINGCONTACTANDADDRESS.INVALID",
+			"errorDescription": "Invalid data in the billing address for account  {ACCOUNT_NUMBER_TYPE }. Please update and try again"
+		},
+		{
+			"code": "SHIPMENTCODDETAIL.ADDTRANSPORTATIONCHARGESDETAIL.UNSATISFIED",
+			"errorDescription": "Unable to satisfy requested COD add transportation charges. Please update and try again."
+		},
+		{
+			"code": "CUSTOMSCLEARANCEDETAILS.IMPORTEROFRECORD.REQUIRED",
+			"errorDescription": "Recipient has been defaulted to the importer of record. Please update and try again."
+		},
+		{
+			"code": "SHIPPINGCHARGESPAYMENT.PAYMENTTYPETHIRDPARTY.DEFAULTED",
+			"errorDescription": "Importer has been defaulted to the Third Party"
+		},
+		{
+			"code": "SHIPMENT.ONELABELATATIME.EXPECTED",
+			"errorDescription": "Expected MPS Shipment, found only 1 piece"
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.VARIABLEHANDLINGCHARGEDETAIL.APPLICABLE",
+			"errorDescription": "Package level variable handling charges cannot be calculated for FedEx Express multi-piece shipments; only shipment level values will be applied."
+		},
+		{
+			"code": "FREIGHTSHIPMENTSPECIALSERVICES.FREIGHTGUARANTEE.NOCHARGE",
+			"errorDescription": "Guaranteed Date service was applied to this shipment at no extra charge."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSPOSTALCODE.REQUIRED",
+			"errorDescription": "Hold at location in special services requested - postal code is required"
+		},
+		{
+			"code": "DIA.RECIPIENTADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "Requested shipment dia recipient - invalid country code. Please update and try again."
+		},
+		{
+			"code": "SPECIALSERVICETYPES.DANGEROUSGOODS.REQUIRED",
+			"errorDescription": "Package {PACKAGE_INDEX} - dangerous goods special service type is required with a dangerous goods option type. Please update and try again."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESS.NOTFOUND",
+			"errorDescription": "Requested location not found for special service hold at location."
+		},
+		{
+			"code": "LOCATIONCONTACTANDADDRESS.ADDRESSCITY.REQUIRED",
+			"errorDescription": "City is required for hold at location detail. Please update and try again."
+		},
+		{
+			"code": "SIGNATUREOPTIONDETAIL.SIGNATURERELEASENUMBER.REQUIRED",
+			"errorDescription": "signature release number is required for signature option NO_SIGNATURE_REQUIRED. Please update and try again."
+		},
+		{
+			"code": "ATTACHEDDOCUMENTS.DESCRIPTION.NOTVALID",
+			"errorDescription": "Description for the document is not valid. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDSHIPMENT.PICKUPTYPE.INVALID",
+			"errorDescription": "Pick up type for the requested shipment is invalid."
+		},
+		{
+			"code": "CODRECIPIENT.ADDRESSCOUNTRYCODE.INVALID",
+			"errorDescription": "Recipient country code is invalid for COD Special service"
+		},
+		{
+			"code": "SURCHARGES.PROTECTIONFROMFREEZING.NOTALLOWED",
+			"errorDescription": "Protection from freezing is not allowed. Please update and try again."
+		},
+		{
+			"code": "SURCHARGES.LIMITEDACCESSDELIVERY.NOTALLOWED",
+			"errorDescription": "Limited access delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "SURCHARGES.REGIONALMALLDELIVERY.NOTALLOWED",
+			"errorDescription": "Regional mall delivery is not allowed. Please update and try again."
+		},
+		{
+			"code": "REQUESTEDPACKAGELINEITEMS.VARIABLEHANDLINGCHARGE.INVALID",
+			"errorDescription": "Invalid shipment level variable handling charge detail. Both a rate element basis type and a rate type basis are required when a percent value is expected. Please update and try again."
+		},
+		{
+			"code": "STREETLINES.TOO.LONG",
+			"errorDescription": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+		},
+		{
+			"code": "PERSONNAME.TOO.LONG",
+			"errorDescription": "Person name too long."
+		},
+		{
+			"code": "CITY.EMPTY",
+			"errorDescription": "City field must contain at least 3 characters."
+		}
+	]
+}

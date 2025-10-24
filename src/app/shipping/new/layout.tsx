@@ -1,3 +1,4 @@
+// 探索ログ: ステップ配列と完了表示の実装。data-test属性(step{n}-status)を付与。
 'use client'
 
 import { usePathname } from 'next/navigation'
@@ -106,6 +107,13 @@ export default function ShippingNewLayout({
                           編集
                         </span>
                       )}
+                      {/* ステータス（E2E用data-test） */}
+                      <span
+                        className="sr-only"
+                        data-test={`step${step.id}-status`}
+                      >
+                        {isCompleted ? 'synced' : 'pending'}
+                      </span>
                     </div>
                   )
                   

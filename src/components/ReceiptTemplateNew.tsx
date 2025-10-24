@@ -16,7 +16,8 @@ export const ReceiptTemplateNew: React.FC<ReceiptTemplateProps> = ({ data }) => 
     companyInfo,
     items,
     totals,
-    paymentInfo
+    paymentInfo,
+    feeRates
   } = data
 
   // Format currency for Japanese Yen
@@ -314,6 +315,10 @@ export const ReceiptTemplateNew: React.FC<ReceiptTemplateProps> = ({ data }) => 
     }
   `
 
+  const serviceRatePct = typeof (feeRates as any)?.serviceRate === 'number' ? Math.round((feeRates as any).serviceRate * 10000) / 100 : 2.5
+  const processingRatePct = typeof (feeRates as any)?.processingRate === 'number' ? Math.round((feeRates as any).processingRate * 10000) / 100 : 3.25
+  const taxRatePct = typeof (feeRates as any)?.taxRate === 'number' ? Math.round((feeRates as any).taxRate * 10000) / 100 : 10
+
   return (
     <div className="receipt-document">
       <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />
@@ -415,7 +420,7 @@ export const ReceiptTemplateNew: React.FC<ReceiptTemplateProps> = ({ data }) => 
               <span className="summary-value">{formatCurrency(Math.round(totals.subtotal + (totals.fees?.serviceFee || 0) + (totals.fees?.processingFee || 0)))}</span>
             </div>
             <div className="summary-row">
-              <span className="summary-label">消費税額 (2+3+4) ×10%</span>
+              <span className="summary-label">消費税額 (2+3+4) ×{taxRatePct}%</span>
               <span className="summary-value">{formatCurrency(Math.round(totals.tax))}</span>
             </div>
             <div className="summary-row total-row">

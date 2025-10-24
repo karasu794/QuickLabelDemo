@@ -1,3 +1,4 @@
+// 探索ログ: モバイル用ステップ進捗。各ステップにdata-test(step{n}-status)を付与。
 'use client'
 
 import { usePathname } from 'next/navigation'
@@ -60,6 +61,15 @@ export default function MobileStepProgress() {
               <p className="text-xs text-gray-500">
                 ステップ {currentStep?.id || '?'} / {steps.length}
               </p>
+              {/* ステータス（E2E用data-test） */}
+              {steps.map((s) => {
+                const done = isHydrated ? isStepCompleted(s.href) : false
+                return (
+                  <span key={s.id} className="sr-only" data-test={`step${s.id}-status`}>
+                    {done ? 'synced' : 'pending'}
+                  </span>
+                )
+              })}
             </div>
           </div>
         </div>

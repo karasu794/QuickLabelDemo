@@ -21,4 +21,6 @@ export async function buildCommercialInvoicePDF(opts: {
   return artifact.pdfBuffer
 }
 
+// 探索ログ: 商業インボイスPDFは charges 表示の責務が薄いため、Wave1では既存動作を維持（合計整合は上位で担保）。
+
 

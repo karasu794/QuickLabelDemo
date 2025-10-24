@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // バリデーション
     if (!shipperInfo.countryCode || !recipientInfo.countryCode) {
       return NextResponse.json(
-        { ok: false, code: 'VALIDATION_ERROR', errors: { countryCode: ['出荷地と仕向地の国を選択してください'] } },
+        { ok: false, code: 'VALIDATION_ERROR', errors: { countryCode: ['出荷地とお届け先（国／地域）の国を選択してください'] } },
         { status: 422 }
       )
     }

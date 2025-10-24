@@ -408,7 +408,7 @@ export default function Home() {
       }
 
       // 📍 FedEx API送信用の住所データ準備
-      // 郵便番号不要国で郵便番号が空の場合、ダミー値を設定
+  // 郵便番号不要国で郵便番号が空の場合、ダミー値を設定
       const apiQuoteParams: any = { ...quoteParams };
       // 追加フィールドの保全（初期値/バリデーション済み）
       const dv = Math.max(0, Number((apiQuoteParams as any).declaredValue || 0))
@@ -424,7 +424,7 @@ export default function Home() {
       
       if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.destinationCountry) && !quoteParams.destinationPostalCode) {
         apiQuoteParams.destinationPostalCode = '00000';
-        console.log(`仕向地: 郵便番号不要国(${quoteParams.destinationCountry})のため、ダミー郵便番号を設定: 00000`);
+        console.log(`お届け先（国／地域）: 郵便番号不要国(${quoteParams.destinationCountry})のため、ダミー郵便番号を設定: 00000`);
       }
 
       // 非同期ジョブを開始

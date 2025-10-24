@@ -1,0 +1,108 @@
+{
+	"errorList": [
+	    {
+			"code": "CREDITCARD.TYPE.REQUIRED",
+			"errorDescription": "Please select a credit card type."
+		},
+		{
+			"code": "ORIGIN.COUNTRYCODE.REQUIRED",
+			"errorDescription": "Shipment origin country code is required."
+		},
+		{
+			"code": "DESTINATION.POSTALCITY.MISMATCH",
+			"errorDescription": "The Destination Postal Code is not valid for the Destination City entered. Please verify the information and try again."
+		},
+		{
+			"code": "ORIGIN.POSTALCODE.INVALID",
+			"errorDescription": "Invalid ZIP/Postal code."
+		},
+		{
+			"code": "ADDRESS.DETAIL.INVALID",
+			"errorDescription": "The City, State/Province and ZIP/Postal code combination that you entered is not valid."
+		},
+		{
+			"code": "CITY.IS.REQUIRED",
+			"errorDescription": "City is required"
+		},
+		{
+			"code": "CITYNAME.POSTALCODE.REQUIRED",
+			"errorDescription": "City Name or Postal Code is required."
+		},
+		{
+			"code": "COUNTRYCODE.ATLEASTTWOCHARACTER.REQUIRED",
+			"errorDescription": "Country Code is required and must be 2 characters long."
+		},
+		{
+			"code": "DATE.ENTERED.INVALID",
+			"errorDescription": "Please enter a valid date"
+		},
+		{
+			"code": "DECLARED.VALUEMAXUSD.ERROR",
+			"errorDescription": "The maximum declared value is USD50,000."
+		},
+		{
+			"code": "DECLAREDVAULE.EXCEEDS.LIMIT",
+			"errorDescription": "The maximum declared value is USD50,000."
+		},
+		{
+			"code": "PACKAGE.TYPELIMIT.ERROR",
+			"errorDescription": "Your package is 150 lbs/68kg or less, and length plus girth (L+2W+2H) exceeds 130 inches/330.2cm and qualifies as a FedEx Express® Freight shipment."
+		},
+		{
+			"code": "POSTALCODE.ATLEASTTHREECHARACTERS.REQUIRED",
+			"errorDescription": "Postal Code must have at least 3 characters."
+		},
+		{
+			"code": "POSTALCODE.SHIP.ERROR",
+			"errorDescription": "You cannot ship from this postal code."
+		},
+		{
+			"code": "PRODUCT.INFORMATION.REQUIRED",
+			"errorDescription": "Complete the information required for your product."
+		},
+		{
+			"code": "SERVICES.POBOXS.NOTAVAILABLE",
+			"errorDescription": "FedEx does not provide services from or to P.O. Boxes."
+		},
+		{
+			"code": "STATE.POSTALCODE.MISMATCH",
+			"errorDescription": "State Postal Code mismatch"
+		},
+		{
+			"code": "STATECODE.IS.REQUIRED",
+			"errorDescription": "State Code is required."
+		},
+		{
+			"code": "STATECODE.MINIMUMLENGTH.REQUIRED",
+			"errorDescription": "State Code must be 2 characters long."
+		},
+		{
+			"code": "STATECODE.TWOCHARACTERS.REQUIRED",
+			"errorDescription": "State Code must be 2 characters long."
+		},
+		{
+			"code": "CARRIER.CODE.INVALID",
+			"errorDescription": "Carrier code is invalid"
+		},
+		{
+			"code": "COUNTRYCODE.INFO.INVALID",
+			"errorDescription": "Country code is invalid"
+		},
+		{
+			"code": "SHIPPING.POSTAL.CODE.INVALID",
+			"errorDescription": "Postal code is null or empty"
+		},
+		{
+			"code": "AVAILABILITY.SHIP.DATE.INVALID",
+			"errorDescription": "Ship date is invalid"
+		},
+		{
+			"code": "STATE.PROVINCECODE.REQUIRED",
+			"errorDescription": "StateOrProvince code is null or empty"
+		},
+		{
+			"code": "INTERNAL.SERVER.ERROR",
+			"errorDescription": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+		}
+	]
+}

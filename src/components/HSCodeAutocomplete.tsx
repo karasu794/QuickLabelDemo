@@ -16,7 +16,7 @@ interface HSCodeAutocompleteProps {
   description: string
   // 現在のHSコード
   hsCode: string
-  // 仕向地の国コード
+  // お届け先（国／地域）の国コード
   destinationCountryCode: string
   // 品名変更時のコールバック
   onDescriptionChange: (description: string) => void

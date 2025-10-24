@@ -385,7 +385,8 @@ export function buildOpenShipmentData(
   recipientInfo: any,
   packages: any[],
   items?: any[],
-  serviceType: string = 'FEDEX_INTERNATIONAL_PRIORITY'
+  serviceType: string = 'FEDEX_INTERNATIONAL_PRIORITY',
+  jpyToUsd?: number
 ): OpenShipmentData {
   // 🚨 基幹仕様対応: 出荷地国コードに基づいて動的認証情報取得
   const credentials = getFedExCredentialsByOrigin(shipperInfo.countryCode)
@@ -452,20 +453,15 @@ export function buildOpenShipmentData(
         }
       }),
       ...(packages[0]?.declaredValue && Number(packages[0].declaredValue) > 0 && {
-        declaredValue: {
-          amount: parseFloat((Number(packages[0].declaredValue) * 0.0067).toFixed(2)),
-          currency: 'USD'
-        }
+        declaredValue: { amount: parseFloat((Math.max(Number(packages[0].declaredValue) * (jpyToUsd > 0 ? jpyToUsd : (1/150)), 1.0)).toFixed(2)), currency: 'USD' }
       })
     }
   }
 
   // 国際発送の場合は税関情報を追加
   if (isInternational && items && items.length > 0) {
-    const convertJPYtoUSD = (amountJPY: number): number => {
-      const JPY_TO_USD_RATE = 0.0067
-      return Math.max(amountJPY * JPY_TO_USD_RATE, 1.00)
-    }
+    const rate = (jpyToUsd && jpyToUsd > 0) ? jpyToUsd : (1/150)
+    const convertJPYtoUSD = (amountJPY: number): number => Math.max(amountJPY * rate, 1.0)
 
     shipmentData.customsClearanceDetail = {
       commercialInvoice: {
@@ -485,10 +481,7 @@ export function buildOpenShipmentData(
         countryOfManufacture: item.countryOfManufacture,
         quantity: item.quantity,
         quantityUnits: 'PCS',
-        unitPrice: {
-          amount: parseFloat(convertJPYtoUSD(item.unitPrice).toFixed(2)),
-          currency: 'USD',
-        },
+        unitPrice: { amount: parseFloat(convertJPYtoUSD(item.unitPrice).toFixed(2)), currency: 'USD' },
         customsValue: {
           amount: parseFloat(convertJPYtoUSD(item.unitPrice * item.quantity).toFixed(2)),
           currency: 'USD',

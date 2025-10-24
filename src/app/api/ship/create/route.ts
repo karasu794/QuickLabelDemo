@@ -66,13 +66,13 @@ type CreateShipResponse = {
 	htsCode?: string
 }
 
-async function verifyPayment(orderId: string): Promise<{ amount: number; currency: string; paymentId: string } | null> {
+async function verifyPayment(paymentId: string): Promise<{ amount: number; currency: string; paymentId: string } | null> {
 	try {
 		const { SquareClient, SquareEnvironment } = await import('square') as any
 		const token = process.env.SQUARE_ACCESS_TOKEN
 		if (!token) return null
 		const client = new SquareClient({ token, environment: process.env.NODE_ENV === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox })
-		const resp = await client.paymentsApi.getPayment(orderId)
+		const resp = await client.paymentsApi.getPayment(paymentId)
 		const p = resp?.result?.payment
 		if (!p) return null
 		const ok = ['COMPLETED', 'APPROVED', 'CAPTURED'].includes(String(p.status || '').toUpperCase())
@@ -174,16 +174,20 @@ const { user, supabase: supabaseFromAuth } = await getUserOrThrow()
 		}
 	}
 
-	const pay = await withTiming(log, 'payment.verify', async () => verifyPayment(input.orderId), { orderId: input.orderId })
+	const pay = await withTiming(log, 'payment.verify', async () => {
+		const pid = (input as any).payment_tx_id as string | undefined
+		if (!pid) return null
+		return verifyPayment(pid)
+	}, { orderId: input.orderId })
 	if (!pay) {
 		log.warn({ step: 'payment.verify', ok: false, context: { orderId: input.orderId } })
 		return NextResponse.json({ code: 'PAYMENT_REQUIRED' }, { status: 402 })
 	}
 
   // 同意検証（簡易）: terms_version が無い、または同意記録が見当たらない場合は拒否（将来: drafts照合）
-  const nowIso = new Date().toISOString()
-  const termsVersion = (input as any).terms_version || 'v1'
-  const paymentTxId = (input as any).payment_tx_id || pay.paymentId
+	const nowIso = new Date().toISOString()
+	const termsVersion = (input as any).terms_version || 'v1'
+	const paymentTxId = (input as any).payment_tx_id || pay.paymentId
 
   // FIX: サーババリデーション - 直近のユーザードラフトに同意があるか検証
 	try {

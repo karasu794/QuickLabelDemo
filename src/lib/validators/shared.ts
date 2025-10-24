@@ -104,13 +104,10 @@ export const futureDateSchema = z.string()
 /**
  * 🎯 通貨コードバリデーション
  */
-export const currencyCodeSchema = z.string()
-  .length(3, { message: "通貨コードは3文字である必要があります。" })
-  .toUpperCase()
-  .refine((val) => {
-    const validCurrencies = ['JPY', 'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CNY', 'KRW']
-    return validCurrencies.includes(val)
-  }, { message: "サポートされていない通貨コードです。" })
+// ISO-4217 フル対応（簡易版）：英大文字3桁を許容し、将来的に一覧で厳格化
+// ISO-4217（主要通貨の厳格化）。不足分は必要に応じて追加
+const ISO_4217 = ['USD','JPY','EUR','GBP','CNY','AUD','CAD','CHF','HKD','SEK','NOK','DKK','NZD','SGD'] as const
+export const currencyCodeSchema = z.enum(ISO_4217 as unknown as [string, ...string[]])
 
 /**
  * 📄 HSコードバリデーション

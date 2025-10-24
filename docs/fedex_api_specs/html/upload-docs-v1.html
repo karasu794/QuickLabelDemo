@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">    
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    
+    
+    <meta name="Category" content="API Catalog"/>
+    
+	<meta name="Date" content="Tue Jul 15 11:50:49 GMT 2025"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/bz/en_bz/catalog/upload-documents/docs.html.html"/>
+    <meta name="og:title" content="Trade Documents Upload API Documentation | FedEx Developer Portal"/>
+    <meta name="og:description" content="Trade Documents Upload API Documentation"/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/en-bz/catalog/upload-documents/docs.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "docs",
+             locale: "en_bz",
+             language:"en",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "us",
+             country:"bz",
+             pagePath:"apps\/fdp\/catalog\/upload\u002Ddocuments\/docs",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "bz";
+let language = "en";
+let pagepath = "apps\/fdp\/catalog\/upload\u002Ddocuments\/docs";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>    
+    <body>      	
+      
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+  
+        <input type="hidden" id="devtitle" value="Developer Portal "/>
+
+
+  <div id="webhookFlag" style="display: none;">true</div>
+
+<div class="fxg-main-content">
+  <div class='warning-alert'>
+    <div class="sidenav col-sm-2">
+      <div id="mySidenav">
+        <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" alt="Fedex Logo"/></br>
+        <h6 class="dev-portal"></h6>
+      </div>
+      <div id="docsmenuDiv"></div>  
+    </div>
+
+    <div class="fxg-nav col-md-offset-2">
+      <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+    </div> 
+  <input type="hidden" value="false" id="loginstatus"/>
+  <input type="hidden" value="Logout" id="logouttxt"/>
+  <input type="hidden" value="Settings" id="loggedintxt"/>
+  <input type="hidden" value=" Sign Up or Log In" id="defaulttxt"/>
+   <input type="hidden" value="Login incorrect. Either the user ID or password combination is incorrect or the account has been locked. Please try again or click &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;> here&lt;/a> to recover your password." id="logouterrtxt"/>
+   <input type="hidden" value="Sorry. Something went wrong. Please re-enter your user name and password to try again." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="LOG IN" id="loginbtnTxt"/>
+   <input type="hidden" value="Settings" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+    </div>
+
+    <div class="main col-sm-12">
+      <div>
+
+
+  <input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;My Projects&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/project&#34;},{&#34;pageTitle&#34;:&#34;Getting Started&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Catalog&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Recipes&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Guides&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/guides&#34;},{&#34;pageTitle&#34;:&#34;Announcements&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Validation&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/certification&#34;},{&#34;pageTitle&#34;:&#34;API Status&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>&amp;reg;&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>&amp;reg;&lt;\/sup>  Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Support/FAQs&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/support&#34;},{&#34;pageTitle&#34;:&#34;Manage Organization&#34;,&#34;pagePath&#34;:&#34;/api/en-bz/organization&#34;}]"/>
+  <input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+  <input type="hidden" id="submenuTitle" value="Other products"/>
+  <input type="hidden" id="menutxt" value="Menu"/>
+  <input type="hidden" id="apigURL" value="apis.fedex.com"/>
+
+
+  <div class='irc-authentication'>
+    <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+      <img class="fxg-user-options__icon" alt=" Sign Up or Log In" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+      <span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span>
+    </a>
+    <hr/>
+  </div>
+
+<div style="display:none"><a href="https://www.fedex.com/en-us/developer.html" id="docs_developer"></a></div>
+<input type="hidden" id="expandroot"/>
+<div class='business-txt cjtbAK'>
+  <div class="breadcrumb-irc-doc-container">
+    
+<nav class="cmp-breadcrumb-irc  " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/bz/en_bz/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      <a href="/content/fedex-com/irc.html" class="cmp-breadcrumb__item-link-irc">
+        <span>IRC</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="/content/fedex-com/irc/sites/bz/en_bz.html" class="cmp-breadcrumb__item-link-irc">
+        <span>United States English</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-bz/catalog.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Catalog</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-bz/catalog/upload-documents.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Trade Documents Upload API</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      
+        <span>Trade Documents Upload API Documentation</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+  </div>
+  <h1 class="sc-htoDjs sc-fYxtnH dTJWQH">
+    <div class='pull-left'></div>
+    
+    <div class='pull-right'></div>
+    
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+
+
+
+
+    <div class='webhook-download-schemabtn'> </div>
+    
+
+  </h1>
+  
+  
+<div class="fxg-wrapper">
+    
+
+</div><div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><div class="fxg-doc-header"><h3>Introduction</h3>
+</div>
+<p>Trade Documents Upload API is an international FedEx shipping document upload solution that simplifies your global shipping needs and allows you to electronically upload customs documentation required for international shipments. You can submit most of your trade documents electronically relieving yourself from printing or attaching trade documents with the shipment.</p>
+<p>The customs and other agencies receive electronically sent documents faster than paper copies attached with your shipment. The customs clearance process is also optimized as capturing and sharing of critical trade information is done at earlier stages of shipping.</p>
+<p><i>Note:</i></p>
+<ul>
+<li><i>In certain scenarios, the originals of specific international documents still need to be attached to the package. For more information, refer section <a href="https://developer.fedex.com/api/en-bz/guides/api-reference.html#exportdocuments" target="_blank">Export Documents</a>.</i></li>
+<li><i> For smooth customs clearance and to avoid delays, ensure that the documents are visually clear and not distorted in any way.</i></li>
+</ul>
+<div class="fxg-doc-header"><h3>Trade Documents Upload API Details</h3>
+</div>
+<p>Upload your customs documents or use FedEx-generated trade documents. You can also customize the FedEx generated electronic trade documents by uploading your Company Letterhead/Logo and Digital signature image. Uploading documents electronically eliminates the need for manual signing, folding, stuffing and attaching customs documents to each shipment. Additionally, saves on paper, energy and printing costs.</p>
+<p>Following are the features associated with this API:</p>
+<p><b style="font-size: 16.0px;">Upload Document</b></p>
+<p>You can upload one document at a time before creating the shipment (pre-shipment) or after a shipment is created using Ship API (post-shipment).</p>
+<p><i>Note: Creation of shipment mentioned throughout is applicable to Ship API- Create Shipment, Open Ship API- Create Open Shipment and Freight LTL API- Ship Freight LTL endpoints.</i></p>
+<p><b style="font-size: 16.0px;">Upload Multiple Documents</b><br />
+</p>
+<p>You can upload maximum of five documents per upload request for both pre-shipment and post-shipment conditions.</p>
+<p><b style="font-size: 16.0px;">Upload Multiple Encoded Documents</b><br />
+</p>
+<p>You can upload base64 encoded documents (up to five) at once before creating the shipment (pre-shipment) or after a shipment is created (post-shipment). The documents uploaded using this option provides additional security to the document data in case of an unlikely interception.</p>
+<p><b style="font-size: 16.0px;">Upload Images</b><br />
+</p>
+<p>This feature allows you to upload customized Company Letterhead/Logo and Digital signature images which can be used in the FedEx generated paperwork or reports. First, upload the Company Letterhead/Logo and Digital signature image to the FedEx Servers and then provide these upload references in your shipment request (Create Shipment endpoint) for individual document using element <i>customerImageUsages</i> under <i>shippingDocumentSpecification</i>.</p>
+<p>Digital Signatures or Letterheads/Company Logos are printed on the following FedEx generated documents and reports:</p>
+<ul>
+<li>Commercial Invoice</li>
+<li>Certificate of Origin</li>
+<li>OP900</li>
+<li>Pro Forma Invoice</li>
+<li>USMCA Certificate of Origin</li>
+<li>USMCA Commercial Invoice and Certificate of Origin</li>
+</ul>
+<p><i>Note:</i></p>
+<ul>
+<li><i>Digital Signature – The limitation for signature is 240x25 pixels and the images can be in GIF, PNG formats.</i></li>
+<li><i>Company Letterhead/Logo – The limitation for Logo is 700x50 pixels and images can be in GIF, PNG formats.</i></li>
+</ul>
+<div class="fxg-doc-header"><h3>Trade Document Upload API Workflow</h3>
+</div>
+<p>Following is the flow that can be used to upload document in a Pre-Shipment or Post-Shipment scenarios.</p>
+<p><b style="font-size: 16.0px;">Pre-Shipment Document Upload:</b></p>
+<p>Pre-shipment document upload involves uploading the document(s) using this API before a shipment is created. After successful upload of document(s), you can later associate the uploaded document(s) reference in the shipment request.</p>
+<p>This is the standard method to upload your trade documents prior the shipment being confirmed.</p>
+<p>The steps to perform a pre-shipment document upload are as follows:</p>
+<ul>
+<li>Use any of the following endpoints as per your requirement<ul>
+<li>Upload Document</li>
+<li>Upload Multiple Documents</li>
+<li>Upload Encoded Documents</li>
+</ul>
+</li>
+<li>Provide workflowName value as ETDPreShipment to indicate it is a Pre-shipment upload.</li>
+<li>Provide the actual file(s) or base64 encoded document(s) to be uploaded.<br />
+</li>
+<li>Provide document details (Commercial Invoice, Certificate of Origin, Export Declaration. etc), which includes document type, and shipment metadata associated with the document.</li>
+<li>Successful request will upload the documents to FedEx servers and return unique identifier i.e. <b><i>docId</i></b> for each uploaded document as success token.<br />
+</li>
+<li>Use Create Shipment/Create Open Shipment/Ship Freight LTL endpoint.</li>
+<li>In the Shipping end point per your selection, provide shipmentSpecialService/specialServiceTypes as ELECTRONIC_TRADE_DOCUMENTS and pass<i> docId</i> value(s) to the element shipment SpecialServices/etdDetail/attachedDocuments/documentId.</li>
+<i>Note: For multiple-piece shipment (MPS), specify the <b>docId</b> generated from uploading documents for all the packages in the shipment.</i><li>Successful shipment request will confirm the ETD shipment to FedEx and generate tracking &amp; label details and the <i>completedEtdDetail</i> object will return the uploaded document type and document(s) id as a reference.</li>
+<li>For Pre-shipment document upload, you can upload all the documents one at a time or up to 5 documents together, and then provide all documents IDs to the shipment at once.</li>
+</ul>
+<p><b style="font-size: 16.0px;">Post-Shipment Document Upload (PSDU):</b></p>
+<p>Post-shipment document upload (PSDU) allows you to upload document(s) after the shipment is submitted and tracking labels are generated. In this scenario, once the shipment is created and tracking number is generated, associate this tracking number in your document upload request.</p>
+<p>This method is convenient for customers who create their own Commercial Invoices and have third-parties or remote offices creating customs documentation.</p>
+<p>Following are important points to remember when you use this method:</p>
+<ul>
+<li>You should have shipment tracking number and shipment date ready prior to the upload request.</li>
+<li>You should be aware of the shipper’s location CUT-OFF times to submit the documentation in due time.</li>
+</ul>
+<p>This API also supports submitting customs document for future day shipments, as well as current day shipments.</p>
+<p>The steps to perform a post-shipment upload are as follows:</p>
+<ul>
+<li>Use <i>Create Shipment/Create Open Shipment/Ship Freight LTL</i> endpoint.</li>
+<li>In the Create Shipment end point, specify the below details as per your selection,<ul>
+<li>Provide <i>shipmentSpecialServices/specialServiceTypes </i>as ELECTRONIC_TRADE_DOCUMENTS.</li>
+<li>Provide<i> shipmentSpecialServices/etdDetail/attributes</i> as POST_SHIPMENT_UPLOAD_REQUESTED.</li>
+</ul>
+</li>
+<li>Successful shipment request will confirm the shipment to FedEx and generate tracking &amp; Label details.</li>
+<li>Use any of the following endpoints as per your requirement.<ul>
+<li>Upload Document</li>
+<li>Upload Multiple Documents</li>
+<li>Upload Multiple Encoded Documents.</li>
+</ul>
+</li>
+<li>Provide<i> workflowName </i>value as<i> ETDPostShipment</i> to indicate it’s a Post-shipment upload.</li>
+<li>Provide the actual file(s) or base64 encoded document(s) to be uploaded.</li>
+<li>Provide document details (Commercial Invoice, Certificate of Origin, Export Declaration, etc).</li>
+<li>Provide already processed shipment<i> trackingNumber</i> and <i>shipmentDate</i> under the element <i>document/meta/trackingNumber </i>and<i> document/meta/shipmentDate</i>.<br />
+<i>Note: For multiple-piece shipments (MPS), use the master shipment tracking number when uploading the documents. The ETD details provided for the parent shipment are also applicable for the child shipment.</i></li>
+<li>Successful request will upload the documents to FedEx servers and associate the uploaded documents with the shipment</li>
+</ul>
+<p>The following are the features of Trade Document Upload API which allows you to upload documents and images relevant to the shipment documentation.<br />
+</p>
+<div class="fxg-doc-header"><h3>How Trade Documents Upload API Works</h3>
+</div>
+<p>The following are the features of Trade Document Upload API which allows you to upload documents and images relevant to the shipment documentation</p>
+<p><b style="font-size: 16.0px;">Upload Document</b><br />
+</p>
+<p>Use this endpoint to upload the trade documents for both Pre-shipment and Post-shipment condition.<br />
+</p>
+<p>Following are the required input information associated with this request:</p>
+<ul>
+<li><b>attachment</b> – Actual file to be uploaded.</li>
+<li><b>workFlowName</b> – Provide ETDPreShipment for Pre-shipment upload and ETDPostShipment for Post-shipment upload.</li>
+<li><b>document</b> – Provide document details and shipment meta data.</li>
+<li><b>trackingNumber</b> – Provide PSDU shipment tracking number for which the documents to be uploaded. This is optional for Pre-shipment upload.</li>
+<li><b>shipmentDate</b> – This is shipment date. This is optional for Pre-shipment upload.</li>
+</ul>
+<p>For Pre-shipment upload, the successful response will upload the document to FedEx Servers and return<i> docId</i>. This <i>docId</i> will be used in the actual shipment to submit shipment and generate labels.</p>
+<p>For Post-shipment upload, the successful response will upload the document to FedEx Servers and associate the uploaded documents with the already confirmed shipment.</p>
+<p><b style="font-size: 16.0px;">Upload Image</b><br />
+</p>
+<p>Use this endpoint to upload custom signature and letterhead images/company logo, which can then be applied on the shipping documents.<br />
+</p>
+<p>The following are required input information associated with this request:</p>
+<ul>
+<li><b>attachment</b> – This is an image file.</li>
+<li><b>document</b> – Provide image details such as file name, content type, and file meta data.</li>
+</ul>
+<p>The successful request will upload signature and/ letterhead images/Company Logo into FedEx Servers and return <i>imageIndex</i>. This index is then passed in your shipment request for individual document element <i>customerImageUsages</i> under <i>shippingDocumentSpecification</i> to ensure the custom images or letterhead is printed on the shipment document.</p>
+<div class="fxg-doc-header"><h3>Upload Multiple Documents</h3>
+</div>
+<p>Use this endpoint to upload trade documents (up to five) for both pre and post shipment conditions. Following are the required input information associated with this request:</p>
+<ul>
+<li><b>workflowName</b> – Provide<i> ETDPreShipment</i> for Pre-shipment upload and<i> ETDPostShipment</i> for post-shipment upload.</li>
+<li><b>fileName </b>– Provide the names of the documents or file being updated along with the extension type. Example: COD.PDF</li>
+<li><b>contentType </b>– Provide the file type and format to be uploaded from the available options.</li>
+<li><b>shipDocumentType</b> – Provide the types of documents to be uploaded.<p>For more information on the individual documents, refer to the <a href="#updoc">Upload Documents</a> section on this page. Here is the list of document types you can choose from:</p>
+<ul>
+<li>CERTIFICATE_OF_ORIGIN COMMERCIAL_INVOICE</li>
+<li>ETD_LABEL</li>
+<li>USMCA_CERTIFICATION_OF_ORIGIN</li>
+<li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN</li>
+<li>OTHER</li>
+<li>PRO_FORMA_INVOICE</li>
+</ul>
+</li>
+<li><b>carrierCode </b>– Provide the four letter code of the FedEx operating company. Example: FDXE</li>
+<li><b>originCountryCode</b> – Provide origin country code for the shipment.</li>
+<li><b>destinationCountryCode </b>– Provide destination country code for the shipment.</li>
+<i>Note: Refer the <a href="https://developertest.fedex.com/api/en-us/guides/api-reference.html#countrycodes"><i>Reference Guide</i></a> to search your country code. Example: US</i><li><b>shipmentDate </b>– For post-shipment upload, provide the actual shipment date.</li>
+<li><b>trackingNumber</b> – For post-shipment upload, provide the shipment tracking number. Example: 7825XXXXXXX.</li>
+</ul>
+<p>For Pre-shipment upload, the successful response will upload documents to FedEx Servers and return document Ids<i> (docId)</i>. This<i> docId</i> will be used in the actual shipment to submit shipment and generate labels.</p>
+<p>For Post-shipment upload, the successful response will upload documents to FedEx Servers and associate the uploaded documents with the already confirmed shipment.</p>
+<div class="fxg-doc-header"><h3>Upload Multiple Encoded Documents</h3>
+</div>
+<p>Use this endpoint to upload base64 encoded trade documents (up to five) for both pre and post shipment conditions.</p>
+<p>Following are the required input information associated with this request:</p>
+<ul>
+<li><b>workFlowName</b> – Provide <i>ETDPreShipment</i> for Pre-shipment upload and <i>ETDPostShipment</i> for Post-shipment upload.</li>
+<li><b>carrierCode</b> – Provide the four-letter code of the FedEx operating company. Example: FDXE</li>
+<li><b>contentType</b> – Provide the file type and format to be uploaded from the available options.</li>
+<li><b>shipDocumentType</b> – Provide the types of documents to be uploaded.<p>For more information on the individual documents, refer to the <a href="#updoc">Upload Documents</a> section on this page. Here is the list of document types you can choose from:</p>
+<ul>
+<li>CERTIFICATE_OF_ORIGIN COMMERCIAL_INVOICE</li>
+<li>ETD_LABEL</li>
+<li>USMCA_CERTIFICATION_OF_ORIGIN</li>
+<li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN</li>
+<li>OTHER</li>
+<li>PRO_FORMA_INVOICE</li>
+</ul>
+</li>
+<li><b>originCountryCode</b> – Provide origin country code for the shipment.</li>
+<li><b>destinationCountryCode</b> – Provide destination country code for the shipment.</li>
+<i>Note: Refer the <a href="https://developertest.fedex.com/api/en-us/guides/api-reference.html#countrycodes"><i>Reference Guide</i></a> to search your country code. Example: US</i><li><b>fileContentBase64</b> – Specify the bytecode content for the base64 file to be uploaded.</li>
+</ul>
+<p>For Pre-shipment upload, the successful response will upload encoded documents to FedEx Servers and return document Ids<i> (docId)</i>. This <i>docId</i> will be used in the actual shipment to submit shipment and generate labels.</p>
+<p>For post-shipment upload, the successful response will upload encoded documents to FedEx Servers and associate the uploaded documents with the already confirmed shipment.</p>
+<div class="fxg-doc-header"><h3 id="updoc">Upload Documents</h3>
+</div>
+<p>Following are the documents that can be submitted with this API:<br />
+</p>
+<p><b style="font-size: 16.0px;">Certificate of Origin (COO)</b><br />
+</p>
+<p>A COO is an international document that verifies the country/territory where a product was manufactured. Some countries restrict imports from certain countries, many countries limit the quantity of imported goods, and some countries give preference to goods manufactured in a certain country.<br />
+</p>
+<p><b style="font-size: 16.0px;">Commercial Invoice (CI)</b><br />
+</p>
+<p>This is a document provided by the seller/exporter that describes the parties involved in the shipping transaction and the goods being transported. It is the primary document used by Customs. It should be prepared using the official language of the country/territory to which the goods are being exported, if possible. The Commercial Invoice should include a detailed breakdown of all items included in the shipment, including: a proper description of the goods (what is it? what is it made from? what is its intended use?) the quantity, the country/territory of manufacture, the price or cost, currency used, the Harmonized System number for each commodity and the terms of delivery. Some countries require that an original invoice be executed on the shipper's letterhead. The invoice should always be signed and dated by the exporter certifying that the details provided are true and correct representations of the contents covered by the Commercial Invoice.<br />
+</p>
+<p>For more information, visit our <a href="https://www.fedex.com/GTM" target="_blank">Global Trade Manager</a>.</p>
+<p><b style="font-size: 16.0px;">ETD LABEL</b></p>
+<p>This is Shipment label generated in the Shipment with ETD special service with Post-Shipment document upload criteria. This label can also be uploaded with the shipment along with other paperwork.</p>
+<p><b style="font-size: 16.0px;">Pro Forma Invoice</b></p>
+<p>The pro forma invoice is issued before sales take place. Once receiving pro forma invoice from the supplier, the buyer sends a purchase order or opens a letter of credit to the supplier. As per agreed date of shipment, the seller arranges to ship the goods.</p>
+<p><b style="font-size: 16.0px;">USMCA Commercial Invoice and Certification of Origin</b></p>
+<p>A USMCA Certification of Origin (COO) is required for goods that qualify for reduced or duty-free entry as a product of one of the three UNITED STATES-MEXCIO-CANADA AGREEMENT (USMCA/T-MEC/CUSMA) participants: Canada, Mexico and the U.S. The certification is completed by the exporter or manufacturer of the goods.</p>
+<p><b style="font-size: 16.0px;">USMCA Certification of Origin</b></p>
+<p>A USMCA Commercial Invoice and Certification of Origin (COO) is required for goods that qualify for reduced or duty-free entry as a product of one of the three UNITED STATES-MEXCIO-CANADA AGREEMENT (USMCA/T-MEC/CUSMA) participants: Canada, Mexico and the U.S. The certification is completed by the exporter or manufacturer of the goods and is provided with the Commercial Invoice.</p>
+<p><b style="font-size: 16.0px;">Other</b></p>
+<p>The following section describes some of the common documents which are classified under other documents. These documents are not mandatory to be uploaded for a shipment, but may be required for customs clearance of your individual shipment. This may vary based on the type of shipment, origin, destination and other factors.</p>
+<ul>
+<li><b>Packing List</b></li>
+<p>A Packing List is required if there is more than one package under one air waybill or if the shipment weighs more than 100 kgs. Please note that this requirement may differ between markets based on the commodities being shipped. The list must correctly and clearly describe the goods, quantity and weight.</p>
+<li><b>FCC 740 Statement Regarding the Importation of Radio Frequency Devices Capable of Causing Harmful Interference</b></li>
+<p>The Federal Communications Commission (FCC) 740 form is required while shipping electronics with radio frequency devices which can cause harmful interference. The form involves details such as Device Model/Type Name, Harmonized Tariff Number, Manufacturer's Name and Address, Consignee's Name and Address and Importer's Name and Address.</p>
+<li><b>Video-Film Declaration</b></li>
+<p>The video film declaration: This document is submitted to declare that the film/video that is shipped contains no obscene or immoral matter, nor any matter advocating or insurrection against the United States. The document involves details such as Length of Film/Video, Duration of Film/Video and Brief Synopsis of Content.</p>
+</ul>
+<p><i>Disclaimer: Above information subjected to change.</i></p>
+<p>The Other documents are only uploaded based on countries, products and other special custom document. To view a list of many other commonly used documents click <a href="https://developer.fedex.com/api/en-bz/guides/api-reference.html#exportdocuments" target="_blank">Export Documents</a>.</p>
+<div class="fxg-doc-header"><h3>Customs Documents and Requirements</h3>
+</div>
+<p>Accurate documentation is an important element of domestic and international shipping. Each country has specific laws and regulations around international shipping. For U.S. export shipping, the U.S. and destination countries require different types of regulatory documents.</p>
+<p><i>Note: Shipments requiring documentation in addition to the FedEx International Air Waybill, the FedEx International Next Flight Air Waybill or the FedEx International Mail Service Air Waybill (e.g., a Commercial Invoice) may require additional transit time.</i></p>
+<p><b style="font-size: 16.0px;">Controlled Commodities</b></p>
+<p>When shipping the following commodities internationally, check to ensure that they are accepted by your chosen FedEx service for delivery to the destination country and city:</p>
+<ul>
+<li>Dangerous Goods</li>
+<li>International Traffic in Arms Regulations(ITAR)</li>
+<li>Dangerous Goods in Excepted Quantities.<br />
+<i>Note: In order to ship Dangerous Goods in Excepted Quantities, use the special service option SMALL_QUANTITY_EXCEPTION.</i></li>
+<li>Excepted Package Radioactive</li>
+</ul>
+<p><i><i>Disclaimer: Above information subjected to change, and for more information Go to <a href="https://www.fedex.com/en-us/service-guide.html" target="_blank">Service Guide</a> or reach out to your FedEx representative.</i></i></p>
+<p style="font-weight: bold;font-size: 16.0px;"><b>Export declaration for Canada outbound shipments</b></p>
+<p>Export declaration is required by the Canada Border Services Agency (CBSA) to report exports from Canada, for the following conditions.</p>
+<ul>
+<li>All Canada outbound shipments containing non-restricted goods when the commercial goods are valued at $2,000 Canadian Dollars or more and the destination of the goods is a country other than the United States, Puerto Rico, or the United States Virgin Islands.</li>
+<li>All Canada outbound shipments which contain controlled, restricted, or regulated goods regardless of value.</li>
+</ul>
+<p>Carriers must obtain the proof-of-report number from the exporter before any goods leave Canada. An exporter is required to submit the export declaration before providing the proof-of-report number to the carrier.</p>
+<p><b style="font-size: 16.0px;">Electronic Export Information (EEI)</b></p>
+<p>EEI is the electronic export data filed in the Automated Export System (AES) using AESDirect in the Automated Commercial Environment (ACE). The ACE Secure Data Portal (ACE Portal) is a centralized access point for the trade community to connect with U.S. Customs and Border Protection (CBP).</p>
+<p>EEI is the equivalent electronic version of the Shipper’s Export Declaration (SED), Department of Commerce (Census Bureau) form 7525-V, which can no longer be submitted to the U.S. Government. The EEI provides export statistics and control by reporting all pertinent export data of an international shipment transaction.</p>
+<p>The EEI is mandatory and must be submitted electronically by the exporter or agent through the Automated Export System (AES) for commodities listed on the Commerce Control List (CCL).</p>
+<p>If the shipment is originated from U.S, U.S. Virgin Islands or Puerto Rico to the destination country China, Russia, Venezuela and Hong Kong, irrespective of the shipment value, you must provide the following information:</p>
+<ul>
+<li>An EEI filing Internal Transaction Number (ITN)</li>
+<li>The correct Export Control Classification Number (ECCN) or EAR99 classification number for each item, or</li>
+<li>An applicable filing exemption</li>
+</ul>
+<p>Exemptions are allowed if the shipment</p>
+<ul>
+<li>Is eligible for License Exception GOV</li>
+<li>Is eligible for exceptions in the Export Administration Regulations and Foreign Trade Regulations (FTR), or</li>
+<li>Consists only of items that are classified as EAR99</li>
+</ul>
+<p><i><i>Note: For other destinations, you are required to file an EEI for all U.S. export shipments if one or more commodities (Schedule B number) total more than $2,500 USD in the consolidated shipment on any given day.</i></i></p>
+<p><b style="font-size: 16.0px;">Shipper's Letter of Instruction (SLI)</b></p>
+<p>An SLI captures international shipment information for the U.S. customers.</p>
+<p><i><i>Note:</i></i></p>
+<ul>
+<i><li><i>Customs clearance is included for shipments to Canada through our brokerage-inclusive service. A fee is applicable. Brokerage-inclusive service may not be available with all electronic shipping solutions.</i></li>
+</i></ul>
+<p>FedEx International Ground<sup>®</sup> parcel distribution service allows FedEx Ground<sup>®</sup> to consolidate FedEx International Ground<sup>®</sup> shipments into one unit that is cleared and handled as one customs entry with a single broker entry<i> fee.</i></p>
+<div class="fxg-doc-header"><h3>Trade Document Upload API Benefits</h3>
+</div>
+<p>Following are some of the benefits associated with the Trade Documents Upload API/Feature:</p>
+<ul>
+<li>Fewer customs clearance issues reduce customs delays, which increases shipping reliability and the seller's reputation.</li>
+<li>More time to build the business improves company productivity and profit by eliminating the need to print and match multiple copies of paperwork to individual packages.</li>
+<li>Allows adding a company letterhead and signature image to the FedEx-generated Commercial Invoice or Pro Forma Invoice.</li>
+<li>Gain additional time to resolve issues with customs documents, such as missing information, before shipment arrival.</li>
+<li>Allows to submit your Commercial Invoice electronically for FedEx International Ground shipments to Canada.</li>
+<li>Submit customs documents to FedEx for future-day shipments or any date from today’s date to 10 days in the future.</li>
+<li>Increased peace of mind; commodity information is not revealed to third parties because invoices are not on packages.</li>
+<li>Lowers the carbon footprint by lowering consumption of paper, toner, shipping materials and usage of printers.</li>
+<li>Reduce the chance of shipment thefts, since there are no invoices on the package and commodity information isn’t revealed to third parties.</li>
+<li>Saves time and reduces errors when you ship internationally.</li>
+<li>This upload document feature can be used for both import and export shipments. View the <a href="https://www.fedex.com/content/dam/fedex/us-united-states/services/Commercial_Invoice_Country_List.pdf" target="_blank">list of available countries</a> to see whether uploading documents is accepted in the countries you ship to/from.</li>
+<li>You can prepare, store and reuse uploaded documents online with the FedEx Document Preparation Center and the <a href="https://www.fedex.com/GTM" target="_blank">International Document Help section.</a></li>
+</ul>
+<div class="fxg-doc-header"><h3><b>Business Rules</b></h3>
+</div>
+<p>Following are some of the important business rules associated with the Upload Document API/Feature:</p>
+<ul>
+<li>The valid file types for uploading documents are PDF, TXT, PNG, JPG, GIF, BMP, TIF, RTF, DOC, DOCX, XLS and XLSX.</li>
+<li>The documents may be uploaded a maximum of 10 days before shipment.</li>
+<li>Each uploaded trade document or image cannot exceed 5 MB.</li>
+<li>For Digital Signature image, the limitation is 240x25 pixels and the images can be in GIF, PNG formats.</li>
+<li>For Company Letterhead/Logo, the limitation is 700x50 pixels and images can be in GIF, PNG formats.</li>
+<li>Letterhead image may not be acceptable for all origin/destination locations based on customs regulations.</li>
+<li>The images will be uploaded as is and no correction is provided by FedEx.</li>
+<li>Customs documentation can be electronically uploaded with the following special handling and service options:<ul>
+<li>Dry Ice</li>
+<li>Dangerous Goods</li>
+<li>Hazardous Materials</li>
+</ul>
+</li>
+<li>Required for TPC (Third Party Consignee) shipments originating in the United States (U.S.), Asia Pacific, Canada (CA) and European Union (EU) countries wherever Upload is enabled.</li>
+<li>All shipments with electronic documents must be created, uploaded and picked up on the requested shipping day.</li>
+<li>When using PSDU(Post-Shipment Document Upload), be sure to upload the document(s) prior to package pickup.</li>
+</ul>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+</div>
+
+
+</div>
+
+
+</div>
+
+  <redoc scroll-y-offset='body' hide-download-button disable-search id="redoc-lib"></redoc>
+
+<div id="error-info" class='col-md-offset-4'></div>
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.adaa2d2f6769d35143b699efb74bb178.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.js"></script>
+
+
+
+
+  <input type="hidden" id="swaggerjson" value="[{&#34;path&#34;:&#34;/wirc/json/api_groups/ETDUpload/EDUDocuments-Resource.json&#34;,&#34;title&#34;:&#34;Endpoint&#34;}]"/>
+  <input type="hidden" id="errorjson" value="/wirc/json/api_groups/ETDUpload/ETDUpload-Common-ErrorMapping.json"/>
+  <input type="hidden" id="apiintrojson" value="/wirc/json/api_groups/ETDUpload/ETDUpload-Introduction.json"/>
+
+
+  <input type="hidden" id="private-api" value="false"/>
+  <input type="hidden" id="api-name" value="Trade_Documents_Upload_API"/>
+
+<div class='sample-response'>
+	<div class='pull-right doc-cross-icon '>CLOSE <img src='/api/content/dam/fedex-com/irc/tryout/close.svg'/></div>
+	<ul class='sample-responses'>
+		<li class='nav-item fxg-active request-link'><a data-target="#request">Request</a></li>
+		<li class='disabled nav-item response-link'><a data-target="#response">Response</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane fade in active" id='request'>
+			<form method="POST" enctype="multipart/form-data" class='sample-response-form' action="#" id="fileUploadForm">
+				<fieldset>
+					<div class='payloads'>
+						<label class="schema-payload">Payload: </label>
+						<div id='schema-query'></div>																														
+						<div class='authorization-parameters' id="head-section" style="display:none">
+							<div class='field'>
+								<p class='fxg-headers'>Header Parameters</p>
+                                <a href='#' class='fxg-edit-header'>EDIT HEADER</a>
+							</div>
+                            <hr/>
+							<div class='tryout-request-table header-table'>
+								<table border="0">
+									<tbody id="header-body">
+									</tbody>
+								</table>
+                                <div class='fxg-edit-actions'>
+                                  <a href="#" class='reset-header'>RESET</a>
+                                  <a href="#" class='save-header'>SAVE</a>
+                                </div>
+							</div>
+						</div>
+						<div class='query-parameters' style="display:none" id="query-section">
+							<div class='field'>
+								<p class='fxg-query'>Query Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="query-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<div class='path-parameters' style="display:none" id="path-section">
+							<div class='field'>
+								<p class='fxg-path'>Path Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="path-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class='field' id="body-header" style="display: none">
+						<p>Body</p>
+					</div>
+					<div id="form-results"></div>																									
+				</fieldset>
+				<div class='pull-right resp-actions'>
+					<button type='button' class='btn btn-warning btn-sm' id="api-sendbtn">SEND</button>
+				</div>
+			</form>
+		</div>
+		<div class="tab-pane fade" id='response'>
+			<p class='pull-left'>Response</p>
+			<div class="ttooltip" id="res-copy">
+				<p class='response-copy-icon'>Copy</p>
+			</div>
+			<div id="api-response"></div>
+		</div>
+	</div>
+</div>
+<input type="text" id="res-copy-ele" style="display: none"/>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">USER ID</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PASSWORD</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Remember Me</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+FORGOT PASSWORD OR USER ID?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Get access to FedEx APIs by creating a user ID.">Get access to FedEx APIs by creating a user ID. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">SIGN UP</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="Log in or signup to join {{0}} organization."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div>
+<a type="hidden" id="schmea-json"/>
+<input type="hidden" id="postmancltnUrl"/>
+<input type="hidden" id="showPostmanBtn"/>
+
+
+
+</div>
+      <div class='fxg-login-wrapper'></div>
+       
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Developer Resource Center&lt;/u>&lt;/a>.&lt;/p>
+"><p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Developer Resource Center</u></a>.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. All rights reserved.">© FedEx Corporate Services Inc. All rights reserved.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Integration Solutions">Integration Solutions</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Support">Support</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-bz/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-bz/terms-of-use.html" aria-label=" Terms of Use"> Terms of Use</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Security &amp; Privacy">Security &amp; Privacy</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="Belize">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">Belize</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                English
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/en-bz/catalog/upload-documents/docs.html" target="_self">English</a></li>
+                     
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+    </div>
+  </div>
+</div>
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

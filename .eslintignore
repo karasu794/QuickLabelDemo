@@ -1,0 +1,13 @@
+playwright-report
+node_modules
+artifacts
+logs
+*.log
+semgrep-scan*.log
+**/trace/**
+**/*.min.js
+**/bundle*.js
+**/dist/**
+**/build/**
+.next
+out

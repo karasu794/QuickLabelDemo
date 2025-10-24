@@ -92,12 +92,21 @@ export async function POST(request: NextRequest) {
     const orgId = null // TODO(org-removed)
 
     // Open Shipment用データを構築
+    // 一度のみ為替取得
+    let jpyToUsd = 1/150
+    try {
+      const { ExchangeRateService } = await import('@/lib/services/exchangeRateService')
+      const usdToJpy = await ExchangeRateService.getExchangeRate()
+      if (usdToJpy > 0) jpyToUsd = 1 / usdToJpy
+    } catch {}
+
     const openShipmentData = buildOpenShipmentData(
       data.shipperInfo,
       data.recipientInfo,
       data.packages,
       data.items,
-      data.serviceType || 'FEDEX_INTERNATIONAL_PRIORITY'
+      data.serviceType || 'FEDEX_INTERNATIONAL_PRIORITY',
+      jpyToUsd
     )
 
     // カスタムindexが指定されている場合は設定

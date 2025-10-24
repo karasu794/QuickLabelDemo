@@ -1,0 +1,2544 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">       
+    <base href="#"/>       
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    
+    
+    <meta name="Category" content="Others"/>
+    
+	<meta name="Date" content="Tue Aug 12 17:48:16 GMT 2025"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/us/en_us/get-started.html.html"/>
+    <meta name="og:title" content="Getting Started | Get Started with Developer Integration"/>
+    <meta name="og:description" content="Start your FedEx API integration journey. Learn how to create an organization, set up projects, get credentials, and move from sandbox to production."/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/en-us/get-started.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "get\u002Dstarted",
+             locale: "en_us",
+             language:"en",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "us",
+             country:"us",
+             pagePath:"apps\/fdp\/get\u002Dstarted",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "us";
+let language = "en";
+let pagepath = "apps\/fdp\/get\u002Dstarted";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>     
+    <body>      	
+      <!-- Left Navigation PAGE MAIN BODY -->
+
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+ 
+ 
+
+<input type="hidden" id="menutxt" value="Menu"/>
+<input type="hidden" id="devtitle" value="Developer Portal "/>
+<input type="hidden" id="logotext" value="Fedex Logo"/>
+<input type="hidden" id="overviewtext" value="Project Overview"/>
+<input type="hidden" id="certificationtext" value="API Certification"/>
+<input type="hidden" id="settingstext" value="Project Settings"/>
+<input type="hidden" id="homealttxt" value="Go To Home"/>
+<input type="hidden" id="submenuTitle" value="Other products"/>
+<input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+<input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;My Projects&#34;,&#34;pagePath&#34;:&#34;/api/en-us/project&#34;},{&#34;pageTitle&#34;:&#34;Getting Started&#34;,&#34;pagePath&#34;:&#34;/api/en-us/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Catalog&#34;,&#34;pagePath&#34;:&#34;/api/en-us/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Recipes&#34;,&#34;pagePath&#34;:&#34;/api/en-us/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Guides&#34;,&#34;pagePath&#34;:&#34;/api/en-us/guides&#34;},{&#34;pageTitle&#34;:&#34;Announcements&#34;,&#34;pagePath&#34;:&#34;/api/en-us/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Validation&#34;,&#34;pagePath&#34;:&#34;/api/en-us/certification&#34;},{&#34;pageTitle&#34;:&#34;API Status&#34;,&#34;pagePath&#34;:&#34;/api/en-us/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>&amp;reg;&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>&amp;reg;&lt;\/sup>  Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Support/FAQs&#34;,&#34;pagePath&#34;:&#34;/api/en-us/support&#34;},{&#34;pageTitle&#34;:&#34;Manage Organization&#34;,&#34;pagePath&#34;:&#34;/api/en-us/organization&#34;},{&#34;nonfedexCompatibleArray&#34;:[{&#34;leftNavTitle&#34;:&#34;Create or join an organization&#34;,&#34;selector&#34;:&#34;20&#34;,&#34;order&#34;:&#34;1&#34;},{&#34;leftNavTitle&#34;:&#34;Create a project&#34;,&#34;selector&#34;:&#34;22&#34;,&#34;order&#34;:&#34;2&#34;},{&#34;leftNavTitle&#34;:&#34;Test your integration&#34;,&#34;selector&#34;:&#34;23&#34;,&#34;order&#34;:&#34;3&#34;},{&#34;leftNavTitle&#34;:&#34;Move to production&#34;,&#34;selector&#34;:&#34;24&#34;,&#34;order&#34;:&#34;4&#34;},{&#34;leftNavTitle&#34;:&#34;Validate your API&#34;,&#34;selector&#34;:&#34;25&#34;,&#34;order&#34;:&#34;5&#34;}],&#34;pageTitle&#34;:&#34;GETTING STARTED&#34;,&#34;shipperArray&#34;:[{&#34;leftNavTitle&#34;:&#34;Create or join an organization&#34;,&#34;selector&#34;:&#34;10&#34;,&#34;order&#34;:&#34;1&#34;},{&#34;leftNavTitle&#34;:&#34;Create a project&#34;,&#34;selector&#34;:&#34;12&#34;,&#34;order&#34;:&#34;2&#34;},{&#34;leftNavTitle&#34;:&#34;Test your integration&#34;,&#34;selector&#34;:&#34;13&#34;,&#34;order&#34;:&#34;3&#34;},{&#34;leftNavTitle&#34;:&#34;Move to production&#34;,&#34;selector&#34;:&#34;14&#34;,&#34;order&#34;:&#34;4&#34;},{&#34;leftNavTitle&#34;:&#34;Validate your API&#34;,&#34;selector&#34;:&#34;15&#34;,&#34;order&#34;:&#34;5&#34;}],&#34;fedexCompatibleArray&#34;:[{&#34;leftNavTitle&#34;:&#34;Contact FedEx to create your organization&#34;,&#34;selector&#34;:&#34;101&#34;,&#34;order&#34;:&#34;1&#34;},{&#34;leftNavTitle&#34;:&#34;Select products for FedEx to create project(s)&#34;,&#34;selector&#34;:&#34;121&#34;,&#34;order&#34;:&#34;2&#34;},{&#34;leftNavTitle&#34;:&#34;Test your integration and complete verification&#34;,&#34;selector&#34;:&#34;131&#34;,&#34;order&#34;:&#34;3&#34;},{&#34;leftNavTitle&#34;:&#34;Generate the production secret key&#34;,&#34;selector&#34;:&#34;141&#34;,&#34;order&#34;:&#34;4&#34;}],&#34;getStartedChildPages&#34;:[{&#34;leftNavTitle&#34;:&#34;FedEx Shipper&#34;},{&#34;leftNavTitle&#34;:&#34;FedEx Compatible Provider&#34;},{&#34;leftNavTitle&#34;:&#34;Non-Compatible Provider&#34;}],&#34;pagePath&#34;:&#34;/api/en-us/getstarted&#34;}]"/>
+<div id="webhookFlag" style="display: none;">true</div>
+<!-- Global Search Icon  -->
+
+<!-- End of Global Serach Icon -->
+<div class="fxg-main-content">
+  
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle ">
+                    <img class="info-icon" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"></p>
+                        <div class="wsdesc"></div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+
+  <div class="row">
+    <div class="sidenav leftnav col-sm-2">      
+      <div><a id="mySidenav" class="sidenav" onclick="gotohome();FDX.DTM.pushLinkInfo(this)" target="_self" tabindex="1">
+  <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" class="fedex-alt"/></br>
+  <h6 class="dev-portal"></h6>  
+</a>
+
+  <div class='irc-authentication'>
+  <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+    <img class="fxg-user-options__icon" alt=" Sign Up or Log In" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+    <span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span>     
+  </a>
+  <hr/>
+      </div>
+
+  <p class='menu-txt'></p>
+  <div id="mobile-signin">
+  <a class="ismobile fxg__sign-in" data-default-signintext="Sign Up or Log In"><img class="fxg-user-options__icon" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_purple.svg"/><span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span></a>
+</div>
+<div class="leftnav-menu-container">
+  <div class='getting-started-menu-txt parent-nav-links'>
+    <a id="main-menu-link">MAIN MENU <i class="arrow down"></i></a>
+  <div class="child-nav-links" id="menuDiv"></div>  
+ </div>
+
+  <div id="gettingstartedMenuDiv"></div>  
+  <div id="referenceMenu"></div>  
+</div>
+ <input type="hidden" id="contextPath"/>        
+
+<div id="dialogboxfoot"></div>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">USER ID</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PASSWORD</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Remember Me</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+FORGOT PASSWORD OR USER ID?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Get access to FedEx APIs by creating a user ID.">Get access to FedEx APIs by creating a user ID. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">SIGN UP</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="Log in or signup to join {{0}} organization."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div></div>
+    </div>
+
+	<div class="main col-sm-12">	  
+      <div class='fxg-topnav fxg-wrapper'>
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <button class="hamburger hamburger--slider" type="button">
+            <span class="hamburger-box">
+              <span class="hamburger-inner">Menu</span>
+            </span>
+          </button>
+          <span class="api-title" onclick="gotohome()">Developer Portal </span>
+          <div class="fxg-nav">
+            <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+    </div> 
+  <input type="hidden" value="true" id="loginstatus"/>
+  <input type="hidden" value="Logout" id="logouttxt"/>
+  <input type="hidden" value="Settings" id="loggedintxt"/>
+  <input type="hidden" value=" Sign Up or Log In" id="defaulttxt"/>
+   <input type="hidden" value="Login incorrect. Either the user ID or password combination is incorrect or the account has been locked. Please try again or click &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;> here&lt;/a> to recover your password." id="logouterrtxt"/>
+   <input type="hidden" value="Sorry. Something went wrong. Please re-enter your user name and password to try again." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="LOG IN" id="loginbtnTxt"/>
+   <input type="hidden" value="Settings" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+          </div> 
+        </nav>
+      </div>
+      <div class="banner-image" style="width: 100%;">
+        <div class="breadcrumb-irc-container">
+          
+<nav class="cmp-breadcrumb-irc custom-hide-component " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/us/en_us/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+      <li class="cmp-breadcrumb__item-irc"><a href="https://developer.fedex.com/api/en-us/home.html" class="cmp-breadcrumb__item-link-irc">
+          <span>Home</span>
+        </a>
+      </li>
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      
+        <span>Start your FedEx API integration journey. Learn how to create an organization, set up projects, get credentials, and move from sandbox to production.</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+        </div>
+        
+
+        
+          
+    <input type="hidden" id="coveoAPiKey" value="xx5bcf8e29-7898-4eb9-ac1b-483be21fd4f6"/>
+    <div class="global-search-container">
+        <img class="newicon " src="/api/content/dam/fedex-com/irc/leftnav/Search_Icon2x.png" alt="search" onclick='Searchicon()'/>
+        <div class='full-search newsearch '>
+            <form action='#' method="get" name="searchform" onsubmit='smallSearch()'>
+                <div class="newinput-group">
+                    
+                        <div class="input-wrapper">
+                            <input id="q" type="text" oninput="handleCoveoSearch(this.value)" autocomplete="off" class='newform-control gloablappendbox' name="q" required placeholder="Search.."/>
+                            <button type="button" class="search-cross " onclick="clearInput()">
+                                <img class="search-crossimg" src='/api/content/dam/fedex-com/irc/common/close-first.png'/>
+                            </button>
+                        </div>
+                    
+
+                    
+                    <div class='newinput-group-btn'>
+
+                        <button class='btn searchbtn' type='submit' value="search">
+                        	<img class="searchbtnimg" src='/api/content/dam/fedex-com/irc/common/search.png'/>
+                        </button>
+
+                    </div>
+                    <div id="autocomplete" class="yui-skin-sam globalsuggestions"></div>
+                </div>
+                <span class="globalcancelbtn" onclick="clearInput()">CANCEL</span>
+            </form>
+        </div>
+    </div>
+
+
+      </div>
+      
+      <!-- UTILITY NAV END -->
+      <div id="parsysDiv">
+        <div class="body-content">
+
+          <a name="bodyparsys_container" style="visibility:hidden"></a>
+<div class="fxg-wrapper">
+    <div class="title section">
+    <h2 aria-label="Getting started" class="fxg-title fxg-title--custom fxg-title--align-left fxg-title--mobile-align-left   " style="clear:both; font-size:45px; color:default; font-weight:300; ">Getting started</h2>
+</div>
+<div class="hr section"><hr class="  "/></div>
+<div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>The FedEx Developer Portal offers a suite of Application Programming Interfaces (APIs) to integrate FedEx into your applications. These instructions will guide you to set up an organization, create a project, test your integration, move a project to production and for some cases, validate your API.</p>
+<p><b style="">Types of Users:</b></p>
+<p>FedEx offers integration services to three types of users: FedEx Shippers, verified software solutions known as FedEx Compatible Providers and Non-Compatible Providers.</p>
+</div>
+
+
+</div>
+<div class="column_control section"><!-- COLUMN CONTROL START -->
+
+    <div class="row ">
+        
+            <!-- 2 Columns -->
+            <div class="fxg-col  fxg-col--mt20  col-sm-2    ">
+                <div class="image parbase section"><!-- CHANGE: VMLNAFEDEXW-826 Added drag and drop in Pods -->
+<!-- Improved this component -->
+<div class="fxg-image-component fdp-gt-shipper-vector   ">
+    
+	<div class="fxg-image-component__image">
+		
+            
+                
+                
+
+                    <img class="fxg-img" src="/api/content/dam/fedex-com/irc/getting-started/shipper-vector.png" data-rendition="/content/dam/fedex-com/irc/getting-started/shipper-vector.png/jcr:content/renditions/cq5dam.thumbnail.727.463.png" alt="shipper-vector" style="height:64px;width:64px;"/>
+                
+                 
+                
+                
+            
+         
+         
+	</div>
+	
+</div>
+</div>
+<div class="image parbase section"><!-- CHANGE: VMLNAFEDEXW-826 Added drag and drop in Pods -->
+<!-- Improved this component -->
+<div class="fxg-image-component fdp-gt-shipper-vector   ">
+    
+	<div class="fxg-image-component__image">
+		
+            
+                
+                
+
+                    <img class="fxg-img" src="/api/content/dam/fedex-com/irc/getting-started/service-provider.png" data-rendition="/content/dam/fedex-com/irc/getting-started/service-provider.png/jcr:content/renditions/cq5dam.thumbnail.727.463.png" alt="shipper-vector" style="height:64px;width:64px;"/>
+                
+                 
+                
+                
+            
+         
+         
+	</div>
+	
+</div>
+</div>
+
+
+            </div>
+
+            <div class="fxg-col  fxg-col--mt20  col-sm-10    ">
+                <div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><b>FedEx Shipper: </b></p>
+<p>Company who ships with FedEx and needs to integrate FedEx APIs into their own applications.</p>
+</div>
+
+
+</div>
+<div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><b>Solution or Service Provider</b>: </p>
+<p>Company who needs to integrate with FedEx APIs to build a solution, application or plugin that can be sold and/or distributed to an external organization that ships with FedEx. Find out if your company is a verified FedEx provider by searching our <a title="global-directory" href="https://www.fedex.com/en-us/compatible/global-directory.html" target="_blank">global directory.</a></p>
+<ul>
+<li><b>FedEx Compatible Provider:</b> Verified company with a contractual agreement through the <a title="compatible-program" href="https://www.fedex.com/en-us/compatible.html" target="_blank">FedEx Compatible program</a>.</li>
+<li><b>Non-Compatible Provider:</b> Solution or service is not verified by the FedEx Compatible program.</li>
+</ul>
+</div>
+
+
+</div>
+
+
+            </div>
+        
+
+        
+
+        
+
+        
+    </div>
+
+<!-- COLUMN CONTROL END --></div>
+<div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Select an option below that best describes your business. No matter your user type, there is a getting started experience available to you.</p>
+<p> </p>
+</div>
+
+
+</div>
+<div class="drop-down-tabs tabs-manager section">
+  
+    
+    <div class="container drop-down-tabs-container  ">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="fdp-drop-down-tabs-title">Select to get started.</div>
+        </div>
+        <div class="col-md-7">
+          <div class="fdp-drop-down-tabs-heading">Which of the following best describes your business?</div>
+          <div class="fdp-drop-down-selection-container">
+            <div class="fdp-drop-down-selection-menu">
+              <div class="fdp-drop-down-selection-btn">
+                <span class="fdp-drop-down-selection-sBtn-text">Select user</span>
+                <div>
+                  <span class="drop-down-arrow-container">
+                    <img alt="" width="16px;" height="16px;" src="/api/content/dam/fedex-com/irc/leftnav/dropdownimg.png"/></span>
+                  <span class="fdp-drop-down-selection-tooltip-container">
+                    <img alt="" class="fdp-drop-down-selection-tooltip" src="/api/content/dam/fedex-com/irc/angular/ic-status-help.svg"/>
+                  </span>
+                </div>
+              </div>
+              <ul class="fdp-drop-down-selection-options">
+                
+                  <li class="fdp-drop-down-selection-option"><a class="showbtn shipper" aria-label="FedEx Shipper" data-target="#shipper" data-toggle="tab" href="#"><span class="fdp-drop-down-selection-option-text">FedEx Shipper</span></a>
+                  </li>
+                
+              
+                
+                  <li class="fdp-drop-down-selection-option"><a class="showbtn compatible" aria-label="FedEx Compatible Provider" data-target="#compatible" data-toggle="tab" href="#"><span class="fdp-drop-down-selection-option-text">FedEx Compatible Provider</span></a>
+                  </li>
+                
+              
+                
+                  <li class="fdp-drop-down-selection-option"><a class="showbtn non-compatible" aria-label="Non-Compatible Provider" data-target="#non-compatible" data-toggle="tab" href="#"><span class="fdp-drop-down-selection-option-text">Non-Compatible Provider</span></a>
+                  </li>
+                
+              </ul>
+              <div class="fdp-drop-down-tabs-tooltip"><ul>
+<li><b>FedEx Shipper:</b> Company who integrates FedEx APIs into their own applications.</li>
+<li><b>FedEx Compatible Provider:</b> Company validated by the FedEx Compatible program who integrates with FedEx APIs to build a solution, application or plugin that can be sold and/or distributed to an external organization.</li>
+<li><b>Non-Compatible Provider:</b> Company who integrates with FedEx APIs to build a solution, application or plugin that can be sold and/or distributed to an external organization.</li>
+</ul>
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content fxg__faq-cat-content">
+        <div class="tab-pane  in fade" id="shipper">
+          <div class="fxg__accordion-option pull-left drop-down-parent-ex-cl fxg-tab-links">
+            <a aria-label="EXPAND ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-expand-toggle fxg__expand-all" accordion-id="#shipper">EXPAND ALL</a>
+            <a aria-label="COLLAPSE ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-collapse-toggle fxg__collapse-all hide" accordion-id="#shipper">COLLAPSE ALL</a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab' class="Tabs(tabtitle=FedEx Shipper, activestatus=null, datatarget=shipper)">
+              <div>
+
+
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection1 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#10" aria-expanded="true" aria-controls="10">
+						
+							<span class="fxg-accordion-order-number">1</span>
+						
+
+						Create or join an organization
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse in" id="10" aria-expanded="true">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> Prerequisite</p>
+                        <div class="wsdesc"><p>You must have a FedEx user ID to log into the FedEx Developer Portal and create an organization.</p>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-16"><br />
+ Either create an organization, if one does not yet exist for your company, or join your company’s existing organization.</span></p>
+<p><span class="fxg-font-size-20">Create a new organization</span></p>
+<p>To create your own organization, click on <b>Create Organization</b> in the left-hand navigation. If you create an organization, you will automatically be listed as the admin of that organization.</p>
+<ul>
+<li>An admin can invite users to join their organization, assign them to roles (e.g. contributor or viewer) and projects, and can manage shipping accounts.</li>
+<li>To learn more about these roles, explore our <a title="org-guides" href="https://developer.fedex.com/api/en-us/guides/organization.html" target="_blank">Organization Administration Guidelines</a>.</li>
+</ul>
+<p><b>Provide organization information</b></p>
+<p>Provide your company name, website URL and create an organization name. Give your organization a name that other users will recognize. This name can be used to organize your company into more specific groups (e.g. department, division, region, location) or can be the same as your company name.</p>
+<p>Once you have created your organization, as the admin you can click <b>Manage Organization</b> in the left-hand navigation to enter more details.</p>
+<p><b>Add a shipping account</b></p>
+<p>Open the <b>Shipping Accounts</b> tab. Click the <b>Add Account</b> button.</p>
+<ol>
+<li>Enter your existing FedEx account number, account nickname, and billing address associated with the account. We will validate the billing address to be sure it matches the account details to prevent fraudulent activities. If you do not have an existing FedEx account, <a title="account" href="https://www.fedex.com/en-us/open-account.html" target="_blank">open a new account</a> or contact your FedEx customer representative.</li>
+<li>Accept the <a href="https://developer.fedex.com/api/en-us/legal/eula.html" target="_blank">End User License Agreement</a> or send it to someone within your company who has the authority to accept the agreement.</li>
+</ol>
+<p><b>Add a billing account</b></p>
+<p>Open the <b>Billing Accounts</b> tab. Click the<b> Add Billing Account to your Organization</b> button.</p>
+<ol>
+<li>Enter your existing FedEx account number, account nickname, and U.S.-based billing address associated with the account. We will validate the billing address to be sure it matches the account details to prevent fraudulent activities. If you do not have an existing FedEx account, <a title="account" href="https://www.fedex.com/en-us/open-account.html">open a new account</a> or contact your FedEx customer representative. Billing accounts must be based in the U.S.</li>
+<li>Accept the <a href="https://developer.fedex.com/api/en-us/legal/eula.html">End User License Agreement</a> or send it to someone within your company who has the authority to accept the agreement.</li>
+</ol>
+<p><b>Invite users</b></p>
+<p>An admin can invite users to their organization and assign them to roles and projects. Open the <b>Users</b> tab. Click the <b>Add Users</b> button.</p>
+<ol>
+<li>Select a user role: Viewer, Contributor or Admin.</li>
+<li>If you have any existing projects, assign a project to the user. You can also assign users to projects under any Project overview page.</li>
+<li>Enter the email addresses of the users you want to join your organization under the selected role.</li>
+</ol>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/organization/create.html#/createorganization" aria-label="Create an Organization" target="_blank" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Create an Organization
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Join an existing organization</span></p>
+<p><b>Step 1: Ask the admin of your organization to send you an invite.</b></p>
+<p>If your company has already created an organization, ask the admin of the organization to invite you to join. You will have 24 hours to accept their invite. If you miss this window of time, you can always ask them to resend it.</p>
+<p><b>Step 2: Accept the invite.</b></p>
+<p>To accept the invite, you will need to either log in with your existing user ID and password or, if your existing user ID is already associated with an organization, you will need to create a new one.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection2 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#12" aria-expanded="false" aria-controls="12">
+						
+							<span class="fxg-accordion-order-number">2</span>
+						
+
+						Create a project
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="12" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Create an API project</span></p>
+<p>Visit the <b>My projects</b> page and open the<b> APIs</b> tab. Click the <b>Create API Project</b> button.</p>
+<p><b>Step 1: Select the API(s) you want to include in your project</b></p>
+<p>Review the API quotas, rate limits, and API validation details.</p>
+<p><b>Step 2: Configure project details</b></p>
+<ul>
+<li>Give your project an identifiable name that is unique to your organization.</li>
+<li>Select any countries you plan to ship within so that we can assign you a test shipping account. To test shipping packages domestically within a European country, you must have a separate test account for each country. You can always add/remove countries later.</li>
+<li>To get notified about the latest API updates and any outage related information, set your notification preferences.</li>
+</ul>
+<p><b>Step 3: Read and accept terms, including the FedEx Developer Portal License Agreement</b></p>
+<p>Once you accept the terms and click the Create button, you will see a confirmation screen. You can then view your test credentials within your new project.</p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="hr"><hr class="  "/></div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Create a webhook project</span></p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> Prerequisites</p>
+                        <div class="wsdesc"><ul>
+<li><b>Review pricing: </b>subscribers are charged a monthly fee based on the count of track numbers. Refer to the <a title="pricing-guide" href="https://developer.fedex.com/api/en-us/guides/pricing-guide.html" target="_blank">Pricing Guide</a> to learn more about pricing.</li>
+<li><b>Set up accounts:</b> Advanced Integrated Visibility webhook requires a U.S.-based billing account and at least one shipping account, these two account types are mutually exclusive. Only admins can add billing and shipping accounts on the <a title="org-settings" href="https://developer.fedex.com/api/en-us/organization.html#/organization/users" target="_blank">Manage Organization</a> page.</li>
+</ul>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20"><b>Create a valid (call back) URL in your destination application or platform</b></span></p>
+<p>Your destination URL will be used to receive authentication codes and messages as well as webhook payload notifications from FedEx. Your URL must use HTTPS to ensure security. Your URL will be blocked if it includes:</p>
+<ul>
+<li>RFC1918 IP space</li>
+<li>fedex.com or any of its subdomains</li>
+<li>IP addresses in the URL ( including localhost, 127.0.0.1)</li>
+</ul>
+<p><b>Generate a security token</b></p>
+<p>This security token can be used as a secret key to authenticate and validate information transmitted between your organization and FedEx. Your security token must include:</p>
+<ul>
+<li>A minimum length of 26 characters and a maximum length of 100 characters</li>
+<li>1 upper case character</li>
+<li>1 lower case character</li>
+<li>1 numeric character</li>
+</ul>
+<p>Example: Y1F6OiVUQW2JPSElmRE9U0IY5</p>
+<p>After you have defined your URL and security token, you are ready to create a webhook project. Visit the <b>My projects </b>page and open the <b>Webhooks</b> tab. Click the <b>Create a Webhook Project </b>button.</p>
+<p><b>Select subscription type</b></p>
+<p>FedEx Shippers can subscribe their events to account numbers or tracking numbers.</p>
+<p><b>Step 1: Confirm your billing account and select features</b></p>
+<ul>
+<li>Review the default billing account listed to confirm or select a different one from your organization.</li>
+<li>Configure your project by selecting features such as proof of delivery options, estimated delivery options, tracking events and event-based filtering.</li>
+</ul>
+<p><b>Step 2: Enter project details</b></p>
+<ul>
+<li>Give your project an identifiable name that is unique to your organization.</li>
+<li>Enter your destination URL and security token details that you created during pre-setup authentication (see steps above).</li>
+<li>To get notified about the latest webhook updates and any outage related information, enter an email address and preferred language.</li>
+</ul>
+<p><b>Step 3: Read and accept terms</b></p>
+<p>Once you accept the terms including the FedEx Developer Portal License Agreement and the Order Form, and click the Create button, you will see a confirmation screen.</p>
+<p>There may be additional steps based on your subscription type selection. Visit <a title="webhook" href="https://developer.fedex.com/api/en-us/catalog/shipment-visibility-webhook/docs.html" target="_blank">documentation</a> to learn more.</p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/project/create.html#/myprojects" aria-label="Go To My Projects" target="_blank" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Go To My Projects
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection3 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#13" aria-expanded="false" aria-controls="13">
+						
+							<span class="fxg-accordion-order-number">3</span>
+						
+
+						Test your integration
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="13" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>On the <b>API project overview</b> page, retrieve your test credentials ​​— API key, secret key, and shipping account(s) —  from the <b>Test key</b> tab. </p>
+<p><b>Step 1: Request an OAuth access token</b></p>
+<p>The OAuth access token must be used with each API transaction. The token is valid only for an hour, so you will need to programmatically code your application to refresh the token before the session expires. Refer to the <a title="api-authorization" href="https://developer.fedex.com/api/en-us/catalog/authorization/docs.html" target="_blank">API Authorization documentation</a> for more details.</p>
+<p><b>Step 2: Review API documentation</b></p>
+<p>Click on the documentation for each of your APIs to read the business context and understand how to use the API. Log in to download the JSON API collection through the button at the top of your documentation page. You can also review example requests for the endpoint that matches your desired integration.</p>
+<p><b>Step 3: Use the sandbox to test sample transactions</b></p>
+<p>Click on the desired endpoint in the left navigation to go to that specific sandbox. Identify the sample requests that match your use case, then use your test credentials and the FedEx test URLs to implement your calls to the endpoint as described in the example requests. Verify that the API call responses you receive match those shown in the documentation. Learn more about our testing experience in the <a title="sandbox" href="https://developer.fedex.com/api/en-us/guides/sandboxvirtualization.html" target="_blank">Sandbox Virtualization Guide</a>.</p>
+<p><b>Testing with webhooks</b></p>
+<p>Testing can help you get a better idea about whether the URL you created is valid. It allows FedEx to identify your URL and build a connection with your URL to send data. Testing can also provide you with sample test data that can help you check and confirm whether you are able to process tracking data provided in your application. Testing does not, however, authenticate your URL. Visit our <a title="webhook" href="https://developer.fedex.com/api/en-us/catalog/shipment-visibility-webhook/docs.html" target="_blank">webhook documentation</a> to learn how to test your webhook URL.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection4 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#14" aria-expanded="false" aria-controls="14">
+						
+							<span class="fxg-accordion-order-number">4</span>
+						
+
+						Move to production
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="14" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Visit your <b>Project overview </b>page and open the <b>Production key</b> tab. Advanced Integrated Visibility Account Number Subscription projects do not need to be moved to production.</p>
+<p><b>Step 1: Configure project</b></p>
+<ul>
+<li>Rename your key as needed.</li>
+<li>Review the account number that you selected in step 1 of the project creation flow. This is used to move your project to production. Once your project is live in production, you can add more accounts as needed.</li>
+</ul>
+<p><b>Step 2: Get project keys</b></p>
+<p>Copy your production API key and production secret key will be displayed to a secure place. To keep your production secret key secure, we only display it once. If you lose it, you can generate a new one.</p>
+<p>After you get your project keys and click <b>Next,</b> you will see your project details on the <b>Production key </b>tab.</p>
+<ul>
+<li>To add more shipping accounts to your project, click on <b>Edit</b> in the top of the shipping accounts table.</li>
+</ul>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection5 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#15" aria-expanded="false" aria-controls="15">
+						
+							<span class="fxg-accordion-order-number">5</span>
+						
+
+						Validate your API
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="15" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle">Validation steps vary by region</p>
+                        <div class="wsdesc"><p>The following steps apply only for customers in the US and Canada. If you live outside of these countries, visit the API Validation page to find support.</p>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Some APIs require shipping label validation for use in our production environment. See if your API requires validation.</p>
+<p><b>Step 1: Develop and test FedEx APIs with your web-enabled application</b></p>
+<p>Once you finish developing your web-enabled application, it’s time to complete testing using the test credentials (test shipping account(s), API Key and Secret Key). Your test API Key and Secret Key will be displayed on the Project Overview page and can be seen at any time.</p>
+<p><b>Step 2: Move your project to production</b></p>
+<p>After you’ve tested with the FedEx APIs, you need to start the validation process by moving your project to production on the FedEx Developer Portal. Once you’ve done so successfully, you will see your production API Key and Secret Key. You will only see your production Secret Key once, but you will be able to regenerate it at a later time.</p>
+<p><b>Step 3: Fill out the Label Cover Sheet</b></p>
+<p>Completely fill out the <a title="sheet" href="/api/content/dam/fedex-com/irc/common/Label-Cover-Sheet-form.pdf" target="_blank">Label Cover Sheet</a> with the appropriate contact information as well as what services you plan to implement. Include your account number and production key.</p>
+<p><b>Step 4: Generate and submit test labels to the Bar Code Analysis Group</b></p>
+<p>Generate test labels within the FedEx test environment associated with the application and then submit the test labels to the FedEx label evaluation team(s) for approval. The Bar Code Analysis group requires a three-business-day turnaround time for label evaluation.</p>
+<p>Follow these best practices to avoid processing delays:</p>
+<ul>
+<li>Labels must be printed and scanned at a minimum of 600 DPI. DO NOT SEND APIs GENERATED FILES.</li>
+<li>For thermal printers, the label image type must be requested in accordance with the printer model. Example: ZPLII for Zebra printers.</li>
+<li>Use the shipper/recipient address information when creating sample labels for evaluation. Only create sample labels for the specific services that are being applied for.</li>
+<li>FedEx® Collect on Delivery (C.O.D.) label must also include the corresponding C.O.D. Return label.</li>
+<li>FedEx International Express® shipments must also include the auxiliary/secondary Air Waybill (AWB) label.</li>
+<li>Multi-piece shipments (MPS) must include one label for each package in the shipment.</li>
+<li>Email the PDF and Label Cover sheet to <u>label@fedex.com</u>.</li>
+<li>Physical labels may be sent to the below address:</li>
+</ul>
+<p style="margin-left: 40.0px;">       FedEx Services</p>
+<p style="margin-left: 40.0px;">       WTC-Business Solutions Testing</p>
+<p style="margin-left: 40.0px;">       10 FedEx Parkway</p>
+<p style="margin-left: 40.0px;">       2nd Floor Horizontal</p>
+<p style="margin-left: 40.0px;">       Collierville, TN 38017</p>
+<p>If the scanned labels are without visible defects (such as lines going through the barcode, spots in the ink, or physical damage), then they may pass inspection and approval will be granted. </p>
+<p>If sending physical labels, pay attention to print quality and accidental enlargement/shrinkage of labels (i.e. scaling). These are the top two reasons why labels do not pass the label evaluation process.</p>
+<p><b>Step 5: Review the label evaluation</b></p>
+<p>The Bar Code Analysis group will evaluate the submitted test labels and approve or reject the labels. The Bar Code Analysis group will contact you regarding the approval or rejection of the submitted labels. If the labels are approved, continue to the next step. If the labels are rejected, correct the labels as instructed and resubmit them for approval.</p>
+<p><b>Step 6: Enable the application</b></p>
+<p>Once the test labels are approved for production status by the Bar Code Analysis Group, they will authorize your production credentials to transmit the identified shipping label transaction and notify you via email of successful validation. Your approval is on a per project basis.</p>
+<p><b>Step 7: Replace URL and credentials</b></p>
+<p>Replace the test URL and test credentials with the production URL and production credentials. Retest your implementation in the production environment using sample data.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="hr"><hr class="  "/></div>
+
+
+</div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="tab-pane  in fade" id="compatible">
+          <div class="fxg__accordion-option pull-left drop-down-parent-ex-cl fxg-tab-links">
+            <a aria-label="EXPAND ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-expand-toggle fxg__expand-all" accordion-id="#compatible">EXPAND ALL</a>
+            <a aria-label="COLLAPSE ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-collapse-toggle fxg__collapse-all hide" accordion-id="#compatible">COLLAPSE ALL</a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab' class="Tabs(tabtitle=FedEx Compatible Provider, activestatus=null, datatarget=compatible)">
+              <div>
+
+
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection1 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#101" aria-expanded="true" aria-controls="101">
+						
+							<span class="fxg-accordion-order-number">1</span>
+						
+
+						Contact FedEx to create your organization
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse in" id="101" aria-expanded="true">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> Prerequisite</p>
+                        <div class="wsdesc"><p>Your business must be an existing FedEx Compatible provider. If your business is not in the Compatible program, then change your selection above to “Non-Compatible Provider.”</p>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><b>Step 1: Receive invite to join organization</b></p>
+<p>FedEx will create an organization and then invite one team-member to join the organization. This user will be designated as the admin for your organization.</p>
+<p><b>Step 2: Accept the invite</b></p>
+<p>To accept the invite, you will need to either log in with your existing user ID and password or, if your existing user ID is already associated with an organization, you will need to create a new one.</p>
+<p><b>Step 3: Invite users</b></p>
+<p>An admin can invite users to their organization and assign them to roles and projects. Open the Users tab. Click the Add Users button.</p>
+<ol>
+<li>Select a user role: Viewer, Contributor or Admin. Learn more about roles in our <a title="org" href="https://developer.fedex.com/api/en-us/guides/organization.html" target="_blank">Organization Administration Guide.</a></li>
+<li>If you have any existing projects, assign a project to the user. You can also assign users to projects under any Project overview page.</li>
+<li>Enter the email addresses of the users you want to join your organization under the selected role.</li>
+</ol>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/organization.html#/organization/users" aria-label="Invite Users" target="_self" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Invite Users
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection2 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#121" aria-expanded="false" aria-controls="121">
+						
+							<span class="fxg-accordion-order-number">2</span>
+						
+
+						Select products for FedEx to create project(s)
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="121" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Visit the <a title="catalog" href="https://developer.fedex.com/api/en-us/catalog.html" target="_blank">API Catalog</a> to determine the right APIs or webhooks for your solution. Your FedEx Customer Technology Consultant (CTC) and Compatible Channel manager can help you select the right APIs for your solution as per your business needs.</p>
+<p><b>Step 1: Fill out the PIW</b></p>
+<p>Return to the Compatible Provider Community (CPC) to fill out the Product Information Worksheet (PIW).</p>
+<p><b>Step 2: Review project(s) created by FedEx</b></p>
+<p>Once the PIW has been approved, FedEx will create your project(s). Each version of each of your solutions will have a separate project on the FedEx Developer Portal.</p>
+<p><b>Step 3: Attend the API demo with your team</b></p>
+<p>The FedEx Compatible team along with the FedEx CTC and Verification teams will organize a technical demonstration for the APIs with your team. The FedEx team will discuss Compatible Program Verification, new API features and functionality, and answer questions.</p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/project/create.html#/createproject" aria-label="Go To My Projects" target="_blank" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Go To My Projects
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection3 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#131" aria-expanded="false" aria-controls="131">
+						
+							<span class="fxg-accordion-order-number">3</span>
+						
+
+						Test your integration and complete verification
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="131" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>On the<b> API project overview</b> page, retrieve your test credentials ​​— API key and secret key —  from the<b> Test key</b> tab. </p>
+<p><b>Step 1: Create customer keys</b></p>
+<p>Use the Credential Registration API to create customer keys. This is a private API only found in the API section at the bottom of your <b>API project overview</b> page.</p>
+<p><b>Step 2: Request an OAuth access token</b></p>
+<p>The OAuth access token must be used with each API transaction. The token is valid only for an hour, so you will need to programmatically code your application to refresh the token before the session expires. Refer to the <a title="authorization" href="https://developer.fedex.com/api/en-us/catalog/authorization/docs.html" target="_blank">API Authorization documentation</a> for more details. When viewing sample code, make sure “Reseller” is chosen from samples dropdown.</p>
+<p><b>Step 3: Review API documentation</b></p>
+<p>Click on the documentation for each of your APIs to read the business context and understand how to use the API. Log in to download the JSON API collection through the button at the top of your documentation page. You can also review example requests for the endpoint that matches your desired integration.</p>
+<p><b>Step 4: Use the sandbox to test sample transactions</b></p>
+<p>Click on the desired endpoint in the left navigation to go to that specific sandbox. Identify the sample requests that match your use case, then use your test credentials and the FedEx test URLs to implement your calls to the endpoint as described in the example requests. Verify that the API call responses you receive match those shown in the documentation. Learn more about our testing experience in the <a title="sandbox" href="https://developer.fedex.com/api/en-us/guides/sandboxvirtualization.html" target="_blank">Sandbox Virtualization Guide.</a></p>
+<p><b>Step 5: Verify each solution</b></p>
+<p>After fully testing your solutions, submit test cases to the Verification team to verify each solution. FedEx will fully review everything submitted and update you once your verification is approved.</p>
+<p><b>Testing with webhooks</b></p>
+<p>If your organization has access to webhooks, testing can help you get a better idea about whether the URL you created is valid. It allows FedEx to identify your URL and build a connection with your URL to send data. Testing can also provide you with sample test data that can help you check and confirm whether you are able to process tracking data provided in your application. Testing does not, however, authenticate your URL. Visit our <a title="webhook" href="https://developer.fedex.com/api/en-us/catalog/shipment-visibility-webhook/docs.html" target="_blank">webhook documentation</a> to learn how to test your webhook URL.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection4 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#141" aria-expanded="false" aria-controls="141">
+						
+							<span class="fxg-accordion-order-number">4</span>
+						
+
+						Generate the production secret key
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="141" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>FedEx will then move your project(s) to production. Visit your<b> API project overview page</b> and open the<b> Production key</b> tab. Click the<b> Generate Secret Key </b>link under the <b>Secret key</b> column.</p>
+<p>You are now able to retest your implementation in the production environment using sample data.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="hr"><hr class="  "/></div>
+
+
+</div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="tab-pane  in fade" id="non-compatible">
+          <div class="fxg__accordion-option pull-left drop-down-parent-ex-cl fxg-tab-links">
+            <a aria-label="EXPAND ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-expand-toggle fxg__expand-all" accordion-id="#non-compatible">EXPAND ALL</a>
+            <a aria-label="COLLAPSE ALL" href="javascript:void(0)" class="fxg__toggle-accordion drop-down-collapse-toggle fxg__collapse-all hide" accordion-id="#non-compatible">COLLAPSE ALL</a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab' class="Tabs(tabtitle=Non-Compatible Provider, activestatus=null, datatarget=non-compatible)">
+              <div>
+
+
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection1 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#20" aria-expanded="true" aria-controls="20">
+						
+							<span class="fxg-accordion-order-number">1</span>
+						
+
+						Create or join an organization
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse in" id="20" aria-expanded="true">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> Prerequisite</p>
+                        <div class="wsdesc"><p>You must have a FedEx user ID and account to log into the FedEx Developer Portal and create an organization.</p>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Either create an organization, if one does not yet exist for your company, or join your company’s existing organization.</p>
+<p><span class="fxg-font-size-20">Create a new organization</span></p>
+<p>To create your own organization, click on <b>Create Organization</b> in the left-hand navigation. If you create an organization, you will automatically be listed as the admin of that organization.</p>
+<ul>
+<li>An admin can invite users to join their organization and assign them to roles (e.g. contributor or viewer) and projects.</li>
+<li>To learn more about these roles, explore our <a title="org" href="https://developer.fedex.com/api/en-us/guides/organization.html" target="_blank">Organization Administration Guide.</a></li>
+</ul>
+<p><b>Step 1: Provide organization information</b></p>
+<ul>
+<li>Provide your company name, website URL and business email for verification.</li>
+<li>Create an organization name. Give your organization a name that other users will recognize. This name can be used to organize your company into more specific groups (e.g. department, division, region, location) or can be the same as your company name.</li>
+<li>Enter the location information where your company is based and where you plan to sell or distribute your software solution.</li>
+</ul>
+<p><b>Step 2: Add and authenticate account</b></p>
+<p>Enter your existing FedEx account number, account nickname, and billing address associated with the account. We will validate the billing address to be sure it matches the account details to prevent fraudulent activities. If you do not have an existing FedEx account, <a title="account" href="https://www.fedex.com/apps/myprofile/accountmanagement/" target="_blank">open a new account</a> or contact your FedEx customer representative.</p>
+<ul>
+<li>As a third party provider entering the FedEx Integrator Program, the account used for this initial registration must belong to you as the Integrator.  The use of an end customer account is not permitted.</li>
+<li>This account will be set as the default billing account for your organization.</li>
+</ul>
+<p><b>Step 3: Read and accept terms</b></p>
+<p>Once you accept the Developer Agreement and the Program Manual(s), you will see a confirmation screen. As the admin of your new organization, you can then click <b>Manage Organization</b> in the left-hand navigation to view or edit details.</p>
+<p><b>Step 4: Invite users</b></p>
+<p>An admin can invite users to their organization and assign them to roles and projects. Open the <b>Users</b> tab. Click the <b>Add Users</b> button.</p>
+<ol>
+<li>Select a user role: Viewer, Contributor or Admin.</li>
+<li>If you have any existing projects, assign a project to the user. You can also assign users to projects under any <b>Project overview</b> page.</li>
+<li>Enter the email addresses of the users you want to join your organization under the selected role.</li>
+</ol>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/organization/create.html#/createorganization" aria-label="Create an Organization" target="_blank" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Create an Organization
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Join an existing organization</span></p>
+<p><b>Step 1: Ask the admin of your organization to send you an invite.</b></p>
+<p>If your company has already created an organization, ask the admin of the organization to invite you to join. You will have 24 hours to accept their invite. If you miss this window of time, you can always ask them to resend it.</p>
+<p><b>Step 2: Accept the invite.</b></p>
+<p>To accept the invite, you will need to either log in with your existing user ID and password or, if your existing user ID is already associated with an organization, you will need to create a new one.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection2 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#22" aria-expanded="false" aria-controls="22">
+						
+							<span class="fxg-accordion-order-number">2</span>
+						
+
+						Create a project
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="22" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Visit the <b>My projects</b> page and open the<b> APIs</b> tab. Click the<b> Create API Project</b> button.</p>
+<p><b>Step 1: Select the API(s) you want to include in your project</b></p>
+<p>Review the Ship, Rate and other API quotas, rate limits, and API validation details.</p>
+<ul>
+<li>If you select the Ship or Open Ship API, the Service Availability API and the Trade Documents Upload API will be automatically selected, as these are essential APIs to be used when using the Ship or Open Ship API.</li>
+</ul>
+<p><b>Step 2: Configure project details</b></p>
+<p>Give your project an identifiable name that is unique to your organization.</p>
+<p><b>Step 3: Read and accept terms, including the FedEx Developer Portal License Agreement</b></p>
+<p>Once you accept the terms and click the Create button, you will see a confirmation screen. You can then view your test credentials within your new project.</p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="hr"><hr class="  "/></div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Create a webhook project</span></p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> Prerequisites</p>
+                        <div class="wsdesc"><ul>
+<li><b>Review pricing: </b>subscribers are charged a monthly fee based on the count of track numbers. Refer to the <a title="pricing-guide" href="https://developer.fedex.com/api/en-us/guides/pricing-guide.html" target="_blank">Pricing Guide</a> to learn more about pricing.</li>
+<li><b>Set up accounts:</b> Advanced Integrated Visibility requires a U.S.-based billing account and at least one shipping account, these two account types are mutually exclusive. Only admins can add billing and shipping accounts on the <a title="billing" href="https://developer.fedex.com/api/en-us/organization.html#/organization/users" target="_blank">Manage Organization</a> page.</li>
+</ul>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20"><b>Create a valid (call back) URL in your destination application or platform</b></span></p>
+<p>Your destination URL will be used to receive authentication codes and messages as well as webhook payload notifications from FedEx. Your URL must use HTTPS to ensure security. Your URL will be blocked if it includes:</p>
+<ul>
+<li>RFC1918 IP space</li>
+<li>fedex.com or any of its subdomains</li>
+<li>IP addresses in the URL ( including localhost, 127.0.0.1)</li>
+</ul>
+<p><b>Generate a security token</b></p>
+<p>This security token can be used as a secret key to authenticate and validate information transmitted between your organization and FedEx. Your security token must include:</p>
+<ul>
+<li>A minimum length of 26 characters and a maximum length of 100 characters</li>
+<li>1 upper case character</li>
+<li>1 lower case character</li>
+<li>1 numeric character</li>
+</ul>
+<p>Example: Y1F6OiVUQW2JPSElmRE9U0IY5</p>
+<p>After you have defined your URL and security token, you are ready to create a webhook project. Visit the <b>My projects </b>page and open the <b>Webhooks</b> tab. Click the <b>Create a Webhook Project </b>button.</p>
+<p><b>Select subscription type</b></p>
+<p>FedEx Shippers can subscribe their events to account numbers or tracking numbers.</p>
+<p><b>Step 1: Confirm your billing account and select features</b></p>
+<ul>
+<li>Review the default billing account listed to confirm or select a different one from your organization.</li>
+<li>Configure your project by selecting features such as proof of delivery options, estimated delivery options, tracking events and event-based filtering.</li>
+</ul>
+<p><b>Step 2: Enter project details</b></p>
+<ul>
+<li>Give your project an identifiable name that is unique to your organization.</li>
+<li>Enter your destination URL and security token details that you created during pre-setup authentication (see steps above).</li>
+<li>To get notified about the latest webhook updates and any outage related information, enter an email address and preferred language.</li>
+</ul>
+<p><b>Step 3: Read and accept terms</b></p>
+<p>Once you accept the terms including the FedEx Developer Portal License Agreement and the Order Form, and click the Create button, you will see a confirmation screen.</p>
+<p>There may be additional steps based on your subscription type selection. Visit <a title="webhook" href="https://developer.fedex.com/api/en-us/catalog/shipment-visibility-webhook/docs.html" target="_blank">documentation</a> to learn more.</p>
+</div>
+
+
+</div>
+
+
+    
+    
+    <div class="link">
+	<a href="https://developer.fedex.com/api/en-us/project/create.html#/myprojects" aria-label="Go To My Projects" target="_blank" class="  fxg-link--rounded_button fxg-button--round fxg-link--align-left      " style="color:default; font-size:14px;">Go To My Projects
+		
+			<!-- <div class="fxg-arrowIcon"> </div> -->
+			<img src="/api/content/dam/fedex-com/irc/leftnav/read_more_check_arrow.png" width="16" height="16"/>
+		
+	</a>
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection3 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#23" aria-expanded="false" aria-controls="23">
+						
+							<span class="fxg-accordion-order-number">3</span>
+						
+
+						Test your integration
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="23" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>On the <b>API project overview</b> page, retrieve your test credentials ​​— API key and secret key —  from the <b>Test key</b> tab. </p>
+<p><b>Step 1: Request an OAuth access token</b></p>
+<p>The OAuth access token must be used with each API transaction. The token is valid only for an hour, so you will need to programmatically code your application to refresh the token before the session expires. Refer to the <a title="auth" href="https://developer.fedex.com/api/en-us/catalog/authorization/docs.html" target="_blank">API Authorization documentation</a> for more details.</p>
+<p><b>Step 2: Review API documentation</b></p>
+<p>Click on the documentation for each of your APIs to read the business context and understand how to use the API. Log in to download the JSON API collection through the button at the top of your documentation page. You can also review example requests for the endpoint that matches your desired integration.</p>
+<p><b>Step 3: Use the sandbox to test sample transactions</b></p>
+<p>Click on the desired endpoint in the left navigation to go to that specific sandbox. Identify the sample requests that match your use case, then use your test credentials and the FedEx test URLs to implement your calls to the endpoint as described in the example requests. Verify that the API call responses you receive match those shown in the documentation. Learn more about our testing experience in the <a title="sandbox" href="https://developer.fedex.com/api/en-us/guides/sandboxvirtualization.html" target="_blank">Sandbox Virtualization Guide.</a></p>
+<p><b>Testing with webhooks</b></p>
+<p>If your organization has access to webhooks, testing can help you get a better idea about whether the URL you created is valid. It allows FedEx to identify your URL and build a connection with your URL to send data. Testing can also provide you with sample test data that can help you check and confirm whether you are able to process tracking data provided in your application. Testing does not, however, authenticate your URL. Visit our <a title="webhook" href="https://developer.fedex.com/api/en-us/catalog/shipment-visibility-webhook/docs.html" target="_blank">webhook documentation</a> to learn how to test your webhook URL.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection4 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#24" aria-expanded="false" aria-controls="24">
+						
+							<span class="fxg-accordion-order-number">4</span>
+						
+
+						Move to production
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="24" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Visit your <b>Project overview</b> page and open the <b>Production key </b>tab. Advanced Integrated Visibility Account Number Subscription projects do not need to be moved to production.</p>
+<p><b>Step 1: Configure project</b></p>
+<p>Rename your key as needed.</p>
+<p><b>Step 2: Get project keys</b></p>
+<p>Copy your production API key and production secret key will be displayed to a secure place. To keep your production secret key secure, we only display it once. If you lose it, you can generate a new one.</p>
+<p>After you get your project keys and click<b> Next</b>, you will see your project details on the <b>Production key</b> tab.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="accordion-selector">
+
+	<!--Accordion Selector component-->
+	<div class="fxg-accordion-selector leftnav-selection5 fxg-accordion-style-one     ">
+
+		<div class="">
+			
+			<div class="fxg-accordion-wrapper">
+				<div class="fxg-title-box">
+
+					<a class="accordian-selector collapsed" data-toggle="collapse" href="#25" aria-expanded="false" aria-controls="25">
+						
+							<span class="fxg-accordion-order-number">5</span>
+						
+
+						Validate your API
+						<!-- show carrot -->
+						
+							<span class="carrot">
+								<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10">
+									<desc> Created with Sketch.</desc>
+									<g fill="none">
+										<g style="stroke-width:2;stroke:#333333">
+											<polyline transform="translate(-1042 -1047)translate(120 541)translate(0 481)translate(931.827869 29.967213)rotate(90)translate(-931.827869 -29.967213)translate(927.827869 21.467213)translate(4 8.915368)scale(-1 -1)rotate(-90)translate(-4 -8.915368)" points="-4 5 4.1 12.8 12 5.1"/>
+										</g>
+									</g>
+								</svg>
+							</span>
+						
+						
+					</a>
+				</div>
+				<div class="fxg-content-box panel-collapse clearfix collapse " id="25" aria-expanded="false">
+					<div class="col-sm-12">
+						
+
+
+
+
+    
+    
+    <div class="notification-banner">
+    
+        
+            <section class=" " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-info">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/common/Information.svg" src="/api/content/dam/fedex-com/irc/common/Information.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle">Validation steps vary by region</p>
+                        <div class="wsdesc"><p>The following steps apply only for customers in the US and Canada. If you live outside of these countries, visit the API Validation page to find support.</p>
+</div>
+                    </div>
+                    
+                    
+                        
+                    
+                </article>
+            </section>
+        
+    
+</div>
+
+
+    
+    
+    <div class="richtext parbase">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>Some APIs require shipping label validation for use in our production environment. See if your API requires validation.</p>
+<p><b>Step 1: Develop and test FedEx APIs with your web-enabled application</b></p>
+<p>Once you finish developing your web-enabled application, it’s time to complete testing using the test credentials (test API key and secret key). Your test API Key and Secret Key will be displayed on the Project Overview page and can be seen at any time.</p>
+<ol>
+<li>Identify all test cases for the regions/territories where you want to validate and deploy your solution. The test cases can be found in the <a title="testcase" href="https://www.fedex.com/content/dam/fedex-com/hdn/FedEx_Integrator_Test_Case_Baseline.xlsx" target="_blank">Integrator test case baseline.</a></li>
+<li>Before you run the test cases, you will need to run the registration transactions for the respective test account numbers available in the test case baseline. </li>
+<li>Then, run all test cases for the regions/territories where you want to validate and deploy your solution.</li>
+</ol>
+<p><b>Step 2: Fill out the PIW and the Validation Cover Sheet</b></p>
+<p>Completely fill out the <a title="pwi" href="https://www.fedex.com/content/dam/fedex-com/hdn/FedEx_Integrator_Product_Information_Worksheets_links_directory.pdf" target="_blank">Product Information Worksheet (PIW)</a> and the <a title="cover" href="https://www.fedex.com/content/dam/fedex-com/hdn/FedEx_Integrator_VALIDATION_COVER%20SHEET_Global.pdf">Integrator Validation Cover Sheet</a> with the appropriate contact information as well as what services and capabilities you plan to offer.</p>
+<p><b>Step 3: Generate and submit deliverables to the Validation team</b></p>
+<p>Collect the following deliverables, compress into a .zip file and email to <u>validationmtp@fedex.com.</u> We advise you to submit your files in a .zip file to reduce the risk of your submission being blocked by the email provider. </p>
+<ul>
+<li>Completed PIW(s) for all territories/regions indicated (format: PDF)</li>
+<li>Completed Validation Cover Sheet (format: PDF)</li>
+<li>Screenshots of the following (format: PDF):<ul>
+<li>Your customer-facing solution displaying FedEx services/Special handling</li>
+<li>Disclaimer Statement</li>
+<li>EULA agreement</li>
+<li>End-customer registration flow</li>
+</ul>
+</li>
+<li>End-customer registration transactions — Multi-Factor Authentication including invoice and PIN available for SMS, call and email (format: JSON request/response files)</li>
+<li>Scanned copies of actual printed labels for all test cases included in the test case baseline for the territories where you want your solution to be validated (format: PDF or PNG)</li>
+<li>Ship transactions of three test cases, one for each label image type: PDF, PNG and ZPL. (format: JSON request/response files)</li>
+</ul>
+<p>Follow these best practices to avoid processing delays:</p>
+<ul>
+<li>Labels must be printed and scanned at a minimum of 600 DPI.</li>
+<li>For thermal printers, the label image type must be requested in accordance with the printer model. Example: ZPLII for Zebra printers.</li>
+<li>FedEx International Express® shipments must also include the auxiliary/secondary Air Waybill (AWB) label.</li>
+<li>Multi-piece shipments (MPS) must include one label for each package in the shipment.</li>
+</ul>
+<p><b>Step 4: Review the label evaluation</b></p>
+<p>The Validation team will evaluate the submitted deliverables and approve or reject the submission. The Validation team will contact you regarding the approval or rejection of the submission. If the deliverables are approved, continue to the next step. If the deliverables are rejected, correct the transactions, screens, and/or labels as instructed and resubmit them for approval.</p>
+<p><b>Step 5: Enable the application</b></p>
+<p>Once all of the deliverables are approved for production status by the Validation team, they will authorize your production credentials to transmit the identified shipping label transaction and notify you via email of successful validation. Your approval is on a per project basis.</p>
+<p><b>Step 6: Follow the post-validation instructions</b></p>
+<p>Review the post-validation instructions and follow as needed.</p>
+</div>
+
+
+</div>
+
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!--End Accordion Selector component-->
+</div>
+
+
+    
+    
+    <div class="hr"><hr class="  "/></div>
+
+
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+</div>
+<div class="backtotop section">
+
+
+  <button class="fdp-btn-back-to-top" style="display: none; bottom: 165px;"><span class="fdp-bc-tp-text">BACK TO TOP</span>
+    <div class="fdp-bc-tp-circle-icon">
+      <img alt="" width="24px;" height="24px;" src="/api/content/dam/fedex-com/irc/getting-started/arrow-up.png"/>
+    </div>
+  </button>
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/backtotop.min.d0f69720fd3d8954b27bc9929bd103bb.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/backtotop.min.js"></script>
+
+
+</div>
+
+
+</div>
+
+          <div class='fxg-login-wrapper'></div>
+          <div id="error-info-page" class="col-md-offset-4" style="display:none"></div>
+        </div>
+         
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+    
+
+
+
+
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Developer Resource Center&lt;/u>&lt;/a>.&lt;/p>
+"><p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Developer Resource Center</u></a>.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. All rights reserved.">© FedEx Corporate Services Inc. All rights reserved.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Integration Solutions">Integration Solutions</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Support">Support</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/terms-of-use.html" aria-label=" Terms of Use"> Terms of Use</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Security &amp; Privacy">Security &amp; Privacy</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="United States">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">United States</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                English
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/en-us/get-started.html" target="_self">English</a></li>
+                     
+                  
+                 
+                     
+                             	
+                    <li><a href="https://developer.fedex.com/api/es-us/get-started.html" target="_self">Spanish</a></li>
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END GENERIC PAGE MAIN BODY -->
+
+
+<!-- Common Error Code Html code -->
+
+<div id="commonErrorMsg" class="modal fade" role="dialog" data-backdrop='static'>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a href="#" class="pull-right" data-dismiss='modal' aria-label="Close"><img alt="Close" src="/api/content/dam/fedex-com/irc/common/close.png"/></a>
+      </div>
+      <div class="modal-body text-center">
+        <img data-rendition="/content/dam/fedex-com/irc/common/error.svg" alt="Error" src="/api/content/dam/fedex-com/irc/common/error.svg"/>
+        <h2>Something went wrong ...</h2>
+        <p>FedEx is unable to process your request. Please try again later.</p>
+        <div class="text-center">
+          <button type="button" aria-label="OKAY" class="irc-orange-button" data-dismiss='modal'>OKAY</button>
+          <br/>
+           <a href="https://developer.fedex.com/api/en-us/support.html">CONTACT SUPPORT</a>  
+        </div>
+	  </div>
+    </div>
+  </div>
+</div>            
+<!-- Session Time out -->
+<div id="sessionErrorMsg" class="modal fade" role="dialog" data-backdrop='static'>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a href="https://developer.fedex.com/api/en-us/home.html" class="pull-right" aria-label="Close"><img alt="Close" src="/api/content/dam/fedex-com/irc/common/close.png"/></a>
+      </div>
+      <div class="modal-body text-center">        
+        <h2>Your session has timed out.</h2>
+        <p>Please log back in to continue.</p>
+        <div class="text-center">
+          <button type="button" aria-label="OKAY" id="session_btn" class="irc-orange-button" data-dismiss='modal'>OKAY</button>
+          <br/>          
+        </div>
+	  </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

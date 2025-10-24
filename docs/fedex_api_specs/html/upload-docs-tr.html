@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">    
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    
+    
+    <meta name="Category" content="API Catalog"/>
+    
+	<meta name="Date" content="Mon Jul 15 12:59:21 GMT 2024"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/tr/tr_tr/catalog/upload-documents/docs.html.html"/>
+    <meta name="og:title" content="Ticaret Belgeleri Yükleme API&#39;si Belgeleri |​ FedEx Geliştirici Portalı"/>
+    <meta name="og:description" content="documentation,documentation"/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/tr-tr/catalog/upload-documents/docs.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "docs",
+             locale: "tr_tr",
+             language:"tr",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "meisa",
+             country:"tr",
+             pagePath:"apps\/fdp\/catalog\/upload\u002Ddocuments\/docs",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "tr";
+let language = "tr";
+let pagepath = "apps\/fdp\/catalog\/upload\u002Ddocuments\/docs";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>    
+    <body>      	
+      
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+  
+        <input type="hidden" id="devtitle" value="Developer Portal "/>
+
+
+  <div id="webhookFlag" style="display: none;">true</div>
+
+<div class="fxg-main-content">
+  <div class='warning-alert'>
+    <div class="sidenav col-sm-2">
+      <div id="mySidenav">
+        <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" alt="Fedex Logo"/></br>
+        <h6 class="dev-portal"></h6>
+      </div>
+      <div id="docsmenuDiv"></div>  
+    </div>
+
+    <div class="fxg-nav col-md-offset-2">
+      <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+    </div> 
+  <input type="hidden" value="true" id="loginstatus"/>
+  <input type="hidden" value="ÇIKIŞ YAP" id="logouttxt"/>
+  <input type="hidden" value="Ayarlar" id="loggedintxt"/>
+  <input type="hidden" value=" Kaydolun veya Oturum Açın" id="defaulttxt"/>
+   <input type="hidden" value="Oturum açma bilgileri yanlış. Kullanıcı kodu veya parola kombinasyonu yanlış ya da hesap kilitlenmiş. Lütfen tekrar deneyin veya parolanızı kurtarmak için &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;>buraya&lt;/a> tıklayın." id="logouterrtxt"/>
+   <input type="hidden" value="Üzgünüz. Bir sorun oluştu. Lütfen kullanıcı adınızı ve parolanızı yeniden girerek tekrar deneyin." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="OTURUM AÇ" id="loginbtnTxt"/>
+   <input type="hidden" value="Ayarlar" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+    </div>
+
+    <div class="main col-sm-12">
+      <div>
+
+
+  <input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;Projelerim&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/project&#34;},{&#34;pageTitle&#34;:&#34;Başlarken&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Kataloğu&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Tarifleri&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Kılavuzlar&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/guides&#34;},{&#34;pageTitle&#34;:&#34;Duyurular&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Doğrulama&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/certification&#34;},{&#34;pageTitle&#34;:&#34;API Durumu&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>®&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>®&lt;\/sup> Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Destek/SSS&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/support&#34;},{&#34;pageTitle&#34;:&#34;Kuruluşu Yönet&#34;,&#34;pagePath&#34;:&#34;/api/tr-tr/organization&#34;}]"/>
+  <input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+  <input type="hidden" id="submenuTitle" value="Diğer ürünler"/>
+  <input type="hidden" id="menutxt" value="Menü"/>
+  <input type="hidden" id="apigURL" value="apis.fedex.com"/>
+
+
+  <div class='irc-authentication'>
+    <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+      <img class="fxg-user-options__icon" alt=" Kaydolun veya Oturum Açın" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+      <span class="fxg-user-options__sign-in-text"> Kaydolun veya Oturum Açın </span>
+    </a>
+    <hr/>
+  </div>
+
+<div style="display:none"><a href="https://www.fedex.com/en-us/developer.html" id="docs_developer"></a></div>
+<input type="hidden" id="expandroot"/>
+<div class='business-txt cjtbAK'>
+  <div class="breadcrumb-irc-doc-container">
+    
+<nav class="cmp-breadcrumb-irc  " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/tr/tr_tr/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      <a href="/content/fedex-com/irc.html" class="cmp-breadcrumb__item-link-irc">
+        <span>IRC</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/tr-tr/catalog.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Katalog</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/tr-tr/catalog/upload-documents.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Ticaret Belgeleri Yükleme API&#39;si</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      
+        <span>documentation,documentation</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+  </div>
+  <h1 class="sc-htoDjs sc-fYxtnH dTJWQH">
+    <div class='pull-left'></div>
+    
+    <div class='pull-right'></div>
+    
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+
+
+
+
+    <div class='webhook-download-schemabtn'> </div>
+    
+
+  </h1>
+  
+  
+    <div class="fxg-wrapper    ">
+        
+
+    </div>
+<div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><div class="fxg-doc-header"><h3>Giriş</h3>
+</div>
+<p>Ticari Belge Yükleme API'si, küresel gönderi ihtiyaçlarınızı sadeleştiren ve uluslararası gönderiler için gerekli gümrük belgelerini elektronik ortamda yüklemenize olanak tanıyan bir belge yükleme çözümüdür. Ticari belgelerinizin çoğunu elektronik ortamda göndererek, ticari belgeleri yazdırma veya gönderiye ekleme zahmetinden kurtulabilirsiniz.</p>
+<p>Gümrük ve diğer kurumlar, elektronik ortamda gönderilen belgeleri, gönderinize eklenmiş kağıt nüshalardan daha hızlı alır. Kritik ticari bilgilerin alınması ve paylaşılmasının, gönderi işleminin daha erken evrelerinde yapılması sayesinde, gümrükleme süreci de optimize edilmiş olur.</p>
+<p><i>Not:</i></p>
+<ul>
+<li><i>Bazı durumlarda, belirli uluslararası belgelerin yine de pakete eklenmesi gerekir. Daha fazla bilgi için <a href="https://developer.fedex.com/api/tr-tr/guides/api-reference.html#exportdocuments" target="_blank">İhracat Belgeleri</a> bölümünü inceleyin.</i></li>
+<li><i> Gümrükleme sürecinin sorunsuz olmasını sağlamak ve gecikmeleri önlemek için belgelerin görsel olarak net bir biçimde görüldüğünden ve herhangi bir görsel bozukluğunun olmadığından emin olun.</i></li>
+</ul>
+<div class="fxg-doc-header"><h3>Ticaret Belgeleri Yükleme API'si Ayrıntıları</h3>
+</div>
+<p>Gümrük belgelerinizi yükleyin veya FedEx'in oluşturduğu ticaret belgelerini kullanın. FedEx tarafından oluşturulan elektronik ticaret belgelerini, Şirketinizin Antetli Kağıdını/Logosunu ve Dijital imza görüntüsünü yükleyerek de özelleştirebilirsiniz. Belgelerin elektronik ortamda yüklenmesi her gönderi için gümrük belgelerini el ile imzalama, katlama, doldurma ve ekleme zahmetini ortadan kaldırır. Ayrıca, kağıt, enerji ve baskı masraflarından tasarruf sağlar.</p>
+<p>Aşağıdaki özellikler bu API ile ilişkilidir:</p>
+<p><b style="font-size: 16.0px;">Belge Yükleme</b></p>
+<p>Bir belgeyi, gönderiyi oluşturmadan önce (gönderi öncesi) veya gönderi oluşturulduktan sonra Gönderi API'sini kullanarak (gönderi sonrası) yükleyebilirsiniz.</p>
+<p><i>Not: Belgenin genelinde belirtilen gönderi oluşturma, Gönderi API'si - Gönderi Oluşturma, Açık Gönderi API'si - Açık Gönderi Oluşturma ve Freight LTL API'si - Freight LTL Gönderisi uç noktaları için geçerlidir.</i></p>
+<p><b style="font-size: 16.0px;">Birden Fazla Belge Yükleme</b><br />
+</p>
+<p>Hem gönderi öncesi hem de gönderi sonrası koşullar için her bir karşıya yükleme talebi başına en fazla beş belge yükleyebilirsiniz.</p>
+<p><b style="font-size: 16.0px;">Birden Fazla Kodlu Belge Yükleme</b><br />
+</p>
+<p>Gönderiyi oluşturmadan önce (gönderi öncesi) veya gönderi oluşturulduktan sonra (gönderi sonrası) base64 kodlu belgeleri (en fazla beş adet) tek seferde yükleyebilirsiniz. Bu seçenek kullanılarak yüklenen belgeler, olası bir müdahale durumunda belge verilerine ek güvenlik sağlar.</p>
+<p><b style="font-size: 16.0px;">Karşıya Görüntü Yükleme</b><br />
+</p>
+<p>Bu özellik, FedEx tarafından oluşturulan belge veya raporlarda kullanılabilecek özelleştirilmiş Şirket Antet/Logo ve Dijital imza görsellerini karşıya yüklemenizi sağlar. Önce Şirketin Antet/Logo ve Dijital imza görselini FedEx Sunucularına yükleyin ve sonra <i>shippingDocumentSpecification</i> altından <i>customerImageUsages</i> öğesini kullanarak bu karşıya yükleme referanslarını gönderi talebinizde (Gönderi uç noktası oluştur) her belge için ayrı ayrı sağlayın.</p>
+<p>Dijital İmzalar veya Antetli Kağıtlar/Şirket Logoları, FedEx tarafından oluşturulan şu belge ve raporlara basılır:</p>
+<ul>
+<li>Ticari Fatura</li>
+<li>Menşe Şahadetnamesi</li>
+<li>OP900</li>
+<li>Proforma Fatura</li>
+<li>USMCA Menşe Şahadetnamesi</li>
+<li>USMCA Ticari Faturası ve Menşe Şahadetnamesi</li>
+</ul>
+<p><i>Not:</i></p>
+<ul>
+<li><i>Dijital İmza – İmza sınırlaması 240x25 pikseldir ve görseller GIF veya PNG formatında olabilir.</i></li>
+<li><i>Şirket Anteti/Logosu – Logo sınırlaması 700x50 pikseldir ve görseller GIF veya PNG formatında olabilir.</i></li>
+</ul>
+<div class="fxg-doc-header"><h3>Ticari Belge Yükleme API'si İş Akışı</h3>
+</div>
+<p>Aşağıda, Gönderi Öncesi veya Gönderi Sonrası senaryolarında bir belge yüklemek için kullanılacak akış sunulmuştur.</p>
+<p><b style="font-size: 16.0px;">Gönderi Öncesi Belge Karşıya Yükleme:</b></p>
+<p>Gönderi öncesi belge karşıya yükleme, gönderi oluşturulmadan önce bu API oluşturularak belgelerin karşıya yüklenmesini içerir. Belgeler başarıyla karşıya yüklendikten sonra gönderi talebindeki yüklenmiş belgelerin referansını ilişkilendirebilirsiniz.</p>
+<p>Gönderi onaylanmadan önce ticari belgelerinizi karşıya yüklemeniz için standart yöntemdir.</p>
+<p>Gönderi öncesi belge karşıya yükleme adımları şöyledir:</p>
+<ul>
+<li>İhtiyacınıza göre aşağıdaki uç noktalardan herhangi birini kullanın<ul>
+<li>Belge Yükleme</li>
+<li>Birden Fazla Belge Yükleme</li>
+<li>Kodlu Belgeleri Yükleme</li>
+</ul>
+</li>
+<li>Gönderi Öncesi yükleme olduğunu belirtmek için workflowName değeri olarak ETDPreShipment girin.</li>
+<li>Karşıya yüklenecek gerçek dosyaları veya base64 kodlu belgeleri sağlayın.<br />
+</li>
+<li>Belgeyle ilişkili belge türü ve gönderi üst verileri dahil olmak üzere belge ayrıntılarını (Ticari Fatura, Menşe Şahadetnamesi, İhracat Beyanı vs.) sağlayın.</li>
+<li>Talebin başarılı olması durumunda, belgeler FedEx sunucularına yüklenir ve başarılı işlem belirteci olarak benzersiz bir tanımlayıcı, yani karşıya yüklenen her bir belge için <b><i>docId</i></b> döndürülür.<br />
+</li>
+<li>Gönderi Oluştur/Açık Gönderi Oluştur/LTL Kargo Gönder uç noktasını kullanın.</li>
+<li>Seçiminiz doğrultusunda Gönderi uç noktasında, shipmentSpecialService/specialServiceTypes öğesini ELECTRONIC_TRADE_DOCUMENTS olarak girin ve shipment SpecialServices/etdDetail/attachedDocuments/documentId öğesine<i> docId</i> değerlerini geçirin.</li>
+<i>Not: Çok parçalı gönderiye (MPS) yönelik olarak gönderideki tüm paketler için belgelerin yüklenmesinden oluşturulan <b>docId</b> belirtin.</i><li>Gönderi talebinin başarılı olması durumunda, FedEx'e ETD gönderimi onaylanarak takip ve etiket ayrıntıları oluşturulur ve <i>completedEtdDetail</i> nesnesi referans olarak karşıya yüklenen belge türünü ve belgelerin kimliğini getirir.</li>
+<li>Gönderi öncesi belge karşıya yükleme için, tüm belgeleri teker teker veya en fazla 5 belgeyi birlikte karşıya yükleyebilir ve ardından tüm belge kimliklerini tek seferde gönderiye sağlayabilirsiniz.</li>
+</ul>
+<p><b style="font-size: 16.0px;">Gönderi Sonrası Belge Yükleme (PSDU):</b></p>
+<p>Gönderi sonrası belge karşıya yükleme (PSDU), belgeleri gönderi gönderildikten ve takip etiketleri oluşturulduktan sonra karşıya yüklemenize olanak tanır. Bu durumda, gönderi ve takip numarası oluşturulduktan sonra bu takip numarasını belge karşıya yükleme talebiyle ilişkilendirin.</p>
+<p>Bu yöntem, Ticari Faturalarını kendileri oluşturan, üçüncü taraflara veya gümrük belgelerini gönderinin bulunduğu yerden farklı bir ofiste hazırlayan müşteriler için kolaylık sağlar.</p>
+<p>Bu yöntem kullanılırken şu hususlar göz önünde bulundurulmalıdır:</p>
+<ul>
+<li>Gönderi takip numaranız ve gönderi tarihiniz yükleme talebinden önce hazır olmalıdır.</li>
+<li>Belgeyi zamanında göndermek için göndericinin şubesinin son alım zamanlarını bilmeniz gerekir.</li>
+</ul>
+<p>Bu API, ilgili gündeki gönderilerin yanı sıra gelecek tarihli gönderiler için gümrük belgeleri oluşturulmasını da destekler.</p>
+<p>Gönderi öncesi karşıya yükleme adımları şöyledir:</p>
+<ul>
+<li><i>Gönderi Oluştur/Açık Gönderi Oluştur/Freight LTL Gönder</i> uç noktasını kullanın.</li>
+<li>Gönderi Oluştur uç noktasında, seçiminize uygun olarak aşağıdaki ayrıntıları belirtin,<ul>
+<li>ELECTRONIC_TRADE_DOCUMENTS olarak <i>shipmentSpecialServices/specialServiceTypes</i> sağlayın.</li>
+<li>POST_SHIPMENT_UPLOAD_REQUESTED olarak <i>shipmentSpecialServices/etdDetail/attributes</i> sağlayın.</li>
+</ul>
+</li>
+<li>Gönderi talebinin başarılı olması durumunda, FedEx'te gönderi onaylanarak takip ve etiket ayrıntıları oluşturulur.</li>
+<li>İhtiyacınıza göre aşağıdaki uç noktalardan herhangi birini kullanın.<ul>
+<li>Belge Yükleme</li>
+<li>Birden Fazla Belge Yükleme</li>
+<li>Birden Fazla Şifreli Belge Yükleme.</li>
+</ul>
+</li>
+<li>Gönderi Sonrası yükleme olduğunu belirtmek için <i>workflowName</i> değeri olarak <i>ETDPostShipment</i> girin.</li>
+<li>Karşıya yüklenecek gerçek dosyaları veya base64 kodlu belgeleri sağlayın.</li>
+<li>Belge ayrıntılarını (Ticari Fatura, Menşe Şahadetnamesi, İhracat Beyanı vs.) sağlayın.</li>
+<li><i>document/meta/trackingNumber</i> ve <i>document/meta/shipmentDate</i> öğesi altından halihazırda işlenmiş gönderi <i>trackingNumber</i> ve <i>shipmentDate</i> bilgilerini sağlayın.<br />
+<i>Not: Çok parçalı gönderilere (MPS) yönelik olarak belgeleri yüklerken ana gönderi takip numarasını kullanın. Ana gönderi için sağlanan ETD bilgileri, alt gönderi için de geçerlidir.</i></li>
+<li>Talebin başarılı olması durumunda, belgeler FedEx sunucularına yüklenir ve karşıya yüklenen belgeler gönderiyle ilişkilendirilir</li>
+</ul>
+<p>Aşağıda, gönderi belgeleriyle ilgili olan belgeleri ve görselleri yüklemenize izin veren Ticaret Belgesi Yükleme API'sinin özellikleri verilmiştir.<br />
+</p>
+<div class="fxg-doc-header"><h3>Ticari Belge Yükleme API'si Nasıl Çalışır?</h3>
+<p>Aşağıda, gönderi belgeleriyle ilgili olan belgeleri ve görselleri yüklemenize izin veren Ticaret Belgesi Yükleme API'sinin özellikleri verilmiştir.</p>
+<p><b style="font-size: 16.0px;">Belge Yükleme</b><br />
+</p>
+<p>Bu uç noktayı kullanarak Gönderi öncesi ve Gönderi sonrası koşulları için ticari belge yükleyebilirsiniz.<br />
+</p>
+<p>Aşağıda bu istekle ilişkili gerekli girdi bilgileri verilmiştir:</p>
+<ul>
+<li><b>Ek</b> – Yüklenecek asıl dosyadır.</li>
+<li><b>workFlowName</b> – Gönderi öncesi karşıya yükleme için ETDPreShipment, Gönderi sonrası karşıya yükleme için ise ETDPostShipment sağlayın.</li>
+<li><b>document</b> – Belge ayrıntılarını ve gönderi üst verilerini sağlayın.</li>
+<li><b>trackingNumber</b> – Belgelerin yükleneceği PSDU gönderi takip numarasını sağlayın. Gönderi öncesi karşıya yükleme için bu isteğe bağlıdır.</li>
+<li><b>shipmentDate</b> – Gönderi tarihidir. Gönderi öncesi karşıya yükleme için bu isteğe bağlıdır.</li>
+</ul>
+<p>Gönderi öncesi karşıya yükleme için başarılı yanıt verilmesi durumunda, belgeler FedEx Sunucularına yüklenir ve <i>docId</i> verilir. Bu <i>docId</i>, asıl gönderide gönderiyi göndermek ve etiket oluşturmak için kullanılır.</p>
+<p>Gönderi sonrası karşıya yükleme için başarılı yanıt verilmesi durumunda, belgeler FedEx Sunucularına yüklenir ve karşıya yüklenen belgeler zaten doğrulanmış olan gönderiyle ilişkilendirilir.</p>
+<p><b style="font-size: 16.0px;">Görüntü Yükleme</b><br />
+</p>
+<p>Bu uç noktayı kullanarak, gönderi belgelerine uygulanabilecek özel imza ve antet görselleri/şirket logosu yükleyebilirsiniz.<br />
+</p>
+<p>Aşağıda bu istekle ilişkili gerekli girdi bilgileri verilmiştir:</p>
+<ul>
+<li><b>attachment</b> – Görsel dosyasıdır.</li>
+<li><b>document</b> – Dosya adı, içerik türü ve dosya üst verileri gibi görüntü ayrıntılarını belirtin.</li>
+</ul>
+<p>Talebin başarılı olması durumunda, imza ve antet görselleri/Şirket Logosu FedEx Sunucularına yüklenir ve <i>imageIndex</i> döndürülür. Ardından bu dizin, özel görsel veya antetin gönderi belgesine basılmasını sağlamak için <i>shippingDocumentSpecification</i> altında <i>customerImageUsages</i> tekil belge öğesi için gönderi talebinize iletilir.</p>
+<div class="fxg-doc-header"><h3>Birden Fazla Belge Yükleme</h3>
+<p>Bu uç noktayı kullanarak gönderi öncesi ve gönderi sonrası koşulları için ticari belge (en fazla beş tane) yükleyebilirsiniz. Aşağıda bu istekle ilişkili gerekli girdi bilgileri verilmiştir:</p>
+<ul>
+<li><b>workflowName</b> – Gönderi öncesi karşıya yükleme için <i>ETDPreShipment</i>, gönderi sonrası karşıya yükleme için ise <i>ETDPostShipment</i> sağlayın.</li>
+<li><b>fileName </b>– Güncellenmekte olan belgelerin veya dosyaların adlarını uzantı türüyle birlikte girin. Örnek: COD.PDF</li>
+<li><b>contentType</b> – Karşıya yüklenecek dosya türünü ve biçimini mevcut seçenekler arasından seçin.</li>
+<li><b>shipDocumentType</b> – Yüklenecek belge türlerini belirtin.<p>Her bir belge hakkında daha fazla bilgi için bu sayfadaki <a href="#updoc">Belge Yükle</a> bölümüne bakın. Seçebileceğiniz belge türlerinin listesi şu şekildedir:</p>
+<ul>
+<li>CERTIFICATE_OF_ORIGIN COMMERCIAL_INVOICE</li>
+<li>ETD_LABEL</li>
+<li>USMCA_CERTIFICATION_OF_ORIGIN</li>
+<li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN</li>
+<li>DİĞER</li>
+<li>PRO_FORMA_INVOICE</li>
+</ul>
+</li>
+<li><b>carrierCode</b> – FedEx işletme sermayeli şirketinin dört harfli kodunu sağlayın. Örnek: FDXE</li>
+<li><b>originCountryCode</b> – Gönderi için menşe ülkesi kodunu verir.</li>
+<li><b>destinationCountryCode</b> – Gönderi için varış yeri ülkesi kodunu verir.</li>
+<i>Not: Ülke kodunuzu öğrenmek için <a href="https://developertest.fedex.com/api/en-us/guides/api-reference.html#countrycodes"><i>Referans Kılavuzuna</i></a> başvurun. Örnek: ABD</i><li><b>shipmentDate</b> – Gönderi sonrası karşıya yükleme için gerçek gönderi tarihini girin.</li>
+<li><b>trackingNumber</b> – Gönderi sonrası karşıya yükleme için gönderi takip numarasını girin. Örnek: 7825XXXXXXX.</li>
+</ul>
+<p>Gönderi öncesi karşıya yükleme için başarılı yanıt verilmesi durumunda, belgeler FedEx Sunucularına yüklenir ve belge numaraları<i> (docId)</i> getirilir. Bu <i>docId</i>, asıl gönderide gönderiyi göndermek ve etiket oluşturmak için kullanılır.</p>
+<p>Gönderi sonrası karşıya yükleme için başarılı yanıt verilmesi durumunda, belgeler FedEx Sunucularına yüklenir ve karşıya yüklenen belgeler zaten doğrulanmış olan gönderiyle ilişkilendirilir.</p>
+<div class="fxg-doc-header"><h3>Birden Fazla Şifreli Belge Yükleme</h3>
+<p>Bu uç noktayı kullanarak gönderi öncesi ve gönderi sonrası koşulları için base64 kodlu ticari belgeler (en fazla beş tane) yükleyebilirsiniz.</p>
+<p>Aşağıda bu istekle ilişkili gerekli girdi bilgileri verilmiştir:</p>
+<ul>
+<li><b>workFlowName</b> – Gönderi öncesi karşıya yükleme için <i>ETDPreShipment</i>, Gönderi sonrası karşıya yükleme için ise <i>ETDPostShipment</i> sağlayın.</li>
+<li><b>carrierCode</b> – FedEx işletme sermayeli şirketinin dört harfli kodunu sağlayın. Örnek: FDXE</li>
+<li><b>contentType</b> – Karşıya yüklenecek dosya türünü ve biçimini mevcut seçenekler arasından seçin.</li>
+<li><b>shipDocumentType</b> – Yüklenecek belge türlerini belirtir.<p>Her bir belge hakkında daha fazla bilgi için bu sayfadaki <a href="#updoc">Belge Yükle</a> bölümüne bakın. Seçebileceğiniz belge türlerinin listesi şu şekildedir:</p>
+<ul>
+<li>CERTIFICATE_OF_ORIGIN COMMERCIAL_INVOICE</li>
+<li>ETD_LABEL</li>
+<li>USMCA_CERTIFICATION_OF_ORIGIN</li>
+<li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN</li>
+<li>DİĞER</li>
+<li>PRO_FORMA_INVOICE</li>
+</ul>
+</li>
+<li><b>originCountryCode</b> – Gönderi için menşe ülkesi kodunu verir.</li>
+<li><b>destinationCountryCode</b> – Gönderi için varış yeri ülkesi kodunu verir.</li>
+<i>Not: Ülke kodunuzu öğrenmek için <a href="https://developertest.fedex.com/api/en-us/guides/api-reference.html#countrycodes"><i>Referans Kılavuzuna</i></a> başvurun. Örnek: ABD</i><li><b>fileContentBase64</b> – Yüklenecek base64 dosyası için bayt kodu içeriğini belirtin.</li>
+</ul>
+<p>Gönderi öncesi karşıya yükleme için başarılı yanıt verilmesi durumunda, kodlu belgeler FedEx Sunucularına yüklenir ve belge numaraları <i>(docId)</i> getirilir. Bu <i>docId</i>, asıl gönderide gönderiyi göndermek ve etiket oluşturmak için kullanılır.</p>
+<p>Gönderi sonrası karşıya yükleme için başarılı yanıt, kodlanmış belgeleri FedEx Sunucularına yükleyecek ve karşıya yüklenen belgeleri halihazırda onaylanmış gönderi ile ilişkilendirecektir.</p>
+<div class="fxg-doc-header"><h3 id="updoc">Belge Yükleme</h3>
+</div>
+<p>Bu API ile gönderilebilecek belgeler şunlardır:<br />
+</p>
+<p><b style="font-size: 16.0px;">Menşe Şahadetnamesi (COO)</b><br />
+</p>
+<p>COO, bir ürünün üretildiği ülkeyi/bölgeyi doğrulayan uluslararası bir belgedir. Bazı ülkeler belirli ülkelerden ithalatı kısıtlar, birçok ülke ithal ürünlerin miktarını sınırlandırır ve bazı ülkeler belirli ülkelerde üretilen ürünlere öncelik verir.<br />
+</p>
+<p><b style="font-size: 16.0px;">Ticari Fatura (CI)</b><br />
+</p>
+<p>Bu, gönderi işlemine dahil olan tarafları ve nakliye edilen ürünleri tanımlayan ve satıcı/ihracatçı tarafından sunulan bir belgedir. Gümrüklerin istediği temel belgedir. Mümkünse ürünlerin ihraç edildiği ülkenin/bölgenin resmi dili kullanılarak hazırlanmalıdır. Ticari Faturada, gönderide yer alan tüm ürünlerin şunları içeren ayrıntılı bir dökümü bulunmalıdır: ürünlerin düzgün tanımları (Nedir? Hangi materyallerden imal edilmiştir? Kullanım amacı nedir?), miktarı, üretildiği ülke/bölge, bedeli veya maliyeti, kullanılan para birimi, her ürünün GTİP numarası ve teslimat şartları. Bazı ülkeler, faturanın aslının göndericinin antetli kağıdında düzenlenmesini zorunlu tutar. Fatura daima ihracatçı tarafından imzalanmalı ve tarihlendirilmelidir. Sunulan bilgilerin, Ticari Faturadaki içeriklerin doğru ve gerçek temsilleri olduğu onaylanmalıdır.<br />
+</p>
+<p>Daha fazla bilgi için <a href="https://www.fedex.com/GTM" target="_blank">Global Trade Manager</a>'ımızı ziyaret edin.</p>
+<p><b style="font-size: 16.0px;">ETD ETİKETİ</b></p>
+<p>Gönderi Sonrası belge karşıya yükleme kriterleriyle ETD özel hizmetli Gönderide oluşturulan Gönderi etiketidir. Bu etiket, başka belgelerin yanı sıra gönderiyle birlikte de karşıya yüklenebilir.</p>
+<p><b style="font-size: 16.0px;">Proforma Fatura</b></p>
+<p>Proforma fatura, satış gerçekleşmeden önce çıkarılır. Proforma fatura tedarikçiden alındıktan sonra alıcı tedarikçiye bir satın alma emri gönderir veya akreditif açar. Satıcı, üzerinde anlaşılan gönderi tarihine uygun olarak malların gönderimini düzenler.</p>
+<p><b style="font-size: 16.0px;">USMCA Ticari Faturası ve Menşe Şahadetnamesi</b></p>
+<p>USMCA Menşe Şahadetnamesi (COO), üçlü AMERİKA BİRLEŞİK DEVLETLERİ-MEKSİKA-KANADA SÖZLEŞMESİ (USMCA/T-MEC/CUSMA) katılımcılarından (Kanada, Meksika ve ABD) birinin bir ürünü olarak düşük veya gümrüksüz girişe uygun olan mallar için gereklidir. Menşe şahadetnamesi, malların ihracatçısı veya üreticisi tarafından tamamlanır.</p>
+<p><b style="font-size: 16.0px;">USMCA Menşe Şahadetnamesi</b></p>
+<p>USMCA Ticari Faturası ve Menşe Şahadetnamesi (COO), üçlü AMERİKA BİRLEŞİK DEVLETLERİ-MEKSİKA-KANADA SÖZLEŞMESİ (USMCA/T-MEC/CUSMA) katılımcılarından (Kanada, Meksika ve ABD) birinin bir ürünü olarak düşük veya gümrüksüz girişe uygun olan mallar için gereklidir. Menşe şahadetnamesi, malların ihracatçısı veya üreticisi tarafından tamamlanır ve Ticari Faturayla birlikte sunulur.</p>
+<p><b style="font-size: 16.0px;">Diğer</b></p>
+<p>Aşağıdaki bölümlerde, diğer belgelerin altında sınıflandırılan bazı yaygın belgeler açıklanmıştır. Gönderi için bu belgelerin karşıya yüklenmesi zorunlu değildir, ancak bir gönderinizin gümrüklenmesi için gerekli olabilir. Bu durum, gönderi türü, çıkış yeri, varış yeri ve başka etkenlere bağlı olarak değişebilir.</p>
+<ul>
+<li><b>Çeki Listesi</b></li>
+<p>Bir havayolu konşimentosu kapsamında birden fazla paketin bulunması veya gönderi ağırlığının 100 kg'dan fazla olması durumunda Çeki Listesi gereklidir. Bu gerekliliğin gönderilen ürünlere bağlı olarak pazarlar arasında farklılık gösterebileceğini göz önünde bulundurun. Listede ürünler, ürünlerin miktarı ve ağırlığı doğru ve açık bir şekilde tanımlanmalıdır.</p>
+<li><b>Zararlı Parazitlere Neden Olabilecek Radyo Frekans Cihazlarının İthalatına İlişkin FCC 740 Bildirimi</b></li>
+<p>Zararlı girişimlere yol açabilen radyo frekans cihazlarına sahip elektronik cihazlar gönderilirken Federal İletişim Komisyonu (FCC) 740 sayılı formu gereklidir. Bu formda, Cihaz Modeli/Tür Adı, Uyumlu Tarife Numarası, Üreticinin Adı ve Adresi, Alıcının Adı ve Adresi ile İthalatçının Adı ve Adresi yer alır.</p>
+<li><b>Video-Film Beyanı</b></li>
+<p>Video filmi beyanı: Bu belge, gönderilen filmin/videonun müstehcen veya ahlaka aykırı bir öğe ya da Amerika Birleşik Devletleri'ne karşı isyanı savunan herhangi bir husus içermemektedir. Belgede, Film/Video Uzunluğu, Film/Video Süresi ve İçeriğin Kısa Konusu gibi ayrıntılar yer alır.</p>
+</ul>
+<p><i>Feragatname: Yukarıdaki bilgiler değiştirilebilir.</i></p>
+<p>Diğer belgeler yalnızca ülkelere, ürünlere ve başka özel gümrük belgelerine bağlı olarak yüklenir. Yaygın olarak kullanılan diğer belgelerin listesini görüntülemek için <a href="https://developer.fedex.com/api/tr-tr/guides/api-reference.html#exportdocuments" target="_blank">İhracat Belgeleri</a>'ne tıklayın.</p>
+<div class="fxg-doc-header"><h3>Gümrük Belgeleri ve Gereksinimleri</h3>
+</div>
+<p>Doğru belgeleme, yurt içi ve yurt dışı gönderilerin önemli bir unsurudur. Her ülkenin uluslararası gönderilere ilişkin özel yasa ve yönetmelikleri vardır. ABD ihracat gönderileri için ABD ve hedef ülkeler farklı düzenleyici belgeler gerektirir.</p>
+<p><i>Not: FedEx Uluslararası Havayolu Konşimentosu, FedEx Uluslararası Bir Sonraki Uçuş Havayolu Konşimentosu veya FedEx Uluslararası Posta Hizmeti Havayolu Konşimentosuna ek dokümantasyonun (ör. bir Ticari Fatura) gerekli olduğu gönderiler için ek teslimat süresi gerekebilir.</i></p>
+<p><b style="font-size: 16.0px;">Kontrollü Ürünler</b></p>
+<p>Aşağıdaki ürünleri ülkeler arasında gönderirken, bunların hedef ülke ve şehre teslimat için seçtiğiniz FedEx hizmeti tarafından kabul edildiğinden emin olun.</p>
+<ul>
+<li>Tehlikeli Maddeler</li>
+<li>Uluslararası Silah Kaçakçılığı Yönetmelikleri (ITAR)</li>
+<li>Beklenen Miktarlarda Tehlikeli Maddeler.<br />
+<i>Not: Beklenen Miktarlarda Tehlikeli Madde göndermek için SMALL_QUANTITY_EXCEPTION özel hizmetler seçeneğini kullanın.</i></li>
+<li>İstisnai Radyoaktif Madde Paketi</li>
+</ul>
+<p><i><i>Feragatname: Yukarıdaki bilgiler değiştirilebilir ve daha fazla bilgi için <a href="https://www.fedex.com/en-us/service-guide.html" target="_blank">Hizmet Kılavuzu</a>'na girin veya FedEx temsilcinizle görüşün.</i></i></p>
+<p style="font-weight: bold;font-size: 16.0px;"><b>Kanada'dan uluslararası giden gönderiler için ihracat beyanı</b></p>
+<p>Kanada'dan yapılan ihracatların bildirimi için, aşağıdaki koşullarda Kanada Sınır Hizmetleri Ajansı'na (CBSA) ihracat beyanı sunulmalıdır.</p>
+<ul>
+<li>Yasaklamaya tabi olmayan malları içeren Kanada'dan tüm uluslararası giden gönderiler, ticari malların değeri 2.000 Kanada Doları veya üzerinde olduğunda ve malların varış yeri Amerika Birleşik Devletleri, Porto Riko veya Birleşik Devletler Virjin Adaları dışında bir yer olduğunda.</li>
+<li>Değeri fark etmeksizin kontrole tabi, yasaklı veya düzenlemeye tabi malları içeren Kanada'dan tüm uluslararası giden gönderiler.</li>
+</ul>
+<p>Taşıyıcılar, herhangi bir mal Kanada'dan çıkmadan önce ihracatçıdan rapor belge numarasını almalıdır. İhracatçı, rapor belge numarasını taşıyıcıya vermeden önce ihracat beyanını ibraz etmelidir.</p>
+<p><b style="font-size: 16.0px;">Elektronik İhracat Bilgileri (EEI)</b></p>
+<p>EEI, Otomatik Ticaret Ortamı'nda (ACE) bulunan AESDirect kullanılarak Otomatik İhracat Sistemi (AES) üzerinde oluşturulan elektronik ihracat bilgileridir. ACE Güvenli Veri Portalı (ACE Portalı), ticaret yetkililerinin ABD Gümrük ve Sınır Koruma İdaresi (CBP) ile iletişim kurması için merkezi bir erişim noktasıdır.</p>
+<p>EEI, artık ABD hükümetine gönderilemeyen Gönderici İhracat Beyanı (SED), Ticaret Bakanlığı (Nüfus Sayım İdaresi) 7525-V sayılı formunun elektronik versiyonudur. EEI, bir uluslararası gönderi işleminin ilgili tüm ihracat verilerini bildirerek ihracat istatistikleri ve kontrolü sağlar.</p>
+<p>EEI'nin Ticaret Kontrol Listesinde (CCL) listelenen mallar için ihracatçı veya aracı tarafından bilgilerin Otomatik İhracat Sistemi (AES) üzerinden elektronik olarak ibraz edilmesi zorunludur.</p>
+<p>Gönderinin değerine bakılmaksızın, gönderinin çıkış yeri ABD, ABD Virgin Adaları veya Porto Riko, varış yeri Çin, Rusya, Venezüela veya Hong Kong ise şu bilgileri sağlamanız gereklidir:</p>
+<ul>
+<li>Dahili İşlem Numarası'nın (ITN) yer aldığı bir EEI</li>
+<li>Her bir öğe için doğru İhracat Kontrol Sınıflandırma Numarası (ECCN) veya EAR99 sınıflandırma numarası veya</li>
+<li>Geçerli bir dosya hazırlama muafiyeti</li>
+</ul>
+<p>Aşağıdaki durumlarda muafiyetlere izin verilir:</p>
+<ul>
+<li>Gönderinin Lisans Muafiyeti GOV için uygun olması</li>
+<li>Gönderinin İhracat Yönetimi Yönetmelikleri ve Dış Ticaret Mevzuatı (FTR) kapsamındaki istisnalar için uygun olması veya</li>
+<li>Gönderinin EAR99 olarak sınıflandırılan öğelerden oluşması</li>
+</ul>
+<p><i><i>Not: Diğer varış noktaları için, herhangi bir gündeki konsolide gönderide bir veya daha fazla ürünün (Ek B sayısı) toplam değerinin 2.500 Amerikan dolarından fazla olması durumunda, tüm ABD ihracat gönderileri için EEI sunmanız gereklidir.</i></i></p>
+<p><b style="font-size: 16.0px;">Göndericinin Talimat Yazısı (SLI)</b></p>
+<p>SLI'de ABD'deki müşteriler için uluslararası gönderi bilgileri yer alır.</p>
+<p><i><i>Not:</i></i></p>
+<ul>
+<i><li><i>Aracılık dahil hizmetimizle Kanada'ya yapılan gönderilere gümrükleme dahildir. Bir ücret uygulanır. Aracılık dahil hizmet, tüm elektronik gönderi çözümleriyle kullanılabilir olmayabilir.</i></li>
+</i></ul>
+<p>FedEx International Ground<sup>®</sup> koli dağıtım hizmeti, FedEx Ground<sup>®</sup> hizmetinin FedEx International Ground<sup>®</sup> gönderilerini tek bir aracı giriş <i>ücretiyle</i> tek bir gümrük girdisi olarak gümrüklenen ve işlenen tek bir birim haline getirmesine olanak tanır.</p>
+<div class="fxg-doc-header"><h3>Ticari Belge Yükleme API'si Faydaları</h3>
+</div>
+<p>Ticari Belge Yükleme API'sinin/Özelliğinin bazı faydaları şunlardır:</p>
+<ul>
+<li>Gümrükleme sorunlarının daha az olması, gümrük gecikmelerini azaltır ve böylece gönderilerin güvenilirliği ve satıcının itibarı artar.</li>
+<li>İşin oluşturulması için daha zaman kalması, birden fazla belge nüshasını ayrı ayrı paketlerle eşleştirme ihtiyacını ortadan kaldırarak şirketin üretkenliğini ve kârını artırır.</li>
+<li>FedEx tarafından oluşturulan Ticari Fatura veya Geçici Faturaya şirkete ait antetli kağıt ve imza görüntüsü eklenmesine olanak tanır.</li>
+<li>Bilgilerin eksik olması gibi gümrük belgeleriyle ilgili sorunları çözmek için gönderi varmadan önce ek süre kazanılmasını sağlar.</li>
+<li>Kanada'ya gönderilen FedEx International Ground® gönderilerine yönelik olarak ticari faturanızın elektronik olarak gönderilmesini sağlar.</li>
+<li>Gelecekte planlanan bir gün gönderilecek olan paketler veya bugünden itibaren önümüzdeki 10 gün içinde yapılacak gönderiler için gümrük belgelerini FedEx'e gönderilmesini sağlar.</li>
+<li>Faturanın paket üzerinde olmaması sayesinde ürün bilgilerinin üçüncü taraflarca görülmemesiyle daha fazla rahatlık sağlar.</li>
+<li>Kağıt, toner, gönderim materyalleri ve yazıcı kullanımını azaltarak karbon ayak izini azaltır.</li>
+<li>Paket üzerinde fatura olmadığı ve ürün bilgileri üçüncü taraflara açıklanmadığı için gönderinizin daha güvende olmasını sağlar.</li>
+<li>Uluslararası gönderi yaptığınızda zamandan tasarruf etmenizi sağlar ve hataları azaltır.</li>
+<li>Bu belge karşıya yükleme özelliği, hem ithalat, hem de ihracat gönderileri için kullanılabilir. Paketlerinizi gönderdiğiniz/aldığınız ülkelerde belgelerin karşıya yüklenmesinin kabul edilip edilmediğini görmek için <a href="https://www.fedex.com/content/dam/fedex/us-united-states/services/Commercial_Invoice_Country_List.pdf" target="_blank">kullanılabilir ülkelerin listesini</a> görüntüleyin.</li>
+<li>FedEx Belge Hazırlama Merkezi ve <a href="https://www.fedex.com/GTM" target="_blank">Uluslararası Belge Yardımı bölümü</a> ile karşıya yüklenen belgeleri çevrimiçi olarak hazırlayabilir, saklayabilir ve yeniden kullanabilirsiniz.</li>
+</ul>
+<div class="fxg-doc-header"><h3><b>İş Kuralları</b></h3>
+</div>
+<p>Belge Yükleme API'si/Özelliği ile ilişkili bazı önemli iş kuralları şunlardır:</p>
+<ul>
+<li>Belge yüklemek için geçerli dosya türleri PDF, TXT, PNG, JPG, GIF, BMP, TIF, RTF, DOC, DOCX, XLS ve XLSX'dir.</li>
+<li>Belgeler gönderilmeden en fazla 10 gün önce karşıya yüklenebilir.</li>
+<li>Yüklenen ticari belge veya görsellerin her biri en fazla 5 MB boyutunda olabilir.</li>
+<li>Dijital İmza görselinin boyut sınırı 240x25 pikseldir ve görseller GIF veya PNG formatında olabilir.</li>
+<li>Şirket Anteti/Logosu için boyut sınırı 700x50 pikseldir ve görseller GIF veya PNG formatında olabilir.</li>
+<li>Antetli kağıt görseli gümrük düzenlemelerine göre tüm çıkış/varış şubeleri için kabul edilmeyebilir.</li>
+<li>Görseller karşıya olduğu gibi yüklenir ve FedEx tarafından herhangi bir düzeltme yapılmaz.</li>
+<li>Gümrük belgeleri, şu özel işleme ve hizmet seçenekleriyle elektronik ortamda yüklenebilir:<ul>
+<li>Kuru Buz</li>
+<li>Tehlikeli Maddeler</li>
+<li>Tehlikeli Madde</li>
+</ul>
+</li>
+<li>Çıkış yeri Amerika Birleşik Devletleri (ABD), Asya Pasifik, Kanada (CA) ve Karşıya Yüklemenin etkinleştirildiği Avrupa Birliği (AB) ülkeleri olan TPC (Üçüncü Parti Alıcı) gönderileri için zorunludur.</li>
+<li>Elektronik belgelerle yapılan tüm gönderilerin, talep edilen gönderi tarihinde oluşturulması, karşıya yüklenmesi ve alınması gereklidir.</li>
+<li>PSDU (Gönderi Sonrası Belge Karşıya Yükleme) kullanırken, belgeyi/belgeleri paketin alınmasından önce karşıya yüklediğinizden emin olun.</li>
+</ul>
+</div>
+</div>
+</div>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+</div>
+
+
+</div>
+
+
+</div>
+
+  <redoc scroll-y-offset='body' hide-download-button disable-search id="redoc-lib"></redoc>
+
+<div id="error-info" class='col-md-offset-4'></div>
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.adaa2d2f6769d35143b699efb74bb178.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.js"></script>
+
+
+
+
+  <input type="hidden" id="swaggerjson" value="[{&#34;path&#34;:&#34;/wirc/json/api_groups/ETDUpload/EDUDocuments-Resource.json&#34;,&#34;title&#34;:&#34;Endpoint&#34;}]"/>
+  <input type="hidden" id="errorjson" value="/wirc/json/api_groups/ETDUpload/ETDUpload-Common-ErrorMapping.json"/>
+  <input type="hidden" id="apiintrojson" value="/wirc/json/api_groups/ETDUpload/ETDUpload-Introduction.json"/>
+
+
+  <input type="hidden" id="private-api" value="false"/>
+  <input type="hidden" id="api-name" value="Trade_Documents_Upload_API"/>
+
+<div class='sample-response'>
+	<div class='pull-right doc-cross-icon '>CLOSE <img src='/api/content/dam/fedex-com/irc/tryout/close.svg'/></div>
+	<ul class='sample-responses'>
+		<li class='nav-item fxg-active request-link'><a data-target="#request">Request</a></li>
+		<li class='disabled nav-item response-link'><a data-target="#response">Response</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane fade in active" id='request'>
+			<form method="POST" enctype="multipart/form-data" class='sample-response-form' action="#" id="fileUploadForm">
+				<fieldset>
+					<div class='payloads'>
+						<label class="schema-payload">Payload: </label>
+						<div id='schema-query'></div>																														
+						<div class='authorization-parameters' id="head-section" style="display:none">
+							<div class='field'>
+								<p class='fxg-headers'>Header Parameters</p>
+                                <a href='#' class='fxg-edit-header'>EDIT HEADER</a>
+							</div>
+                            <hr/>
+							<div class='tryout-request-table header-table'>
+								<table border="0">
+									<tbody id="header-body">
+									</tbody>
+								</table>
+                                <div class='fxg-edit-actions'>
+                                  <a href="#" class='reset-header'>RESET</a>
+                                  <a href="#" class='save-header'>SAVE</a>
+                                </div>
+							</div>
+						</div>
+						<div class='query-parameters' style="display:none" id="query-section">
+							<div class='field'>
+								<p class='fxg-query'>Query Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="query-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<div class='path-parameters' style="display:none" id="path-section">
+							<div class='field'>
+								<p class='fxg-path'>Path Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="path-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class='field' id="body-header" style="display: none">
+						<p>Body</p>
+					</div>
+					<div id="form-results"></div>																									
+				</fieldset>
+				<div class='pull-right resp-actions'>
+					<button type='button' class='btn btn-warning btn-sm' id="api-sendbtn">SEND</button>
+				</div>
+			</form>
+		</div>
+		<div class="tab-pane fade" id='response'>
+			<p class='pull-left'>Response</p>
+			<div class="ttooltip" id="res-copy">
+				<p class='response-copy-icon'>Copy</p>
+			</div>
+			<div id="api-response"></div>
+		</div>
+	</div>
+</div>
+<input type="text" id="res-copy-ele" style="display: none"/>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">OTURUM AÇ</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">KULLANICI KODU</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Üzgünüz, bu zorunlu bir alandır."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PAROLA</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Üzgünüz, bu zorunlu bir alandır."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Beni Hatırla</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">OTURUM AÇ</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+PAROLANIZI YA DA KULLANICI KİMLİĞİNİZİ Mİ UNUTTUNUZ?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Bir kullanıcı kimliği oluşturarak FedEx API&#39;lerine erişebilirsiniz.">Bir kullanıcı kimliği oluşturarak FedEx API&#39;lerine erişebilirsiniz. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">KAYDOL</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="{{0}} kurumuna katılmak için oturum açın veya kaydolun."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div>
+<a type="hidden" id="schmea-json"/>
+<input type="hidden" id="postmancltnUrl"/>
+<input type="hidden" id="showPostmanBtn"/>
+
+
+
+</div>
+      <div class='fxg-login-wrapper'></div>
+       
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Web Hizmetleri veya FedEx Ship Manager Server Müşterisi misiniz? Öyleyse &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Geliştirici Kaynak Merkezine&lt;/u>&lt;/a> hâlâ erişebilirsiniz.&lt;/p>
+"><p>Web Hizmetleri veya FedEx Ship Manager Server Müşterisi misiniz? Öyleyse <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Geliştirici Kaynak Merkezine</u></a> hâlâ erişebilirsiniz.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. Tüm hakları saklıdır.">© FedEx Corporate Services Inc. Tüm hakları saklıdır.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Entegrasyon Çözümleri">Entegrasyon Çözümleri</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Destek">Destek</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/terms-of-use.html" aria-label=" Kullanım Koşulları"> Kullanım Koşulları</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Gizlilik Politikası">Gizlilik Politikası</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="Turkey">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">Turkey</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                Turkish
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                     
+                             	
+                    <li><a href="https://developer.fedex.com/api/en-tr/catalog/upload-documents/docs.html" target="_self">English</a></li>
+                  
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/tr-tr/catalog/upload-documents/docs.html" target="_self">Turkish</a></li>
+                     
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+    </div>
+  </div>
+</div>
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

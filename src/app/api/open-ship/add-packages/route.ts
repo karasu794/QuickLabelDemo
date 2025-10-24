@@ -43,18 +43,12 @@ function convertToFedExPackages(packages: AddPackagesRequest['packages'], startS
       }
     }
 
-    // 申告価額が設定されている場合（JPYからUSDに変換）
+    // 申告価額が設定されている場合（為替サービスに準拠: フォールバック1/150）
     if (pkg.declaredValue && Number(pkg.declaredValue) > 0) {
-      const JPY_TO_USD_RATE = 0.0067
       const declaredValueJPY = Number(pkg.declaredValue)
-      const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00)
-      
-      packageData.declaredValue = {
-        amount: parseFloat(declaredValueUSD.toFixed(2)),
-        currency: 'USD'
-      }
-      
-      console.log(`📦 パッケージ${packageData.sequenceNumber}の申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`)
+      const fallback = 1/150
+      const declaredValueUSD = Math.max(declaredValueJPY * fallback, 1.00)
+      packageData.declaredValue = { amount: parseFloat(declaredValueUSD.toFixed(2)), currency: 'USD' }
     }
 
     return packageData

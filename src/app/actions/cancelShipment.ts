@@ -110,7 +110,25 @@ export async function cancelShipmentAction(trackingNumber: string, squarePayment
       }
     }
 
-    // 3. FedEx認証トークンを取得（基幹仕様対応）
+    // 3. SIMULATE分岐: スタブ動作に切替（外部通信ゼロ）
+    const simulate = String(process.env.SIMULATE_PAYMENT || '').toLowerCase() === 'true'
+
+    // 3a. FedEx/Square スタブ: 即時成功とし、DBのみ更新
+    if (simulate) {
+      console.log('🧪 SIMULATE_PAYMENT: 外部API呼び出しをスキップしてキャンセル/返金をスタブ処理')
+      const { error: updateError } = await supabaseAdmin
+        .from('shipments')
+        .update({ status: 'CANCELLED', updated_at: new Date().toISOString() })
+        .eq('tracking_number', trackingNumber)
+        .eq('user_id', user.id)
+      if (updateError) {
+        console.error('❌ データベース更新エラー(SIMULATE):', updateError)
+        return { success: false, message: 'キャンセル処理に失敗しました', error: 'Database update failed' }
+      }
+      return { success: true, message: `追跡番号 ${trackingNumber} の発送をキャンセル（SIMULATE）しました` }
+    }
+
+    // 3b. FedEx認証トークンを取得（基幹仕様対応）
     let accessToken: string
     try {
       // 🚨 基幹仕様: キャンセル処理では日本発送を前提として輸出用認証を使用

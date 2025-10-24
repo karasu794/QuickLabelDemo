@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { extractResidentialSurchargeFromRateDetail } from '@/lib/quote/breakdown'
+import { extractResidentialSurchargeFromRateDetail, extractInsuredValueFromRateDetail } from '@/lib/quote/breakdown'
+import { computeCharges } from '@/lib/charges/core'
 import { toArray, withDefaults, mapOrEmpty } from '@/lib/utils/safe'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // サービスロールキーを使用したSupabase client（管理者権限）
 const supabaseAdmin = createServiceRoleClient()
+// 探索ログ: charges プレビュー計算を追加（WAVE1統合）。app_settings からレートを取得できない場合は既定値にフォールバック。
+
+async function getFeeRatesFromSettings(): Promise<{ serviceRate: number; processingRate: number; taxRate: number }> {
+  try {
+    const { data, error } = await (supabaseAdmin as any)
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['service_fee_percentage', 'processing_fee_percentage', 'tax_rate'])
+    if (error) throw error
+    const rates = { serviceRate: 0.025, processingRate: 0.0325, taxRate: 0.1 }
+    for (const row of (data || [])) {
+      const v = typeof row.value === 'number' ? row.value : parseFloat(String(row.value))
+      if (row.key === 'service_fee_percentage' && Number.isFinite(v)) rates.serviceRate = v / 100
+      if (row.key === 'processing_fee_percentage' && Number.isFinite(v)) rates.processingRate = v / 100
+      if (row.key === 'tax_rate' && Number.isFinite(v)) rates.taxRate = v / 100
+    }
+    return rates
+  } catch {
+    return { serviceRate: 0.025, processingRate: 0.0325, taxRate: 0.1 }
+  }
+}
+
 
 // 新しいリクエストボディの型定義
 interface QuoteParams {
@@ -288,7 +311,7 @@ async function getFedExAccessToken(originCountry: string): Promise<string> {
 }
 
 // FedEx Rate APIリクエストを構築
-function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
+function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jpyToUsd: number) {
   const postalCodeNotRequiredCountries = ['HK', 'AE', 'SG'];
   
   // 出荷地住所を構築
@@ -312,7 +335,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       quoteParams.originCityName;
   }
 
-  // 仕向地住所を構築
+  // お届け先（国／地域）住所を構築
   const recipientAddress: any = {
     countryCode: quoteParams.destinationCountry
   };
@@ -371,19 +394,13 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[]) {
       };
     }
 
-    // 申告価額が設定されている場合のみ追加（JPYからUSDに変換）
+  // 申告価額が設定されている場合のみ追加（為替でUSD換算）
     if (pkg.declaredValue && Number(pkg.declaredValue) > 0) {
-      // JPYからUSDへの変換（固定レート）
-      const JPY_TO_USD_RATE = 0.0067;
-      const declaredValueJPY = Number(pkg.declaredValue);
-      const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
-      
-      packageItem.declaredValue = {
-        amount: parseFloat(declaredValueUSD.toFixed(2)),
-        currency: 'USD'
-      };
-      
-      console.log(`📦 荷物${pkg.id}の申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
+      const declaredValueJPY = Number(pkg.declaredValue)
+      const rate = Number.isFinite(jpyToUsd) && jpyToUsd > 0 ? jpyToUsd : (1/150)
+      const declaredValueUSD = Math.max(declaredValueJPY * rate, 1.0)
+      packageItem.declaredValue = { amount: parseFloat(declaredValueUSD.toFixed(2)), currency: 'USD' }
+      console.log(`📦 荷物${pkg.id}の申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)} (jpyToUsd:${rate})`)
     }
 
     return packageItem;
@@ -856,7 +873,14 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       console.log('destinationCountry:', quoteParams.destinationCountry);
       console.log('destinationCityName:', quoteParams.destinationCityName);
       
-      const fedexRequest = buildFedExRateRequest(quoteParams, packages);
+      // 一度のみ為替取得
+      let jpyToUsd = 1/150
+      try {
+        const { ExchangeRateService } = await import('@/lib/services/exchangeRateService')
+        const usdToJpy = await ExchangeRateService.getExchangeRate()
+        if (usdToJpy > 0) jpyToUsd = 1 / usdToJpy
+      } catch {}
+      const fedexRequest = buildFedExRateRequest(quoteParams, packages, jpyToUsd);
       console.log('FedX APIリクエスト:', JSON.stringify(fedexRequest, null, 2));
 
       // 🚨 基幹仕様: FedX Rate APIを呼び出し（タイムアウト付き）
@@ -870,9 +894,11 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       }
 
       // レスポンスを変換（Residentialサーチャージ抽出 + 診断ログを含む）
+      const feeRates = await getFeeRatesFromSettings()
       const rates = mapOrEmpty<any, any>(fedexResponse.output?.rateReplyDetails, (detail) => {
         const ratedShipment = detail.ratedShipmentDetails?.[0] || { totalNetCharge: 0 }
         const residentialSurcharge = extractResidentialSurchargeFromRateDetail(detail)
+        const insuredValue = extractInsuredValueFromRateDetail(detail)
         if (typeof quoteParams.isResidential === 'boolean') {
           console.debug('[quote][residential]', {
             isResidential: quoteParams.isResidential,
@@ -929,6 +955,19 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
             console.debug('[quote][diag][surcharges][error]', String(e))
           }
         }
+        // charges-core によるプレビュー（isPhoenix 判定は origin JP 簡易とする）
+        const isPhoenix = (quoteParams?.originCountry || '').toUpperCase() === 'JP'
+        const freightJPY = Math.round(Number(ratedShipment.totalNetCharge || 0))
+        const preview = computeCharges({
+          freightJPY,
+          isPhoenix,
+          serviceFeeRate: feeRates.serviceRate,
+          processingFeeRate: feeRates.processingRate,
+          taxRate: feeRates.taxRate,
+          residentialJPY: residentialSurcharge || 0,
+          insuredValueJPY: insuredValue || 0,
+        })
+
         return {
           serviceType: detail.serviceName,
           totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge || 0).toString(),
@@ -938,8 +977,15 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           packagingType: detail.packagingType || 'YOUR_PACKAGING',
           rateType: 'ACCOUNT',
           breakdown: {
-            // 既存UIが任意の項目を許容する前提で residential を付与
+            // 既存UIが任意の項目を許容する前提で residential/insured を付与
             residentialSurcharge,
+            insuredValue,
+            chargesPreview: {
+              subtotal: preview.subtotal,
+              tax: preview.tax,
+              total: preview.total,
+              fees: preview.fees,
+            }
           }
         }
       })

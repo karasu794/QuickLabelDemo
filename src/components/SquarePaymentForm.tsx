@@ -74,7 +74,7 @@ export default function SquarePaymentForm({
             type="submit"
             disabled={isProcessing || disabled}
             className="w-full h-14 text-lg font-semibold bg-[#4D148C] hover:bg-[#3D0F6B] disabled:bg-purple-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-200 flex items-center justify-center gap-3"
-            data-test="issue-label-btn"
+            data-test="confirm-ship"
           >
             {isProcessing ? (
               <>

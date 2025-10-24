@@ -1,0 +1,12 @@
+{
+	"errorList": [
+		{
+			"code": "NOT.AUTHORIZED.ERROR",
+			"errorDescription": "The given client credentials were not valid. Please modify your request and try again."
+		},
+		{
+			"code": "INTERNAL.SERVER.ERROR",
+			"errorDescription": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+		}
+	]
+ }

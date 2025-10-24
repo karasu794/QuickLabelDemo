@@ -1,3 +1,4 @@
+// 探索ログ: Wave1統合対応。料率取得は存続、計算は charges-core に委譲・非課税/課税範囲を整理。
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { 
   ReceiptData, 
@@ -14,6 +15,7 @@ type Shipment = Database['public']['Tables']['shipments']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
 type AppSetting = Database['public']['Tables']['app_settings']['Row']
 import { RECEIPT_CONFIG } from '@/lib/config/receipt'
+import { computeCharges, estimateFreightFromTotal } from '@/lib/charges/core'
 
 /**
  * データ取得サービス
@@ -182,8 +184,8 @@ export class DataRetrievalService {
 
       // デフォルト値
       const defaultRates: FeeRates = {
-        serviceRate: 0.05, // 5%
-        processingRate: 0.03, // 3%
+        serviceRate: 0.025, // 2.5% (第三者請求)
+        processingRate: 0.0325, // 3.25%（クレジットカード）
         taxRate: 0.1, // 10%
         exchangeRate: 150 // 1USD = 150JPY
       }
@@ -218,8 +220,8 @@ export class DataRetrievalService {
       console.error('Error getting fee rates:', error)
       // エラーが発生した場合はデフォルト値を返す
       return {
-        serviceRate: 0.05,
-        processingRate: 0.03,
+        serviceRate: 0.025,
+        processingRate: 0.0325,
         taxRate: 0.1,
         exchangeRate: 150
       }
@@ -240,38 +242,39 @@ export class DataRetrievalService {
   ): Promise<ReceiptTotals> {
     try {
       const totalAmount = transactionData.total_amount || 0
-      
-      // Phoenix取引の判定
       const isPhoenixTransaction = await this.isPhoenixTransaction(transactionData, transactionType)
-      
-      // 基本料金（税抜き）を計算
-      const subtotalBeforeTax = totalAmount / (1 + feeRates.taxRate)
-      
-      // 手数料計算
-      const serviceFee = this.calculateServiceFee(subtotalBeforeTax, feeRates.serviceRate, isPhoenixTransaction)
-      const processingFee = this.calculateProcessingFee(subtotalBeforeTax, feeRates.processingRate, isPhoenixTransaction)
-      
-      // 小計（手数料込み、税抜き）
-      const subtotal = subtotalBeforeTax + serviceFee + processingFee
-      
-      // 税額計算
-      const tax = Math.floor(subtotal * feeRates.taxRate)
-      
-      // 合計
-      const total = subtotal + tax
-      
+
+      // 既存データからは運賃（税抜）を直接取得できないため、charges-coreの近似逆算を用いる
+      const estimatedFreight = estimateFreightFromTotal(totalAmount, {
+        serviceFeeRate: feeRates.serviceRate,
+        processingFeeRate: feeRates.processingRate,
+        taxRate: feeRates.taxRate,
+        isPhoenix: isPhoenixTransaction,
+      })
+
+      // サーチャージは取引データからは取得不能のため 0 を入力（将来連携時に拡張）
+      const result = computeCharges({
+        freightJPY: estimatedFreight,
+        isPhoenix: isPhoenixTransaction,
+        serviceFeeRate: feeRates.serviceRate,
+        processingFeeRate: feeRates.processingRate,
+        taxRate: feeRates.taxRate,
+        residentialJPY: 0,
+        insuredValueJPY: 0,
+      })
+
       const feeBreakdown: FeeBreakdown = {
-        serviceFee,
-        processingFee,
+        serviceFee: result.fees.serviceFee,
+        processingFee: result.fees.processingFee,
         exchangeRate: feeRates.exchangeRate,
-        phoenixException: isPhoenixTransaction
+        phoenixException: isPhoenixTransaction,
       }
-      
+
       return {
-        subtotal: Math.floor(subtotal),
-        tax,
-        total: Math.floor(total),
-        fees: feeBreakdown
+        subtotal: result.subtotal,
+        tax: result.tax,
+        total: result.total,
+        fees: feeBreakdown,
       }
     } catch (error) {
       console.error('Error calculating totals:', error)

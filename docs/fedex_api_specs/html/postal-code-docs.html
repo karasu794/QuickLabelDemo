@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">    
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    
+    
+    <meta name="Category" content="API Catalog"/>
+    
+	<meta name="Date" content="Wed Mar 06 14:28:54 GMT 2024"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/cm/en_cm/catalog/postal-code/docs.html.html"/>
+    <meta name="og:title" content="Postal Code Validation API Documentation | FedEx Developer Portal"/>
+    <meta name="og:description" content="Postal Code Validation API Documentation"/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/en-cm/catalog/postal-code/docs.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "docs",
+             locale: "en_cm",
+             language:"en",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "us",
+             country:"cm",
+             pagePath:"apps\/fdp\/catalog\/postal\u002Dcode\/docs",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "cm";
+let language = "en";
+let pagepath = "apps\/fdp\/catalog\/postal\u002Dcode\/docs";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>    
+    <body>      	
+      
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+  
+        <input type="hidden" id="devtitle" value="Developer Portal "/>
+
+
+  <div id="webhookFlag" style="display: none;">true</div>
+
+<div class="fxg-main-content">
+  <div class='warning-alert'>
+    <div class="sidenav col-sm-2">
+      <div id="mySidenav">
+        <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" alt="Fedex Logo"/></br>
+        <h6 class="dev-portal"></h6>
+      </div>
+      <div id="docsmenuDiv"></div>  
+    </div>
+
+    <div class="fxg-nav col-md-offset-2">
+      <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+    </div> 
+  <input type="hidden" value="false" id="loginstatus"/>
+  <input type="hidden" value="Logout" id="logouttxt"/>
+  <input type="hidden" value="Settings" id="loggedintxt"/>
+  <input type="hidden" value=" Sign Up or Log In" id="defaulttxt"/>
+   <input type="hidden" value="Login incorrect. Either the user ID or password combination is incorrect or the account has been locked. Please try again or click &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;> here&lt;/a> to recover your password." id="logouterrtxt"/>
+   <input type="hidden" value="Sorry. Something went wrong. Please re-enter your user name and password to try again." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="LOG IN" id="loginbtnTxt"/>
+   <input type="hidden" value="Settings" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+    </div>
+
+    <div class="main col-sm-12">
+      <div>
+
+
+  <input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;My Projects&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/project&#34;},{&#34;pageTitle&#34;:&#34;Getting Started&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Catalog&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Recipes&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Guides&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/guides&#34;},{&#34;pageTitle&#34;:&#34;Announcements&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Validation&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/certification&#34;},{&#34;pageTitle&#34;:&#34;API Status&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>&amp;reg;&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>&amp;reg;&lt;\/sup>  Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Support/FAQs&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/support&#34;},{&#34;pageTitle&#34;:&#34;Manage Organization&#34;,&#34;pagePath&#34;:&#34;/api/en-cm/organization&#34;}]"/>
+  <input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+  <input type="hidden" id="submenuTitle" value="Other products"/>
+  <input type="hidden" id="menutxt" value="Menu"/>
+  <input type="hidden" id="apigURL" value="apis.fedex.com"/>
+
+
+  <div class='irc-authentication'>
+    <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+      <img class="fxg-user-options__icon" alt=" Sign Up or Log In" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+      <span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span>
+    </a>
+    <hr/>
+  </div>
+
+<div style="display:none"><a href="https://www.fedex.com/en-us/developer.html" id="docs_developer"></a></div>
+<input type="hidden" id="expandroot"/>
+<div class='business-txt cjtbAK'>
+  <div class="breadcrumb-irc-doc-container">
+    
+<nav class="cmp-breadcrumb-irc  " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/cm/en_cm/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      <a href="/content/fedex-com/irc.html" class="cmp-breadcrumb__item-link-irc">
+        <span>IRC</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="/content/fedex-com/irc/sites/cm/en_cm.html" class="cmp-breadcrumb__item-link-irc">
+        <span>United States English</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-cm/catalog.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Catalog</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-cm/catalog/postal-code.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Postal Code Validation API</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      
+        <span>Postal Code Validation API Documentation</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+  </div>
+  <h1 class="sc-htoDjs sc-fYxtnH dTJWQH">
+    <div class='pull-left'></div>
+    
+      <div class='postman-clctn'></div>
+    
+    <div class='pull-right'></div>
+    
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+
+
+
+
+    <div class='webhook-download-schemabtn'> </div>
+    
+
+  </h1>
+  
+  
+<div class="fxg-wrapper">
+    
+
+</div><div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><div class="fxg-doc-header"><h3>Introduction</h3>
+</div>
+<p>FedEx Postal Code Validation API enables FedEx customers to validate postal codes and get the service commitments. It supports city, postal, country and Origin-Destination related lookups and the validations. It returns verified postal and location details in the reply.</p>
+<div class="fxg-doc-header"><h3>Postal Code Validation API Details</h3>
+</div>
+<p>The Postal Code Validation validates the postal codes for countries and cities and provides the cleaned postal code as a response. The correctly formatted postal codes are mandatory to process a shipment or create shipping labels.</p>
+<p>This API uses the provided input information such as ship date, postal code, country code and other various information and checks for mismatch between state and city values. The City and State is set if a mismatch is found and if country is U.S. or CA. For examples: FDXE - FedEx Express<sup>®</sup>, FDXG - FedEx Ground<sup>®</sup> and FXSP - FedEx Ground<sup>®</sup> Economy (Formerly known as FedEx SmartPost<sup>®</sup>). The API validates the given input and provides location details and cleaned postal code.</p>
+<p>FedEx supports services to both postal aware countries and non-postal aware countries.</p>
+<p><b style="font-size: 16.0px;">Postal aware countries</b></p>
+<p>Shipments to these countries should include the postal codes on the airway bills and other documentation to help reduce delays and maximize efficiency. FedEx Express customers should be encouraged to include valid postal codes in their addresses for recipients located in the below countries.</p>
+<p>For more information on the Postal aware countries refer to <a href="https://developer.fedex.com/api/en-cm/guides/api-reference.html#postalawarecountries" target="_blank">Postal Aware Countries</a>.</p>
+<p><b style="font-size: 16.0px;">Non–Postal aware countries</b></p>
+<p>As the name suggests, there are non-postal aware countries supported by FedEx that do not mandate postal codes in their shipments. State code or city name is enough when customer is shipping to a country which does not have a postal code. If validation error occurs for a country that does not use ZIP codes, try to force the address through by entering \&quot;00000\&quot; as a replacement postal code. Using this false postal code should not cause issues, as it does not exist.</p>
+<p>The following are the benefits of using FedEx Postal Code Validation API:</p>
+<ul>
+<li>Reduces Shipping delays and increases efficiency.</li>
+<li>Increases number of on-time and complete deliveries.</li>
+<li>Improves FedEx service to urban areas, offering flexibility in cutoff times and pickup schedules.</li>
+</ul>
+<div class="fxg-doc-header"><h3>How Postal Code Validation API works</h3>
+</div>
+<p>The FedEx Postal Code Validation uses the below endpoint to validate the postal codes for cities, countries and origin-destination. The following section describes the key inputs and responses for the endpoint:</p>
+<p><b style="font-size: 16.0px;">Validate Postal</b></p>
+<p>This request is used to return postal details, cleaned postal code and location description based on input details. The key input information associated with this request are as follows:</p>
+<ul>
+<li>carrierCode</li>
+<li>countryCode</li>
+<li>stateOrProvinceCode</li>
+<li>postalCode</li>
+<li>shipDate</li>
+</ul>
+<p>The successful result of this request are <i>locationdetails</i> and <i>cleanedpostalcode</i> for the provided input. The request would fail if the postalcode is not valid for example CountryCode, State/Province and ZIP/Postal code combination is not valid.</p>
+<p><b style="font-size: 16.0px;">Clarification of Common Misconceptions</b></p>
+<ul>
+<li>It is not possible to cross-reference territory alignment to ZIP/postal alignment because these are distinctly separate alignment process outputs.</li>
+<li>Not all geographic locations in the world have postal or ZIP codes.</li>
+</ul>
+<p>For more information on the Region Specific list, refer to <a href="https://developer.fedex.com/api/en-cm/guides/api-reference.html#regionspecificserviceslist" target="_blank">Region Specific Service List.</a></p>
+<div class="fxg-doc-header"><h3>Business Rules</h3>
+</div>
+<ul>
+<li>Combination of number, street name, etc. At least one line is required for a valid physical address; empty lines within the address are not allowed.</li>
+<li>2-letter State or province code is required if recipient country is U.S. or Canada, or if EEI applies and country is Mexico {MX}.</li>
+<li>Descriptive data for a physical location, may be used as an actual physical address (place to which one could go), or as a container of \&quot;address parts\&quot; which should be handled as a unit (such as a city state-ZIP combination within the U.S.).</li>
+<li>Format and presence of postal code field will vary depending on country.</li>
+</ul>
+<div class="fxg-doc-header postman-clctn-rchtxt"><h3>JSON API Collection</h3>
+</div>
+</div>
+
+
+</div>
+<div class="postman_collection_btn section">
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.adaa2d2f6769d35143b699efb74bb178.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.js"></script>
+
+
+
+
+<div class="postmanClctn-content">
+<span class="postmanclctn_desc" style="display:none;"><p>Explore our JSON API collection to see how we can deliver on your business needs. Test your integration with these sample requests.</p>
+<p><a href="https://developer.fedex.com/api/en-cm/guides/sandboxvirtualization.html">Learn more about sandbox virtualization guide</a></p>
+</span>
+<div class='rchtxt-postman-clctn'></div>
+</div>
+
+
+</div>
+
+
+</div>
+
+  <redoc scroll-y-offset='body' hide-download-button disable-search id="redoc-lib"></redoc>
+
+<div id="error-info" class='col-md-offset-4'></div>
+
+    
+
+
+
+
+  <input type="hidden" id="swaggerjson" value="[{&#34;path&#34;:&#34;/wirc/json/api_groups/CountryAPI/ValidatePostal-Resource.json&#34;,&#34;title&#34;:&#34;Shipment Resource&#34;}]"/>
+  <input type="hidden" id="errorjson" value="/wirc/json/api_groups/CountryAPI/Country-Common-ErrorMapping.json"/>
+  <input type="hidden" id="apiintrojson" value="/wirc/json/api_groups/CountryAPI/PostalValidation-Introduction.json"/>
+
+
+  <input type="hidden" id="private-api" value="false"/>
+  <input type="hidden" id="api-name" value="Postal_Code_Validation_API"/>
+
+<div class='sample-response'>
+	<div class='pull-right doc-cross-icon '>CLOSE <img src='/api/content/dam/fedex-com/irc/tryout/close.svg'/></div>
+	<ul class='sample-responses'>
+		<li class='nav-item fxg-active request-link'><a data-target="#request">Request</a></li>
+		<li class='disabled nav-item response-link'><a data-target="#response">Response</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane fade in active" id='request'>
+			<form method="POST" enctype="multipart/form-data" class='sample-response-form' action="#" id="fileUploadForm">
+				<fieldset>
+					<div class='payloads'>
+						<label class="schema-payload">Payload: </label>
+						<div id='schema-query'></div>																														
+						<div class='authorization-parameters' id="head-section" style="display:none">
+							<div class='field'>
+								<p class='fxg-headers'>Header Parameters</p>
+                                <a href='#' class='fxg-edit-header'>EDIT HEADER</a>
+							</div>
+                            <hr/>
+							<div class='tryout-request-table header-table'>
+								<table border="0">
+									<tbody id="header-body">
+									</tbody>
+								</table>
+                                <div class='fxg-edit-actions'>
+                                  <a href="#" class='reset-header'>RESET</a>
+                                  <a href="#" class='save-header'>SAVE</a>
+                                </div>
+							</div>
+						</div>
+						<div class='query-parameters' style="display:none" id="query-section">
+							<div class='field'>
+								<p class='fxg-query'>Query Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="query-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<div class='path-parameters' style="display:none" id="path-section">
+							<div class='field'>
+								<p class='fxg-path'>Path Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="path-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class='field' id="body-header" style="display: none">
+						<p>Body</p>
+					</div>
+					<div id="form-results"></div>																									
+				</fieldset>
+				<div class='pull-right resp-actions'>
+					<button type='button' class='btn btn-warning btn-sm' id="api-sendbtn">SEND</button>
+				</div>
+			</form>
+		</div>
+		<div class="tab-pane fade" id='response'>
+			<p class='pull-left'>Response</p>
+			<div class="ttooltip" id="res-copy">
+				<p class='response-copy-icon'>Copy</p>
+			</div>
+			<div id="api-response"></div>
+		</div>
+	</div>
+</div>
+<input type="text" id="res-copy-ele" style="display: none"/>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">USER ID</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PASSWORD</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Remember Me</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+FORGOT PASSWORD OR USER ID?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Get access to FedEx APIs by creating a user ID.">Get access to FedEx APIs by creating a user ID. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">SIGN UP</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="Log in or signup to join {{0}} organization."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div>
+<a type="hidden" id="schmea-json"/>
+<input type="hidden" id="postmancltnUrl" value="/wirc/jsonapi-collections/api_groups/Postal%20Code%20Vallidation%20API/Postal%20Code%20Vallidation%20API_collection.json"/>
+<input type="hidden" id="showPostmanBtn" value="true"/>
+
+
+
+</div>
+      <div class='fxg-login-wrapper'></div>
+       
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Developer Resource Center&lt;/u>&lt;/a>.&lt;/p>
+"><p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Developer Resource Center</u></a>.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. All rights reserved.">© FedEx Corporate Services Inc. All rights reserved.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Integration Solutions">Integration Solutions</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Support">Support</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-cm/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-cm/terms-of-use.html" aria-label=" Terms of Use"> Terms of Use</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Security &amp; Privacy">Security &amp; Privacy</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="Cameroon">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">Cameroon</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                English
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/en-cm/catalog/postal-code/docs.html" target="_self">English</a></li>
+                     
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+    </div>
+  </div>
+</div>
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

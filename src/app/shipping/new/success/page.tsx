@@ -368,6 +368,7 @@ function SuccessContent() {
                   <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-4">
                       <a
+                        data-test="label-link"
                         href={`/api/download-label?url=${encodeURIComponent(shipmentData.labelUrl)}`}
                         target="_blank"
                         rel="noopener noreferrer"

@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">       
+    <base href="#"/>       
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    <meta name="apiGroup" content="API Authorization"/>
+    
+    <meta name="Category" content="API Catalog"/>
+    
+	<meta name="Date" content="Wed Jun 04 03:49:39 GMT 2025"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords" content="irc:Top-Group"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/us/en_us/catalog/authorization.html.html"/>
+    <meta name="og:title" content="API Authorization | FedEx Developer Portal"/>
+    <meta name="og:description" content="Authorization API"/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/en-us/catalog/authorization.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "authorization",
+             locale: "en_us",
+             language:"en",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "us",
+             country:"us",
+             pagePath:"apps\/fdp\/catalog\/authorization",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "us";
+let language = "en";
+let pagepath = "apps\/fdp\/catalog\/authorization";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>     
+    <body>      	
+      <!-- Left Navigation PAGE MAIN BODY -->
+
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+ 
+ 
+
+<input type="hidden" id="menutxt" value="Menu"/>
+<input type="hidden" id="devtitle" value="Developer Portal "/>
+<input type="hidden" id="logotext" value="Fedex Logo"/>
+<input type="hidden" id="overviewtext" value="Project Overview"/>
+<input type="hidden" id="certificationtext" value="API Certification"/>
+<input type="hidden" id="settingstext" value="Project Settings"/>
+<input type="hidden" id="homealttxt" value="Go To Home"/>
+<input type="hidden" id="submenuTitle" value="Other products"/>
+<input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+<input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;My Projects&#34;,&#34;pagePath&#34;:&#34;/api/en-us/project&#34;},{&#34;pageTitle&#34;:&#34;Getting Started&#34;,&#34;pagePath&#34;:&#34;/api/en-us/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Catalog&#34;,&#34;pagePath&#34;:&#34;/api/en-us/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Recipes&#34;,&#34;pagePath&#34;:&#34;/api/en-us/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Guides&#34;,&#34;pagePath&#34;:&#34;/api/en-us/guides&#34;},{&#34;pageTitle&#34;:&#34;Announcements&#34;,&#34;pagePath&#34;:&#34;/api/en-us/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Validation&#34;,&#34;pagePath&#34;:&#34;/api/en-us/certification&#34;},{&#34;pageTitle&#34;:&#34;API Status&#34;,&#34;pagePath&#34;:&#34;/api/en-us/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>&amp;reg;&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>&amp;reg;&lt;\/sup>  Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Support/FAQs&#34;,&#34;pagePath&#34;:&#34;/api/en-us/support&#34;},{&#34;pageTitle&#34;:&#34;Manage Organization&#34;,&#34;pagePath&#34;:&#34;/api/en-us/organization&#34;}]"/>
+<div id="webhookFlag" style="display: none;">true</div>
+<!-- Global Search Icon  -->
+
+<!-- End of Global Serach Icon -->
+<div class="fxg-main-content">
+  
+    
+        
+            <section class="custom-hide-component " aria-live="polite">
+                <article class="NBLayout NBstyle fxg-alert">
+                    <img class="info-icon" data-rendition="/content/dam/fedex-com/irc/angular/alert.svg" src="/api/content/dam/fedex-com/irc/angular/alert.svg" alt="info-icon"/>
+                    <div class="wstext">
+                        <p class="wstitle"> </p>
+                        <div class="wsdesc"> </div>
+                    </div>
+                    
+                    
+                        <img class="icon-close" src="/api/content/dam/fedex-com/irc/common/Close.svg" onclick="this.parentNode.parentNode.remove(); return false;" alt="close"/>
+                    
+                </article>
+            </section>
+        
+    
+
+  <div class="row">
+    <div class="sidenav leftnav col-sm-2">      
+      <div><a id="mySidenav" class="sidenav" onclick="gotohome();FDX.DTM.pushLinkInfo(this)" target="_self" tabindex="1">
+  <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" class="fedex-alt"/></br>
+  <h6 class="dev-portal"></h6>  
+</a>
+
+  <div class='irc-authentication'>
+  <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+    <img class="fxg-user-options__icon" alt=" Sign Up or Log In" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+    <span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span>     
+  </a>
+  <hr/>
+      </div>
+
+  <p class='menu-txt'></p>
+  <div id="mobile-signin">
+  <a class="ismobile fxg__sign-in" data-default-signintext="Sign Up or Log In"><img class="fxg-user-options__icon" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_purple.svg"/><span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span></a>
+</div>
+<div class="leftnav-menu-container">
+  <div class='getting-started-menu-txt parent-nav-links'>
+    <a id="main-menu-link">MAIN MENU <i class="arrow down"></i></a>
+  <div class="child-nav-links" id="menuDiv"></div>  
+ </div>
+
+  <div id="gettingstartedMenuDiv"></div>  
+  <div id="referenceMenu"></div>  
+</div>
+ <input type="hidden" id="contextPath"/>        
+
+<div id="dialogboxfoot"></div>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">USER ID</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PASSWORD</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Remember Me</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+FORGOT PASSWORD OR USER ID?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Get access to FedEx APIs by creating a user ID.">Get access to FedEx APIs by creating a user ID. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">SIGN UP</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="Log in or signup to join {{0}} organization."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div></div>
+    </div>
+
+	<div class="main col-sm-12">	  
+      <div class='fxg-topnav fxg-wrapper'>
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <button class="hamburger hamburger--slider" type="button">
+            <span class="hamburger-box">
+              <span class="hamburger-inner">Menu</span>
+            </span>
+          </button>
+          <span class="api-title" onclick="gotohome()">Developer Portal </span>
+          <div class="fxg-nav">
+            <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+      
+
+<ul class="fxg-dropdown fxg-global-nav">
+  <li class="fxg-dropdown__item pull-left fxg-breadcrmb"> 
+	
+        <a aria-label="API Catalog" href="https://developer.fedex.com/api/en-us/catalog.html" alt="API Catalog" class="fxg-link fxg-link--arrow">API Catalog</a>
+    
+	
+    <input type="hidden" id="methodname"/>
+  </li>
+</ul>
+    
+    </div> 
+  <input type="hidden" value="true" id="loginstatus"/>
+  <input type="hidden" value="Logout" id="logouttxt"/>
+  <input type="hidden" value="Settings" id="loggedintxt"/>
+  <input type="hidden" value=" Sign Up or Log In" id="defaulttxt"/>
+   <input type="hidden" value="Login incorrect. Either the user ID or password combination is incorrect or the account has been locked. Please try again or click &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;> here&lt;/a> to recover your password." id="logouterrtxt"/>
+   <input type="hidden" value="Sorry. Something went wrong. Please re-enter your user name and password to try again." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="LOG IN" id="loginbtnTxt"/>
+   <input type="hidden" value="Settings" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+          </div> 
+        </nav>
+      </div>
+      <div class="banner-image" style="width: 100%;">
+        <div class="breadcrumb-irc-container">
+          
+<nav class="cmp-breadcrumb-irc  " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/us/en_us/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+      <li class="cmp-breadcrumb__item-irc"><a href="https://developer.fedex.com/api/en-us/home.html" class="cmp-breadcrumb__item-link-irc">
+          <span>Home</span>
+        </a>
+      </li>
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-us/catalog.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Catalog</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      
+        <span>Authorization API</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+        </div>
+        
+
+        
+          
+    <input type="hidden" id="coveoAPiKey" value="xx5bcf8e29-7898-4eb9-ac1b-483be21fd4f6"/>
+    <div class="global-search-container">
+        <img class="newicon " src="/api/content/dam/fedex-com/irc/leftnav/Search_Icon2x.png" alt="search" onclick='Searchicon()'/>
+        <div class='full-search newsearch '>
+            <form action='#' method="get" name="searchform" onsubmit='smallSearch()'>
+                <div class="newinput-group">
+                    
+                        <div class="input-wrapper">
+                            <input id="q" type="text" oninput="handleCoveoSearch(this.value)" autocomplete="off" class='newform-control gloablappendbox' name="q" required placeholder="Search.."/>
+                            <button type="button" class="search-cross " onclick="clearInput()">
+                                <img class="search-crossimg" src='/api/content/dam/fedex-com/irc/common/close-first.png'/>
+                            </button>
+                        </div>
+                    
+
+                    
+                    <div class='newinput-group-btn'>
+
+                        <button class='btn searchbtn' type='submit' value="search">
+                        	<img class="searchbtnimg" src='/api/content/dam/fedex-com/irc/common/search.png'/>
+                        </button>
+
+                    </div>
+                    <div id="autocomplete" class="yui-skin-sam globalsuggestions"></div>
+                </div>
+                <span class="globalcancelbtn" onclick="clearInput()">CANCEL</span>
+            </form>
+        </div>
+    </div>
+
+
+      </div>
+      
+      <!-- UTILITY NAV END -->
+      <div id="parsysDiv">
+        <div class="body-content">
+
+          <a name="bodyparsys_container" style="visibility:hidden"></a>
+<div class="fxg-wrapper">
+    <div class="apiTitle section">
+<div id="api-title"></div>
+<div class="fxg-rate">
+  
+  
+    <div aria-label="API Authorization" class="fxg__rat-txt pull-left">API Authorization</div>
+  
+  
+  <div class='pull-right'>
+   <button style="display:none !important" aria-label="+ ADD TO PROJECT" type="submit" class="irc-link-button compatible-btn webhook-create-api removebtn">+ ADD TO PROJECT</button>
+    <button aria-label="DOCUMENTATION" type="submit" data-analytics="API Authorization Documentation | FedEx Developer Portal" target="_blank" class="irc-orange-button documentation exg">DOCUMENTATION</button> 
+  </div>
+  
+  
+</div>
+<!--POP-UP CODE HERE  -->
+<div id="myModal" class="modal fade fxg-addproject" role="dialog">
+  <div class="modal-dialog addtoproject">
+  </div>
+</div>
+
+<div id="projModal" class="modal fade fxg-addproject" role="dialog">
+  <div class="modal-dialog addtoproject" id="subproj">
+  </div>
+</div>
+<a id="btn-path" style="display:none"></a>
+<input type="hidden" id="apititle" value="API Authorization"/>
+<input type="hidden" id="apicert"/>
+<input type="hidden" id="type"/>
+<input type="hidden" id="private"/>    
+</div>
+<div class="tabs_manager section"><div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <ul class="nav nav-tabs fxg__faq-cat-tabs">
+        
+          <li class="active"><a aria-label="Details" data-target="#technical" href="#/api" data-toggle="tab" class="showbtn">Details</a></li>
+        
+        
+        
+          <li><a aria-label="Change Log" data-target="#business" href="#/api" data-toggle="tab" class="hidebtn faqs_tab_billing">Change Log</a></li>
+        
+        
+        
+        
+        
+      </ul>
+
+      <div class="tab-content fxg__faq-cat-content">
+        <div class="tab-pane active in fade" id="technical">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#technical"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#technical"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div><div class="api_overview section">
+
+<div class="col-sm-8">
+  <div class="fxg-title" aria-label="Overview">Overview</div>
+  <div class="fxg-title-txt" aria-label="&lt;p>This API requests the OAuth token required to authorize API transactions with FedEx.&lt;/p>
+"><p>This API requests the OAuth token required to authorize API transactions with FedEx.</p>
+</div>
+  <div class="fxg-terms"></div>
+  
+</div>
+
+<div class="col-sm-4">
+  <div class="fxg-version" aria-label="VERSION">VERSION</div>
+  <div class="fxg-v2" id="api-version" aria-label="V0">V0</div>
+  <div class="fxg-last-update" aria-label="LAST UPDATED">LAST UPDATED</div>
+  <div class="fxg-dated" aria-label="07/27/2020">07/27/2020</div>
+</div>
+<div class="overview-richtext-hide">
+
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>This API requests the OAuth token required to authorize API transactions with FedEx.</p>
+</div>
+
+
+
+</div></div>
+<div class="hr section"><hr class="  "/></div>
+<div class="title section">
+    <h3 aria-label="Key Features" class="fxg-title fxg-title--default     " style="clear:both;   margin-top:30px; margin-bottom:30px;">Key Features</h3>
+</div>
+<div class="column_control section"><!-- COLUMN CONTROL START -->
+
+    <div class="row ">
+        
+
+        
+
+        
+            <!-- 4 Columns -->
+            <div class="fxg-col    col-sm-3    ">
+                <div class="card section">
+	
+
+
+	<div class="fxg-wrapper-sm fxg-left  ">
+		<div class="fxg__cart-rectangle-sm">
+			
+				<img class="fxg__cart-image" data-rendition="/content/dam/fedex-com/irc/apis/icon_key.svg" src="/api/content/dam/fedex-com/irc/apis/icon_key.svg" alt="Key icon"/>
+			
+			<div>
+				
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte  fxg-rte--align-left fxg-rte--mobile-align-left   " style="color:default;" data-emptytext="Rich Text"><p><span class="fxg-font-size-20">Get OAuth token</span></p>
+<p><span class="fxg-font-size-15">Get OAuth token to be used with every API transaction.The token expires every 60 minutes and has to be regenerated using this endpoint.</span></p>
+</div>
+
+
+
+			</div>
+			
+		</div>
+	</div>
+	
+	
+		
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/keyfeature.min.ccf4cca3b094012f10360080dc84b874.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/keyfeature.min.js"></script>
+
+
+
+	
+	
+	
+
+</div>
+
+
+            </div>
+
+            <div class="fxg-col    col-sm-3    ">
+                
+
+            </div>
+
+            <div class="fxg-col    col-sm-3    ">
+                
+
+            </div>
+
+            <div class="fxg-col    col-sm-3    ">
+                
+
+            </div>
+        
+
+        
+    </div>
+
+<!-- COLUMN CONTROL END --></div>
+
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="webhfaqs">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#webhfaqs"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#webhfaqs"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div>
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="business">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#business"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#business"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div><div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><p>This section represents a log of all technical updates associated with this API and its endpoints. All the changes made are grouped by date. The date mentioned denotes when these changes were loaded into the production. </p>
+<p>To know more about the features, we recommend you visit the API documentation page for this API. </p>
+<p> </p>
+</div>
+
+
+</div>
+
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="account">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#account"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#account"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div>
+</div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="tab-pane fade" id="datawebhook">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#datawebhook"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#datawebhook"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div>
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="certification">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#certification"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#certification"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div>
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="other">
+          <div class="fxg__accordion-option pull-right fxg-tab-links">
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__expand-all" accordion-id="#other"></a>
+            <a href="javascript:void(0)" class="fxg__toggle-accordion fxg__collapse-all" accordion-id="#other"></a>
+          </div>
+          <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div role='tab'>
+              <div>
+</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div></div>
+
+
+</div>
+
+          <div class='fxg-login-wrapper'></div>
+          <div id="error-info-page" class="col-md-offset-4" style="display:none"></div>
+        </div>
+         
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+    
+
+
+
+
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Developer Resource Center&lt;/u>&lt;/a>.&lt;/p>
+"><p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Developer Resource Center</u></a>.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. All rights reserved.">© FedEx Corporate Services Inc. All rights reserved.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Integration Solutions">Integration Solutions</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Support">Support</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/terms-of-use.html" aria-label=" Terms of Use"> Terms of Use</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Security &amp; Privacy">Security &amp; Privacy</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="United States">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">United States</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                English
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/en-us/catalog/authorization.html" target="_self">English</a></li>
+                     
+                  
+                 
+                     
+                             	
+                    <li><a href="https://developer.fedex.com/api/es-us/catalog/authorization.html" target="_self">Spanish</a></li>
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END GENERIC PAGE MAIN BODY -->
+
+
+<!-- Common Error Code Html code -->
+
+<div id="commonErrorMsg" class="modal fade" role="dialog" data-backdrop='static'>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a href="#" class="pull-right" data-dismiss='modal' aria-label="Close"><img alt="Close" src="/api/content/dam/fedex-com/irc/common/close.png"/></a>
+      </div>
+      <div class="modal-body text-center">
+        <img data-rendition="/content/dam/fedex-com/irc/common/error.svg" alt="Error" src="/api/content/dam/fedex-com/irc/common/error.svg"/>
+        <h2>Something went wrong ...</h2>
+        <p>FedEx is unable to process your request. Please try again later.</p>
+        <div class="text-center">
+          <button type="button" aria-label="OKAY" class="irc-orange-button" data-dismiss='modal'>OKAY</button>
+          <br/>
+           <a href="https://developer.fedex.com/api/en-us/support.html">CONTACT SUPPORT</a>  
+        </div>
+	  </div>
+    </div>
+  </div>
+</div>            
+<!-- Session Time out -->
+<div id="sessionErrorMsg" class="modal fade" role="dialog" data-backdrop='static'>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a href="https://developer.fedex.com/api/en-us/home.html" class="pull-right" aria-label="Close"><img alt="Close" src="/api/content/dam/fedex-com/irc/common/close.png"/></a>
+      </div>
+      <div class="modal-body text-center">        
+        <h2>Your session has timed out.</h2>
+        <p>Please log back in to continue.</p>
+        <div class="text-center">
+          <button type="button" aria-label="OKAY" id="session_btn" class="irc-orange-button" data-dismiss='modal'>OKAY</button>
+          <br/>          
+        </div>
+	  </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

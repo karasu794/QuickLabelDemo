@@ -1,0 +1,413 @@
+{
+	"errorList": [
+		{
+			"code": "COUNTRY.POSTALCODEORZIP.INVALID",
+			"errorDescription": "Invalid postal code/ZIP for the country selected. Please correct and try again."
+		},
+		{
+			"code": "CURRENCY.TYPE.INVALID",
+			"errorDescription": "The currency type you selected is invalid. Please select another currency type."
+		},
+		{
+			"code": "CURRENCYTYPE.CADORUSD.REQUIRED",
+			"errorDescription": "CAD or USD are the only currency types available. Please select CAD or USD as your currency type."
+		},
+		{
+			"code": "CUSTOMVALUE.LIMITEXCEEDS.ERROR",
+			"errorDescription": "The total declared value for customs entered exceeds the limit for FedEx® international services.For additional information, including other services that may be available, please contact FedEx Customer Service."
+		},
+		{
+			"code": "DIMENSIONS.EXCEEDS.LIMITS",
+			"errorDescription": "Dimensions exceeds the maximum dimensions for this service. Please refer to the FedEx Service Guide. "
+		},
+		{
+			"code": "POSTALCODE.ZIPCODE.REQUIRED",
+			"errorDescription": "Postal code/ZIP is required"
+		},
+		{
+			"code": "CURRENCY.TYPE.MISMATCH",
+			"errorDescription": "Declared value currency type must be equal to customs value currency type."
+		},
+		{
+			"code": "ACCOUNT.NUMBER.INVALID",
+			"errorDescription": "Invalid account number."
+		},
+		{
+			"code": "ACCOUNTNUMBER.ENROLLED.INVALID",
+			"errorDescription": "The shipping account number is not enrolled in FedEx Priority Alert(TM) service."
+		},
+		{
+			"code": "ACCOUNTNUMBER.ONERATE.NOTAVBL",
+			"errorDescription": "FedEx One Rate<sup>&reg;</sup> is not available for this account. Please use FedEx Standard Rate."
+		},
+		{
+			"code": "CARRIAGE.VALUE.EXCEEDSMAXIMUM",
+			"errorDescription": "The declared value for carriage entered exceeds the maximum. Please verify and reenter"
+		},
+		{
+			"code": "CARRIAGEVALUE.CUSTOMVALUE.VALIDATION",
+			"errorDescription": "Rates and transit times are not available for the account number entered. For immediate assistance, please contact your local FedEx Customer Service."
+		},
+		{
+			"code": "CITY.REQUIRED",
+			"errorDescription": " A valid city is required"
+		},
+		{
+			"code": "COUNTRY.POSTALCODE.INVALID",
+			"errorDescription": " Origin postal code is required or invalid."
+		},
+		{
+			"code": "SHIPPER.POSTALSTATE.MISMATCH",
+			"errorDescription": "Shipper Postal-State Mismatch. Please correct and try again."
+		},
+		{
+			"code": "CURRENCY.MISSMATCH.ERROR",
+			"errorDescription": "Package insured value currency {CURRENCY_TYPE_1} does not match the customs value currency {CURRENCY_TYPE_2}. "
+		},
+		{
+			"code": "CURRENCY.TYPE.SELECT",
+			"errorDescription": "Please enter Currency"
+		},
+		{
+			"code": "CURRENCYAMOUNT.CURRENCYTYPE.INVALID",
+			"errorDescription": "The maximum declared value is {CURRENCY_AMOUNT} {CURRENCY_TYPE}. Contact FedEx Customer Service for more information."
+		},
+		{
+			"code": "CURRENCYTYPE.CADORUSD.ONLYAVAILABLEERROR",
+			"errorDescription": "Based on the information entered this shipment qualifies for FedEx Home Delivery<sup>&reg;</sup>.  Please resubmit your request as FedEx Home Delivery to continue with the shipment.\n"
+		},
+		{
+			"code": "DELIVERY.DAY.ERROR",
+			"errorDescription": "Please choose either Saturday Pickup or Saturday Delivery."
+		},
+		{
+			"code": "DIMENSION.EXCEEDS.MAXMUM",
+			"errorDescription": "The dimensions entered exceed the maximum dimensions for this service. Please refer to the FedEx Service Guide."
+		},
+		{
+			"code": "DIMENSION.TYPE.ERROR",
+			"errorDescription": "The dimensions you have entered exceed the limit for the origin and/or destination selected; please verify and reenter."
+		},
+		{
+			"code": "DIMENSIONS.EXCEEDS.LIMIT",
+			"errorDescription": "The dimensions you have entered exceed the height limit allowed; please verify and reenter."
+		},
+		{
+			"code": "ENTERED.ZIPCODE.NOTFOUND",
+			"errorDescription": "The state or province and ZIP or postal code entered was not found, or the state or province and ZIP or postal code are not served by FedEx in this country. "
+		},
+		{
+			"code": "SERVICE.PACKAGECOMBINATION.INVALID",
+			"errorDescription": "Invalid service and packaging combination."
+		},
+		{
+			"code": "FEDEXHOMEDELIVERY.SERVICE.QUALIFICATIONERROR",
+			"errorDescription": "Based on the information entered this shipment qualifies for FedEx Home Delivery<sup>&reg;</sup>.  Please resubmit your request as FedEx Home Delivery to continue with the shipment."
+		},
+		{
+			"code": "FEDEXSERVICE.NOT.AVAILABLE",
+			"errorDescription": "FedEx does not provide services to the destination country or from the origin country at this time. Contact FedEx Customer Service."
+		},
+		{
+			"code": "FREIGHTGUARANTEE.TIMEVALUE.REQUIRED",
+			"errorDescription": "A valid Freight Guarantee time value is required."
+		},
+		{
+			"code": "FREIGHTGUARANTEEE.TIME.REQUIRED",
+			"errorDescription": "{PACKAGING_TYPE} cannot exceed {weight}{weight_units}. Select another packaging type."
+		},
+		{
+			"code": "DECLAREDVALUE.NOT.ALLOWED.FOR.SMARTPOST",
+			"errorDescription": "Declared Value is not allowed for SmartPost."
+		},
+		{
+			"code": "LOCATION.PICKUP.NOTAVAILABLE",
+			"errorDescription": "Your location does not allow pickup. Select Drop-off to drop your package off at a FedEx location or contact FedEx Customer Service."
+		},
+		{
+			"code": "MAXIMUMWEIGHT.TYPE.ERROR",
+			"errorDescription": "Maximum weight allowed for this application is 68kg/150lbs. Please re-enter weight or contact FedEx Customer Service."
+		},
+		{
+			"code": "ORIGIN.COUNTRY.REQUIRED",
+			"errorDescription": " A valid origin country is required"
+		},
+		{
+			"code": "ORIGIN.PICKUP.ERROR",
+			"errorDescription": "The origin selected does not allow pickup for FedEx Express Freight services. You may contact your local FedEx Customer Service (U.S. and Canada, please dial 1.800.GoFedEx 1.800.463.3339) for other shipment collection options."
+		},
+		{
+			"code": "ORIGIN.PICKUP.NOTALLOWED",
+			"errorDescription": "The declared value for carriage entered exceeds the maximum. Please verify and re-enter."
+		},
+		{
+			"code": "PACKAGE.INVALID.TYPE",
+			"errorDescription": "Section II Lithium Batteries/Cells are not allowed with a document shipment."
+		},
+		{
+			"code": "PACKAGE.WEIGHT.INVALID",
+			"errorDescription": "Package weight is missing or invalid."
+		},
+		{
+			"code": "PACKAGEDIMENSION.TYPE.ERROR",
+			"errorDescription": "Package dimensions must be at least 1 cm/inch for length, width and height. If you''re not sure of the dimensions, you can leave these fields blank."
+		},
+		{
+			"code": "RATE.SPECIALSERVICETYPE.NOTALLOWED",
+			"errorDescription": "Special Service {0} is not allowed."
+		},
+		{
+			"code": "PICKUPTYPE.NOT.AVAILABLE",
+			"errorDescription": "Pickup is not available.  Please change the service type, the ship date or select dropoff to complete the shipment."
+		},
+		{
+			"code": "RATING.CARRIAGE.EXCEEDSLIMITS",
+			"errorDescription": "Declared value for carriage exceeds limit allowed based on the information entered."
+		},
+		{
+			"code": "RATING.CARRIAGLIMITS.EXCEED",
+			"errorDescription": "Dimensions exceed the maximum dimensions for this service. Please refer to the FedEx Service Guide."
+		},
+		{
+			"code": "RATING.DIMENSIONSEXCEEDS.LIMITS",
+			"errorDescription": "Customs Value exceeds limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE}."
+		},
+		{
+			"code": "RATING.DIMENSIONSTYPE.EXCEEDSLIMITS",
+			"errorDescription": "Dangerous Goods shipping has not been enabled for your account.  Please call your local FedEx customer service for assistance."
+		},
+		{
+			"code": "RATING.ZIPCODE.INVALID",
+			"errorDescription": "Information about rates and delivery times is not available.  Try again later or contact FedEx Customer Service"
+		},
+		{
+			"code": "RATE.PACKAGES.WEIGHT.UNIT.MISMATCH",
+			"errorDescription": "Weight unit of measure must be the same for all packages."
+		},
+		{
+			"code": "RESIDENTIAL.DELIVERY.NOTAVAILABLE",
+			"errorDescription": "Residential delivery is not available for the selected service."
+		},
+		{
+			"code": "SERVICE.LOCATION.UNAVAILABLE",
+			"errorDescription": " FedEx service is not currently available to this origin / destination combination. Enter new information or contact FedEx Customer Service (U.S. and Canada, please dial 1.800.GoFedEx 1.800.463.3339). "
+		},
+		{
+			"code": "SERVICETYPE.FORPOSTALCODE.NOTALLOWED",
+			"errorDescription": "The declared value for carriage entered exceeds the maximum. Please verify and re-enter."
+		},
+		{
+			"code": "SHIPMENT.DGDIVIOLATIONS.NOTALLOWED",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods or dry ice violations that limit your shipping options.  If you have any questions, please call your local FedEx customer service."
+		},
+		{
+			"code": "SHIPMENT.DGVIOLATIONS.NOTALLOWED",
+			"errorDescription": "Your shipment is not allowed because of dangerous goods violations that limit your shipping options.  If you have any questions, please call 1.800.463.339 and press \"81\" for the FedEx Dangerous Goods/Hazardous Materials hotline."
+		},
+		{
+			"code": "WEIGHT.BELOWMINIMUMLIMIT.ERROR",
+			"errorDescription": "The weight entered is below the standard minimum for FedEx {package} Express services. Please enter a weight of at least {WEIGHT} {WEIGHT_UNITS}."
+		},
+		{
+			"code": "SHIPMENTPROCESSING.ACCOUNTVIOLATIONS.ERROR",
+			"errorDescription": "There are no services returned due to dangerous goods, hazardous materials, or dry ice violations on your account."
+		},
+		{
+			"code": "STATE.TYPE.INVALID",
+			"errorDescription": " A valid State/Province is required"
+		},
+		{
+			"code": "STATE.TYPE.REQUIRED",
+			"errorDescription": "State/Province is required"
+		},
+		{
+			"code": "SUBTYPE.SELECT.FORBATTERIES",
+			"errorDescription": "Section II Lithium Batteries/Cells and one of the sub-types must be selected."
+		},
+		{
+			"code": "WEIGHT.TYPE.INVALID",
+			"errorDescription": "Please enter a valid weight."
+		},
+		{
+			"code": "RATE.QUOTENO.NOTFOUND",
+			"errorDescription": "Rate quote number could not be found"
+		},
+		{
+			"code": "ACCOUNTNBR.MISSING.ORINVALID",
+			"errorDescription": "The condition type ACCOUNT_NUMBER value is missing or invalid"
+		},
+		{
+			"code": "SPECIAL.SERVICE.CONFLICT",
+			"errorDescription": "Special service conflict.Hold At Location is not valid with Residential Delivery."
+		},
+		{
+			"code": "DRYICEWEIGHT.REQUIRED.INKGS",
+			"errorDescription": "Package {0} - Dry Ice weight (in kilograms) is required with Dry Ice special service."
+		},
+		{
+			"code": "SERVICETYPE.PICKUPMETHOD.NOT.ALLOWED",
+			"errorDescription": "{0} is not allowed with the pickup method."
+		},
+		{
+			"code": "FXSPRETURN.RATES.ERROR",
+			"errorDescription": "Rates for SmartPost return shipments are not currently available."
+		},
+		{
+			"code": "RATE.SPECIALSERVICE.NOTALLOWED.ORIGIN",
+			"errorDescription": "{0} is not allowed for the origin."
+		},
+		{
+			"code": "PACKAGINGTYPE.MISSING.OR.INVALID",
+			"errorDescription": "Packaging type missing or invalid."
+		},
+		{
+			"code": "RATE.SPECIALSERVICE.NOT.ALLOWED",
+			"errorDescription": "Package {0} – Special Service {1} is not allowed."
+		},
+		{
+			"code": "SMARTPOST.HUBID.INVALID",
+			"errorDescription": "SmartPost hub id is invalid."
+		},
+		{
+			"code": "SPECIALSERVICE.NOT.ALLOWED.SHIPMENTORPACKAGE",
+			"errorDescription": "Special Service {0} not allowed at {1} level."
+		},
+		{
+			"code": "SPECIALSERVICE.NOT.SUPPORTED.REQUESTED.SHIPDAY",
+			"errorDescription": "{0} is not supported for the requested ship day of the week. Please update and try again."
+		},
+		{
+			"code": "CODDETAIL.EMPTY.ORNULL",
+			"errorDescription": "Package {0} - CodDetail object cannot be null."
+		},
+		{
+			"code": "DESTINATION.POSTALCODE.MISSING.ORINVALID",
+			"errorDescription": "Destination postal code missing or invalid."
+		},
+		{
+			"code": "TOTALCUSTOMSVALUE.CURRENCYTYPE.INVALID",
+			"errorDescription": "Invalid currency type for total customs value."
+		},
+		{
+			"code": "RATE.PACKAGES.DIMENSION.UNIT.MISMATCH",
+			"errorDescription": "Dimension unit of measure must be the same for all packages."
+		},
+		{
+			"code": "COMMODITY.NUMBEROFPIECES.REQUIRED",
+			"errorDescription": "Commodity {COMMODITY_INDEX} - Number of pieces is required and cannot be a negative value or exceed 9,999."
+		},
+		{
+			"code": "PICKUPTYPE.REQUIRED",
+			"errorDescription": "PickupType element is required in input request."
+		},
+		{
+			"code": "ORIGIN.COUNTRY.INVALID",
+			"errorDescription": "Origin country code is invalid or missing. Please refer to documentation for valid format."
+		},
+		{
+			"code": "DESTINATION.COUNTRY.INVALID",
+			"errorDescription": "Destination country code is invalid or missing. Please refer to documentation for valid format."
+		},
+		{
+			"code": "MAXIMUM.WEIGHT.EXCEEDED",
+			"errorDescription": "The package weight in the request is not supported. Maximum package weight across all services is 2200 lbs or 998 kgs."
+		},
+		{
+			"code": "ACCOUNT.NUMBER.MISMATCH",
+			"errorDescription": "When payment Type is SENDER, ShippingChargesPayment Payor AccountNumber should match the shipper account number."
+		},
+		{
+			"code": "SHIPDATESTAMP.FORMAT.INVALID",
+			"errorDescription": "Please provide a valid shipDatestamp format YYYY-MM-DD"
+		},
+		{
+			"code": "INTERNAL.SERVER.ERROR",
+			"errorDescription": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+		},
+		{
+			"code": "RATING.DESTINATIONSTATEPOSTAL.MISMATCH",
+			"errorDescription": "Destination state postal code mismatch."
+		},
+		{
+			"code": "ACCOUNT.NUMBERORKEY.INVALID",
+			"errorDescription": "Invalid account information. Account number and/or key is invalid."
+		},
+		{
+			"code": "RATING.QUOTE.NOTAVAILABLE",
+			"errorDescription": "Rates and transit times are not available for the account number entered. For immediate assistance, please contact your local FedEx Customer Service."
+		},
+		{
+		    "code": "SHIPPER.COUNTRY.INVALID",
+		    "errorDescription": "Shipper country code is invalid or missing. Please update and try again."
+		},
+		{
+		    "code": "FREIGHTSERVICEORIGIN.FREIGHT.NOTALLOWED",
+		    "errorDescription": "The origin is not served for Freight services."
+		},
+		{
+		    "code": "FREIGHTSERVICEORIGIN.PICKUP.NOTALLOWED",
+		    "errorDescription": "The origin does not allow pickup for Freight services."
+		},
+		{
+		    "code": "REGIONAL.MAILPICKUP.NOTALLOWED",
+		    "errorDescription": "Regional Mail Pickup is not allowed."
+		},
+		{
+		    "code": "REGIONAL.MAILDELIVERY.NOTALLOWED",
+		    "errorDescription": "Regional Mail Delivery is not allowed."
+		},
+		{
+		    "code": "FREIGHT.GUARANTEE.NOTALLOWED",
+		    "errorDescription": "Freight Guarantee is not allowed."
+		},
+		{
+		    "code": "SHIPMENT.CUSTOMSVALUE.REQUIRED",
+			"errorDescription": "Commodity {COMMODITY_INDEX} - Customs value is required.Please update and try again."
+		},
+		{
+		    "code": "ORIGINZIPCODE.SERVICE.ERROR",
+		    "errorDescription": "This origin postal code is not serviced."
+		},
+		{
+		    "code": "SERVICETYPE.NOT.ALLOWED",
+		    "errorDescription": "Selected Service Type is not allowed between origin and destination. Please update and try again."
+		},
+		{
+		   "code":"ACCOUNT.HAZARDOUSMATERIALS.NOTALLOWED",
+		   "errorDescription": "Hazardous material shipping is not enabled for your account."
+		},
+		{
+		   "code":"DECLAREDVALUE.EXCEEDS.LIMIT",
+		   "errorDescription": "Declared value exceeds allowed limit. Please update and try again."
+		},
+		{
+		   "code":"ENTERED.AMOUNT.INVALID",
+		   "errorDescription": "The entered amount for COD for Package {PACKAGE_INDEX} has exceeded the maximum limit. Please update and try again."
+		},
+		{
+		   "code":"PACKAGE.DECLAREDVALUE.EXCEEDED",
+		   "errorDescription": "Package {PACKAGE_INDEX} - Declared value exceeds limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE} for the packaging type."
+		},
+		{
+		   "code":"PACKAGETYPE.DECLAREDVALUE.EXCEEDED",
+    	   "errorDescription": "Declared value exceeds limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE} for package {PACKAGE_INDEX}. Please update and try again."
+		},
+		{
+		  "code":"SERVICE.TYPE.NOTAVAILABLE",
+		  "errorDescription": "The requested service type is not supported. Please update and try again."
+		},
+		{
+		  "code":"SPECIALSERVICE.PICKUPMETHOD.NOT.ALLOWED",
+		  "errorDescription": "{SPECIAL_SERVICE_TYPE} is not allowed with the pickup method. Please update and try again."
+		},
+		{
+		   "code":"SHIPMENT.DGHMDIVIOLATIONS.NOTALLOWED",
+		   "errorDescription": "{SERVICE_TYPE} service is not allowed because of dangerous goods or dry ice violations that limit your shipping options. Please update and try again."
+		},
+		{
+		   "code":"CURRENCYAMOUNT.CURRENCYTYPE.EXCEEDSLIMIT",
+		   "errorDescription": "The total declared value for customs entered exceeds the limit of {CURRENCY_AMOUNT} {CURRENCY_TYPE} for {SPECIAL_SERVICE_TYPE}. Please update and try again."
+		}
+		
+	]
+}

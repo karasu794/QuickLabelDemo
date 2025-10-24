@@ -23,7 +23,8 @@ export const renderReceiptToHTML = (data: ReceiptData): string => {
       companyInfo,
       items,
       totals,
-      paymentInfo
+      paymentInfo,
+      feeRates
     } = data
 
     // Format currency for Japanese Yen
@@ -322,41 +323,22 @@ export const renderReceiptToHTML = (data: ReceiptData): string => {
       return 'FedEx：運送状番号(12桁) 国際送料'
     }
 
-    // Generate totals HTML
-    let totalsHTML = `
-      <tr>
-        <td class="label-col">小計</td>
-        <td class="amount-col">${formatCurrency(totals.subtotal)}</td>
-      </tr>
-    `
-    
-    if (totals.fees.serviceFee > 0) {
-      totalsHTML += `
-        <tr>
-          <td class="label-col">サービス手数料</td>
-          <td class="amount-col">${formatCurrency(totals.fees.serviceFee)}</td>
-        </tr>
-      `
-    }
-    
-    if (totals.fees.processingFee > 0) {
-      totalsHTML += `
-        <tr>
-          <td class="label-col">決済手数料</td>
-          <td class="amount-col">${formatCurrency(totals.fees.processingFee)}</td>
-        </tr>
-      `
-    }
-    
+    // レートの表示用文字列
+    const serviceRatePct = typeof (feeRates as any)?.serviceRate === 'number' ? Math.round((feeRates as any).serviceRate * 10000) / 100 : 2.5
+    const processingRatePct = typeof (feeRates as any)?.processingRate === 'number' ? Math.round((feeRates as any).processingRate * 10000) / 100 : 3.25
+    const taxRatePct = typeof (feeRates as any)?.taxRate === 'number' ? Math.round((feeRates as any).taxRate * 10000) / 100 : 10
+
+    // 金額セクション統一：基本料金/割引/燃料割増/混雑時割増/システム利用料/消費税/合計
+    // 既存のtotalsはcharges-core互換のため、表示順とラベルを統一
+    let totalsHTML = ''
     totalsHTML += `
-      <tr>
-        <td class="label-col">消費税</td>
-        <td class="amount-col">${formatCurrency(totals.tax)}</td>
-      </tr>
-      <tr class="total-row">
-        <td class="label-col">合計金額</td>
-        <td class="amount-col">${formatCurrency(totals.total)}</td>
-      </tr>
+      <tr><td class="label-col">基本料金（非課税）</td><td class="amount-col">${formatCurrency(Math.round(totals.subtotal))}</td></tr>
+      <tr><td class="label-col">割引</td><td class="amount-col">${formatCurrency(0)}</td></tr>
+      <tr><td class="label-col">燃料割増</td><td class="amount-col">${formatCurrency(0)}</td></tr>
+      <tr><td class="label-col">混雑時割増</td><td class="amount-col">${formatCurrency(0)}</td></tr>
+      <tr><td class="label-col">システム利用料（${serviceRatePct}%）</td><td class="amount-col">${formatCurrency(Math.round(totals.fees?.serviceFee || 0))}</td></tr>
+      <tr><td class="label-col">消費税（システム利用料に対して${taxRatePct}%）</td><td class="amount-col">${formatCurrency(Math.round(totals.tax))}</td></tr>
+      <tr class="total-row"><td class="label-col">合計</td><td class="amount-col">${formatCurrency(totals.total)}</td></tr>
     `
 
     // Use provided tracking number if any
@@ -438,24 +420,10 @@ export const renderReceiptToHTML = (data: ReceiptData): string => {
               </tr>
               <tr>
                 <td class="no-col">2</td>
-                <td class="item-col">第三者請求利用料（2.5%）</td>
+                <td class="item-col">システム利用料（${serviceRatePct}%）</td>
                 <td class="quantity-col">1件</td>
                 <td class="unit-price-col">${formatCurrency(Math.round(totals.fees?.serviceFee || 0))}</td>
                 <td class="amount-col">${formatCurrency(Math.round(totals.fees?.serviceFee || 0))}</td>
-              </tr>
-              <tr>
-                <td class="no-col">3</td>
-                <td class="item-col">特別割引アカウント使用料</td>
-                <td class="quantity-col">1件</td>
-                <td class="unit-price-col">${formatCurrency(0)}</td>
-                <td class="amount-col">${formatCurrency(0)}</td>
-              </tr>
-              <tr>
-                <td class="no-col">4</td>
-                <td class="item-col">決済システム手数料（4%）</td>
-                <td class="quantity-col">1件</td>
-                <td class="unit-price-col">${formatCurrency(Math.round(totals.fees?.processingFee || 0))}</td>
-                <td class="amount-col">${formatCurrency(Math.round(totals.fees?.processingFee || 0))}</td>
               </tr>
               <tr class="tracking-row">
                 <td colspan="5" class="tracking-number-cell">運送状番号：${trackingNumber || '(未入力)'}</td>
@@ -472,7 +440,7 @@ export const renderReceiptToHTML = (data: ReceiptData): string => {
               <span class="summary-value">${formatCurrency(Math.round(totals.subtotal + (totals.fees?.serviceFee || 0) + (totals.fees?.processingFee || 0)))}</span>
             </div>
             <div class="summary-row">
-              <span class="summary-label">消費税額 (2+3+4) ×10%</span>
+              <span class="summary-label">消費税額 (2+3+4) ×${taxRatePct}%</span>
               <span class="summary-value">${formatCurrency(Math.round(totals.tax))}</span>
             </div>
             <div class="summary-row total-row">

@@ -1,26 +1,29 @@
-## 概要
-変更の概要を簡潔に記述してください。
+<!-- Title format: [WaveX] <summary> -->
 
-## 実装内容
-- [ ] コード実装
-- [ ] テスト追加/修正
-- [ ] ドキュメント更新（下記 DOC PATCH を必ず確認）
+## Scope
+- 変更範囲／影響箇所の要約。
 
-## DOC PATCH（必須）
-次の対象について、該当するものにチェックを入れてください。
-- [ ] ARCHINDEX.md
-- [ ] Guardrails.md
-- [ ] Release-Runbook.md
-- [ ] SLO-SLI.md
-- [ ] feature-flags.md
-- [ ] README.md
-- [ ] その他（新規ドキュメントなど）
+## Implementation summary
+- 実装の要点、設計判断、主要な副作用（あれば）。
 
-> DOC PATCH にチェックがない場合、レビュー時に差し戻されます。
+## DoD (Definition of Done)
+- [ ] 要件を満たす
+- [ ] 既存CI/CDグリーン
+- [ ] 破壊的変更なし（あれば記載）
 
-## 確認項目
-- [ ] CIで `scripts/check-docs-updated.js` を実行済み
-- [ ] α環境でE2E動作を確認済み
+## Data-test coverage
+- E2E: PASS required
+- 対象ケース: （重要フロー・エッジケースを列挙）
 
-## 補足
-必要があればここに記載してください。
+## Review checklist
+- [ ] Title形式が `[WaveX] <summary>` である
+- [ ] closes #[issue] を含む（該当Issue番号に置換）
+- [ ] 主要動作に対するE2Eがあり「PASS」確認済み
+- [ ] 変更範囲が `Scope` に明記されている
+- [ ] セキュリティ/個人情報/鍵の露出なし
+- [ ] FedEx関連変更の場合、`docs/fedex_api_specs/` 参照（`md/`, `samples/docs-examples`, `*.sample.json`, `index.md`）を実施し根拠を記載
+
+---
+
+### Meta
+- closes #[issue]

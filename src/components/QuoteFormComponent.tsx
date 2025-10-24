@@ -335,7 +335,7 @@ export default function QuoteFormComponent({
           <form onSubmit={handleFormSubmit} className="space-y-6">
             {/* 上部の見出しと説明文 */}
             <div className="text-center space-y-2 mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800">出荷地と仕向地を入力してください</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">出荷地とお届け先（国／地域）を入力してください</h2>
               <p className="text-gray-600">住所を入力すると、自動的に候補が表示されます</p>
             </div>
 
@@ -468,15 +468,15 @@ export default function QuoteFormComponent({
 
             </div>
 
-            {/* 仕向地 */}
+            {/* お届け先（国／地域） */}
             <div className="space-y-2">
               <div className="flex items-center gap-4">
                 <Label className="text-base font-medium flex items-center">
                   <span className="text-green-600 mr-2">📍</span>
-                  仕向地
+                  お届け先（国／地域）
                 </Label>
                 
-                {/* フェニックス住所自動入力ボタン（仕向地が空の場合のみ表示） */}
+                {/* フェニックス住所自動入力ボタン（お届け先が空の場合のみ表示） */}
                 {!quoteParams.destinationAddressInput && quoteParams.phoenixMode !== 'shipper' && (
                   <Button
                     type="button"
@@ -503,10 +503,10 @@ export default function QuoteFormComponent({
                 />
               </div>
               
-              {/* 仕向地の詳細情報表示 */}
+              {/* お届け先（国／地域）の詳細情報表示 */}
               {quoteParams.destinationSelected && (
                 <div className="mt-2 p-4 bg-green-50 border border-green-200 rounded-md space-y-3">
-                  <div className="text-sm font-medium text-green-900">仕向地の詳細情報</div>
+                  <div className="text-sm font-medium text-green-900">お届け先（国／地域）の詳細情報</div>
                   
                   {/* 国（表示のみ） */}
                   <div className="grid grid-cols-2 gap-4">
@@ -575,7 +575,7 @@ export default function QuoteFormComponent({
                       <Select 
                         value={quoteParams.destinationStateCode} 
                         onValueChange={(value) => {
-                          console.log(`🔄 仕向地州・県が手動変更: "${quoteParams.destinationStateCode}" → "${value}"`);
+                          console.log(`🔄 お届け先（国／地域）州・県が手動変更: "${quoteParams.destinationStateCode}" → "${value}"`);
                           onQuoteParamsChange('destinationStateCode', value);
                         }}
                       >

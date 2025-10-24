@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+  <html lang="en-xs">    
+    <head>
+    
+  
+	<meta charset="utf-8"/>	
+    <meta name="google-site-verification"/>
+    <title></title>
+    
+    
+    <meta name="Category" content="API Catalog"/>
+    
+	<meta name="Date" content="Fri Aug 22 11:40:01 GMT 2025"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/> 
+    <meta name="description"/>
+    <meta http-equiv='cache-control' content='no-cache'/> 
+	<meta http-equiv='expires' content='300'/> 
+	<meta http-equiv='pragma' content='no-cache'/> 
+    <meta name="keywords"/>
+    <meta name="locale"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/etc.clientlibs/designs/fedex-common/images/resources/fx-favicon.ico"/>    
+    <meta name="og:type" content="website"/>
+    <meta name="og:site_name" content="FedEx"/>
+    <meta name="og:url" content="http://developer.fedex.com/content/fedex-com/irc/sites/ms/en_ms/catalog/rate/docs.html.html"/>
+    <meta name="og:title" content="Rates and Transit Times API Documentation | FedEx Developer Portal"/>
+    <meta name="og:description" content="Rates and Transit Times API Documentation"/>
+    
+    
+    
+    <link rel="canonical" href="https://developer.fedex.com/api/en-ms/catalog/rate/docs.html"/>
+	   
+    <script>
+            window.FDX = window.FDX || {};
+            window.FDX.GDL = window.FDX.GDL || []; 
+            var FDX = {};
+			FDX.contextPath = "";
+            window.fdx=window.fdx || {};            
+            fdx.context={
+                       envtVar:"",
+                       searchUrl:"/services/search",
+                       isPublishMode:"true"
+            };
+
+    </script>
+   
+
+<script>
+if (!FDX) {
+    var FDX = {};
+}
+FDX.DATALAYER ={};
+FDX.GDL = [];
+FDX.DATALAYER.event=[];
+FDX.DATALAYER.page = {
+        pageInfo: {
+             pageName: "docs",
+             locale: "en_ms",
+             language:"en",
+             historicalPageName : "",
+             referrer : "",
+             toolUsage:"",
+             viewPort:"",
+             reportSuite:"",
+             region: "us",
+             country:"ms",
+             pagePath:"apps\/fdp\/catalog\/rate\/docs",
+             securePage : ""
+         },
+         category: {
+        	 pageType:"",
+             primaryCategory: "",
+             isApplication:"",
+             appName:""
+         },
+         onsiteSearch:{
+             term:"",
+             suggested: ""
+         },
+         link:{
+        	 data:"",
+        	 type:""
+         },
+         button:{
+        	 data:"",
+        	 type:""
+         },
+         assetSearch:{
+        	 keyword:"",
+        	 type:""
+         }
+ };
+let country = "ms";
+let language = "en";
+let pagepath = "apps\/fdp\/catalog\/rate\/docs";
+let hash = window.location.hash;
+let pageId = country.toUpperCase().concat("/", language).concat("/", pagepath).concat("", hash).replace("#", "");
+window.FDX.GDL.push([ 'event:publish', [
+  'page', 'pageinfo', {
+    pageId: pageId
+  }
+] ]);
+FDX.DATALAYER.googleAPIFlag=false;
+FDX.DATALAYER.inputField='';
+FDX.DATALAYER.userType="";  
+FDX.DATALAYER.locationApp = {
+        googleAPIFlag: "",      
+
+};  
+</script>
+
+
+   
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/masterpage.min.e639a0d58e443bea9b72f049deebec48.css" type="text/css">
+
+
+
+  
+     
+	
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.0cd68d079fad3411fdde07df30a3a634.css" type="text/css">
+
+
+   	
+	
+	    <!--  Target Pre-hiding Snippet -->
+	    <script>
+	        (function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"body {opacity: 0 !important}",3E3);
+	    </script>
+        
+    
+
+    
+
+    
+
+
+        <script type="text/javascript" src="https://www.fedex.com/gdl/gdl-fedex.js" async></script>
+
+	             
+        
+        
+</head>
+
+    <input type="hidden" value="AD-AAB-ABB-HCX" id="templateConfig"/> 
+    
+    <script>
+window['adrum-start-time'] = new Date().getTime();
+(function(config){
+    config.appKey = $("#templateConfig").val();   
+    config.adrumExtUrlHttp = 'http://cdn.appdynamics.com';
+    config.adrumExtUrlHttps = 'https://cdn.appdynamics.com';
+    config.beaconUrlHttp = 'http://pdx-col.eum-appdynamics.com';
+    config.beaconUrlHttps = 'https://pdx-col.eum-appdynamics.com';
+    config.xd = {enable : false};
+})(window['adrum-config'] || (window['adrum-config'] = {}));
+</script>
+<script src="//cdn.appdynamics.com/adrum/adrum-20.9.0.3268.js"></script>    
+    <body>      	
+      
+
+    
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/leftnavpage.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/fedex-irc/page/parentlibraries.min.js"></script>
+
+
+
+  
+        <input type="hidden" id="devtitle" value="Developer Portal "/>
+
+
+  <div id="webhookFlag" style="display: none;">true</div>
+
+<div class="fxg-main-content">
+  <div class='warning-alert'>
+    <div class="sidenav col-sm-2">
+      <div id="mySidenav">
+        <img src="/api/content/dam/fedex-com/irc/leftnav/white.png" alt="Fedex Logo"/></br>
+        <h6 class="dev-portal"></h6>
+      </div>
+      <div id="docsmenuDiv"></div>  
+    </div>
+
+    <div class="fxg-nav col-md-offset-2">
+      <div>
+ 
+<!-- UTILITY NAV START -->
+
+<div class="fxg-user-options">
+    
+    </div> 
+  <input type="hidden" value="false" id="loginstatus"/>
+  <input type="hidden" value="Logout" id="logouttxt"/>
+  <input type="hidden" value="Settings" id="loggedintxt"/>
+  <input type="hidden" value=" Sign Up or Log In" id="defaulttxt"/>
+   <input type="hidden" value="Login incorrect. Either the user ID or password combination is incorrect or the account has been locked. Please try again or click &lt;a href=&#39;https://www.fedex.com/fcl/web/jsp/forgotPassword.jsp?appName=fclmyprofile&amp;locale=US_en&amp;step3URL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&amp;afterwardsURL=https://www.fedex.com/apps/myprofile/loginandcontact/?locale=en_US&amp;cntry_code=US&#39;> here&lt;/a> to recover your password." id="logouterrtxt"/>
+   <input type="hidden" value="Sorry. Something went wrong. Please re-enter your user name and password to try again." id="logoutunreacherrtxt"/>
+   <input type="hidden" value="LOG IN" id="loginbtnTxt"/>
+   <input type="hidden" value="Settings" id="settingsText"/> 
+     
+     <input type="hidden" value="Enter your user ID and password to log in" id="signInText"/> 
+                        	   
+    
+<!-- UTILITY NAV END -->
+</div>
+    </div>
+
+    <div class="main col-sm-12">
+      <div>
+
+
+  <input type="hidden" id="menuList" value="[{&#34;pageTitle&#34;:&#34;My Projects&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/project&#34;},{&#34;pageTitle&#34;:&#34;Getting Started&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/get-started&#34;},{&#34;pageTitle&#34;:&#34;API Catalog&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/catalog&#34;},{&#34;pageTitle&#34;:&#34;API Recipes&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/Api-recipes&#34;},{&#34;pageTitle&#34;:&#34;Guides&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/guides&#34;},{&#34;pageTitle&#34;:&#34;Announcements&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/announcements&#34;},{&#34;pageTitle&#34;:&#34;API Validation&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/certification&#34;},{&#34;pageTitle&#34;:&#34;API Status&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/dashboard&#34;},{&#34;childPages&#34;:[{&#34;pageTitle&#34;:&#34;FedEx Web Services&lt;sup>&amp;reg;&lt;\/sup>&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/web-services&#34;},{&#34;pageTitle&#34;:&#34;FedEx Ship Manager&lt;sup>&amp;reg;&lt;\/sup>  Server&#34;,&#34;pagePath&#34;:&#34;https://www.fedex.com/en-us/developer/ship-manager-server&#34;}],&#34;pageTitle&#34;:&#34;Support/FAQs&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/support&#34;},{&#34;pageTitle&#34;:&#34;Manage Organization&#34;,&#34;pagePath&#34;:&#34;/api/en-ms/organization&#34;}]"/>
+  <input type="hidden" id="externalDomain" value="https://developer.fedex.com/wirc"/>
+  <input type="hidden" id="submenuTitle" value="Other products"/>
+  <input type="hidden" id="menutxt" value="Menu"/>
+  <input type="hidden" id="apigURL" value="apis.fedex.com"/>
+
+
+  <div class='irc-authentication'>
+    <a href="#" class='fxg__sign-in' data-default-signintext="Sign Up or Log In">
+      <img class="fxg-user-options__icon" alt=" Sign Up or Log In" src="/api/content/dam/fedex-com/irc/leftnav/login-icon_white.svg"/>
+      <span class="fxg-user-options__sign-in-text"> Sign Up or Log In </span>
+    </a>
+    <hr/>
+  </div>
+
+<div style="display:none"><a href="https://www.fedex.com/en-us/developer.html" id="docs_developer"></a></div>
+<input type="hidden" id="expandroot"/>
+<div class='business-txt cjtbAK'>
+  <div class="breadcrumb-irc-doc-container">
+    
+<nav class="cmp-breadcrumb-irc  " aria-label="Breadcrumb" homepage-value="/content/fedex-com/irc/sites/ms/en_ms/home.html">
+  <ul class="cmp-breadcrumb__list-irc">
+    
+      <li class="cmp-breadcrumb__item-irc"><a href="https://developer.fedex.com/api/en-ms/home.html" class="cmp-breadcrumb__item-link-irc">
+          <span>Home</span>
+        </a>
+      </li>
+    
+    
+    <li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-ms/catalog.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Catalog</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      <a href="https://developer.fedex.com/api/en-ms/catalog/rate.html" class="cmp-breadcrumb__item-link-irc">
+        <span>Rates and Transit Times API</span>
+      </a>
+      <meta itemprop="position"/>
+    </li>
+<li class="cmp-breadcrumb__item-irc">
+      
+        <span>Rates and Transit Times API Documentation</span>
+      
+      <meta itemprop="position"/>
+    </li>
+
+  </ul>
+</nav>
+
+    
+
+
+  </div>
+  <h1 class="sc-htoDjs sc-fYxtnH dTJWQH">
+    <div class='pull-left'></div>
+    
+      <div class='postman-clctn'></div>
+    
+    <div class='pull-right'></div>
+    
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+
+
+
+
+    <div class='webhook-download-schemabtn'> </div>
+    
+
+  </h1>
+  
+  
+<div class="fxg-wrapper">
+    
+
+</div><div class="richtext parbase section">
+
+    
+
+
+
+
+<!-- CHANGE: VMLNAFEDEXW-356 Added expressions to deal with Viewport Settings -->
+ 
+<input class="justifyRteRtl" type="hidden" value="false"/>
+
+
+
+<div class="fxg-rte      " style="color:;" data-emptytext="Rich Text"><div class="fxg-doc-header"><h3>Introduction</h3>
+</div>
+<p>This detailed guide will help you to learn all that you need to know about rates and transit times. FedEx provides you the estimated delivery date/time and rate quotes for each service offered.</p>
+<p>When requesting rate quotes, it is important to specify the details of the shipment. This will include the date, detailed origin address, destination address, dimensions, and the package weight. By providing these accurate details, you can ensure that you receive the correct quote for your shipment. If you have any special requirements, such as shipping hazardous goods, you must specify these requirements in the shipment details.</p>
+<p><i>Note: The Rate API does not provide the rate quotes for FedEx freight services. To know about the rate quotes of FedEx freight service, visit the <a href="https://developer.fedex.com/api/en-ms/catalog/ltl-freight/docs.html" target="_blank"><i>Freight LTL API</i></a> docs page.</i></p>
+<div class="fxg-doc-header"><h3>FedEx Rates and Transit Times API Details</h3>
+</div>
+<p>When planning your budget, it helps you to know the estimated cost of shipping. FedEx offers a variety of rates to cater to your needs. You can request rates for your FedEx shipments. Apart from that there are list rates, discounts, surcharges, fees and other factors that can affect your shipping rates.</p>
+<p>Following are the features associated with this API:</p>
+<ul>
+<li><b>Get Quick Rate Quote</b><p>Get quick rate quotes and transit times without entering detailed package descriptions.</p>
+</li>
+<li><b>Transit time</b><p>Get transit times for services between source and destination.</p>
+</li>
+<li><b>Detailed Rate Quote</b><p>Get rate quotes, transit times, including duty and tax estimates for domestic as well as international shipment. Customers must input detailed shipment information, including package dimensions, declared value (DV) amounts, and additional service options. Duty and tax estimates are only available to FedEx customers who are shipping products/commodities, and not documents.</p>
+</li>
+</ul>
+<h3><b style="font-size: 16.0px;">Benefits of the FedEx Rates and Transit Times API:</b></h3>
+<ul>
+<li>Simplifies shipment planning by determining costs and transit times from any origin to any destination worldwide.</li>
+<li>Provides both standard list and account-specific rate quotes for various FedEx services.</li>
+<li>Saves time with quick access to account-specific rates.</li>
+<li>Saves money by comparing rates by service and allowing you to make decisions based on your shipping needs.</li>
+<li>Saves time with quick answers to shipment cost and delivery date questions.</li>
+</ul>
+<p>This API provides a shipping rate quote for a specific service combination depending on the origin and destination information supplied in the request. The following details apply:</p>
+<ul>
+<li>Discount rates are available for all services and origin/destination pairs.</li>
+<li>This API returns rate for the origin and destination for the requested service and will not validate whether that service is available for your ship date as well as origin and destination.</li>
+<li>Rates can also be retrieved for intra-Mexico FedEx Express shipping.</li>
+<li>Rates are also available for FedEx Ground® Economy (Formerly known as FedEx SmartPost®) Shipping.</li>
+<li>Service-specific commitment and rate information may also be specified.</li>
+</ul>
+<p>For more detailed information about the services offered by FedEx, see the electronic <a href="https://www.fedex.com/en-us/service-guide.html" target="_blank">FedEx Service Guide</a>.</p>
+<div class="fxg-doc-header"><h3>How FedEx Rates and Transit Times API Works</h3>
+</div>
+<p><b style="font-size: 16.0px;">Rate and Transit Times</b></p>
+<p>Request a list of all possible rates quotes and optional transit information based on input details. The required input information associated with this request are:</p>
+<ul>
+<li>Account Number</li>
+<li>Shipment details.</li>
+</ul>
+<p>When requesting rates and transit times:</p>
+<ul>
+<li>Include as much detail as possible about your shipment. This information is important for calculating the correct shipping costs with surcharges.</li>
+<li>Use the <i>RateRequestTypes</i> element to request specific rates whether LIST or account specific. If you choose LIST as the element value, you receive both account specific and list rates.</li>
+<li>For requesting rate quotes for a single service, specify the service to ensure rate data for the service is returned. Multiple services rates are returned, if you do not include the ServiceType value.</li>
+<li>For carrier specific detailed rates, specify the carrier by using CarrierCode in your request and rate data for all services for the input carrier will be returned, or do not specify a CarrierCode to receive all available services from all carriers in the return.</li>
+<li>Use the <i>returnTransitTimes</i> element to include transit time information in the reply. FedEx Express, FedEx Ground and FedEx Home Delivery do include the estimated days and date the package will be delivered, based on the ship date you specified.</li>
+<li>Use the processingOptions element to receive on call pickup rates in the response. The INCLUDE_PICKUPRATES enumeration value must be selected for this request.</li>
+<li>Use the requestType field to receive pick up rate quotes for a future date and same date. If you plan to schedule a pickup for a future date, set the requestType field to FUTURE_DAY, and provide details for the following two fields to get accurate pickup rate quotes back.<ul>
+<li>requestedShipment.pickupDetail.readyDate</li>
+<li>requestedShipment.pickupDetail.latestPickupDate</li>
+</ul>
+</li>
+<li>The response for the transit times request for FedEx Ground® Economy (Formerly known as FedEx SmartPost®) will include specific delivery date and day of the week, based on the values specified in the request.</li>
+<li>Information such as carrier code, service type or service option can be used to filter the results.</li>
+<li>Results can be sorted (Element: <i>rateSortOrder</i>) in order to get the rate quote data in a desired way/format.</li>
+</ul>
+<p><b style="font-size: 16.0px;">Rates and Transit Times Response</b></p>
+<p>Result of this request will provide a list of all possible rate quotes and optional transit information with service code, service types, packaging types and commitment details such as days/time in transit and any specific day delivery (Saturday delivery).</p>
+<p>The following are the rates and charges returned in response:</p>
+<ul>
+<li><b>LIST Rates</b> – returns published list rates in addition to account-based (if applicable).</li>
+<li><b>PREFERRED Rates</b> – returns rates in Preferred Currency provided in the request.</li>
+<li><b>INCENTIVE Rates</b> – promotional pricing.</li>
+<li><b>ACCOUNT Rates</b> – account assigned rates</li>
+<li><b>Surcharges</b></li>
+<li><b>Discounts</b></li>
+<li><b>Fees and Taxes</b></li>
+</ul>
+<p><i>Note: A rate request does not return route. All rate quotes are estimates only and may differ from the actual invoiced amount.</i></p>
+<p>For more information on discount programs refer to <a href="https://developer.fedex.com/api/en-ms/guides/api-reference.html#discounts" target="_blank">Discounts.</a></p>
+<div class="fxg-doc-header"><h3>FedEx Special Rates</h3>
+</div>
+<p><b style="font-size: 16.0px;">Multiple-Piece Shipment Rates</b></p>
+<p>This option is available with FedEx Domestic, FedEx International multiple-piece shipments (MPS), FedEx domestic as well as International Ground<sup>®</sup> MPS, FedEx Express international C.O.D. multiple-piece shipments, and FedEx Ground international C.O.D. multiple-piece shipments.</p>
+<p><b style="font-size: 16.0px;">U.S. Package Rates: FedEx Express Multiweight<sup>®</sup></b></p>
+<p>FedEx Express multiple-piece shipments may receive a rate on a total-shipment-weight basis if the total shipment weighs 100 lbs. or more (200 lbs. or more for FedEx Express Saver<sup>®</sup> shipments). A 15-lbs. average minimum package weight for the shipment applies. Multiply the per-pound rate by total shipment weight. The lowest rate out of the FedEx Express Multiweight shipment rate or the sum of the individual price per package will be selected and automatically applied in the billing.</p>
+<p><b style="font-size: 16.0px;">FedEx One Rate</b></p>
+<p>FedEx One Rate is flat-rate shipping that does not require you to weigh or measure shipments under 50 lbs. You can choose the box or tube that best fits the size of what they need to ship and fill the package to capacity, as long as the shipment doesn’t exceed 50 pounds. It gives you a simple, predictable, flat rate shipping option for your FedEx Express packages. FedEx One Rate a shipping portfolio based on six FedEx Express Service options, combined with seven FedEx proprietary (white) packaging types.</p>
+<p><b style="font-size: 16.0px;">FedEx One Rate Packaging</b></p>
+<p>The FedEx packaging types that are valid/available with the One Rate pricing option are:</p>
+<ul>
+<li>FEDEX_ENVELOPE</li>
+<li>FEDEX_SMALL_BOX</li>
+<li>FEDEX_MEDIUM_BOX</li>
+<li>FEDEX_LARGE_BOX</li>
+<li>FEDEX_EXTRA_LARGE_BOX</li>
+<li>FEDEX_PAK</li>
+<li>FEDEX_TUBE</li>
+</ul>
+<p>Your own packaging is not available for the One Rate pricing option.</p>
+<p>For more information about packaging services refer to <a href="https://developer.fedex.com/api/en-ms/guides/api-reference.html#packagetypes" target="_blank">Packaging Types</a></p>
+<p><b style="font-size: 18.0px;">How to Specify One Rate Pricing</b></p>
+<p>To specify FedEx One Rate Pricing Option, perform the following steps:</p>
+<ul>
+<li>Specify the \&quot;FEDEX_ONE_RATE\&quot; Shipment Special Service.</li>
+<li>Specify one of the Packaging Types.</li>
+<li>Specify a U.S. origin and a U.S. destination.</li>
+<p><i>Note: Intra-Hawaii shipments are not allowed for One Rate pricing.</i></p>
+<li>Specify one of the following FedEx Express service types:<ul>
+<li>FIRST_OVERNIGHT</li>
+<li>PRIORITY_OVERNIGHT</li>
+<li>STANDARD_OVERNIGHT</li>
+<li>FEDEX_2_DAY</li>
+<li>FEDEX_2_DAY_AM</li>
+<li>EXPRESS_SAVER</li>
+</ul>
+</li>
+</ul>
+<p><i>Note: FedEx customers can request both One Rate and weight based (non-One Rate) rates in a single Rate Request by specifying \&quot;FEDEX_ONE_RATE\&quot; as a Service Option Type in the request.</i></p>
+<div class="fxg-doc-header"><h3>Variable Handling Fees and Charges</h3>
+</div>
+<p><b style="font-size: 18.0px;"><span class="fxg-font-size-16">Variable handling fee</span></b></p>
+<p>Any additional handling fees charged in addition to shipping charges for your shipping operation are added to your total shipment charge. These charges are returned in the Rate reply and can be configured to print on the Doc-Tab. For more information refer to <a href="https://developer.fedex.com/api/en-ms/guides/api-reference.html#variablehandlingfees" target="_blank">Variable Handling Fees</a></p>
+<p><b style="font-size: 18.0px;">Rate Surcharge Return</b></p>
+<p>For any additional special handling or services the surcharges are charged in addition to shipping charges for your shipment. These charges are returned in the Rate reply.</p>
+<p>The rate quote returns the available surcharges along with the rate details.</p>
+<p>Surcharges returned in the Rate reply are as follows:</p>
+<ul>
+<li>Total surcharge</li>
+<li>Total taxes (for Canadian origin shipments)</li>
+<li>Itemized surcharge</li>
+</ul>
+<p>For more information refer to <a href="https://developer.fedex.com/api/en-ms/guides/api-reference.html#surcharges" target="_blank">Surcharges</a></p>
+<p><b style="font-size: 18.0px;">Fees and Other Shipping Information</b></p>
+<p>Your shipment may incur fees in addition to its base rate.</p>
+<ul>
+<li>For FedEx Express U.S. import shipments, fees vary depending on origin country; however, each fee works the same as for U.S. export.</li>
+<li>U.S. Express Package Services includes FedEx First Overnight<sup>®</sup>, FedEx Priority Overnight<sup>®</sup>, FedEx Standard Overnight<sup>®</sup>, FedEx 2Day<sup>®</sup> A.M., FedEx 2Day<sup>®</sup> and FedEx Express Saver<sup>®</sup>.</li>
+<li>U.S. Ground Services includes FedEx Ground<sup>®</sup> and FedEx Home Delivery<sup>®</sup>.</li>
+<li>International Express Package Services includes FedEx International First<sup>®</sup>, FedEx International Priority<sup>®</sup>, FedEx International Economy<sup>®</sup>, and Fedex Deferred Freight.</li>
+<li>International Ground Service includes FedEx International Ground<sup>® </sup>.[Service ENUM : FEDEX_GROUND]</li>
+</ul>
+<div class="fxg-doc-header"><h3>Business Rules</h3>
+</div>
+<ul>
+<li>Do not assume a particular service will be available for all scenarios. For example, STANDARD_OVERNIGHT (among others) is not available between all postal codes.</li>
+<li>If a specific service is being requested for rating, include the Service Type in the request. This will decrease the size of the reply and reduce transaction response time.</li>
+<li>Multiple piece shipments (MPS) are not eligible for FedEx One Rate.</li>
+<li>For a special service to be included on a shipment, both the special service type and its detail must be included. If the special service details are not included, then there may be no indication that the special services are not included.</li>
+<li>The timestamp for a rate or shipment should be the time the package is expected to be tendered to FedEx or a FedEx agent. This is not necessarily the time at which the ship or rate transaction is performed. For example, a shipment generated late Friday night for a package that will not be picked up by FedEx until Monday should have a Monday timestamp. Use the correct timestamp if it is known, or the delivery estimation and rates may not be correct.</li>
+<li>The rate and transit time application only uses city name or zip/postal code to define transit time. FedEx only displays the city or zip/postal code served by FedEx in the destination and origin countries you selected.</li>
+<li>FedEx does not deliver to Post Office Box addresses in the U.S. Please enter a Zip Code to find the transit time for your shipment or click on Find Zip/Postal code.</li>
+<li>Packages picked up from a residence may have one additional transit day. For faster returns please drop off at a staffed FedEx location.</li>
+<li>Pharmacy delivery is not valid with Hold at location.</li>
+</ul>
+<div class="fxg-doc-header postman-clctn-rchtxt"><h3>JSON API Collection</h3>
+</div>
+</div>
+
+
+</div>
+<div class="postman_collection_btn section">
+    
+<link rel="stylesheet" href="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.adaa2d2f6769d35143b699efb74bb178.css" type="text/css">
+<script src="/etc.clientlibs/clientlibs/fedex-irc/components/documentation.min.js"></script>
+
+
+
+
+<div class="postmanClctn-content">
+<span class="postmanclctn_desc" style="display:none;"><p>Explore our JSON API collection to see how we can deliver on your business needs. Test your integration with these sample requests.</p>
+<p><a href="https://developer.fedex.com/api/en-ms/guides/sandboxvirtualization.html">Learn more about sandbox virtualization guide</a></p>
+</span>
+<div class='rchtxt-postman-clctn'></div>
+</div>
+
+
+</div>
+
+
+</div>
+
+  <redoc scroll-y-offset='body' hide-download-button disable-search id="redoc-lib"></redoc>
+
+<div id="error-info" class='col-md-offset-4'></div>
+
+    
+
+
+
+
+  <input type="hidden" id="swaggerjson" value="[{&#34;path&#34;:&#34;/wirc/json/api_groups/Rate/RateQuotes-Resource.json&#34;,&#34;title&#34;:&#34;RateQuotes Resource&#34;}]"/>
+  <input type="hidden" id="errorjson" value="/wirc/json/api_groups/Rate/Rate-Common-ErrorMapping.json"/>
+  <input type="hidden" id="apiintrojson" value="/wirc/json/api_groups/Rate/Rate-Introduction.json"/>
+
+
+  <input type="hidden" id="private-api" value="false"/>
+  <input type="hidden" id="api-name" value="Rates_and_Transit_Times_API"/>
+
+<div class='sample-response'>
+	<div class='pull-right doc-cross-icon '>CLOSE <img src='/api/content/dam/fedex-com/irc/tryout/close.svg'/></div>
+	<ul class='sample-responses'>
+		<li class='nav-item fxg-active request-link'><a data-target="#request">Request</a></li>
+		<li class='disabled nav-item response-link'><a data-target="#response">Response</a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane fade in active" id='request'>
+			<form method="POST" enctype="multipart/form-data" class='sample-response-form' action="#" id="fileUploadForm">
+				<fieldset>
+					<div class='payloads'>
+						<label class="schema-payload">Payload: </label>
+						<div id='schema-query'></div>																														
+						<div class='authorization-parameters' id="head-section" style="display:none">
+							<div class='field'>
+								<p class='fxg-headers'>Header Parameters</p>
+                                <a href='#' class='fxg-edit-header'>EDIT HEADER</a>
+							</div>
+                            <hr/>
+							<div class='tryout-request-table header-table'>
+								<table border="0">
+									<tbody id="header-body">
+									</tbody>
+								</table>
+                                <div class='fxg-edit-actions'>
+                                  <a href="#" class='reset-header'>RESET</a>
+                                  <a href="#" class='save-header'>SAVE</a>
+                                </div>
+							</div>
+						</div>
+						<div class='query-parameters' style="display:none" id="query-section">
+							<div class='field'>
+								<p class='fxg-query'>Query Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="query-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+						
+						<div class='path-parameters' style="display:none" id="path-section">
+							<div class='field'>
+								<p class='fxg-path'>Path Parameters</p>
+							</div>                            
+							<div class='field tryout-request-table'>
+								<table border="0">
+									<tbody id="path-body">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class='field' id="body-header" style="display: none">
+						<p>Body</p>
+					</div>
+					<div id="form-results"></div>																									
+				</fieldset>
+				<div class='pull-right resp-actions'>
+					<button type='button' class='btn btn-warning btn-sm' id="api-sendbtn">SEND</button>
+				</div>
+			</form>
+		</div>
+		<div class="tab-pane fade" id='response'>
+			<p class='pull-left'>Response</p>
+			<div class="ttooltip" id="res-copy">
+				<p class='response-copy-icon'>Copy</p>
+			</div>
+			<div id="api-response"></div>
+		</div>
+	</div>
+</div>
+<input type="text" id="res-copy-ele" style="display: none"/>
+<div class="leftlogin" style="display:none">
+
+<div class="fxg-login-module col-md-offset-3 fxg-form-login" id="regForm">
+<h2 class="text-center fxg-login-header" style="font-size: 35px;" id="login-text"></h2>
+ <div class='addnote'> <p>  </p> 
+</div>
+<!--
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+-->
+<form method="POST" action="#" id="InviteLogin" autocomplete="off" class="fxg-form">
+<!--
+    <div class='login-error'></div>
+<div class="fxg-field">
+<label for="NavLoginUserId">USER ID</label>
+<input id="NavLoginUserId" type="text" class="fxg-field__input-text fxg-field__input--required fxg__loginid" name="user" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="fxg-field">
+<label for="NavLoginPassword">PASSWORD</label>
+<input id="NavLoginPassword" autocomplete="off" type="password" class="fxg-field__input-text fxg-field__input--required" name="pwd" required aria-required="true" data-errmsg="Sorry, this is a required field."/>
+</div>
+<div class="form-check">
+<label class="form-check-label">
+<input type="checkbox" aria-label="key-check" class="form-check-input key-check" value="agree" name="key-check">
+<span class="checkmark"></span>
+<p>Remember Me</p>
+</label>
+</div>
+ -->
+
+<div class="btn-center"><button class="fxg-irc-login fxg-button fxg-button--orange col-md-offset-2" id="lgn-btn">LOG IN</button></div>
+
+</form>
+
+<div class="text-center">
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+FORGOT PASSWORD OR USER ID?
+</div>
+</div>
+<div class="fxg__hr fxg__section"><hr/></div>
+<div class="fxg__parbase fxg__section">
+<div class="fxg-rte fxg-get-id" data-emptytext="Rich Text" aria-label="Get access to FedEx APIs by creating a user ID.">Get access to FedEx APIs by creating a user ID. </div>
+</div>
+<div class="fxg__link fxg__section">
+<div class="fxg__link">
+<button onclick="gotoregisterPage()" class="irc-link-button">SIGN UP</button>
+</div>
+</div>
+</div>
+</div>
+<input type="hidden" name="error_loginorsignup" id="error_loginorsignup" value="Log in or signup to join {{0}} organization."/></input>
+<input type="hidden" name="signupurl_id" id="signupurl_id"/></input>
+<input type="hidden" name="signUpRedirect" id="signUpRedirect"/></input>
+</div>
+<a type="hidden" id="schmea-json"/>
+<input type="hidden" id="postmancltnUrl" value="/wirc/jsonapi-collections/api_groups/Rate/Rate_Collection.zip"/>
+<input type="hidden" id="showPostmanBtn" value="true"/>
+
+
+
+</div>
+      <div class='fxg-login-wrapper'></div>
+       
+<script src="/api/etc/clientlibs/fedex/common/libs/lodashjs/lodash.min.js"></script>
+
+<div class='fxg-wrapper'>
+  <footer class="fdx-footer-hide">
+
+  <div class="col-sm-6">
+   <ul>
+     <li aria-label="&lt;p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the &lt;a title=&#34;DRC&#34; href=&#34;/content/fedex-com/sites/us/en_us/developer.html&#34; data-analytics=&#34;EC(Column number)|Link Text&#34;>&lt;u>Developer Resource Center&lt;/u>&lt;/a>.&lt;/p>
+"><p>Are you an existing Web Services or FedEx Ship Manager Server Customer? If so, you can still access the <a title="DRC" href="https://www.fedex.com/en-us/developer.html" data-analytics="EC(Column number)|Link Text"><u>Developer Resource Center</u></a>.</p>
+</li>
+     <li aria-label="© FedEx Corporate Services Inc. All rights reserved.">© FedEx Corporate Services Inc. All rights reserved.</li>
+   </ul>    
+  </div>
+  <div class="col-sm-6">
+    <div class="list-links">
+      <ul>
+        
+          <li><a href="https://www.fedex.com/en-us/integration.html" aria-label="Integration Solutions">Integration Solutions</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/integration/support.html" aria-label="Support">Support</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-ms/home.html" aria-label="FedEx.com">FedEx.com</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-ms/terms-of-use.html" aria-label=" Terms of Use"> Terms of Use</a></li>
+	    
+          <li><a href="https://www.fedex.com/en-us/trust-center.html" aria-label="Security &amp; Privacy">Security &amp; Privacy</a></li>
+	    
+      </ul>
+    </div>
+    
+      <div class="country-dropdown">
+        <ul>
+          <a style="cursor:pointer;" id="global-selector" aria-label="Montserrat">
+            <li><img src="/api/content/dam/fedex-com/irc/leftnav/globe.png"/></li>
+            <li class="country-val">Montserrat</li>
+          </a>
+          <li class='footer-country-locale'>
+            <div class="dropdown fxg-bootstrap-dropdown" style="float: none;">
+              <button class="dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Please select language from below drop down">
+                English
+                <span class="fxg-icon"></span>
+              </button>	
+       	      <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="lang-selctor">
+                 
+                  
+                    <li><a href="https://developer.fedex.com/api/en-ms/catalog/rate/docs.html" target="_self">English</a></li>
+                     
+                  
+                
+       	      </ul>
+  	        </div>			
+		  </li>
+        </ul>
+      </div>
+    
+  </div>
+</footer>
+</div>
+    </div>
+  </div>
+</div>
+    <script type="text/javascript"  src="/I_SpMU/tUq/-bf/CpKTqwha/OVEENGL9wu3k4N3OOi/RHlsbHcVUgI/GwwbKEY/mFjs"></script></body>
+  </html>

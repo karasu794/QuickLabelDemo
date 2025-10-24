@@ -154,14 +154,14 @@ async function getFedExAccessToken(originCountry: string): Promise<string> {
 }
 
 // FedX Shipmentリクエストの共通部分を構築
-function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
+function buildBaseFedExShipmentRequest(data: ShipmentRequest, jpyToUsd: number) {
   // 輸出入判定（日本から海外への発送かどうか）
   const isExport = data.shipperInfo.countryCode === 'JP' && data.recipientInfo.countryCode !== 'JP'
   const isImport = data.shipperInfo.countryCode !== 'JP' && data.recipientInfo.countryCode === 'JP'
   
   console.log(`📊 発送タイプ判定: 
     出荷元: ${data.shipperInfo.countryCode}
-    仕向地: ${data.recipientInfo.countryCode}
+    お届け先（国／地域）: ${data.recipientInfo.countryCode}
     判定: ${isExport ? '輸出' : isImport ? '輸入' : '国内'}`)
   
   // FedXアカウント番号の選択
@@ -329,17 +329,12 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
           }
         }
 
-        // 申告価額を設定（JPYからUSDに変換）
-        const JPY_TO_USD_RATE = 0.0067;
-        const declaredValueJPY = Number(pkg.declaredValue) || 1000; // デフォルト1000円
-        const declaredValueUSD = Math.max(declaredValueJPY * JPY_TO_USD_RATE, 1.00);
-        
-        packageItem.declaredValue = {
-          amount: parseFloat(declaredValueUSD.toFixed(2)),
-          currency: 'USD'
-        };
-        
-        console.log(`💰 申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)}`);
+        // 申告価額を設定（為替サービスでUSD換算）
+        const declaredValueJPY = Number(pkg.declaredValue) || 1000;
+        const rate = Number.isFinite(jpyToUsd) && jpyToUsd > 0 ? jpyToUsd : (1/150)
+        const declaredValueUSD = Math.max(declaredValueJPY * rate, 1.0)
+        packageItem.declaredValue = { amount: parseFloat(declaredValueUSD.toFixed(2)), currency: 'USD' }
+        console.log(`💰 申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)} (jpyToUsd:${rate})`)
         
         return packageItem;
       }),
@@ -351,21 +346,14 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
 
   // 国際配送の場合は税関情報を追加
   if (isExport || isImport) {
-    // JPYからUSDへの変換関数（固定レート）
-    const convertJPYtoUSD = (amountJPY: number): number => {
-      const JPY_TO_USD_RATE = 0.0067; // 最新のレートに適宜更新してください
-      const convertedAmount = amountJPY * JPY_TO_USD_RATE;
-      // FedXの最小金額制限を考慮（$1.00未満の場合は$1.00とする）
-      return Math.max(convertedAmount, 1.00);
-    };
+    // JPY→USD換算関数（為替サービス利用）
+    const convertJPYtoUSD = (amountJPY: number): number => Math.max(amountJPY * (jpyToUsd > 0 ? jpyToUsd : (1/150)), 1.0)
 
     const commoditiesData = data.items;
     
     // 総申告価額を計算（各商品の変換後USD金額の合計）
-    const totalCustomsAmountUSD = commoditiesData.reduce((sum, item) => {
-      const itemValueJPY = item.unitPrice * item.quantity;
-      return sum + convertJPYtoUSD(itemValueJPY);
-    }, 0);
+    // 事前に為替を1回取得
+    const totalCustomsAmountUSD = commoditiesData.reduce((sum, item) => sum + convertJPYtoUSD(item.unitPrice * item.quantity), 0)
 
     ;(baseRequest as any).requestedShipment.customsClearanceDetail = {
       commercialInvoice: {
@@ -387,10 +375,7 @@ function buildBaseFedExShipmentRequest(data: ShipmentRequest) {
           countryOfManufacture: item.countryOfManufacture,
           quantity: item.quantity,
           quantityUnits: 'PCS',
-          unitPrice: {
-            amount: parseFloat(unitPriceUSD.toFixed(2)),
-            currency: 'USD', // 通貨をUSDに指定
-          },
+          unitPrice: { amount: parseFloat(unitPriceUSD.toFixed(2)), currency: 'USD' },
           customsValue: {
             amount: parseFloat(customsValueUSD.toFixed(2)),
             currency: 'USD', // 通貨をUSDに指定
@@ -413,7 +398,14 @@ async function validateFedExShipment(accessToken: string, data: ShipmentRequest)
   const validateUrl = 'https://apis.fedex.com/ship/v1/shipments/packages/validate'
 
   try {
-    const baseRequest = buildBaseFedExShipmentRequest(data)
+    // 一度のみ為替取得
+    let jpyToUsd = 1/150
+    try {
+      const { ExchangeRateService } = await import('@/lib/services/exchangeRateService')
+      const usdToJpy = await ExchangeRateService.getExchangeRate()
+      if (usdToJpy > 0) jpyToUsd = 1 / usdToJpy
+    } catch {}
+    const baseRequest = buildBaseFedExShipmentRequest(data, jpyToUsd)
     
     // Validate Shipment用の追加設定
     const validateRequest = {
@@ -495,7 +487,13 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
   const shipUrl = 'https://apis.fedex.com/ship/v1/shipments'
 
   try {
-    const baseRequest = buildBaseFedExShipmentRequest(data)
+    let jpyToUsd = 1/150
+    try {
+      const { ExchangeRateService } = await import('@/lib/services/exchangeRateService')
+      const usdToJpy = await ExchangeRateService.getExchangeRate()
+      if (usdToJpy > 0) jpyToUsd = 1 / usdToJpy
+    } catch {}
+    const baseRequest = buildBaseFedExShipmentRequest(data, jpyToUsd)
     
     // 本発行用の追加設定
     const shipmentRequest = {

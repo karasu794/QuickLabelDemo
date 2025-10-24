@@ -447,7 +447,7 @@ export default function MypageHistoryPage() {
                       <tr className="border-b">
                         <th className="text-left p-4">作成日時</th>
                         <th className="text-left p-4">出荷地</th>
-                        <th className="text-left p-4">仕向地</th>
+                        <th className="text-left p-4">お届け先（国／地域）</th>
                         <th className="text-left p-4">荷物数</th>
                         <th className="text-left p-4">ステータス</th>
                         <th className="text-left p-4">料金数</th>
