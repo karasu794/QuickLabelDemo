@@ -1,0 +1,6 @@
+HOOKDECK_API_KEY=
+HOOKDECK_SOURCE_NAME=fql-prod
+HOOKDECK_PUBLISH_URL=https://hkdk.events/v1/publish
+SUCCESS_GATE_ENFORCE=false
+
+

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getUserOrThrow } from '@/lib/auth/getUserOrThrow'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // 動的レンダリングを強制（Vercelビルドエラー対策）
 export const dynamic = 'force-dynamic'
@@ -43,17 +45,28 @@ async function getFedExAccessToken(originCountry: string): Promise<string> {
 
 export async function GET(request: NextRequest) {
   try {
-    // URLクエリパラメータからlabelUrlとactionを取得
     const { searchParams } = new URL(request.url)
-    const labelUrl = searchParams.get('url')
-    const action = searchParams.get('action') // 'print' または 'download'
-
-    if (!labelUrl) {
-      return NextResponse.json(
-        { error: 'ラベルURLが指定されていません' },
-        { status: 400 }
-      )
+    const action = searchParams.get('action') || 'inline'
+    const shipmentId = searchParams.get('shipmentId')
+    if (!shipmentId) {
+      return NextResponse.json({ ok: false, error: 'shipmentId_required' }, { status: 400 })
     }
+
+    const { user } = await getUserOrThrow()
+    const sb = createServiceRoleClient()
+    const { data: row, error } = await (sb as any)
+      .from('shipments')
+      .select('id, user_id, label_blob_url, label_url')
+      .eq('id', shipmentId as any)
+      .maybeSingle()
+    if (error || !row) {
+      return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 })
+    }
+    if (String((row as any).user_id) !== String(user.id)) {
+      return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 })
+    }
+    const labelUrl = (row as any).label_blob_url || (row as any).label_url
+    if (!labelUrl) return NextResponse.json({ ok: false, error: 'label_not_ready' }, { status: 409 })
 
     console.log('📄 送り状PDFダウンロード開始:', labelUrl)
 
@@ -74,16 +87,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // FedXのラベルURLからPDFデータを取得
+    // 直URLをサーバでプロキシ
     try {
       console.log('📥 PDFデータ取得中...')
-      const pdfResponse = await fetch(labelUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/pdf',
-        },
-      })
+      const pdfResponse = await fetch(labelUrl)
 
       if (!pdfResponse.ok) {
         const errorText = await pdfResponse.text()
@@ -100,9 +107,9 @@ export async function GET(request: NextRequest) {
       const filename = `fedex-label-${timestamp}.pdf`
 
       // actionパラメータに基づいてContent-Dispositionを設定
-      const contentDisposition = action === 'print' 
-        ? 'inline' // 印刷用：ブラウザで直接表示
-        : `attachment; filename="${filename}"` // ダウンロード用：ファイル保存
+      const contentDisposition = action === 'attachment' 
+        ? `attachment; filename="${filename}"`
+        : 'inline'
 
       console.log(`📋 Content-Disposition: ${contentDisposition} (action: ${action || 'download'})`)
 

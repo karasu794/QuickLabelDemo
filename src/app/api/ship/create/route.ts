@@ -14,6 +14,7 @@ import { put } from '@vercel/blob'
 import { ensurePost } from '@/lib/http/ensurePost'
 import { createLogger, withTiming } from '@/lib/observability/logger'
 import { randomUUID } from 'crypto'
+import { publishHookdeck } from '@/lib/observability/hookdeck'
 import { withTrace } from '@/lib/trace'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { markProcessing, markCompleted, markFailed } from '@/server/db/shipments'
@@ -359,22 +360,25 @@ try {
 			const yyyy = String(now.getUTCFullYear())
 			const mm = String(now.getUTCMonth() + 1).padStart(2, '0')
 			const path = `labels/${yyyy}/${mm}/${input.orderId}-${tracking}.pdf`
-			const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-			if (!blobToken) {
-				log.error({ step: 'blob.put.label', ok: false, error_message: 'BLOB_CONFIG' })
-				return NextResponse.json({ code: 'BLOB_CONFIG' }, { status: 500 })
-			}
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+      if (!blobToken) {
+        log.error({ step: 'blob.put.label', ok: false, error_message: 'BLOB_CONFIG' })
+        try { await publishHookdeck({ type: 'label.error', detail: { reason: 'BLOB_CONFIG' }, diagId: (log as any)?.diagId }) } catch {}
+        return NextResponse.json({ code: 'BLOB_CONFIG' }, { status: 500 })
+      }
 			const blob = await withTiming(log, 'blob.put.label', async () => put(path, buf, { access: 'public', contentType: 'application/pdf', token: blobToken }))
 			labelUrl = blob.url
 			// Build labelUrls array for response: first is blob url, rest are raw FedEx urls (not persisted)
 			responseLabelUrls = [labelUrl, ...rawUrls.slice(1)]
-		} catch (e) {
+    } catch (e) {
 			if (e instanceof FedExError) {
-				log.error({ step: 'fedex.request.shipment', ok: false, error_code: e.code, error_message: e.message, upstream: 'fedex' })
-				return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: e.code, message: e.message }, { status: e.code || 502 })
+        log.error({ step: 'fedex.request.shipment', ok: false, error_code: e.code, error_message: e.message, upstream: 'fedex' })
+        try { await publishHookdeck({ type: 'ship.error', detail: { code: String(e.code), message: e.message, step: 'fedex.request.shipment' }, diagId: (log as any)?.diagId }) } catch {}
+        return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: e.code, message: e.message }, { status: e.code || 502 })
 			}
-			log.error({ step: 'fedex.request.shipment', ok: false, error_message: String((e as Error)?.message || e), upstream: 'fedex' })
-			return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'SHIP_FAILED' }, { status: 502 })
+      log.error({ step: 'fedex.request.shipment', ok: false, error_message: String((e as Error)?.message || e), upstream: 'fedex' })
+      try { await publishHookdeck({ type: 'ship.error', detail: { message: String((e as Error)?.message || e), step: 'fedex.request.shipment' }, diagId: (log as any)?.diagId }) } catch {}
+      return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'SHIP_FAILED' }, { status: 502 })
 		}
 
     try {
@@ -426,9 +430,10 @@ try {
 				}
 			}
     } catch (e) {
-			log.error({ step: 'db.write.shipments', ok: false, error_message: String((e as Error)?.message || e), upstream: 'db' })
-			return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'PERSIST_FAILED' }, { status: 500 })
-		}
+      log.error({ step: 'db.write.shipments', ok: false, error_message: String((e as Error)?.message || e), upstream: 'db' })
+      try { await publishHookdeck({ type: 'ship.error', detail: { message: String((e as Error)?.message || e), step: 'db.write.shipments' }, diagId: (log as any)?.diagId }) } catch {}
+      return NextResponse.json({ ok: false, shipmentId: null, trackingNumbers: [], attachments: [], code: 'PERSIST_FAILED' }, { status: 500 })
+    }
 
 		log.info({ step: 'done', ok: true, context: { orderId: input.orderId, trackingNumber: tracking, service: input.serviceType } })
 		const attachments = responseLabelUrls.map((url) => ({ url, kind: 'label', contentType: 'application/pdf' }))

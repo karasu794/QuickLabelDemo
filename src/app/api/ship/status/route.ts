@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
       if (!data) {
         return NextResponse.json({ status: 'failed', error: 'NOT_FOUND' }, { status: 404 })
       }
-      const labelUrl = (data as any)?.label_url || ''
-      if (!labelUrl) {
+      const labelUrl = (data as any)?.label_blob_url || (data as any)?.label_url || ''
+      const isCompleted = (data as any)?.payment_status === 'completed' && !!labelUrl
+      if (!isCompleted) {
         return NextResponse.json({ status: 'processing' as const }, { status: 200 })
       }
       return NextResponse.json({ status: 'completed' as const, labelUrl, trackingNumber: (data as any).tracking_number || null }, { status: 200 })

@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         sourceId: token,
         idempotencyKey,
         locationId,
-        amountMoney: { amount: BigInt(amount), currency: 'JPY' as const },
+        amountMoney: { amount: Number(amount), currency: 'JPY' as const },
       })
       paymentId = String(resp?.payment?.id || paymentId)
       status = String(resp?.payment?.status || 'PENDING')
