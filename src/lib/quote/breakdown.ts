@@ -92,3 +92,83 @@ export function extractInsuredValueFromRateDetail(detail: any): number | undefin
 }
 
 
+/**
+ * Delivery Area/Remote/ODA 系サーチャージ合算
+ */
+export function extractDeliveryAreaSurchargeFromRateDetail(detail: any): number | undefined {
+  try {
+    let total = 0
+    const ratedShipmentDetails = Array.isArray(detail?.ratedShipmentDetails) ? detail.ratedShipmentDetails : []
+    for (const rsd of ratedShipmentDetails) {
+      const shipmentRateDetails = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
+      for (const srd of shipmentRateDetails) {
+        const surcharges = Array.isArray(srd?.surcharges) ? srd.surcharges : []
+        for (const s of surcharges) {
+          const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description, s?.category]
+            .filter(Boolean)
+            .join(' ')
+            .toUpperCase()
+          if (/DELIVERY\s*AREA|REMOTE|ODA/.test(text)) {
+            const amt = toNumber(s?.amount)
+            if (typeof amt === 'number') total += amt
+          }
+        }
+      }
+      const directSurcharges = Array.isArray(rsd?.surcharges) ? rsd.surcharges : []
+      for (const s of directSurcharges) {
+        const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description, s?.category]
+          .filter(Boolean)
+          .join(' ')
+          .toUpperCase()
+        if (/DELIVERY\s*AREA|REMOTE|ODA/.test(text)) {
+          const amt = toNumber(s?.amount)
+          if (typeof amt === 'number') total += amt
+        }
+      }
+    }
+    return total > 0 ? Math.round(total) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Additional Handling / Oversize 系サーチャージ合算
+ */
+export function extractAdditionalHandlingFromRateDetail(detail: any): number | undefined {
+  try {
+    let total = 0
+    const ratedShipmentDetails = Array.isArray(detail?.ratedShipmentDetails) ? detail.ratedShipmentDetails : []
+    for (const rsd of ratedShipmentDetails) {
+      const shipmentRateDetails = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
+      for (const srd of shipmentRateDetails) {
+        const surcharges = Array.isArray(srd?.surcharges) ? srd.surcharges : []
+        for (const s of surcharges) {
+          const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description, s?.category]
+            .filter(Boolean)
+            .join(' ')
+            .toUpperCase()
+          if (/ADDITIONAL[_\s-]*HANDLING|OVERSIZE/.test(text)) {
+            const amt = toNumber(s?.amount)
+            if (typeof amt === 'number') total += amt
+          }
+        }
+      }
+      const directSurcharges = Array.isArray(rsd?.surcharges) ? rsd.surcharges : []
+      for (const s of directSurcharges) {
+        const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description, s?.category]
+          .filter(Boolean)
+          .join(' ')
+          .toUpperCase()
+        if (/ADDITIONAL[_\s-]*HANDLING|OVERSIZE/.test(text)) {
+          const amt = toNumber(s?.amount)
+          if (typeof amt === 'number') total += amt
+        }
+      }
+    }
+    return total > 0 ? Math.round(total) : undefined
+  } catch {
+    return undefined
+  }
+}
+

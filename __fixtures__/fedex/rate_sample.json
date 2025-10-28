@@ -1,0 +1,21 @@
+{
+  "baseCharge": 12000,
+  "discounts": 3000,
+  "ratedShipmentDetails": [
+    {
+      "totalNetCharge": { "amount": 9800, "currency": "JPY" },
+      "shipmentRateDetails": [
+        {
+          "surcharges": [
+            { "type": "FUEL", "amount": { "amount": 600 } },
+            { "type": "PEAK", "amount": { "amount": 200 } },
+            { "type": "DELIVERY_AREA_SURCHARGE", "amount": { "amount": 300 } },
+            { "type": "IMPORT_PROCESSING", "amount": { "amount": 100 } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+

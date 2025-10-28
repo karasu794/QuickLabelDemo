@@ -66,6 +66,13 @@ export interface FedExRate {
     volumeDiscount: number
     phoenixDiscount?: number
     residentialSurcharge?: number
+    deliveryAreaSurcharge?: number
+    deliveryAreaLevel?: string | number
+    additionalHandlingSurcharge?: number
+    peakSurcharge?: number
+    otherSurcharge?: number
+    insuredValue?: number
+    extraSurchargesJa?: Array<{ labelJa: string; amount: number; group: 'additional' | 'other' }>
   }
 }
 
@@ -367,55 +374,95 @@ export default function FedExQuoteResults({
                       {/* 料金内訳 */}
                       <div className="space-y-4">
                         <h4 className="font-semibold text-gray-900">料金内訳</h4>
-                        <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="bg-white rounded-lg border border-gray-200 p-4" data-test="breakdown-table">
                           <div className="space-y-3">
-                            {/* 基本料金 */}
-                            <div className="flex justify-between items-center">
+                            {/* 基本料金（常に表示） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-baseRate">
                               <span className="text-gray-700">基本料金</span>
                               <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.baseRate || baseRate)}
+                                {formatJPY(rate.breakdown?.baseRate ?? baseRate)}
                               </span>
                             </div>
-                            
-                            {/* フェニックス割引（基本料金の直下に配置） */}
-                            <div className="flex justify-between items-center">
+
+                            {/* フェニックス割引（数量割引） 常に表示・負値表記 */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-volumeDiscount">
                               <span className="text-red-600 font-medium">フェニックス割引</span>
-                              <span className="font-medium text-red-600">
-                                -{formatJPY(Math.abs(rate.breakdown?.volumeDiscount || discountAmount))}
-                              </span>
+                              <span className="font-medium text-red-600">-{formatJPY(Math.abs(rate.breakdown?.volumeDiscount || 0))}</span>
                             </div>
-                            
-                            {/* 追加フェニックス割引（もしあれば） */}
-                            {rate.breakdown?.phoenixDiscount && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-red-600 font-medium">追加フェニックス割引</span>
-                                <span className="font-medium text-red-600">
-                                  -{formatJPY(Math.abs(rate.breakdown.phoenixDiscount))}
-                                </span>
-                              </div>
-                            )}
-                            
-                            {/* 燃料割増金 */}
-                            <div className="flex justify-between items-center">
+
+                            {/* 燃料割増金（常に表示） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-fuelSurcharge">
                               <span className="text-gray-700">燃料割増金</span>
                               <span className="font-medium text-gray-900">
                                 {formatJPY(rate.breakdown?.fuelSurcharge || 0)}
                               </span>
                             </div>
 
-                            {/* 個人宅加算（存在時のみ） */}
-                            {typeof rate.breakdown?.residentialSurcharge === 'number' && (
-                              <div className="flex justify-between items-center" data-test="breakdown-item-residential">
-                                <span className="text-gray-700">個人宅加算</span>
-                                <span className="font-medium text-gray-900">
-                                  {formatJPY(rate.breakdown.residentialSurcharge)}
-                                </span>
+                            {/* 混雑時割増金（常に表示） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-peakSurcharge">
+                              <span className="text-gray-700">混雑時割増金</span>
+                              <span className="font-medium text-gray-900">
+                                {formatJPY(rate.breakdown?.peakSurcharge || 0)}
+                              </span>
+                            </div>
+
+                            {/* 個人宅加算（常に表示） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-residentialSurcharge">
+                              <span className="text-gray-700">個人宅加算</span>
+                              <span className="font-medium text-gray-900">
+                                {formatJPY(rate.breakdown?.residentialSurcharge || 0)}
+                              </span>
+                            </div>
+
+                            {/* 配達地域外（常に表示。テストIDは outOfDeliveryArea に合わせる） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-outOfDeliveryArea">
+                              <span className="text-gray-700">{`配達地域外${rate.breakdown?.deliveryAreaLevel ? ` レベル${rate.breakdown.deliveryAreaLevel}` : ''}`}</span>
+                              <span className="font-medium text-gray-900">
+                                {formatJPY(rate.breakdown?.deliveryAreaSurcharge || 0)}
+                              </span>
+                            </div>
+
+                            {/* その他特別取扱い手数料（常に表示） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-additionalHandlingSurcharge">
+                              <span className="text-gray-700">その他特別取扱い手数料 - 寸法</span>
+                              <span className="font-medium text-gray-900">
+                                {formatJPY(rate.breakdown?.additionalHandlingSurcharge || 0)}
+                              </span>
+                            </div>
+
+                            {/* 米国輸入処理手数料（常に表示。テストIDは usImportProcessingFee に合わせる） */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-usImportProcessingFee">
+                              <span className="text-gray-700">米国輸入処理手数料</span>
+                              <span className="font-medium text-gray-900">{formatJPY(rate.breakdown?.importProcessingSurcharge || 0)}</span>
+                            </div>
+
+                            {/* 保険料（申告価格） 常に表示。テストIDは declaredValue に合わせる */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-declaredValue">
+                              <span className="text-gray-900 font-semibold">保険料（申告価格）</span>
+                              <span className="text-gray-900 font-semibold">{formatJPY(rate.breakdown?.insuredValue || 0)}</span>
+                            </div>
+
+                            {/* その他（未分類サーチャージ等） 常に表示 */}
+                            <div className="flex justify-between items-center" data-test="breakdown-row-otherSurcharge">
+                              <span className="text-gray-700">その他特別手数料</span>
+                              <span className="font-medium text-gray-900">
+                                {formatJPY(rate.breakdown?.otherSurcharge || 0)}
+                              </span>
+                            </div>
+
+                            {/* マッピング済み追加料金（個別行） 0でも出力（ただしデータ上0が来ない設計）*/}
+                            {Array.isArray(rate.breakdown?.extraSurchargesJa) && rate.breakdown!.extraSurchargesJa!.map((x, idx) => (
+                              <div key={`extra-top-${idx}`} className="flex justify-between items-center" data-test={`breakdown-row-extra-${idx}`}>
+                                <span className="text-gray-700">{x.labelJa}</span>
+                                <span className="font-medium text-gray-900">{formatJPY(x.amount || 0)}</span>
                               </div>
-                            )}
+                            ))}
+
+                            {/* （割引は基本料金直下で表示済み） */}
                             
                             {/* 区切り線 */}
                             <div className="border-t border-gray-300 pt-3 mt-4">
-                              <div className="flex justify-between items-center">
+                              <div className="flex justify-between items-center" data-test="breakdown-total">
                                 <span className="text-lg font-semibold text-gray-900">見積り合計</span>
                                 <span className="text-lg font-bold text-orange-600">
                                   {formatJPY(rate.totalNetFedExCharge)}

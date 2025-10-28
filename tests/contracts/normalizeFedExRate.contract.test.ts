@@ -29,6 +29,9 @@ describe('normalizeFedExRate', () => {
     const resp = rateWithSurcharges([], 10000, 0, 10200)
     const dto = normalizeFedExRate(resp)
     expect(dto.surcharges.other?.amount).toBe(200)
+    // 0円行も返す
+    expect(dto.surcharges.residential?.amount).toBe(0)
+    expect(dto.surcharges.deliveryArea?.amount).toBe(0)
   })
 })
 

@@ -319,6 +319,21 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
     }
   }
 
+  // 監査ログ: リクエストに乗っている主要フラグと値（1回だけ）
+  try {
+    const once = (getFedExRates as any).__auditLogged === true
+    if (!once) {
+      console.debug('[rates][request]', {
+        residential: !!requestBody?.requestedShipment?.recipient?.address?.residential,
+        declaredEnabled: Array.isArray(requestBody?.requestedShipment?.requestedPackageLineItems)
+          && requestBody.requestedShipment.requestedPackageLineItems.some((p: any) => !!p?.declaredValue),
+        declaredValue: requestBody?.requestedShipment?.requestedPackageLineItems?.map((p: any) => p?.declaredValue)?.filter(Boolean) || [],
+        rateRequestType: requestBody?.requestedShipment?.rateRequestType,
+      })
+      ;(getFedExRates as any).__auditLogged = true
+    }
+  } catch {}
+
   console.log('📊 FedX Rate API リクエスト:', JSON.stringify(requestBody, null, 2))
 
   const response = await fedexApiRequest<any>(

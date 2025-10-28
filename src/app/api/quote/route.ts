@@ -30,9 +30,26 @@ export async function POST(request: NextRequest) {
         ? rawBody.packages
         : [{ id: 1, packagingType: 'YOUR_PACKAGING', weight: 1, length: 10, width: 10, height: 10, declaredValue: 0 }]
       const jobId = `mock-${randomUUID()}`
-      // 直接レート返却ではなく、既存UIに合わせてジョブIDを返し、GET /api/quote/{jobId} のポーリング側で拾わせる
-      // ただし service_step では即時レートが必要なため、テストは /api/quote を直接叩かず /api/quote/mps or ポーリングの完了を待つ
-      return NextResponse.json({ ok: true, jobId, mock: true, packages: pkgs }, { headers: traceHeaders })
+      // E2E/開発用: 即時レートも同梱（サービス画面がショートカット表示できるように）
+      const quotes = [
+        {
+          service: 'FEDEX_INTERNATIONAL_PRIORITY',
+          total: 12345,
+          eta: new Date().toISOString().slice(0,10),
+          breakdown: {
+            baseRate: 15000,
+            volumeDiscount: 3000,
+            importProcessingSurcharge: 100,
+            fuelSurcharge: 500,
+            peakSurcharge: 0,
+            residentialSurcharge: 0,
+            deliveryAreaSurcharge: 0,
+            additionalHandlingSurcharge: 0,
+            otherSurcharge: 0,
+          }
+        }
+      ]
+      return NextResponse.json({ ok: true, jobId, mock: true, packages: pkgs, quotes }, { headers: traceHeaders })
     }
 
     // CORE_MODE: 未ログイン許可・擬似ジョブ応答（DB書き込みなし、Service Role未使用）

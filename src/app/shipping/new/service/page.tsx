@@ -84,6 +84,7 @@ export default function ServiceStepPage() {
         deliveryDayOfWeek: x.deliveryDayOfWeek,
         packagingType: 'YOUR_PACKAGING',
         rateType: 'ACCOUNT',
+        breakdown: (x as any).breakdown,
       })) as UiRate[]
       setRates(mapped)
       setIsLoading(false)
@@ -109,6 +110,38 @@ export default function ServiceStepPage() {
         setRates([])
         return
       }
+      // E2E/開発用モック: cookie `core-mode=mock` または env `CORE_MODE=mock` の場合は即時ダミーレートを表示
+      try {
+        const mockEnabled = (typeof document !== 'undefined' && /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(document.cookie)) || String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
+        if (mockEnabled) {
+          setIsLoading(true)
+          const mockRates: UiRate[] = [
+            {
+              serviceType: 'FEDEX_INTERNATIONAL_PRIORITY',
+              totalNetFedExCharge: '12345',
+              deliveryDate: new Date().toISOString().slice(0,10),
+              deliveryDayOfWeek: 'Fri',
+              packagingType: 'YOUR_PACKAGING',
+              rateType: 'ACCOUNT',
+              breakdown: {
+                baseRate: 15000,
+                volumeDiscount: 3000,
+                importProcessingSurcharge: 100 as any,
+                fuelSurcharge: 500,
+                peakSurcharge: 0,
+                residentialSurcharge: 0,
+                deliveryAreaSurcharge: 0,
+                additionalHandlingSurcharge: 0,
+                otherSurcharge: 0,
+              } as any,
+            }
+          ]
+          setRates(mockRates)
+          setIsLoading(false)
+          return
+        }
+      } catch {}
+
       hasRequestedRef.current = true
       setError(undefined)
       setRates([])
@@ -177,6 +210,7 @@ export default function ServiceStepPage() {
             deliveryDayOfWeek: undefined,
             packagingType: 'YOUR_PACKAGING',
             rateType: 'ACCOUNT',
+            breakdown: (q as any).breakdown,
           })) as UiRate[]
         } else {
           type IncomingRate = {
@@ -196,6 +230,7 @@ export default function ServiceStepPage() {
             deliveryDayOfWeek: r.deliveryDayOfWeek,
             packagingType: 'YOUR_PACKAGING',
             rateType: 'ACCOUNT',
+            breakdown: (r as any).breakdown,
           })) as UiRate[]
         }
         setRates(mapped)

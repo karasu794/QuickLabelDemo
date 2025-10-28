@@ -22,6 +22,17 @@ export async function GET(request: NextRequest, { params }: { params: { jobId: s
             deliveryDayOfWeek: 'Fri',
             packagingType: 'YOUR_PACKAGING',
             rateType: 'ACCOUNT',
+            breakdown: {
+              baseRate: 15000,
+              volumeDiscount: 3000,
+              importProcessingSurcharge: 100,
+              fuelSurcharge: 500,
+              peakSurcharge: 0,
+              residentialSurcharge: 0,
+              deliveryAreaSurcharge: 0,
+              additionalHandlingSurcharge: 0,
+              otherSurcharge: 0,
+            }
           }
         ]
       }

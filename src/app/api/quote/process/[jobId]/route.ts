@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { extractResidentialSurchargeFromRateDetail, extractInsuredValueFromRateDetail } from '@/lib/quote/breakdown'
+import { normalizeFedExRate } from '@/lib/rates/normalizeFedExRate'
 import { computeCharges } from '@/lib/charges/core'
+import { groupAndSumByLabel } from '@/lib/rates/surchargeLabels'
 import { toArray, withDefaults, mapOrEmpty } from '@/lib/utils/safe'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -394,13 +396,11 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
       };
     }
 
-  // 申告価額が設定されている場合のみ追加（為替でUSD換算）
+  // 申告価額が設定されている場合のみ追加（ドキュメント準拠：通貨はフォーム通貨/表示通貨をそのまま使用）
     if (pkg.declaredValue && Number(pkg.declaredValue) > 0) {
       const declaredValueJPY = Number(pkg.declaredValue)
-      const rate = Number.isFinite(jpyToUsd) && jpyToUsd > 0 ? jpyToUsd : (1/150)
-      const declaredValueUSD = Math.max(declaredValueJPY * rate, 1.0)
-      packageItem.declaredValue = { amount: parseFloat(declaredValueUSD.toFixed(2)), currency: 'USD' }
-      console.log(`📦 荷物${pkg.id}の申告価額: ${declaredValueJPY}円 → $${declaredValueUSD.toFixed(2)} (jpyToUsd:${rate})`)
+      packageItem.declaredValue = { amount: declaredValueJPY, currency: 'JPY' }
+      console.log(`📦 荷物${pkg.id}の申告価額: ¥${declaredValueJPY.toLocaleString()} (currency: JPY)`) 
     }
 
     return packageItem;
@@ -455,8 +455,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
         address: shipperAddress
       },
       recipient: {
-        address: recipientAddress,
-        residential: quoteParams.isResidential
+        address: { ...recipientAddress, residential: Boolean(quoteParams.isResidential) }
       },
       shipDatestamp: quoteParams.shipDate,
       // serviceTypeを削除して、すべての利用可能なサービスを取得
@@ -481,6 +480,20 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
       requestedPackageLineItems: requestedPackageLineItems
     }
   };
+
+  // 送信直前の監査ログ（1回のみ）
+  try {
+    const once = (buildRateRequest as any).__auditLogged === true
+    if (!once) {
+      console.debug('[rates][request]', {
+        residential: Boolean((recipientAddress as any)?.residential || quoteParams.isResidential),
+        declaredEnabled: Array.isArray(requestedPackageLineItems) && requestedPackageLineItems.some((p: any) => Number(p?.declaredValue?.amount) > 0),
+        declaredSamples: requestedPackageLineItems.map((p: any) => p?.declaredValue).filter(Boolean),
+        rateRequestType: ['ACCOUNT','LIST'],
+      })
+      ;(buildRateRequest as any).__auditLogged = true
+    }
+  } catch {}
 }
 
 // 複数のサービスタイプをリクエストする関数（並列化版）
@@ -751,6 +764,29 @@ async function getFedExRates(accessToken: string, requestData: any) {
   return await response.json();
 }
 
+// Delivery Area Level（例: LEVEL A → 'A'）抽出
+function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined {
+  try {
+    const ratedShipmentDetails = Array.isArray(detail?.ratedShipmentDetails) ? detail.ratedShipmentDetails : []
+    for (const rsd of ratedShipmentDetails) {
+      const arrays: any[] = []
+      const shipmentRateDetails = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
+      for (const srd of shipmentRateDetails) {
+        if (Array.isArray(srd?.surcharges)) arrays.push(...srd.surcharges)
+      }
+      if (Array.isArray(rsd?.surcharges)) arrays.push(...rsd.surcharges)
+      for (const s of arrays) {
+        const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description].filter(Boolean).join(' ').toUpperCase()
+        if (/(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test(text)) {
+          const m = text.match(/LEVEL\s*([A-Z])/)
+          if (m && m[1]) return m[1]
+        }
+      }
+    }
+    return undefined
+  } catch { return undefined }
+}
+
 export async function POST(request: NextRequest, { params }: { params: { jobId: string } }) {
   const startTime = Date.now();
   const TIMEOUT_MS = 50000; // 50秒のタイムアウト（Vercelの制限を考慮）
@@ -968,7 +1004,92 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           insuredValueJPY: insuredValue || 0,
         })
 
-        return {
+        // FedEx応答→標準化（ベース/割引/主要サーチャージ）
+        const normalized = normalizeFedExRate(detail, 'JPY')
+        const baseRate = Math.max(0, normalized.baseCharge.amount)
+        let accountDiscount = Math.max(0, normalized.discounts.amount)
+        const fuel = Math.max(0, normalized.surcharges.fuel?.amount || 0)
+        const peak = Math.max(0, normalized.surcharges.peak?.amount || 0)
+        const resi = Math.max(0, normalized.surcharges.residential?.amount || residentialSurcharge || 0)
+        const da = Math.max(0, normalized.surcharges.deliveryArea?.amount || 0)
+        const daLevel = extractDeliveryAreaLevelFromRateDetail(detail)
+        const ah = Math.max(0, normalized.surcharges.additionalHandling?.amount || 0)
+        const importProc = Math.max(0, normalized.surcharges.importProcessing?.amount || 0)
+        let other = Math.max(0, normalized.surcharges.other?.amount || 0)
+
+        // フェニックス割引（数量割引）: LIST と ACCOUNT の総額差から導出（割引が0のとき）
+        if (accountDiscount === 0) {
+          const rsdArrAll = Array.isArray((detail as any)?.ratedShipmentDetails) ? (detail as any).ratedShipmentDetails : []
+          const toNum = (v: any) => {
+            const n = Number((v && typeof v === 'object' ? (v.amount ?? v.value) : v) || 0)
+            return Number.isFinite(n) ? Math.round(n) : 0
+          }
+          const pickTotal = (type: string) => {
+            let best = 0
+            for (const r of rsdArrAll) {
+              const t = String((r?.rateType || '')).toUpperCase()
+              if (t.includes(type)) {
+                const val = toNum(r?.totalNetCharge ?? r?.ratedShipmentDetail?.totalNetCharge)
+                if (val > best) best = val
+              }
+            }
+            return best
+          }
+          const listTotal = pickTotal('LIST')
+          const accountTotal = pickTotal('ACCOUNT') || Math.round(Number(ratedShipment?.totalNetCharge || 0))
+          if (listTotal > 0 && accountTotal > 0 && listTotal > accountTotal) {
+            accountDiscount = Math.max(0, listTotal - accountTotal)
+          }
+        }
+
+        // --- 追加サーチャージの詳細（既知カテゴリ以外を日本語ラベルで集約） ---
+
+        const collectAllSurcharges = (rateDetail: any) => {
+          const arrays: any[] = []
+          const rsdArr = Array.isArray(rateDetail?.ratedShipmentDetails) ? rateDetail.ratedShipmentDetails : []
+          for (const rsd of rsdArr) {
+            const srdArr = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
+            for (const srd of srdArr) {
+              if (Array.isArray(srd?.surcharges)) arrays.push(srd.surcharges)
+              if (Array.isArray(srd?.surCharges)) arrays.push(srd.surCharges)
+            }
+            if (Array.isArray(rsd?.surcharges)) arrays.push(rsd.surcharges)
+            if (Array.isArray(rsd?.surCharges)) arrays.push(rsd.surCharges)
+          }
+          if (Array.isArray(rateDetail?.surcharges)) arrays.push(rateDetail.surcharges)
+          if (Array.isArray(rateDetail?.surCharges)) arrays.push(rateDetail.surCharges)
+          const flat = arrays.flat().filter(Boolean)
+          return flat.map((s: any) => ({
+            type: s?.type ?? s?.surchargeType ?? s?.code,
+            code: s?.code ?? s?.surchargeType ?? s?.type,
+            name: s?.name,
+            description: s?.description,
+            amount: Number(s?.amount ?? s?.totalAmount ?? s?.price ?? 0) || 0,
+          }))
+        }
+
+        const U = (s: any) => String(s || '').toUpperCase()
+        const toText = (x: any) => U([x?.type, x?.code, x?.name, x?.description].filter(Boolean).join(' '))
+        const isFuel = (x: any) => /\bFUEL(\b|_)?\s*(SUR(CHG|CHARGE)?)?/.test(toText(x))
+        const isPeak = (x: any) => /(PEAK|DEMAND|SURGE|CONGESTION|混雑)/.test(toText(x))
+        const isResi = (x: any) => /(RESIDENTIAL[_\s-]*DELIVERY|RESIDENTIAL)/.test(toText(x))
+        const isDA = (x: any) => /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test(toText(x))
+        const isAH = (x: any) => /(ADDITIONAL[_\s-]*HANDLING|OVERSIZE|DIMENSION|寸法)/.test(toText(x))
+        const isImportProc = (x: any) => /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test(toText(x))
+
+        const allSurcharges = collectAllSurcharges(detail)
+        const extrasRaw = allSurcharges.filter((s: any) => s && s.amount > 0 && !(
+          isFuel(s) || isPeak(s) || isResi(s) || isDA(s) || isImportProc(s)
+        ))
+        const extraSurchargesJa = groupAndSumByLabel(extrasRaw)
+        const extrasAdditionalSum = extraSurchargesJa.filter(x => x.group === 'additional').reduce((sum: number, x: any) => sum + (x?.amount || 0), 0)
+        const extrasOtherSum = extraSurchargesJa.filter(x => x.group === 'other').reduce((sum: number, x: any) => sum + (x?.amount || 0), 0)
+        // 既知の AdditionalHandling 推定額から重複控除
+        // （normalizeで推定された分があれば可視化優先で詳細に振り分ける）
+        // NOTE: ah は既に小計に含めず表示専用のため、控除は other 側のみでも表示は崩れない。
+        other = Math.max(0, other - (extrasAdditionalSum + extrasOtherSum))
+
+        const breakdown = {
           serviceType: detail.serviceName,
           totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge || 0).toString(),
           estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
@@ -977,9 +1098,19 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           packagingType: detail.packagingType || 'YOUR_PACKAGING',
           rateType: 'ACCOUNT',
           breakdown: {
-            // 既存UIが任意の項目を許容する前提で residential/insured を付与
-            residentialSurcharge,
+            // UIの行レンダリングで利用する主要項目
+            baseRate,
+            volumeDiscount: accountDiscount,
+            importProcessingSurcharge: importProc,
+            fuelSurcharge: fuel,
+            peakSurcharge: peak,
+            residentialSurcharge: resi,
+            deliveryAreaSurcharge: da,
+            deliveryAreaLevel: daLevel || undefined,
+            additionalHandlingSurcharge: ah,
+            otherSurcharge: other,
             insuredValue,
+            extraSurchargesJa,
             chargesPreview: {
               subtotal: preview.subtotal,
               tax: preview.tax,
@@ -988,6 +1119,10 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
             }
           }
         }
+
+        try { console.debug('[breakdown]', (breakdown as any).breakdown) } catch {}
+
+        return breakdown
       })
 
       // 結果をデータベースに保存
