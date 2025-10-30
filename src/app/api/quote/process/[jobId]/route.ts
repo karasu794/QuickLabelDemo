@@ -841,6 +841,7 @@ function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined
           code: s?.code,
           description: s?.description,
           name: s?.name,
+          amount: s?.amount,
         })
         if (level) return level
       }

@@ -128,14 +128,15 @@ export const SURCHARGE_CODE_MAP: Record<string, SurchargeCategory> = {
 
 /**
  * Delivery Area のレベルA/Bを判定
- * 
+ *
  * description/code/name から "LEVEL A" / "LEVEL B" / "LEV_A" / "LEV_B" などを検出
  * 正規表現ベースで柔軟にマッチング
- * 
- * @param s サーチャージオブジェクト（code, description, name を含む）
+ * フォールバック: amount が 370 円の場合はレベルA
+ *
+ * @param s サーチャージオブジェクト（code, description, name, amount を含む）
  * @returns 'A' | 'B' | null
  */
-export function deriveDeliveryAreaLevel(s: { code?: string; description?: string; name?: string }): 'A' | 'B' | null {
+export function deriveDeliveryAreaLevel(s: { code?: string; description?: string; name?: string; amount?: number | { amount?: number } }): 'A' | 'B' | null {
   const text = [
     s.code,
     s.description,
@@ -144,17 +145,23 @@ export function deriveDeliveryAreaLevel(s: { code?: string; description?: string
     .filter(Boolean)
     .join(' ')
     .toUpperCase()
-  
+
   // レベルAのパターン: LEVEL A, LEV_A, LEV A など
   if (/\bLEVEL\s*A\b|\bLEV_?A\b/i.test(text)) {
     return 'A'
   }
-  
+
   // レベルBのパターン: LEVEL B, LEV_B, LEV B など
   if (/\bLEVEL\s*B\b|\bLEV_?B\b/i.test(text)) {
     return 'B'
   }
-  
+
+  // フォールバック: amount が 370 円の場合はレベルA
+  const amount = typeof s.amount === 'number' ? s.amount : (s.amount as any)?.amount
+  if (amount === 370) {
+    return 'A'
+  }
+
   return null
 }
 

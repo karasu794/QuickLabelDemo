@@ -21,6 +21,7 @@ export type RateBreakdown = {
     packaging?: Money
     nonStackable?: Money
   }
+  deliveryAreaLevel?: 'A' | 'B'
   totalNetCharge: Money
 }
 

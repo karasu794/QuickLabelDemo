@@ -82,10 +82,12 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     }
   }
 
-  // ratedShipmentDetails から Base/Discount を取得
+  // ratedShipmentDetails から Base/Discount を取得（shipment優先）
   let base = 0
   let discounts = 0
   let pkgBaseSumTotal = 0
+  let baseSource: 'shipment' | 'package' = 'shipment'
+  let discountsSource: 'shipment' | 'package' = 'shipment'
   
   for (const rsd of rated) {
     const p = probeBase(rsd)
@@ -94,9 +96,16 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     pkgBaseSumTotal += p.pkgBaseSum
   }
   
-  // Base フォールバック: packageRateDetail.baseCharge の合計
+  // Base フォールバック: packageRateDetail.baseCharge の合計（shipmentが無い場合のみ）
   if (base <= 0 && pkgBaseSumTotal > 0) {
     base = Math.round(pkgBaseSumTotal)
+    baseSource = 'package'
+  }
+  
+  // Discounts フォールバック（shipmentが無い場合のみ）
+  if (discounts <= 0) {
+    // package側のdiscountsは通常無いが、念のため
+    discountsSource = 'package'
   }
   
   // Base 最終フォールバック: 推定（total - surcharges + discounts）
@@ -312,10 +321,45 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   // === 5. サーチャージ集計（specialHandling はパッケージ単位で採用済み） ===
   // 通常サーチャージ（specialHandling以外）を集計
   // Delivery Area, Import Processing は shipment/package どちらか一方から（重複防止済み）
-  const fuel = Math.round(surchargesByCategory.FUEL.reduce((sum, x) => sum + x.amount, 0))
+  
+  // 燃料割増金の唯一ソース化: shipment側があればそれだけ採用、package側は無視
+  let fuel = 0
+  let fuelSource: 'shipment' | 'package' = 'package'
+  if (shipmentSurcharges.length > 0) {
+    // shipment側のFUELのみ採用
+    const shipmentFuel = shipmentSurcharges
+      .filter(s => classifySurcharge(s) === 'FUEL')
+      .reduce((sum, s) => sum + toNumber(s?.amount), 0)
+    fuel = Math.round(shipmentFuel)
+    fuelSource = 'shipment'
+  } else {
+    // package側を集計
+    fuel = Math.round(surchargesByCategory.FUEL.reduce((sum, x) => sum + x.amount, 0))
+    fuelSource = 'package'
+  }
   const peak = Math.round(surchargesByCategory.PEAK.reduce((sum, x) => sum + x.amount, 0))
   const residential = Math.round(surchargesByCategory.RESIDENTIAL.reduce((sum, x) => sum + x.amount, 0))
   const deliveryArea = Math.round(surchargesByCategory.DELIVERY_AREA.reduce((sum, x) => sum + x.amount, 0))
+  
+  // Delivery Area レベル判定（amount フォールバック対応）
+  let deliveryAreaLevel: 'A' | 'B' | undefined = undefined
+  if (deliveryArea > 0) {
+    // shipment側またはpackage側のDelivery Areaサーチャージからレベルを抽出
+    const deliveryAreaSurcharges = surchargesByCategory.DELIVERY_AREA
+    for (const { s } of deliveryAreaSurcharges) {
+      const level = deriveDeliveryAreaLevel({
+        code: s?.code,
+        description: s?.description,
+        name: s?.name,
+        amount: toNumber(s?.amount),
+      })
+      if (level) {
+        deliveryAreaLevel = level
+        break
+      }
+    }
+  }
+  
   const importProcessing = Math.round(surchargesByCategory.IMPORT_PROCESSING.reduce((sum, x) => sum + x.amount, 0))
   const saturdayDelivery = Math.round(surchargesByCategory.SATURDAY_DELIVERY.reduce((sum, x) => sum + x.amount, 0))
   const insuredValue = Math.round(surchargesByCategory.INSURED_VALUE.reduce((sum, x) => sum + x.amount, 0))
@@ -350,6 +394,9 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       const reconcile = {
         base,
         discounts,
+        fuelSource,
+        baseSource,
+        discountsSource,
         surchargesByCat: {
           fuel,
           peak,
@@ -433,6 +480,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       packaging: ahsPackaging > 0 ? money(ahsPackaging, currency) : undefined,
       nonStackable: ahsNonStackable > 0 ? money(ahsNonStackable, currency) : undefined,
     },
+    deliveryAreaLevel,
     totalNetCharge: money(total, currency),
   }
 
