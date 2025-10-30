@@ -35,7 +35,8 @@ describe('normalizeFedExRate breakdown lines and totals', () => {
     expect(dto.surcharges.importProcessing?.amount).toBe(250)
     // 未指定は0で保持（undefinedにしない）
     expect(dto.surcharges.residential?.amount).toBe(0)
-    expect(dto.surcharges.additionalHandling?.amount).toBe(0)
+    // additionalHandling は削除（specialHandling に移行）
+    expect(dto.specialHandling).toBeDefined()
     expect(dto.surcharges.insuredValue?.amount).toBe(0)
     // other は差分 (9450 - 8000 - 500 - 300 - 400 - 250 = 0)
     expect(dto.surcharges.other?.amount).toBe(0)
@@ -46,7 +47,11 @@ describe('normalizeFedExRate breakdown lines and totals', () => {
       (dto.surcharges.peak?.amount || 0) +
       (dto.surcharges.residential?.amount || 0) +
       (dto.surcharges.deliveryArea?.amount || 0) +
-      (dto.surcharges.additionalHandling?.amount || 0) +
+      (dto.specialHandling?.oversize?.amount || 0) +
+      (dto.specialHandling?.dimension?.amount || 0) +
+      (dto.specialHandling?.weight?.amount || 0) +
+      (dto.specialHandling?.packaging?.amount || 0) +
+      (dto.specialHandling?.nonStackable?.amount || 0) +
       (dto.surcharges.importProcessing?.amount || 0) +
       (dto.surcharges.insuredValue?.amount || 0) +
       (dto.surcharges.other?.amount || 0)
@@ -87,7 +92,8 @@ describe('normalizeFedExRate breakdown lines and totals', () => {
     expect(dto.surcharges.insuredValue?.amount).toBe(400)
     expect(dto.surcharges.deliveryArea?.amount).toBe(250)
     expect(dto.surcharges.residential?.amount).toBe(0)
-    expect(dto.surcharges.additionalHandling?.amount).toBe(0)
+    // additionalHandling は削除（specialHandling に移行）
+    expect(dto.specialHandling).toBeDefined()
     expect(dto.surcharges.importProcessing?.amount).toBe(0)
 
     const sum =
@@ -96,7 +102,11 @@ describe('normalizeFedExRate breakdown lines and totals', () => {
       (dto.surcharges.peak?.amount || 0) +
       (dto.surcharges.residential?.amount || 0) +
       (dto.surcharges.deliveryArea?.amount || 0) +
-      (dto.surcharges.additionalHandling?.amount || 0) +
+      (dto.specialHandling?.oversize?.amount || 0) +
+      (dto.specialHandling?.dimension?.amount || 0) +
+      (dto.specialHandling?.weight?.amount || 0) +
+      (dto.specialHandling?.packaging?.amount || 0) +
+      (dto.specialHandling?.nonStackable?.amount || 0) +
       (dto.surcharges.importProcessing?.amount || 0) +
       (dto.surcharges.insuredValue?.amount || 0) +
       (dto.surcharges.other?.amount || 0)
@@ -138,7 +148,11 @@ describe('normalizeFedExRate breakdown lines and totals', () => {
       (dto.surcharges.peak?.amount || 0) +
       (dto.surcharges.residential?.amount || 0) +
       (dto.surcharges.deliveryArea?.amount || 0) +
-      (dto.surcharges.additionalHandling?.amount || 0) +
+      (dto.specialHandling?.oversize?.amount || 0) +
+      (dto.specialHandling?.dimension?.amount || 0) +
+      (dto.specialHandling?.weight?.amount || 0) +
+      (dto.specialHandling?.packaging?.amount || 0) +
+      (dto.specialHandling?.nonStackable?.amount || 0) +
       (dto.surcharges.importProcessing?.amount || 0) +
       (dto.surcharges.insuredValue?.amount || 0) +
       (dto.surcharges.other?.amount || 0)

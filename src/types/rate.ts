@@ -14,6 +14,13 @@ export type RateBreakdown = {
     insuredValue?: Money
     other?: Money
   }
+  specialHandling?: {
+    oversize?: Money
+    dimension?: Money
+    weight?: Money
+    packaging?: Money
+    nonStackable?: Money
+  }
   totalNetCharge: Money
 }
 

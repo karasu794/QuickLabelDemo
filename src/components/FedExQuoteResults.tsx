@@ -69,13 +69,19 @@ export interface FedExRate {
     residentialSurcharge?: number
     deliveryAreaSurcharge?: number
     deliveryAreaLevel?: string | number
-    additionalHandlingSurcharge?: number
     importProcessingSurcharge?: number
     saturdayDeliverySurcharge?: number
     peakSurcharge?: number
     otherSurcharge?: number
     insuredValue?: number
     extraSurchargesJa?: Array<{ labelJa: string; amount: number; group: 'additional' | 'other' }>
+    specialHandling?: {
+      oversize?: number
+      dimension?: number
+      weight?: number
+      packaging?: number
+      nonStackable?: number
+    }
   }
 }
 
@@ -527,7 +533,20 @@ export default function FedExQuoteResults({
                                 
                                 {/* その他のサーチャージ（0円非表示） */}
                                 <Line label="個人宅加算" amount={bd.residentialSurcharge || 0} testId="breakdown-row-residentialSurcharge" />
-                                <Line label="その他特別取扱い手数料 - 寸法" amount={bd.additionalHandlingSurcharge || 0} testId="breakdown-row-additionalHandlingSurcharge" />
+                                
+                                {/* specialHandling（優先順位で表示：Oversize → Dimension → Weight → Packaging → NonStackable） */}
+                                {bd.specialHandling?.oversize && bd.specialHandling.oversize > 0 ? (
+                                  <Line label="その他特別取り扱い手数料 - 長尺" amount={bd.specialHandling.oversize} testId="breakdown-row-ahs-oversize" />
+                                ) : bd.specialHandling?.dimension && bd.specialHandling.dimension > 0 ? (
+                                  <Line label="その他特別取り扱い手数料 - 寸法" amount={bd.specialHandling.dimension} testId="breakdown-row-ahs-dimension" />
+                                ) : bd.specialHandling?.weight && bd.specialHandling.weight > 0 ? (
+                                  <Line label="その他特別取り扱い手数料 - 重量" amount={bd.specialHandling.weight} testId="breakdown-row-ahs-weight" />
+                                ) : bd.specialHandling?.packaging && bd.specialHandling.packaging > 0 ? (
+                                  <Line label="その他特別取り扱い手数料 - 梱包" amount={bd.specialHandling.packaging} testId="breakdown-row-ahs-packaging" />
+                                ) : bd.specialHandling?.nonStackable && bd.specialHandling.nonStackable > 0 ? (
+                                  <Line label="その他特別取り扱い手数料 - 非積載" amount={bd.specialHandling.nonStackable} testId="breakdown-row-ahs-nonstackable" />
+                                ) : null}
+                                
                                 <Line label="保険料（申告価格）" amount={bd.insuredValue || 0} testId="breakdown-row-declaredValue" />
                                 <Line label="その他特別手数料" amount={bd.otherSurcharge || 0} testId="breakdown-row-otherSurcharge" />
                                 

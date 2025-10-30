@@ -1055,10 +1055,18 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         const resi = Math.max(0, normalized.surcharges.residential?.amount || residentialSurcharge || 0)
         const da = Math.max(0, normalized.surcharges.deliveryArea?.amount || 0)
         const daLevel = extractDeliveryAreaLevelFromRateDetail(detail)
-        const ah = Math.max(0, normalized.surcharges.additionalHandling?.amount || 0)
+        // additionalHandling は削除（specialHandling に移行）
         const importProc = Math.max(0, normalized.surcharges.importProcessing?.amount || 0)
         const saturdayDelivery = Math.max(0, normalized.surcharges.saturdayDelivery?.amount || 0)
         let other = Math.max(0, normalized.surcharges.other?.amount || 0)
+        
+        // specialHandling（パッケージ単位で最大1つ採用済み）
+        const specialHandling = normalized.specialHandling || {}
+        const oversize = Math.max(0, specialHandling.oversize?.amount || 0)
+        const ahsDimension = Math.max(0, specialHandling.dimension?.amount || 0)
+        const ahsWeight = Math.max(0, specialHandling.weight?.amount || 0)
+        const ahsPackaging = Math.max(0, specialHandling.packaging?.amount || 0)
+        const ahsNonStackable = Math.max(0, specialHandling.nonStackable?.amount || 0)
 
         // 数量割引: FedEx APIが返す discount（フェニックス割引は feature flag で無効化）
         if (accountDiscount === 0) {
@@ -1141,12 +1149,16 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         const isPeak = (x: any) => /(PEAK|DEMAND|SURGE|CONGESTION|混雑)/.test(toText(x))
         const isResi = (x: any) => /(RESIDENTIAL[_\s-]*DELIVERY|RESIDENTIAL)/.test(toText(x))
         const isDA = (x: any) => /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test(toText(x))
-        const isAH = (x: any) => /(ADDITIONAL[_\s-]*HANDLING|OVERSIZE|DIMENSION|寸法)/.test(toText(x))
+        // isAH は削除（specialHandling で処理済み）
         const isImportProc = (x: any) => /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test(toText(x))
+        
+        // specialHandling 分類用（extraSurchargesJa から除外）
+        const { classifySurchargeLabel } = await import('@/lib/rates/fedex/surchargeMaps')
+        const isSpecialHandling = (x: any) => classifySurchargeLabel(x) !== null
 
         const allSurcharges = collectAllSurcharges(detail)
         const extrasRaw = allSurcharges.filter((s: any) => s && s.amount > 0 && !(
-          isFuel(s) || isPeak(s) || isResi(s) || isDA(s) || isImportProc(s)
+          isFuel(s) || isPeak(s) || isResi(s) || isDA(s) || isImportProc(s) || isSpecialHandling(s)
         ))
         const extraSurchargesJa = groupAndSumByLabel(extrasRaw)
         const extrasAdditionalSum = extraSurchargesJa.filter(x => x.group === 'additional').reduce((sum: number, x: any) => sum + (x?.amount || 0), 0)
@@ -1175,11 +1187,18 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
             residentialSurcharge: resi,
             deliveryAreaSurcharge: da,
             deliveryAreaLevel: daLevel || undefined,
-            additionalHandlingSurcharge: ah,
             saturdayDeliverySurcharge: saturdayDelivery,
             otherSurcharge: other,
             insuredValue,
             extraSurchargesJa,
+            // specialHandling（パッケージ単位で最大1つ採用済み）
+            specialHandling: {
+              oversize: oversize > 0 ? oversize : undefined,
+              dimension: ahsDimension > 0 ? ahsDimension : undefined,
+              weight: ahsWeight > 0 ? ahsWeight : undefined,
+              packaging: ahsPackaging > 0 ? ahsPackaging : undefined,
+              nonStackable: ahsNonStackable > 0 ? ahsNonStackable : undefined,
+            },
             chargesPreview: {
               subtotal: preview.subtotal,
               tax: preview.tax,

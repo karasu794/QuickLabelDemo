@@ -1,5 +1,6 @@
 import type { RateBreakdown } from '@/types/rate'
 import type { Money } from '@/types/money'
+import { classifySurchargeLabel, type AhsCategory } from './fedex/surchargeMaps'
 
 const money = (amount: number, currency: string): Money => ({ amount, currency })
 // 一元マッピング（ドキュメント準拠の代表例。観測・拡張で随時追加）
@@ -176,6 +177,98 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   // 監査: 観測した type 群をダンプ
   dumpSurchargeMap(fromDetails.map(x => String(x?.surchargeType || x?.type || x?.code || '').toUpperCase()))
 
+  // === パッケージ単位の Additional Handling / Oversize サーチャージ選択 ===
+  /**
+   * パッケージ単位で AHS/Oversize サーチャージを抽出し、排他&選択ルールを適用
+   * - Oversize があれば Oversize のみ採用、AHS は無効化
+   * - Oversize が無ければ AHS 候補のうち金額が最大の1つだけ採用
+   */
+  function selectSpecialHandlingForPackage(pkg: any): { cat: AhsCategory; amount: number } | null {
+    // packageRateDetail からサーチャージを取得
+    const prd = (pkg as any)?.packageRateDetail || (pkg as any)?.packageRateDetails || (pkg as any)?.ratedPackageDetail
+    const surArray: any[] = []
+    if (prd) {
+      if (Array.isArray(prd?.surcharges)) surArray.push(...prd.surcharges)
+      if (Array.isArray(prd?.surCharges)) surArray.push(...prd.surCharges)
+    }
+    // パッケージ直下にもサーチャージがある場合をカバー
+    if (Array.isArray((pkg as any)?.surcharges)) surArray.push(...(pkg as any).surcharges)
+    if (Array.isArray((pkg as any)?.surCharges)) surArray.push(...(pkg as any).surCharges)
+
+    if (surArray.length === 0) return null
+
+    // Oversize を抽出
+    const oversizeCandidates = surArray
+      .map((s) => {
+        const cat = classifySurchargeLabel(s)
+        const amount = toNumber(s?.amount ?? s?.surchargeAmount ?? s?.totalAmount)
+        return cat === 'OVERSIZE' ? { cat, amount } : null
+      })
+      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null)
+
+    // Oversize があれば、最大額の1つを採用
+    if (oversizeCandidates.length > 0) {
+      const maxOversize = oversizeCandidates.reduce((max, x) => (x.amount > max.amount ? x : max), oversizeCandidates[0])
+      return { cat: 'OVERSIZE', amount: Math.round(maxOversize.amount) }
+    }
+
+    // AHS 候補を抽出（Oversize 以外）
+    const ahsCandidates = surArray
+      .map((s) => {
+        const cat = classifySurchargeLabel(s)
+        const amount = toNumber(s?.amount ?? s?.surchargeAmount ?? s?.totalAmount)
+        if (cat && cat !== 'OVERSIZE') {
+          return { cat, amount }
+        }
+        return null
+      })
+      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null)
+
+    if (ahsCandidates.length === 0) return null
+
+    // 金額が最大の1つだけを採用
+    const maxAhs = ahsCandidates.reduce((max, x) => (x.amount > max.amount ? x : max), ahsCandidates[0])
+    return { cat: maxAhs.cat, amount: Math.round(maxAhs.amount) }
+  }
+
+  // 全パッケージから採用分だけ集計
+  let oversize = 0
+  let ahsDimension = 0
+  let ahsWeight = 0
+  let ahsPackaging = 0
+  let ahsNonStackable = 0
+
+  // ratedShipmentDetails[0] の ratedPackages を対象
+  const firstRsd = rated[0]
+  if (firstRsd) {
+    const ratedPkgs: any[] = []
+    if (Array.isArray(firstRsd?.ratedPackages)) ratedPkgs.push(...firstRsd.ratedPackages)
+    if (Array.isArray(firstRsd?.ratedPackageDetails)) ratedPkgs.push(...firstRsd.ratedPackageDetails)
+
+    for (const pkg of ratedPkgs) {
+      const pick = selectSpecialHandlingForPackage(pkg)
+      if (!pick) continue
+
+      switch (pick.cat) {
+        case 'OVERSIZE':
+          oversize += pick.amount
+          break
+        case 'AHS_DIMENSION':
+          ahsDimension += pick.amount
+          break
+        case 'AHS_WEIGHT':
+          ahsWeight += pick.amount
+          break
+        case 'AHS_PACKAGING':
+          ahsPackaging += pick.amount
+          break
+        case 'AHS_NONSTACKABLE':
+          ahsNonStackable += pick.amount
+          break
+      }
+    }
+  }
+
 
   // shipmentRateDetails 側に discounts がある場合の合算（取りこぼし防止）
   const discountsFromDetails = Math.max(
@@ -188,21 +281,50 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     )
   )
 
-  const fuel = pickSum((x) => /\bFUEL(\b|_)?\s*(SUR(CHG|CHARGE)?)?/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const peak = pickSum((x) => /(PEAK|DEMAND|SURGE|CONGESTION|混雑)/.test([x?.type, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const residential = pickSum((x) => /(RESIDENTIAL[_\s-]*DELIVERY|RESIDENTIAL)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const deliveryArea = pickSum((x) => /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const additionalHandling = pickSum((x) => /(ADDITIONAL[_\s-]*HANDLING|OVERSIZE|DIMENSION|寸法)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const importProcessing = pickSum((x) => /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
-  const saturdayDelivery = pickSum((x) => /(SATURDAY[_\s-]*DELIVERY|WEEKEND[_\s-]*DELIVERY|SATURDAY[_\s-]*PICKUP)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
+  const fuel = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false // AHS/Oversize は除外
+    return /\bFUEL(\b|_)?\s*(SUR(CHG|CHARGE)?)?/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
+  const peak = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(PEAK|DEMAND|SURGE|CONGESTION|混雑)/.test([x?.type, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
+  const residential = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(RESIDENTIAL[_\s-]*DELIVERY|RESIDENTIAL)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
+  const deliveryArea = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
+  // additionalHandling は削除（specialHandling に移行）
+  const importProcessing = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
+  const saturdayDelivery = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(SATURDAY[_\s-]*DELIVERY|WEEKEND[_\s-]*DELIVERY|SATURDAY[_\s-]*PICKUP)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
   // 保険料（申告価格）
-  const insuredValue = pickSum((x) => /(DECLARED[_\s-]*VALUE|INSURED[_\s-]*VALUE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
+  const insuredValue = pickSum((x) => {
+    const cat = classifySurchargeLabel(x)
+    if (cat) return false
+    return /(DECLARED[_\s-]*VALUE|INSURED[_\s-]*VALUE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
+  })
 
   // 割引（raw、base未依存）：clampしない生値（後で最小化）
   const discRaw = Math.max(0, disc + discountsFromDetails)
 
-  // 既知サーチャージ合計（importProcessing, saturdayDelivery, insuredValue 含む）
-  const knownSurchargesSum = fuel + peak + residential + deliveryArea + additionalHandling + importProcessing + saturdayDelivery + insuredValue
+  // 既知サーチャージ合計（specialHandling はパッケージ単位で採用済み）
+  const knownSurchargesSum = fuel + peak + residential + deliveryArea + importProcessing + saturdayDelivery + insuredValue
+    + oversize + ahsDimension + ahsWeight + ahsPackaging + ahsNonStackable
 
   // === Baseの決定 ===
   // rsdごとのプローブ
@@ -223,7 +345,8 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   const discAll = Math.min(Math.max(0, discRaw), base)
 
   const netFreight = Math.max(0, base - discAll)
-	const other = total - netFreight - fuel - peak - residential - deliveryArea - additionalHandling - importProcessing - saturdayDelivery - insuredValue
+	const other = total - netFreight - fuel - peak - residential - deliveryArea - importProcessing - saturdayDelivery - insuredValue
+    - oversize - ahsDimension - ahsWeight - ahsPackaging - ahsNonStackable
 
   const dto: RateBreakdown = {
     baseCharge: money(base, currency),
@@ -234,11 +357,17 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       // 0円も行として表現するため、undefinedにせず0で保持
       residential: money(residential, currency),
       deliveryArea: money(deliveryArea, currency),
-      additionalHandling: money(additionalHandling, currency),
       importProcessing: money(importProcessing, currency),
       saturdayDelivery: money(saturdayDelivery, currency),
       insuredValue: money(insuredValue, currency),
       other: money(other, currency),
+    },
+    specialHandling: {
+      oversize: oversize > 0 ? money(oversize, currency) : undefined,
+      dimension: ahsDimension > 0 ? money(ahsDimension, currency) : undefined,
+      weight: ahsWeight > 0 ? money(ahsWeight, currency) : undefined,
+      packaging: ahsPackaging > 0 ? money(ahsPackaging, currency) : undefined,
+      nonStackable: ahsNonStackable > 0 ? money(ahsNonStackable, currency) : undefined,
     },
     totalNetCharge: money(total, currency),
   }
