@@ -26,6 +26,8 @@ export interface ExtendedQuoteParams {
   higherInsurance: boolean
   isPhoenixShipment: boolean
   phoenixMode: 'none' | 'shipper' | 'recipient'
+  samePackageCount?: number
+  declaredValueJPY?: number
 }
 
 export interface Package {

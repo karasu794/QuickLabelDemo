@@ -685,6 +685,36 @@ export default function QuoteFormComponent({
             {/* パッケージ情報 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">パッケージ情報</h3>
+              
+              {/* 同寸法×N入力（最初のパッケージのみ） */}
+              {packages.length === 1 && (
+                <div className="space-y-2 border rounded-lg p-4 bg-gray-50">
+                  <Label htmlFor="samePackageCount" className="text-sm font-medium">
+                    同じパッケージの個数
+                  </Label>
+                  <div className="flex items-center space-x-3">
+                    <Input
+                      id="samePackageCount"
+                      type="number"
+                      min="1"
+                      max="99"
+                      step="1"
+                      value={quoteParams.samePackageCount || 1}
+                      onChange={(e) => {
+                        const val = Math.max(1, Math.min(99, parseInt(e.target.value) || 1))
+                        onQuoteParamsChange("samePackageCount" as keyof ExtendedQuoteParams, val)
+                      }}
+                      className="w-24"
+                      data-test="same-package-count"
+                    />
+                    <span className="text-sm text-gray-600">個</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    同じサイズ・重さのパッケージを複数個送る場合、個数を入力してください。異なるサイズ・重さのパッケージを追加する場合は「パッケージを追加」を使用してください。
+                  </p>
+                </div>
+              )}
+              
               {packages.map((pkg, index) => (
                 <div key={pkg.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex justify-between items-center">

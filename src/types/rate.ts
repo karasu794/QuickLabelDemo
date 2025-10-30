@@ -10,6 +10,7 @@ export type RateBreakdown = {
     deliveryArea?: Money
     additionalHandling?: Money
     importProcessing?: Money
+    saturdayDelivery?: Money
     insuredValue?: Money
     other?: Money
   }

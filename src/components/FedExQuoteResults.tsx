@@ -6,7 +6,7 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion"
-import { Clock, Package, Truck, Calendar, ChevronRight } from "lucide-react"
+import { Clock, Package, Truck, ChevronRight } from "lucide-react"
 import { useShippingFormStore } from "@/store/shippingFormStore"
 import type { Package as QuotePackage, ExtendedQuoteParams } from "@/types/quote"
 
@@ -63,12 +63,15 @@ export interface FedExRate {
   breakdown?: {
     baseRate: number
     fuelSurcharge: number
-    volumeDiscount: number
+    volumeDiscount?: number
+    quantityDiscount?: number
     phoenixDiscount?: number
     residentialSurcharge?: number
     deliveryAreaSurcharge?: number
     deliveryAreaLevel?: string | number
     additionalHandlingSurcharge?: number
+    importProcessingSurcharge?: number
+    saturdayDeliverySurcharge?: number
     peakSurcharge?: number
     otherSurcharge?: number
     insuredValue?: number
@@ -165,12 +168,118 @@ export default function FedExQuoteResults({
     const i = Number.isFinite(n) ? Math.round(n) : 0  // API側のMath.roundと統一
     return `¥${i.toLocaleString('ja-JP', { maximumFractionDigits: 0 })}`
   }
-  const calculateDiscount = (rate: FedExRate) => {
-    const totalCharge = parseInt(rate.totalNetFedExCharge)
-    const baseRate = rate.breakdown?.baseRate || totalCharge * 1.3 // 仮の定価（30%割引と仮定）
-    const discountAmount = baseRate - totalCharge
-    const discountPercentage = Math.round((discountAmount / baseRate) * 100)
-    return { baseRate, discountAmount, discountPercentage }
+
+  // 0円非表示のヘルパー
+  const Line = ({ label, amount, testId }: { label: string; amount: number; testId?: string }) => {
+    if (!Number.isFinite(amount) || Math.round(amount) === 0) return null
+    return (
+      <div className="flex justify-between text-sm" data-test={testId}>
+        <span>{label}</span>
+        <span className="font-medium">{formatJPY(amount)}</span>
+      </div>
+    )
+  }
+
+  // 配送先国のタイムゾーンマップ（主要国）
+  const getDestinationTimezone = (countryCode?: string): string => {
+    const tzMap: { [key: string]: string } = {
+      'US': 'America/New_York',
+      'CA': 'America/Toronto',
+      'JP': 'Asia/Tokyo',
+      'GB': 'Europe/London',
+      'DE': 'Europe/Berlin',
+      'FR': 'Europe/Paris',
+      'AU': 'Australia/Sydney',
+      'CN': 'Asia/Shanghai',
+      'KR': 'Asia/Seoul',
+      'HK': 'Asia/Hong_Kong',
+      'SG': 'Asia/Singapore',
+    }
+    return tzMap[countryCode || ''] || 'UTC'
+  }
+
+  // 到着日のキー抽出（配送先タイムゾーンでYYYY-MM-DD形式）
+  const toLocalDateKey = (timestamp?: string, destinationCountry?: string): string => {
+    if (!timestamp) return '9999-12-31'
+    try {
+      // YYYY-MM-DD形式の文字列ならそのまま返す
+      if (/^\d{4}-\d{2}-\d{2}(?:\s|$)/.test(timestamp)) {
+        return timestamp.substring(0, 10)
+      }
+      
+      const date = new Date(timestamp)
+      if (Number.isNaN(date.getTime())) {
+        return '9999-12-31'
+      }
+      
+      // 配送先タイムゾーンで日付文字列を取得
+      const tz = getDestinationTimezone(destinationCountry || quoteParams?.destinationCountry || 'US')
+      
+      try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+        const parts = formatter.formatToParts(date)
+        const year = parts.find(p => p.type === 'year')?.value || ''
+        const month = parts.find(p => p.type === 'month')?.value || ''
+        const day = parts.find(p => p.type === 'day')?.value || ''
+        return `${year}-${month}-${day}`
+      } catch {
+        return date.toISOString().split('T')[0]
+      }
+    } catch {
+      return '9999-12-31'
+    }
+  }
+
+  // 日付フォーマット（M/D (曜)）
+  const formatDateHeader = (dateKey: string): string => {
+    if (dateKey === '9999-12-31') return '到着日未定'
+    try {
+      const date = new Date(dateKey)
+      if (Number.isNaN(date.getTime())) return dateKey
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      const weekdays = ['日', '月', '火', '水', '木', '金', '土']
+      const weekday = weekdays[date.getDay()]
+      return `${month}/${day} (${weekday})`
+    } catch {
+      return dateKey
+    }
+  }
+
+  // サービス優先度（ソート用）
+  const getServicePriority = (serviceType: string): number => {
+    const priorityMap: { [key: string]: number } = {
+      'INTERNATIONAL_FIRST': 1,
+      'INTERNATIONAL_PRIORITY_EXPRESS': 2,
+      'INTERNATIONAL_PRIORITY': 3,
+      'FEDEX_INTERNATIONAL_PRIORITY': 3,
+      'INTERNATIONAL_ECONOMY': 4,
+      'FEDEX_INTERNATIONAL_ECONOMY': 4,
+      'INTERNATIONAL_GROUND': 5,
+      'FEDEX_GROUND': 5,
+      'FEDEX_EXPRESS_SAVER': 4,
+      'FEDEX_2_DAY': 4,
+      'STANDARD_OVERNIGHT': 3,
+      'PRIORITY_OVERNIGHT': 2,
+      'FIRST_OVERNIGHT': 1,
+    }
+    return priorityMap[serviceType] || 99
+  }
+
+  // 時間抽出（estimatedDeliveryTimestamp から）
+  const extractTime = (timestamp?: string): string => {
+    if (!timestamp) return ''
+    // YYYY-MM-DD HH:MM 形式から時間部分を抽出
+    const match = timestamp.match(/\s+(\d{1,2}):(\d{2})/)
+    if (match) {
+      return `${match[1]}:${match[2]}`
+    }
+    return ''
   }
 
   // 配達日の解析とフォーマット
@@ -185,9 +294,10 @@ export default function FedExQuoteResults({
         day: 'numeric',
         weekday: 'short'
       })
+      const time = extractTime(rate.estimatedDeliveryTimestamp) || getDeliveryTime(rate.serviceType)
       return {
         date: formattedDate,
-        time: getDeliveryTime(rate.serviceType)
+        time
       }
     }
     
@@ -213,18 +323,21 @@ export default function FedExQuoteResults({
     return timeMap[serviceType] || '終日'
   }
 
-  // サービス名の日本語化
+  // サービス名の日本語化（FedEx公式表示名に準拠）
   const getServiceDisplayName = (serviceType: string) => {
     const nameMap: { [key: string]: string } = {
-      'INTERNATIONAL_PRIORITY': 'FedEx International Priority',
-      // 'INTERNATIONAL_FIRST': 'FedEx International First', // FedEx International First除外済み
-      'INTERNATIONAL_ECONOMY': 'FedEx International Economy',
-      'FEDEX_INTERNATIONAL_PRIORITY': 'FedEx International Priority',
-      'PRIORITY_OVERNIGHT': 'FedEx Priority Overnight',
-      'STANDARD_OVERNIGHT': 'FedEx Standard Overnight',
-      'FEDEX_2_DAY': 'FedEx 2Day',
-      'FEDEX_EXPRESS_SAVER': 'FedEx Express Saver',
-      'FEDEX_GROUND': 'FedEx Ground'
+      'INTERNATIONAL_FIRST': 'FedEx International First®',
+      'INTERNATIONAL_PRIORITY_EXPRESS': 'FedEx International Priority® Express',
+      'INTERNATIONAL_PRIORITY': 'FedEx International Priority®',
+      'INTERNATIONAL_ECONOMY': 'FedEx International Economy®',
+      'FEDEX_INTERNATIONAL_PRIORITY': 'FedEx International Priority®',
+      'FEDEX_INTERNATIONAL_ECONOMY': 'FedEx International Economy®',
+      'PRIORITY_OVERNIGHT': 'FedEx Priority Overnight®',
+      'STANDARD_OVERNIGHT': 'FedEx Standard Overnight®',
+      'FIRST_OVERNIGHT': 'FedEx First Overnight®',
+      'FEDEX_2_DAY': 'FedEx 2Day®',
+      'FEDEX_EXPRESS_SAVER': 'FedEx Express Saver®',
+      'FEDEX_GROUND': 'FedEx Ground®'
     }
     return nameMap[serviceType] || serviceType
   }
@@ -235,7 +348,6 @@ export default function FedExQuoteResults({
       onSelectRate(rate)
       return
     }
-    const { baseRate, discountAmount } = calculateDiscount(rate)
     const deliveryInfo = formatDeliveryInfo(rate)
     
     // Zustandストアに選択された料金を保存
@@ -255,6 +367,32 @@ export default function FedExQuoteResults({
     // 次のページに遷移
     router.push('/shipping/new/shipper')
   }
+
+  // 到着日でグルーピング（配送先タイムゾーンで日付化）
+  const groups: { [key: string]: FedExRate[] } = {}
+  const destinationCountry = quoteParams?.destinationCountry || 'US' // デフォルトはUS
+  for (const rate of rates) {
+    if (rate.serviceType === 'INTERNATIONAL_FIRST') continue // 除外済み
+    const dateKey = toLocalDateKey(rate.estimatedDeliveryTimestamp || rate.deliveryDate, destinationCountry)
+    if (!groups[dateKey]) groups[dateKey] = []
+    groups[dateKey].push(rate)
+  }
+
+  // グループ内をソート: 時間昇順 → サービス優先度
+  Object.keys(groups).forEach(dateKey => {
+    groups[dateKey].sort((a, b) => {
+      const timeA = extractTime(a.estimatedDeliveryTimestamp)
+      const timeB = extractTime(b.estimatedDeliveryTimestamp)
+      if (timeA && timeB) {
+        const timeCompare = timeA.localeCompare(timeB)
+        if (timeCompare !== 0) return timeCompare
+      }
+      return getServicePriority(a.serviceType) - getServicePriority(b.serviceType)
+    })
+  })
+
+  // 日付キーをソート
+  const dateOrder = Object.keys(groups).sort((a, b) => a.localeCompare(b))
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6" data-test="quote-container">
@@ -295,240 +433,138 @@ export default function FedExQuoteResults({
           )}
         </div>
         
-        <Accordion type="multiple" collapsible className="space-y-3">
-          {rates
-            .filter(rate => rate.serviceType !== 'INTERNATIONAL_FIRST') // FedEx International Firstを除外
-            .map((rate, index) => {
-            const { baseRate, discountAmount, discountPercentage } = calculateDiscount(rate)
-            const deliveryInfo = formatDeliveryInfo(rate)
-            const isFirst = index === 0
+        {/* 到着日グループごとに表示 */}
+        <div className="space-y-6">
+          {dateOrder.map(dateKey => {
+            const groupRates = groups[dateKey]
+            const groupTotal = groupRates.reduce((sum, r) => sum + parseInt(r.totalNetFedExCharge), 0)
+            const dateHeader = formatDateHeader(dateKey)
             
             return (
-              <AccordionItem
-                key={`${rate.serviceType}-${index}`}
-                value={`rate-${index}`}
-                className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-                data-test="quote-card"
-              >
-                <AccordionTrigger className="hover:bg-gray-50 p-0">
-                  <div className="flex items-center justify-between w-full p-4">
-                    <div className="flex items-center space-x-4 flex-1">
-                      {/* 配送アイコン */}
-                      <div className="flex items-center space-x-2">
-                        <Package className="h-5 w-5 text-orange-600" />
-                        {isFirst && (
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            最安値
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {/* 配送情報 */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-6 space-y-2 lg:space-y-0">
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="h-4 w-4 text-gray-500" />
-                            <span className="font-medium text-gray-900">{deliveryInfo.date}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-700">{deliveryInfo.time}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Truck className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-700 font-medium">
-                              {getServiceDisplayName(rate.serviceType)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* 料金表示 */}
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-sm text-gray-500 line-through">
-                          {formatJPY(baseRate)}
-                        </div>
-                        <div
-                          className="bg-orange-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-orange-600 transition-colors"
-                          data-test="quote-select"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleRateSelect(rate)
-                          }}
-                        >
-                          <span className="text-lg font-bold">
-                            {formatJPY(rate.totalNetFedExCharge)}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
-                </AccordionTrigger>
+              <div key={dateKey} data-test={`group-date-${dateKey}`} className="space-y-3">
+                {/* グループヘッダー */}
+                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{dateHeader}</h3>
+                  <span className="text-sm text-gray-600">見積り合計: {formatJPY(groupTotal)}</span>
+                </div>
                 
-                <AccordionContent>
-                  <div className="border-t bg-gray-50 p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* 料金内訳 */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-gray-900">料金内訳</h4>
-                        <div className="bg-white rounded-lg border border-gray-200 p-4" data-test="breakdown-table">
-                          <div className="space-y-3">
-                            {/* 基本料金（常に表示） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-baseRate">
-                              <span className="text-gray-700">基本料金</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.baseRate ?? baseRate)}
-                              </span>
-                            </div>
-
-                            {/* フェニックス割引（数量割引） 常に表示・負値表記 */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-volumeDiscount">
-                              <span className="text-red-600 font-medium">フェニックス割引</span>
-                              <span className="font-medium text-red-600">-{formatJPY(Math.abs(rate.breakdown?.volumeDiscount || 0))}</span>
-                            </div>
-
-                            {/* 燃料割増金（常に表示） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-fuelSurcharge">
-                              <span className="text-gray-700">燃料割増金</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.fuelSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* 混雑時割増金（常に表示） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-peakSurcharge">
-                              <span className="text-gray-700">混雑時割増金</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.peakSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* 個人宅加算（常に表示） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-residentialSurcharge">
-                              <span className="text-gray-700">個人宅加算</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.residentialSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* 配達地域外（常に表示。テストIDは outOfDeliveryArea に合わせる） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-outOfDeliveryArea">
-                              <span className="text-gray-700">{`配達地域外${rate.breakdown?.deliveryAreaLevel ? ` レベル${rate.breakdown.deliveryAreaLevel}` : ''}`}</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.deliveryAreaSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* その他特別取扱い手数料（常に表示） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-additionalHandlingSurcharge">
-                              <span className="text-gray-700">その他特別取扱い手数料 - 寸法</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.additionalHandlingSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* 米国輸入処理手数料（常に表示。テストIDは usImportProcessingFee に合わせる） */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-usImportProcessingFee">
-                              <span className="text-gray-700">米国輸入処理手数料</span>
-                              <span className="font-medium text-gray-900">{formatJPY(rate.breakdown?.importProcessingSurcharge || 0)}</span>
-                            </div>
-
-                            {/* 保険料（申告価格） 常に表示。テストIDは declaredValue に合わせる */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-declaredValue">
-                              <span className="text-gray-900 font-semibold">保険料（申告価格）</span>
-                              <span className="text-gray-900 font-semibold">{formatJPY(rate.breakdown?.insuredValue || 0)}</span>
-                            </div>
-
-                            {/* その他（未分類サーチャージ等） 常に表示 */}
-                            <div className="flex justify-between items-center" data-test="breakdown-row-otherSurcharge">
-                              <span className="text-gray-700">その他特別手数料</span>
-                              <span className="font-medium text-gray-900">
-                                {formatJPY(rate.breakdown?.otherSurcharge || 0)}
-                              </span>
-                            </div>
-
-                            {/* マッピング済み追加料金（個別行） 0でも出力（ただしデータ上0が来ない設計）*/}
-                            {Array.isArray(rate.breakdown?.extraSurchargesJa) && rate.breakdown!.extraSurchargesJa!.map((x, idx) => (
-                              <div key={`extra-top-${idx}`} className="flex justify-between items-center" data-test={`breakdown-row-extra-${idx}`}>
-                                <span className="text-gray-700">{x.labelJa}</span>
-                                <span className="font-medium text-gray-900">{formatJPY(x.amount || 0)}</span>
+                <Accordion type="multiple" collapsible className="space-y-3">
+                  {groupRates.map((rate, rateIndex) => {
+                    const deliveryInfo = formatDeliveryInfo(rate)
+                    const bd = rate.breakdown || {}
+                    
+                    return (
+                      <AccordionItem
+                        key={`${rate.serviceType}-${dateKey}-${rateIndex}`}
+                        value={`rate-${dateKey}-${rateIndex}`}
+                        className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                        data-test="quote-card"
+                      >
+                        <AccordionTrigger className="hover:bg-gray-50 p-0">
+                          <div className="flex items-center justify-between w-full p-4">
+                            <div className="flex items-center space-x-4 flex-1">
+                              <div className="flex items-center space-x-2">
+                                <Package className="h-5 w-5 text-orange-600" />
                               </div>
-                            ))}
-
-                            {/* （割引は基本料金直下で表示済み） */}
-                            
-                            {/* 区切り線 */}
-                            <div className="border-t border-gray-300 pt-3 mt-4">
-                              <div className="flex justify-between items-center" data-test="breakdown-total">
-                                <span className="text-lg font-semibold text-gray-900">見積り合計</span>
-                                <span className="text-lg font-bold text-orange-600">
-                                  {formatJPY(rate.totalNetFedExCharge)}
-                                </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-6 space-y-2 lg:space-y-0">
+                                  <div className="flex items-center space-x-2">
+                                    <Clock className="h-4 w-4 text-gray-500" />
+                                    <span className="text-gray-700">{deliveryInfo.time}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Truck className="h-4 w-4 text-gray-500" />
+                                    <span className="text-gray-700 font-medium">
+                                      {getServiceDisplayName(rate.serviceType)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                              {process.env.NODE_ENV !== 'production' && (() => {
-                                const calc =
-                                  (rate.breakdown?.baseRate || 0)
-                                  - (rate.breakdown?.volumeDiscount || 0)
-                                  + (rate.breakdown?.fuelSurcharge || 0)
-                                  + (rate.breakdown?.peakSurcharge || 0)
-                                  + (rate.breakdown?.residentialSurcharge || 0)
-                                  + (rate.breakdown?.deliveryAreaSurcharge || 0)
-                                  + (rate.breakdown?.additionalHandlingSurcharge || 0)
-                                  + (rate.breakdown?.importProcessingSurcharge || 0)
-                                  + (rate.breakdown?.otherSurcharge || 0)
-                                  + (rate.breakdown?.insuredValue || 0)
-                                // extraSurchargesJa は other から控除済みのため合計には含めない
-                                const api = Number(rate.totalNetFedExCharge ?? 0)
-                                if (Math.abs(calc - api) > 1) {
-                                  console.warn('[quote][total-mismatch]', { calc, api, diff: calc - api, breakdown: rate.breakdown })
-                                }
-                                return null
-                              })()}
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <div className="text-right">
+                                <div
+                                  className="bg-orange-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-orange-600 transition-colors"
+                                  data-test="quote-select"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRateSelect(rate)
+                                  }}
+                                >
+                                  <span className="text-lg font-bold">
+                                    {formatJPY(rate.totalNetFedExCharge)}
+                                  </span>
+                                </div>
+                              </div>
+                              <ChevronRight className="h-5 w-5 text-gray-400" />
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      
-                      {/* サービス詳細 */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-gray-900">サービス詳細</h4>
-                        <div className="bg-white rounded-lg border border-gray-200 p-4">
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-700">配送タイプ</span>
-                              <span className="font-medium text-gray-900">{rate.rateType}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-700">梱包タイプ</span>
-                              <span className="font-medium text-gray-900">{rate.packagingType}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-700">お客様割引</span>
-                              <span className="font-medium text-green-600">
-                                {discountPercentage}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        </AccordionTrigger>
                         
-                        <Button
-                          data-test="quote-select"
-                          onClick={() => handleRateSelect(rate)}
-                          className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-                        >
-                          このサービスを選択
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                        <AccordionContent>
+                          <div className="border-t bg-gray-50 p-4">
+                            <div className="bg-white rounded-lg border border-gray-200 p-4" data-test="breakdown-table">
+                              <div className="space-y-3">
+                                {/* FedEx公式順: 基本 → 米国輸入処理 → 配達地域外 → 混雑時 → 土曜配達 → 燃料 → 数量割引(マイナス) → 合計 */}
+                                <Line label="基本料金" amount={bd.baseRate || 0} testId="breakdown-row-baseRate" />
+                                <Line label="米国輸入処理手数料" amount={bd.importProcessingSurcharge || 0} testId="breakdown-row-usImportProcessingFee" />
+                                <Line 
+                                  label={`配達地域外${bd.deliveryAreaLevel ? ` レベル${bd.deliveryAreaLevel}` : ''}`} 
+                                  amount={bd.deliveryAreaSurcharge || 0} 
+                                  testId="breakdown-row-outOfDeliveryArea" 
+                                />
+                                <Line label="混雑時割増金" amount={bd.peakSurcharge || 0} testId="breakdown-row-peakSurcharge" />
+                                <Line label="土曜配達" amount={bd.saturdayDeliverySurcharge || 0} testId="breakdown-row-saturdayDelivery" />
+                                <Line label="燃料割増金" amount={bd.fuelSurcharge || 0} testId="breakdown-row-fuelSurcharge" />
+                                
+                                {/* 数量割引（マイナス表示、0円は非表示、Math.roundで整数化） */}
+                                {((bd.quantityDiscount || bd.volumeDiscount) && Math.round(bd.quantityDiscount || bd.volumeDiscount || 0) > 0) && (
+                                  <div className="flex justify-between text-sm" data-test="breakdown-row-quantityDiscount">
+                                    <span className="text-red-600 font-medium">数量割引</span>
+                                    <span className="font-medium text-red-600">-{formatJPY(Math.round(bd.quantityDiscount || bd.volumeDiscount || 0))}</span>
+                                  </div>
+                                )}
+                                
+                                {/* その他のサーチャージ（0円非表示） */}
+                                <Line label="個人宅加算" amount={bd.residentialSurcharge || 0} testId="breakdown-row-residentialSurcharge" />
+                                <Line label="その他特別取扱い手数料 - 寸法" amount={bd.additionalHandlingSurcharge || 0} testId="breakdown-row-additionalHandlingSurcharge" />
+                                <Line label="保険料（申告価格）" amount={bd.insuredValue || 0} testId="breakdown-row-declaredValue" />
+                                <Line label="その他特別手数料" amount={bd.otherSurcharge || 0} testId="breakdown-row-otherSurcharge" />
+                                
+                                {/* extraSurchargesJa（0円非表示） */}
+                                {Array.isArray(bd.extraSurchargesJa) && bd.extraSurchargesJa.map((x, idx) => (
+                                  <Line key={`extra-${idx}`} label={x.labelJa} amount={x.amount || 0} testId={`breakdown-row-extra-${idx}`} />
+                                ))}
+                                
+                                {/* 合計（常に表示） */}
+                                <div className="border-t border-gray-300 pt-3 mt-4">
+                                  <div className="flex justify-between items-center" data-test="breakdown-total">
+                                    <span className="text-lg font-semibold text-gray-900">見積り合計</span>
+                                    <span className="text-lg font-bold text-orange-600">
+                                      {formatJPY(rate.totalNetFedExCharge)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Button
+                              data-test="quote-select"
+                              onClick={() => handleRateSelect(rate)}
+                              className="w-full mt-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+                            >
+                              このサービスを選択
+                            </Button>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )
+                  })}
+                </Accordion>
+              </div>
             )
           })}
-        </Accordion>
+        </div>
       </div>
     </div>
   )

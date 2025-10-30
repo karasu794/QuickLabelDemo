@@ -8,4 +8,9 @@ export function isServiceStepEnabled(): boolean {
   return v === '1' || v === 'true' || v === 'on' || v === 'yes'
 }
 
+export function isPhoenixDiscountEnabled(): boolean {
+  const v = (process.env.FEATURE_PHOENIX_DISCOUNT ?? 'false').toLowerCase()
+  return v === '1' || v === 'true' || v === 'on' || v === 'yes'
+}
+
 

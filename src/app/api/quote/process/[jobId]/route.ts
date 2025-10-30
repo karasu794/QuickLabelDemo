@@ -377,34 +377,69 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
     throw new Error('NO_PACKAGES_AFTER_NORMALIZE')
   }
 
-  const requestedPackageLineItems = normalizedPkgs.map((pkg, index) => {
-    const packageItem: any = {
-      sequenceNumber: index + 1,
-      weight: {
-        units: 'KG',
-        value: Number(pkg.weight) || 0
-      }
-    };
+  // 同寸法×Nの処理: samePackageCount > 1 かつ packages.length === 1 の場合
+  const samePackageCount = quoteParams.samePackageCount ? Math.max(1, Math.min(99, Number(quoteParams.samePackageCount) || 1)) : 1
+  const shouldUseGroupPackageCount = samePackageCount > 1 && normalizedPkgs.length === 1
 
-    // カスタム梱包材の場合は寸法を追加
-    if (pkg.packagingType === 'customer') {
-      packageItem.dimensions = {
-        length: Number(pkg.length) || 0,
-        width: Number(pkg.width) || 0,
-        height: Number(pkg.height) || 0,
-        units: 'CM'
-      };
-    }
+  // 同寸法×Nの場合、同一パッケージをN回展開
+  const requestedPackageLineItems = shouldUseGroupPackageCount 
+    ? Array(samePackageCount).fill(normalizedPkgs[0]).map((pkg, index) => {
+        const packageItem: any = {
+          sequenceNumber: index + 1,
+          weight: {
+            units: 'KG',
+            value: Number(pkg.weight) || 0
+          }
+        };
+        // カスタム梱包材の場合は寸法を追加
+        if (pkg.packagingType === 'customer' || pkg.packagingType === 'YOUR_PACKAGING') {
+          if (pkg.length && pkg.width && pkg.height) {
+            packageItem.dimensions = {
+              length: Number(pkg.length) || 0,
+              width: Number(pkg.width) || 0,
+              height: Number(pkg.height) || 0,
+              units: 'CM'
+            };
+          }
+        }
+        // 申告価額が設定されている場合のみ追加
+        if (quoteParams.higherInsurance && pkg.declaredValue && Number(pkg.declaredValue) > 0) {
+          const declaredValueJPY = Number(pkg.declaredValue)
+          packageItem.declaredValue = { amount: declaredValueJPY, currency: 'JPY' }
+          console.log(`📦 荷物${pkg.id}の申告価額: ¥${declaredValueJPY.toLocaleString()} (currency: JPY)`) 
+        }
+        return packageItem;
+      })
+    : normalizedPkgs.map((pkg, index) => {
+        const packageItem: any = {
+          sequenceNumber: index + 1,
+          weight: {
+            units: 'KG',
+            value: Number(pkg.weight) || 0
+          }
+        };
 
-  // 申告価額が設定されている場合のみ追加（ドキュメント準拠：通貨はフォーム通貨/表示通貨をそのまま使用）
-    if (pkg.declaredValue && Number(pkg.declaredValue) > 0) {
-      const declaredValueJPY = Number(pkg.declaredValue)
-      packageItem.declaredValue = { amount: declaredValueJPY, currency: 'JPY' }
-      console.log(`📦 荷物${pkg.id}の申告価額: ¥${declaredValueJPY.toLocaleString()} (currency: JPY)`) 
-    }
+        // カスタム梱包材の場合は寸法を追加
+        if (pkg.packagingType === 'customer' || pkg.packagingType === 'YOUR_PACKAGING') {
+          if (pkg.length && pkg.width && pkg.height) {
+            packageItem.dimensions = {
+              length: Number(pkg.length) || 0,
+              width: Number(pkg.width) || 0,
+              height: Number(pkg.height) || 0,
+              units: 'CM'
+            };
+          }
+        }
 
-    return packageItem;
-  });
+        // 申告価額が設定されている場合のみ追加（higherInsurance フラグ確認）
+        if (quoteParams.higherInsurance && pkg.declaredValue && Number(pkg.declaredValue) > 0) {
+          const declaredValueJPY = Number(pkg.declaredValue)
+          packageItem.declaredValue = { amount: declaredValueJPY, currency: 'JPY' }
+          console.log(`📦 荷物${pkg.id}の申告価額: ¥${declaredValueJPY.toLocaleString()} (currency: JPY)`) 
+        }
+
+        return packageItem;
+      });
 
   // 複数個口の場合のログ出力
   if (normalizedPkgs.length > 1) {
@@ -417,9 +452,10 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
   // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue計算
   let totalInsuredValue = null;
   if (quoteParams.higherInsurance) {
-    const totalDeclaredValueJPY = (Array.isArray(packages) ? packages : []).reduce((sum, pkg: any) => {
-      return sum + (pkg?.declaredValue ? Number(pkg.declaredValue) : 0);
-    }, 0);
+    // 同寸法×Nの場合は単一パッケージの価額×N、別パッケージの場合は合算
+    const totalDeclaredValueJPY = shouldUseGroupPackageCount
+      ? (normalizedPkgs[0]?.declaredValue || 0) * samePackageCount
+      : normalizedPkgs.reduce((sum, pkg) => sum + (pkg.declaredValue || 0), 0);
     
     if (totalDeclaredValueJPY > 0) {
       // JPYをそのまま使用（FedX APIはJPYもサポート）
@@ -428,7 +464,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
         currency: 'JPY'
       };
       
-      console.log(`💰 高額保険設定: 総申告価額 ¥${totalDeclaredValueJPY.toLocaleString()}`);
+      console.log(`💰 高額保険設定: 総申告価額 ¥${totalDeclaredValueJPY.toLocaleString()}${shouldUseGroupPackageCount ? ` (同寸法×${samePackageCount})` : ''}`);
     }
   }
 
@@ -455,7 +491,10 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
         address: shipperAddress
       },
       recipient: {
-        address: { ...recipientAddress, residential: Boolean(quoteParams.isResidential) }
+        address: { 
+          ...recipientAddress, 
+          residential: Boolean(quoteParams.isResidential) 
+        }
       },
       shipDatestamp: quoteParams.shipDate,
       // serviceTypeを削除して、すべての利用可能なサービスを取得
@@ -473,8 +512,10 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
           }
         }
       },
-      // 複数個口の場合のみ、groupPackageCountを追加
-      ...(normalizedPkgs.length > 1 && { groupPackageCount: normalizedPkgs.length }),
+      // groupPackageCount: 同寸法×Nの場合のみ追加（別パッケージ追加の場合は従来どおり複数行）
+      ...(shouldUseGroupPackageCount && { groupPackageCount: samePackageCount }),
+      // 複数個口（別パッケージ）の場合も従来どおり groupPackageCount を追加
+      ...(!shouldUseGroupPackageCount && normalizedPkgs.length > 1 && { groupPackageCount: normalizedPkgs.length }),
       // 高額保険が有効で申告価額が設定されている場合のtotalInsuredValue
       ...(totalInsuredValue && { totalInsuredValue }),
       requestedPackageLineItems: requestedPackageLineItems
@@ -764,7 +805,7 @@ async function getFedExRates(accessToken: string, requestData: any) {
   return await response.json();
 }
 
-// Delivery Area Level（例: LEVEL A → 'A'）抽出
+// Delivery Area Level（例: LEVEL A/B → 'A'/'B'）抽出
 function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined {
   try {
     const ratedShipmentDetails = Array.isArray(detail?.ratedShipmentDetails) ? detail.ratedShipmentDetails : []
@@ -778,8 +819,9 @@ function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined
       for (const s of arrays) {
         const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description].filter(Boolean).join(' ').toUpperCase()
         if (/(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test(text)) {
-          const m = text.match(/LEVEL\s*([A-Z])/)
-          if (m && m[1]) return m[1]
+          // LEVEL A または LEVEL B を抽出（大文字/小文字対応）
+          const m = text.match(/LEVEL\s*([AB])/i)
+          if (m && m[1]) return m[1].toUpperCase()
         }
       }
     }
@@ -1015,9 +1057,10 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         const daLevel = extractDeliveryAreaLevelFromRateDetail(detail)
         const ah = Math.max(0, normalized.surcharges.additionalHandling?.amount || 0)
         const importProc = Math.max(0, normalized.surcharges.importProcessing?.amount || 0)
+        const saturdayDelivery = Math.max(0, normalized.surcharges.saturdayDelivery?.amount || 0)
         let other = Math.max(0, normalized.surcharges.other?.amount || 0)
 
-        // フェニックス割引（数量割引）: LIST と ACCOUNT の総額差から導出（割引が0のとき）
+        // 数量割引: FedEx APIが返す discount（フェニックス割引は feature flag で無効化）
         if (accountDiscount === 0) {
           const rsdArrAll = Array.isArray((detail as any)?.ratedShipmentDetails) ? (detail as any).ratedShipmentDetails : []
           const toNum = (v: any) => {
@@ -1040,6 +1083,30 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
           if (listTotal > 0 && accountTotal > 0 && listTotal > accountTotal) {
             accountDiscount = Math.max(0, listTotal - accountTotal)
           }
+        }
+
+        // deliveryTimestamp を抽出（commit?.dateDetail または commit から）
+        let deliveryTimestamp: string | undefined
+        let deliveryDateStr: string | undefined
+        let deliveryDayOfWeek: string | undefined
+        if (detail?.commit?.dateDetail) {
+          const dateDetail = detail.commit.dateDetail
+          // dayFormat が YYYY-MM-DD 形式の場合、それをそのまま使用
+          if (dateDetail.dayFormat) {
+            deliveryDateStr = dateDetail.dayFormat
+            deliveryTimestamp = dateDetail.dayFormat
+          }
+          // dayOfWeek を取得
+          if (dateDetail.dayOfWeek) {
+            deliveryDayOfWeek = dateDetail.dayOfWeek
+          }
+          // time があれば結合
+          if (dateDetail.time) {
+            deliveryTimestamp = `${deliveryDateStr} ${dateDetail.time}`
+          }
+        } else if (detail?.commit?.dayFormat) {
+          deliveryDateStr = detail.commit.dayFormat
+          deliveryTimestamp = detail.commit.dayFormat
         }
 
         // --- 追加サーチャージの詳細（既知カテゴリ以外を日本語ラベルで集約） ---
@@ -1092,15 +1159,16 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         const breakdown = {
           serviceType: detail.serviceName,
           totalNetFedExCharge: Math.round(ratedShipment.totalNetCharge || 0).toString(),
-          estimatedDeliveryTimestamp: detail.commit?.dateDetail?.dayFormat,
-          deliveryDate: detail.commit?.dateDetail?.dayFormat,
-          deliveryDayOfWeek: detail.commit?.dateDetail?.dayOfWeek,
+          estimatedDeliveryTimestamp: deliveryTimestamp || detail.commit?.dateDetail?.dayFormat,
+          deliveryDate: deliveryDateStr || detail.commit?.dateDetail?.dayFormat,
+          deliveryDayOfWeek: deliveryDayOfWeek || detail.commit?.dateDetail?.dayOfWeek,
           packagingType: detail.packagingType || 'YOUR_PACKAGING',
           rateType: 'ACCOUNT',
           breakdown: {
             // UIの行レンダリングで利用する主要項目
             baseRate,
-            volumeDiscount: accountDiscount,
+            volumeDiscount: accountDiscount, // FedExの数量割引（フェニックス割引は無効化）
+            quantityDiscount: accountDiscount, // 数量割引のエイリアス（ラベル用）
             importProcessingSurcharge: importProc,
             fuelSurcharge: fuel,
             peakSurcharge: peak,
@@ -1108,6 +1176,7 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
             deliveryAreaSurcharge: da,
             deliveryAreaLevel: daLevel || undefined,
             additionalHandlingSurcharge: ah,
+            saturdayDeliverySurcharge: saturdayDelivery,
             otherSurcharge: other,
             insuredValue,
             extraSurchargesJa,

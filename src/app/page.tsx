@@ -68,7 +68,9 @@ export default function Home() {
     isResidential: false,
     higherInsurance: false,
     isPhoenixShipment: false,
-    phoenixMode: 'none'
+    phoenixMode: 'none',
+    samePackageCount: 1,
+    declaredValueJPY: 0
   })
 
   const [packages, setPackages] = useState<Package[]>([{
