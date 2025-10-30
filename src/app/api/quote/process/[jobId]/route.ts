@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { extractResidentialSurchargeFromRateDetail, extractInsuredValueFromRateDetail } from '@/lib/quote/breakdown'
 import { normalizeFedExRate } from '@/lib/rates/normalizeFedExRate'
+import { deriveDeliveryAreaLevel } from '@/lib/rates/fedex/mapping'
 import { computeCharges } from '@/lib/charges/core'
 import { groupAndSumByLabel } from '@/lib/rates/surchargeLabels'
 import { toArray, withDefaults, mapOrEmpty } from '@/lib/utils/safe'
@@ -808,6 +809,7 @@ async function getFedExRates(accessToken: string, requestData: any) {
 }
 
 // Delivery Area Level（例: LEVEL A/B → 'A'/'B'）抽出
+// deriveDeliveryAreaLevel を使用（列挙値ベースのマッピングモジュール）
 function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined {
   try {
     const ratedShipmentDetails = Array.isArray(detail?.ratedShipmentDetails) ? detail.ratedShipmentDetails : []
@@ -816,15 +818,31 @@ function extractDeliveryAreaLevelFromRateDetail(detail: any): string | undefined
       const shipmentRateDetails = Array.isArray(rsd?.shipmentRateDetails) ? rsd.shipmentRateDetails : []
       for (const srd of shipmentRateDetails) {
         if (Array.isArray(srd?.surcharges)) arrays.push(...srd.surcharges)
+        if (Array.isArray(srd?.surCharges)) arrays.push(...srd.surCharges)
       }
       if (Array.isArray(rsd?.surcharges)) arrays.push(...rsd.surcharges)
-      for (const s of arrays) {
-        const text = [s?.surchargeType, s?.type, s?.code, s?.name, s?.description].filter(Boolean).join(' ').toUpperCase()
-        if (/(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test(text)) {
-          // LEVEL A または LEVEL B を抽出（大文字/小文字対応）
-          const m = text.match(/LEVEL\s*([AB])/i)
-          if (m && m[1]) return m[1].toUpperCase()
+      if (Array.isArray(rsd?.surCharges)) arrays.push(...rsd.surCharges)
+      
+      // package側も確認
+      const ratedPkgs: any[] = []
+      if (Array.isArray(rsd?.ratedPackages)) ratedPkgs.push(...rsd.ratedPackages)
+      if (Array.isArray(rsd?.ratedPackageDetails)) ratedPkgs.push(...rsd.ratedPackageDetails)
+      for (const pkg of ratedPkgs) {
+        const prd = (pkg as any)?.packageRateDetail || (pkg as any)?.packageRateDetails || (pkg as any)?.ratedPackageDetail
+        if (prd) {
+          if (Array.isArray(prd?.surcharges)) arrays.push(...prd.surcharges)
+          if (Array.isArray(prd?.surCharges)) arrays.push(...prd.surCharges)
         }
+      }
+      
+      // Delivery Area サーチャージからレベルを抽出
+      for (const s of arrays) {
+        const level = deriveDeliveryAreaLevel({
+          code: s?.code,
+          description: s?.description,
+          name: s?.name,
+        })
+        if (level) return level
       }
     }
     return undefined

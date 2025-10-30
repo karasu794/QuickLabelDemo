@@ -330,22 +330,19 @@ export default function FedExQuoteResults({
   }
 
   // サービス名の日本語化（FedEx公式表示名に準拠）
+  // SERVICE_TYPE_DISPLAY_MAP を使用（列挙値ベースのマッピング）
   const getServiceDisplayName = (serviceType: string) => {
-    const nameMap: { [key: string]: string } = {
-      'INTERNATIONAL_FIRST': 'FedEx International First®',
-      'INTERNATIONAL_PRIORITY_EXPRESS': 'FedEx International Priority® Express',
-      'INTERNATIONAL_PRIORITY': 'FedEx International Priority®',
-      'INTERNATIONAL_ECONOMY': 'FedEx International Economy®',
-      'FEDEX_INTERNATIONAL_PRIORITY': 'FedEx International Priority®',
-      'FEDEX_INTERNATIONAL_ECONOMY': 'FedEx International Economy®',
-      'PRIORITY_OVERNIGHT': 'FedEx Priority Overnight®',
-      'STANDARD_OVERNIGHT': 'FedEx Standard Overnight®',
-      'FIRST_OVERNIGHT': 'FedEx First Overnight®',
-      'FEDEX_2_DAY': 'FedEx 2Day®',
-      'FEDEX_EXPRESS_SAVER': 'FedEx Express Saver®',
-      'FEDEX_GROUND': 'FedEx Ground®'
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { SERVICE_TYPE_DISPLAY_MAP } = require('@/lib/rates/fedex/mapping')
+    return SERVICE_TYPE_DISPLAY_MAP[serviceType] || serviceType
+  }
+  
+  // 配達地域外ラベル生成（レベルA/B対応）
+  const getDeliveryAreaLabel = (level?: string | number): string => {
+    if (level === 'A' || level === 'B' || level === 'a' || level === 'b') {
+      return `配達地域外（レベル${String(level).toUpperCase()}）`
     }
-    return nameMap[serviceType] || serviceType
+    return '配達地域外'
   }
 
   // 配送オプション選択時の処理（差し替え可能）
@@ -443,7 +440,6 @@ export default function FedExQuoteResults({
         <div className="space-y-6">
           {dateOrder.map(dateKey => {
             const groupRates = groups[dateKey]
-            const groupTotal = groupRates.reduce((sum, r) => sum + parseInt(r.totalNetFedExCharge), 0)
             const dateHeader = formatDateHeader(dateKey)
             
             return (
@@ -451,7 +447,6 @@ export default function FedExQuoteResults({
                 {/* グループヘッダー */}
                 <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                   <h3 className="text-lg font-semibold text-gray-900">{dateHeader}</h3>
-                  <span className="text-sm text-gray-600">見積り合計: {formatJPY(groupTotal)}</span>
                 </div>
                 
                 <Accordion type="multiple" collapsible className="space-y-3">
@@ -518,7 +513,7 @@ export default function FedExQuoteResults({
                                 <Line label="基本料金" amount={bd.baseRate || 0} testId="breakdown-row-baseRate" />
                                 <Line label="米国輸入処理手数料" amount={bd.importProcessingSurcharge || 0} testId="breakdown-row-usImportProcessingFee" />
                                 <Line 
-                                  label={`配達地域外${bd.deliveryAreaLevel ? ` レベル${bd.deliveryAreaLevel}` : ''}`} 
+                                  label={getDeliveryAreaLabel(bd.deliveryAreaLevel)} 
                                   amount={bd.deliveryAreaSurcharge || 0} 
                                   testId="breakdown-row-outOfDeliveryArea" 
                                 />
