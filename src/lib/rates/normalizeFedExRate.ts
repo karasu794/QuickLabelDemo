@@ -1,6 +1,7 @@
 import type { RateBreakdown } from '@/types/rate'
 import type { Money } from '@/types/money'
 import { classifySurchargeLabel, type AhsCategory } from './fedex/surchargeMaps'
+import { classifySurchargeByFeeDetailKey, isMaxValueCategory, type SurchargeCategory } from './fedex/feeDetailKeys'
 
 const money = (amount: number, currency: string): Money => ({ amount, currency })
 // 一元マッピング（ドキュメント準拠の代表例。観測・拡張で随時追加）
@@ -172,8 +173,75 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     }
   }
 
-  const pickSum = (pred: (x: any) => boolean) =>
-    Math.max(0, Math.round(fromDetails.filter(pred).reduce((s, x) => s + toNumber(x?.amount), 0)))
+  // === Debug: 各line itemのraw情報を出力 ===
+  const DEBUG_RATE_RECONCILE = String(process.env.DEBUG_RATE_RECONCILE || '').toLowerCase() === 'true' || process.env.DEBUG_RATE_RECONCILE === '1'
+  if (DEBUG_RATE_RECONCILE && !rawLoggedOnce) {
+    try {
+      const tableData = fromDetails.map((s: any) => ({
+        type: s?.type || '',
+        surchargeType: s?.surchargeType || '',
+        code: s?.code || '',
+        name: s?.name || '',
+        description: s?.description || '',
+        amount: toNumber(s?.amount),
+        category: classifySurchargeByFeeDetailKey(s) || 'UNKNOWN',
+      }))
+      // eslint-disable-next-line no-console
+      console.table(tableData)
+      ;(normalizeFedExRate as any).__rawLoggedOnce = true
+    } catch {}
+  }
+
+  // === Fee detail keyベースの分類と集計 ===
+  // カテゴリごとに分類し、最大値採用対象はshipment単位で最大値のみ採用
+  const surchargesByCategory: Record<SurchargeCategory | 'UNKNOWN', Array<{ s: any; amount: number }>> = {
+    FUEL: [],
+    PEAK: [],
+    RESIDENTIAL: [],
+    DELIVERY_AREA: [],
+    IMPORT_PROCESSING: [],
+    SATURDAY_DELIVERY: [],
+    INSURED_VALUE: [],
+    OVERSIZE: [],
+    AHS_DIMENSION: [],
+    AHS_WEIGHT: [],
+    AHS_PACKAGING: [],
+    AHS_NONSTACKABLE: [],
+    UNKNOWN: [],
+  }
+
+  for (const s of fromDetails) {
+    const cat = classifySurchargeByFeeDetailKey(s)
+    const amount = toNumber(s?.amount)
+    if (cat) {
+      surchargesByCategory[cat].push({ s, amount })
+    } else {
+      // AHS/Oversize系を再チェック（既存のclassifySurchargeLabelで）
+      const ahsCat = classifySurchargeLabel(s)
+      if (ahsCat) {
+        if (ahsCat === 'OVERSIZE') surchargesByCategory.OVERSIZE.push({ s, amount })
+        else if (ahsCat === 'AHS_DIMENSION') surchargesByCategory.AHS_DIMENSION.push({ s, amount })
+        else if (ahsCat === 'AHS_WEIGHT') surchargesByCategory.AHS_WEIGHT.push({ s, amount })
+        else if (ahsCat === 'AHS_PACKAGING') surchargesByCategory.AHS_PACKAGING.push({ s, amount })
+        else if (ahsCat === 'AHS_NONSTACKABLE') surchargesByCategory.AHS_NONSTACKABLE.push({ s, amount })
+      } else {
+        surchargesByCategory.UNKNOWN.push({ s, amount })
+      }
+    }
+  }
+
+  // 最大値採用対象カテゴリは最大値のみ採用、それ以外は合算
+  const getCategorySum = (cat: SurchargeCategory): number => {
+    const items = surchargesByCategory[cat]
+    if (items.length === 0) return 0
+    if (isMaxValueCategory(cat)) {
+      // 最大値のみ採用
+      return Math.max(...items.map((x) => x.amount))
+    }
+    // 合算
+    return Math.max(0, Math.round(items.reduce((sum, x) => sum + x.amount, 0)))
+  }
+
   // 監査: 観測した type 群をダンプ
   dumpSurchargeMap(fromDetails.map(x => String(x?.surchargeType || x?.type || x?.code || '').toUpperCase()))
 
@@ -281,52 +349,39 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     )
   )
 
-  const fuel = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false // AHS/Oversize は除外
-    return /\bFUEL(\b|_)?\s*(SUR(CHG|CHARGE)?)?/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  const peak = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(PEAK|DEMAND|SURGE|CONGESTION|混雑)/.test([x?.type, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  const residential = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(RESIDENTIAL[_\s-]*DELIVERY|RESIDENTIAL)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  const deliveryArea = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  // additionalHandling は削除（specialHandling に移行）
-  const importProcessing = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  const saturdayDelivery = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(SATURDAY[_\s-]*DELIVERY|WEEKEND[_\s-]*DELIVERY|SATURDAY[_\s-]*PICKUP)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
-  // 保険料（申告価格）
-  const insuredValue = pickSum((x) => {
-    const cat = classifySurchargeLabel(x)
-    if (cat) return false
-    return /(DECLARED[_\s-]*VALUE|INSURED[_\s-]*VALUE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' '))
-  })
+  // Fee detail keyベースで分類済みのサーチャージを集計
+  // 注意: dimension/oversize/handling系はshipment単位で最大値のみ採用（パッケージ単位処理は後で上書き）
+  const fuel = getCategorySum('FUEL')
+  const peak = getCategorySum('PEAK')
+  const residential = getCategorySum('RESIDENTIAL')
+  const deliveryArea = getCategorySum('DELIVERY_AREA')
+  const importProcessing = getCategorySum('IMPORT_PROCESSING')
+  const saturdayDelivery = getCategorySum('SATURDAY_DELIVERY')
+  const insuredValue = getCategorySum('INSURED_VALUE')
+  
+  // shipment単位での最大値採用（dimension/oversize/handling系）
+  // 注意: パッケージ単位処理で上書きされるが、念のためshipment単位でも算出
+  const oversizeShipment = getCategorySum('OVERSIZE')
+  const ahsDimensionShipment = getCategorySum('AHS_DIMENSION')
+  const ahsWeightShipment = getCategorySum('AHS_WEIGHT')
+  const ahsPackagingShipment = getCategorySum('AHS_PACKAGING')
+  const ahsNonStackableShipment = getCategorySum('AHS_NONSTACKABLE')
 
   // 割引（raw、base未依存）：clampしない生値（後で最小化）
   const discRaw = Math.max(0, disc + discountsFromDetails)
 
   // 既知サーチャージ合計（specialHandling はパッケージ単位で採用済み）
+  // パッケージ単位のspecialHandling（oversize, ahsDimension等）が優先される
   const knownSurchargesSum = fuel + peak + residential + deliveryArea + importProcessing + saturdayDelivery + insuredValue
     + oversize + ahsDimension + ahsWeight + ahsPackaging + ahsNonStackable
 
-  // === Baseの決定 ===
+  // === Base / Discount / NetFreight / Total の算出（FedEx API仕様準拠） ===
+  // FedEx API仕様:
+  // 1. totalBaseCharge = ベース料金（割引前）
+  // 2. totalDiscounts = 割引額
+  // 3. netFreight = totalBaseCharge - totalDiscounts
+  // 4. totalNetCharge = netFreight + totalSurcharges
+  
   // rsdごとのプローブ
   let s_totalBaseMax = 0
   let pkgBaseSumTotal = 0
@@ -336,15 +391,24 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     pkgBaseSumTotal += p.pkgBaseSum || 0
   }
 
-  // rawベースでの逆算候補: base = total - (surcharges - discounts)
-  const rawLinesWithoutBaseSum = knownSurchargesSum - discRaw
-  let base = computeBase({ s_totalBase: s_totalBaseMax, s_totalNet: total, pkgBaseSum: pkgBaseSumTotal, rawLinesWithoutBaseSum })
+  // Baseの決定: APIから直接取得 or 推定
+  // 優先順位: totalBaseCharge > 推定（total - surcharges + discounts）
+  let base = s_totalBaseMax
+  if (base <= 0) {
+    // 推定: base = total - surcharges + discounts
+    const rawLinesWithoutBaseSum = knownSurchargesSum - discRaw
+    base = computeBase({ s_totalBase: 0, s_totalNet: total, pkgBaseSum: pkgBaseSumTotal, rawLinesWithoutBaseSum })
+  }
   if (base <= 0 && total > 0) base = total // 最後のセーフガード
 
-  // 割引の最終値は base を上限にクランプ
+  // Discount: APIから取得 or 推定（base を上限にクランプ）
   const discAll = Math.min(Math.max(0, discRaw), base)
 
+  // NetFreight: base - discount（FedEx API仕様準拠）
   const netFreight = Math.max(0, base - discAll)
+  
+  // Total検証: netFreight + surcharges = totalNetCharge になるはず
+  const calculatedTotal = netFreight + knownSurchargesSum
 	const other = total - netFreight - fuel - peak - residential - deliveryArea - importProcessing - saturdayDelivery - insuredValue
     - oversize - ahsDimension - ahsWeight - ahsPackaging - ahsNonStackable
 
@@ -396,19 +460,69 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     } catch {}
   }
 
+  // === Reconcileログ: raw vs normalized ===
+  if (DEBUG_RATE_RECONCILE && !loggedOnce) {
+    try {
+      const rawVsNormalized = {
+        raw: {
+          totalNetCharge: total,
+          totalBaseCharge: s_totalBaseMax,
+          totalDiscounts: discRaw,
+          totalSurcharges: knownSurchargesSum,
+        },
+        normalized: {
+          baseCharge: base,
+          discounts: discAll,
+          netFreight,
+          surcharges: {
+            fuel,
+            peak,
+            residential,
+            deliveryArea,
+            importProcessing,
+            saturdayDelivery,
+            insuredValue,
+            specialHandling: {
+              oversize,
+              dimension: ahsDimension,
+              weight: ahsWeight,
+              packaging: ahsPackaging,
+              nonStackable: ahsNonStackable,
+            },
+            other,
+          },
+          totalNetCharge: calculatedTotal,
+        },
+        reconciliation: {
+          totalMatch: Math.abs(calculatedTotal - total) <= 1,
+          diff: calculatedTotal - total,
+          baseSource: s_totalBaseMax > 0 ? 'API' : 'ESTIMATED',
+        },
+      }
+      // eslint-disable-next-line no-console
+      console.debug('[rate][reconcile][raw vs normalized]', rawVsNormalized)
+      ;(normalizeFedExRate as any).__loggedOnce = true
+    } catch {}
+  }
+
   if (DEBUG_RATE_NORMALIZE && !loggedOnce) {
     try {
       const summary = {
         base,
         discounts: discAll,
+        netFreight,
         fuel,
         peak,
         residential,
         deliveryArea,
         specialHandling: { oversize, dimension: ahsDimension, weight: ahsWeight, packaging: ahsPackaging, nonStackable: ahsNonStackable },
         importProcessing,
+        saturdayDelivery,
+        insuredValue,
         other,
         total,
+        calculatedTotal,
+        diff: calculatedTotal - total,
       }
       // eslint-disable-next-line no-console
       console.debug('[normalizeFedExRate][debug]', summary)
