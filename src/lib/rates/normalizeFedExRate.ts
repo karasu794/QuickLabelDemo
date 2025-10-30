@@ -194,12 +194,14 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   const deliveryArea = pickSum((x) => /(DELIVERY[_\s-]*AREA|REMOTE|ODA)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
   const additionalHandling = pickSum((x) => /(ADDITIONAL[_\s-]*HANDLING|OVERSIZE|DIMENSION|寸法)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
   const importProcessing = pickSum((x) => /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
+  // 保険料（申告価格）
+  const insuredValue = pickSum((x) => /(DECLARED[_\s-]*VALUE|INSURED[_\s-]*VALUE)/.test([x?.type, x?.surchargeType, x?.code, x?.name, x?.description].map(upper).join(' ')))
 
   // 割引（raw、base未依存）：clampしない生値（後で最小化）
   const discRaw = Math.max(0, disc + discountsFromDetails)
 
-  // 既知サーチャージ合計（importProcessing 含む）
-  const knownSurchargesSum = fuel + peak + residential + deliveryArea + additionalHandling + importProcessing
+  // 既知サーチャージ合計（importProcessing, insuredValue 含む）
+  const knownSurchargesSum = fuel + peak + residential + deliveryArea + additionalHandling + importProcessing + insuredValue
 
   // === Baseの決定 ===
   // rsdごとのプローブ
@@ -220,7 +222,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   const discAll = Math.min(Math.max(0, discRaw), base)
 
   const netFreight = Math.max(0, base - discAll)
-	const other = total - netFreight - fuel - peak - residential - deliveryArea - additionalHandling - importProcessing
+	const other = total - netFreight - fuel - peak - residential - deliveryArea - additionalHandling - importProcessing - insuredValue
 
   const dto: RateBreakdown = {
     baseCharge: money(base, currency),
@@ -233,6 +235,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       deliveryArea: money(deliveryArea, currency),
       additionalHandling: money(additionalHandling, currency),
       importProcessing: money(importProcessing, currency),
+      insuredValue: money(insuredValue, currency),
       other: money(other, currency),
     },
     totalNetCharge: money(total, currency),
@@ -286,7 +289,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   if (String(process.env.NODE_ENV || '').toLowerCase() !== 'production') {
     try {
       const eps = 1
-      const uiSum = Math.round((base - discAll) + (fuel + peak + residential + deliveryArea + additionalHandling + importProcessing + other))
+      const uiSum = Math.round((base - discAll) + (fuel + peak + residential + deliveryArea + additionalHandling + importProcessing + insuredValue + other))
       if (base <= 0) console.warn('[rate][base-assert] base<=0. Inspect [rate][base-probe] logs.')
       if (Math.abs(uiSum - total) > eps) {
         console.warn('[rate][sum-assert] UI sum != totalNet', { uiSum, totalNetJPY: total })

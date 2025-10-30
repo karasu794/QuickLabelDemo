@@ -10,6 +10,7 @@ export type RateBreakdown = {
     deliveryArea?: Money
     additionalHandling?: Money
     importProcessing?: Money
+    insuredValue?: Money
     other?: Money
   }
   totalNetCharge: Money

@@ -162,7 +162,7 @@ export default function FedExQuoteResults({
   // 料金の計算とフォーマット
   const formatJPY = (val: number | string) => {
     const n = typeof val === 'string' ? parseFloat(val) : val
-    const i = Number.isFinite(n) ? Math.floor(n) : 0
+    const i = Number.isFinite(n) ? Math.round(n) : 0  // API側のMath.roundと統一
     return `¥${i.toLocaleString('ja-JP', { maximumFractionDigits: 0 })}`
   }
   const calculateDiscount = (rate: FedExRate) => {
@@ -468,6 +468,25 @@ export default function FedExQuoteResults({
                                   {formatJPY(rate.totalNetFedExCharge)}
                                 </span>
                               </div>
+                              {process.env.NODE_ENV !== 'production' && (() => {
+                                const calc =
+                                  (rate.breakdown?.baseRate || 0)
+                                  - (rate.breakdown?.volumeDiscount || 0)
+                                  + (rate.breakdown?.fuelSurcharge || 0)
+                                  + (rate.breakdown?.peakSurcharge || 0)
+                                  + (rate.breakdown?.residentialSurcharge || 0)
+                                  + (rate.breakdown?.deliveryAreaSurcharge || 0)
+                                  + (rate.breakdown?.additionalHandlingSurcharge || 0)
+                                  + (rate.breakdown?.importProcessingSurcharge || 0)
+                                  + (rate.breakdown?.otherSurcharge || 0)
+                                  + (rate.breakdown?.insuredValue || 0)
+                                // extraSurchargesJa は other から控除済みのため合計には含めない
+                                const api = Number(rate.totalNetFedExCharge ?? 0)
+                                if (Math.abs(calc - api) > 1) {
+                                  console.warn('[quote][total-mismatch]', { calc, api, diff: calc - api, breakdown: rate.breakdown })
+                                }
+                                return null
+                              })()}
                             </div>
                           </div>
                         </div>
