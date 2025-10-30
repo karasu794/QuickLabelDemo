@@ -202,9 +202,9 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       .map((s) => {
         const cat = classifySurchargeLabel(s)
         const amount = toNumber(s?.amount ?? s?.surchargeAmount ?? s?.totalAmount)
-        return cat === 'OVERSIZE' ? { cat, amount } : null
+        return cat === 'OVERSIZE' ? { cat: cat as AhsCategory, amount } : null
       })
-      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null)
+      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null && x.cat === 'OVERSIZE')
 
     // Oversize があれば、最大額の1つを採用
     if (oversizeCandidates.length > 0) {
@@ -218,11 +218,11 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
         const cat = classifySurchargeLabel(s)
         const amount = toNumber(s?.amount ?? s?.surchargeAmount ?? s?.totalAmount)
         if (cat && cat !== 'OVERSIZE') {
-          return { cat, amount }
+          return { cat: cat as AhsCategory, amount }
         }
         return null
       })
-      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null)
+      .filter((x): x is { cat: AhsCategory; amount: number } => x !== null && x.cat !== 'OVERSIZE')
 
     if (ahsCandidates.length === 0) return null
 
@@ -405,7 +405,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
         peak,
         residential,
         deliveryArea,
-        additionalHandling,
+        specialHandling: { oversize, dimension: ahsDimension, weight: ahsWeight, packaging: ahsPackaging, nonStackable: ahsNonStackable },
         importProcessing,
         other,
         total,
@@ -420,7 +420,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   if (String(process.env.NODE_ENV || '').toLowerCase() !== 'production') {
     try {
       const eps = 1
-      const uiSum = Math.round((base - discAll) + (fuel + peak + residential + deliveryArea + additionalHandling + importProcessing + insuredValue + other))
+      const uiSum = Math.round((base - discAll) + (fuel + peak + residential + deliveryArea + importProcessing + insuredValue + other + oversize + ahsDimension + ahsWeight + ahsPackaging + ahsNonStackable))
       if (base <= 0) console.warn('[rate][base-assert] base<=0. Inspect [rate][base-probe] logs.')
       if (Math.abs(uiSum - total) > eps) {
         console.warn('[rate][sum-assert] UI sum != totalNet', { uiSum, totalNetJPY: total })

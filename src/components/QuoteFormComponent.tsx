@@ -33,7 +33,7 @@ interface QuoteFormProps {
       errorMessage: string | null
     }}
   }
-  onQuoteParamsChange: (field: keyof ExtendedQuoteParams, value: string | boolean) => void
+  onQuoteParamsChange: (field: keyof ExtendedQuoteParams, value: string | boolean | number) => void
   onPackageChange: (id: number, field: keyof Package, value: string) => void
   onAddPackage: () => void
   onRemovePackage: (id: number) => void
@@ -702,7 +702,7 @@ export default function QuoteFormComponent({
                       value={quoteParams.samePackageCount || 1}
                       onChange={(e) => {
                         const val = Math.max(1, Math.min(99, parseInt(e.target.value) || 1))
-                        onQuoteParamsChange("samePackageCount" as keyof ExtendedQuoteParams, val)
+                        onQuoteParamsChange("samePackageCount" as keyof ExtendedQuoteParams, val as number)
                       }}
                       className="w-24"
                       data-test="same-package-count"

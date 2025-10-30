@@ -457,7 +457,10 @@ export default function FedExQuoteResults({
                 <Accordion type="multiple" collapsible className="space-y-3">
                   {groupRates.map((rate, rateIndex) => {
                     const deliveryInfo = formatDeliveryInfo(rate)
-                    const bd = rate.breakdown || {}
+                    const bd: NonNullable<FedExRate['breakdown']> = rate.breakdown || {
+                      baseRate: 0,
+                      fuelSurcharge: 0,
+                    }
                     
                     return (
                       <AccordionItem

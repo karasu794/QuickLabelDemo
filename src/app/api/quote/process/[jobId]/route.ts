@@ -46,6 +46,8 @@ interface QuoteParams {
   originCityName: string
   destinationStateCode: string
   destinationCityName: string
+  samePackageCount?: number
+  declaredValueJPY?: number
 }
 
 interface Package {
@@ -524,7 +526,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
 
   // 送信直前の監査ログ（1回のみ）
   try {
-    const once = (buildRateRequest as any).__auditLogged === true
+    const once = (buildFedExRateRequest as any).__auditLogged === true
     if (!once) {
       console.debug('[rates][request]', {
         residential: Boolean((recipientAddress as any)?.residential || quoteParams.isResidential),
@@ -532,7 +534,7 @@ function buildFedExRateRequest(quoteParams: QuoteParams, packages: Package[], jp
         declaredSamples: requestedPackageLineItems.map((p: any) => p?.declaredValue).filter(Boolean),
         rateRequestType: ['ACCOUNT','LIST'],
       })
-      ;(buildRateRequest as any).__auditLogged = true
+      ;(buildFedExRateRequest as any).__auditLogged = true
     }
   } catch {}
 }
@@ -1153,7 +1155,7 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
         const isImportProc = (x: any) => /(IMPORT[_\s-]*PROCESS(ING)?|CUSTOMS[_\s-]*ENTRY|CLEARANCE)/.test(toText(x))
         
         // specialHandling 分類用（extraSurchargesJa から除外）
-        const { classifySurchargeLabel } = await import('@/lib/rates/fedex/surchargeMaps')
+        const { classifySurchargeLabel } = require('@/lib/rates/fedex/surchargeMaps')
         const isSpecialHandling = (x: any) => classifySurchargeLabel(x) !== null
 
         const allSurcharges = collectAllSurcharges(detail)
