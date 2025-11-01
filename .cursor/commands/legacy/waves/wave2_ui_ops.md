@@ -1,3 +1,6 @@
+> Legacy AI-assisted playbook (pre-multi-agent orbit)
+> Used as historical reference for FQL finance pipeline decisions.
+> Modern replacement: .cursor/commands/ma_orbit.md
 # WAVE2 – UI/UX & OPS INTEGRATION
 > 新規ファイルを極力作らず、既存実装を改変。変更前に grep/open で対象ファイルを列挙してから編集すること。
 

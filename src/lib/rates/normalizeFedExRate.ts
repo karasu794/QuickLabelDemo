@@ -17,12 +17,23 @@
  * - パッケージ単位で Oversize があれば Oversize のみ、無ければ AHS 最大1つ
  */
 
-import type { RateBreakdown } from '@/types/rate'
+import type { RateBreakdown, TransitInfo } from '@/types/rate'
 import type { Money } from '@/types/money'
 import { classifySurcharge, deriveDeliveryAreaLevel, type SurchargeCategory } from './fedex/mapping'
 import { classifySurchargeLabel, type AhsCategory } from './fedex/surchargeMaps'
 
 const money = (amount: number, currency: string): Money => ({ amount, currency })
+
+export function pickTransit(x: any): TransitInfo {
+  const od = x?.operationalDetail || x?.commit || x?.transitDetail || {}
+  const date = od.deliveryDate || od.estimatedDeliveryDate || od.commitDate || null
+  const weekday = od.deliveryDayOfWeek || od.commitDayOfWeek || null
+  const rawTime = od.deliveryTime || od.commitTime || od.estimatedDeliveryTime || null
+  // HH:MM に正規化（なければ null）
+  const time = typeof rawTime === 'string' ? (rawTime.match(/\d{1,2}:\d{2}/)?.[0] || null) : null
+  const transit = od.transitTime || (typeof od.transitDays === 'number' ? String(od.transitDays) : null)
+  return { deliveryDate: date, deliveryDayOfWeek: weekday, deliveryTime: time, transitTime: transit }
+}
 
 function toNumber(val: any): number {
   if (val == null) return 0
@@ -460,6 +471,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
     }
   }
 
+  const t = pickTransit(resp)
   const dto: RateBreakdown = {
     baseCharge: money(base, currency),
     discounts: money(discounts, currency),
@@ -481,6 +493,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
       nonStackable: ahsNonStackable > 0 ? money(ahsNonStackable, currency) : undefined,
     },
     deliveryAreaLevel,
+    transit: t,
     totalNetCharge: money(total, currency),
   }
 

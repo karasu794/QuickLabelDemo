@@ -1,5 +1,12 @@
 import type { Money } from './money'
 
+export type TransitInfo = {
+  deliveryDate: string | null
+  deliveryDayOfWeek: string | null
+  deliveryTime: string | null
+  transitTime: string | null
+}
+
 export type RateBreakdown = {
   baseCharge: Money
   discounts: Money
@@ -23,6 +30,7 @@ export type RateBreakdown = {
   }
   deliveryAreaLevel?: 'A' | 'B'
   totalNetCharge: Money
+  transit?: TransitInfo
 }
 
 

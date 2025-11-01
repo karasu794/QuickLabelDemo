@@ -1,0 +1,83 @@
+{
+  "files": [
+    "src/lib/rates/fedex/mapping.ts",
+    "src/lib/rates/normalizeFedExRate.ts",
+    "src/components/FedExQuoteResults.tsx",
+    "src/app/api/quote/process/[jobId]/route.ts",
+    "docs/rates/rebuild-from-fedex-schema.md"
+  ],
+  "diffs": [
+    {
+      "file": "src/lib/rates/fedex/mapping.ts",
+      "change": "新規作成: 列挙値ベースのマッピング定義（SERVICE_TYPE_DISPLAY_MAP, SURCHARGE_TYPE_MAP, classifySurcharge, deriveDeliveryAreaLevel）"
+    },
+    {
+      "file": "src/lib/rates/normalizeFedExRate.ts",
+      "change": "再実装: 列挙値ベースの分類、重複集計防止（shipment vs package）、AHS/Oversize排他ルール、計算順正準化（base → discounts → netFreight → surcharges → total）"
+    },
+    {
+      "file": "src/components/FedExQuoteResults.tsx",
+      "change": "修正: SERVICE_TYPE_DISPLAY_MAP使用、配達地域外レベルA/Bラベル対応"
+    },
+    {
+      "file": "src/app/api/quote/process/[jobId]/route.ts",
+      "change": "修正: extractDeliveryAreaLevelFromRateDetail を deriveDeliveryAreaLevel を使用するように変更"
+    },
+    {
+      "file": "docs/rates/rebuild-from-fedex-schema.md",
+      "change": "新規作成: 出典パス、列挙値抽出結果、マッピング表、計算順根拠のドキュメント"
+    }
+  ],
+  "tests": [
+    {
+      "type": "unit",
+      "file": "tests/unit/rates/normalizeFedExRate.spec.ts",
+      "cases": [
+        "Delivery Area重複防止: shipmentとpackage両方にDELIVERY_AREAがあっても二重計上しない",
+        "Import vs DeliveryArea: 互いに誤分類しない",
+        "Fuel/Peak: 列挙キーで正しく抽出",
+        "AHS最大1 & Oversize排他: 寸法3390/重量6780/梱包2000 → 6780のみ、Oversize12000があればそれのみ",
+        "恒等式: base - discounts + Σsurcharges == totalNet（±1円以内）"
+      ],
+      "status": "pending"
+    },
+    {
+      "type": "e2e",
+      "file": "tests/e2e/quote_breakdown_official_match.spec.ts",
+      "cases": [
+        "10kg・80×60×40・同日条件で内訳・順序が公式と一致（数量割引/地域外/寸法/燃料/混雑時）",
+        "Delivery Area が倍付けされない（370 → 370のまま）",
+        "同寸法×N で数量割引が効く（Phoenix割引はFF OFF）"
+      ],
+      "status": "pending"
+    }
+  ],
+  "manualQA": [
+    {
+      "scenario": "単一荷物（10kg, 80×60×40, 宅配/補償OFF）",
+      "expected": "公式の Economy で内訳一致",
+      "status": "pending"
+    },
+    {
+      "scenario": "同寸法×3",
+      "expected": "数量割引が増え、総額・内訳が一致",
+      "status": "pending"
+    },
+    {
+      "scenario": "Delivery Area が 370 円の地点",
+      "expected": "FQL表示も370（740にならない）",
+      "status": "pending"
+    },
+    {
+      "scenario": "AHS（寸法3390/重量6780）",
+      "expected": "FQL表示は重量6780のみ",
+      "status": "pending"
+    },
+    {
+      "scenario": "devコンソール確認",
+      "expected": "[rate][sum-assert] 警告が出ない",
+      "status": "pending"
+    }
+  ]
+}
+

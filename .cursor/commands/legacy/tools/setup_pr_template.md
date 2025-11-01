@@ -1,3 +1,5 @@
+> Legacy command (pre-ma_orbit)
+> Active QA flows live in .cursor/commands/qa/
 # SETUP – PR TEMPLATE (FQL STANDARD)
 
 ## PREP

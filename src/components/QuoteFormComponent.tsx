@@ -14,6 +14,7 @@ import { Plus, X, Loader2 } from "lucide-react"
 import { GooglePlaceAutocomplete, ParsedAddress } from "./GooglePlaceAutocomplete"
 import { getPrefectureFromPostalCode, usStates, canadianProvinces, japanesePrefectures } from "@/lib/data/locations"
 import type { Package, ExtendedQuoteParams } from "@/types/quote"
+import ShipDatePicker from "./quotes/ShipDatePicker"
 
 // 郵便番号不要国の定義
 const POSTAL_CODE_NOT_REQUIRED_COUNTRIES = ['HK', 'AE', 'SG'];
@@ -898,10 +899,11 @@ export default function QuoteFormComponent({
               <h3 className="text-lg font-semibold">希望出荷日はいつですか？</h3>
               <div className="space-y-2">
                 <Label className="text-sm font-medium">出荷日</Label>
-                <Input
-                  type="date"
+                <ShipDatePicker
                   value={quoteParams.shipDate}
-                  onChange={(e) => onQuoteParamsChange("shipDate", e.target.value)}
+                  onChange={(date) => onQuoteParamsChange("shipDate", date)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full rounded-md border px-3 py-2"
                 />
               </div>
             </div>

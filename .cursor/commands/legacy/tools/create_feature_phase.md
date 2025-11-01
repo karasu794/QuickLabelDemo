@@ -1,3 +1,6 @@
+> Legacy AI-assisted playbook (pre-multi-agent orbit)
+> Used as historical reference for FQL finance pipeline decisions.
+> Modern replacement: .cursor/commands/ma_orbit.md
 # /create_feature_phase
 
 ## Purpose

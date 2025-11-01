@@ -417,7 +417,13 @@ export default function Home() {
       apiQuoteParams.higherInsurance = dv > 0
       apiQuoteParams.declaredValue = dv
       apiQuoteParams.isResidential = Boolean(apiQuoteParams.isResidential)
-      // shipDate は既に YYYY-MM-DD 初期化済み
+      // shipDate は既に YYYY-MM-DD 初期化済み（ShipDatePicker経由で更新される）
+      // 日曜日が選択された場合は自動的に月曜に補正されている
+      if (!apiQuoteParams.shipDate) {
+        apiQuoteParams.shipDate = new Date().toISOString().split('T')[0]
+        console.warn('⚠️ shipDateが空のため、今日の日付を設定しました')
+      }
+      console.log('📅 出荷日をAPIに送信:', apiQuoteParams.shipDate)
       
       if (POSTAL_CODE_NOT_REQUIRED_COUNTRIES.includes(quoteParams.originCountry) && !quoteParams.originPostalCode) {
         apiQuoteParams.originPostalCode = '00000';

@@ -931,11 +931,18 @@ export async function POST(request: NextRequest, { params }: { params: { jobId: 
       destinationStateCode: '',
       destinationCityName: '',
       destinationStreet: '',
-      shipDate: '',
+      shipDate: new Date().toISOString().split('T')[0], // デフォルトは今日
       isResidential: false,
       higherInsurance: false,
       declaredValue: '',
     } as any)
+      
+      // shipDateの検証とログ出力
+      if (!quoteParams.shipDate || quoteParams.shipDate === '') {
+        quoteParams.shipDate = new Date().toISOString().split('T')[0]
+        console.warn('⚠️ shipDateが空のため、今日の日付を設定しました')
+      }
+      console.log('📅 受信したshipDate:', quoteParams.shipDate)
       const packages = toArray<any>(pkgs)
 
       // packages が最終的に空なら 400

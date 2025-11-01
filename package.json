@@ -36,6 +36,8 @@
     "test:contracts": "jest --runInBand --testMatch \"**/tests/contracts/**/*.(contract|spec|test).(ts|tsx|js)\"",
     "test:schema": "jest --runInBand --testMatch \"**/tests/**/schema.*.(contract|spec|test).(ts|tsx|js)\"",
     "test:e2e": "playwright test",
+    "test:e2e:fql": "bash scripts/e2e/run_all.sh",
+    "seed:e2e": "tsx scripts/e2e/seed_shipments.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "e2e:ci": "start-server-and-test \"npm run build && npm run start\" http://localhost:3000 \"pnpm -s test:e2e\"",
@@ -58,7 +60,13 @@
     "docs:examples": "ts-node scripts/fedex_docs_examples_extractor.ts",
     "e2e:win": "powershell -File scripts/win/e2e.ps1",
     "e2e:unix": "start-server-and-test web:http://localhost:3000 test:e2e",
-    "lint:rates": "eslint --rulesdir scripts/lint --rule no-fixed-exchange-rate:error src"
+    "lint:rates": "eslint --rulesdir scripts/lint --rule no-fixed-exchange-rate:error src",
+    "docs:square:sync": "tsx scripts/docs/sync_square_openapi.ts",
+    "docs:square:build": "tsx scripts/docs/build_square_docs.ts",
+    "docs:square:all": "pnpm docs:square:sync && pnpm docs:square:build",
+    "docs:vendors:sync": "tsx scripts/docs/vendors_orchestrator.ts sync",
+    "docs:vendors:build": "tsx scripts/docs/vendors_orchestrator.ts build",
+    "docs:vendors:all": "tsx scripts/docs/vendors_orchestrator.ts all"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -73,10 +81,13 @@
     "@upstash/redis": "^1.35.3",
     "@vercel/blob": "^0.27.0",
     "autoprefixer": "^10.4.21",
+    "axios": "^1.7.7",
+    "cheerio": "^1.0.0-rc.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "countries-list": "^3.1.1",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.456.0",
     "next": "14.2.17",
     "papaparse": "^5.5.3",
@@ -91,16 +102,15 @@
     "square": "^43.0.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "turndown": "^7.2.0",
     "use-places-autocomplete": "^4.0.1",
     "wanakana": "^5.0.2",
     "zod": "^3.25.76",
-    "zustand": "^4.5.5",
-    "axios": "^1.7.7",
-    "cheerio": "^1.0.0-rc.12",
-    "turndown": "^7.2.0"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
+    "@redocly/cli": "^1",
     "@types/google.maps": "^3.58.1",
     "@types/jest": "30.0.0",
     "@types/node": "^20.19.22",
@@ -113,6 +123,9 @@
     "fast-glob": "^3.3.2",
     "jest": "29.7.0",
     "madge": "^6.1.0",
+    "openapi-fetch": "^0.9",
+    "openapi-typescript": "^7",
+    "openapi-zod-client": "^1",
     "picocolors": "^1.0.0",
     "postcss": "^8",
     "start-server-and-test": "^2.0.0",
@@ -121,6 +134,8 @@
     "ts-node": "10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.4",
+    "widdershins": "^4"
   }
 }
