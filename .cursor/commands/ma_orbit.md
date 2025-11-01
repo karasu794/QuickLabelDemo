@@ -103,7 +103,11 @@ If next_prompt present:
 - Optionally re-run ma_orbit with next_prompt
 
 ### 8) Budget guard
-If cost/time exceeds BUDGET → abort → append to runbooks/failures.md
+If cost/time exceeds BUDGET:
+  - abort current orbit
+  - call `.cursor/commands/qa/ops/actions_api_playbook.md` for health/logs checks
+  - append entry to runbooks/failures.md
+  - return status `budget_guard_triggered`
 
 ## Exit Criteria
 - Winner diff applied (or stored in branch for review)
