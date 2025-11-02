@@ -1,4 +1,57 @@
-# ma_orbit — Multi-Agent Orbit Loop
+# command: ma_orbit — Multi-Agent Orchestration
+
+
+> Primary AI orchestrator (replaces all legacy playbooks)
+
+## Inputs
+- task (string)
+- context_paths (array of strings)
+- optional config (JSON)
+
+## Command
+This orchestrates:
+1) Router → assign lanes/models/prompts
+2) Executor → run lanes
+3) Evaluator → pick winner
+4) Apply patch or request human
+5) Budget guard → call ops playbook
+
+## How to run
+- Open this file
+- Click **Run Command** (top-right)
+- Provide task + context
+
+## After run
+Artifacts in:
+- `artifacts/`
+- `runs/`
+
+
+## Goal
+Run Router → Lanes → Artifact collect → Evaluator → Apply winner.
+
+## Preconditions
+- Keys configured
+- artifacts/index.json exists
+
+## Variables
+TASK=<your task>
+PATHS=["src/lib/rates/normalizeFedExRate.ts"]
+
+## Steps
+1. Plan lanes with Router (JSON)
+2. Spawn lanes (A/B/C/D)
+3. Collect diffs/logs to artifacts/
+4. Evaluate & pick winner
+5. Apply diff (git apply)
+6. If budget guard → call qa/ops/actions_api_playbook.md
+
+## Exit Criteria
+- winner applied or branch created
+- artifacts & runs updated
+
+# ma_orbit — multi-lane agent orchestration
+
 
 ## Goal
 Orchestrate one AI-driven development orbit:

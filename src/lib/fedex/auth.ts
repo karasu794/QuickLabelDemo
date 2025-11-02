@@ -334,6 +334,48 @@ export async function getFedExRates(rateInfo: RateRequestInfo): Promise<FedExRat
     }
   } catch {}
 
+  // === AUDIT POINT 3: Before Request (リクエスト送信前の記録) ===
+  const DEBUG_RATE_AUDIT = String(process.env.DEBUG_RATE_AUDIT || '').toLowerCase() === 'true' || process.env.DEBUG_RATE_AUDIT === '1'
+  const auditRequestOnce = (getFedExRates as any).__auditRequestOnce === true
+  
+  if (DEBUG_RATE_AUDIT && !auditRequestOnce && process.env.NODE_ENV !== 'production') {
+    try {
+      const audit = {
+        timestamp: new Date().toISOString(),
+        auditPoint: 'before_request',
+        requestInfo: {
+          shipper: {
+            countryCode: rateInfo.shipperCountryCode,
+            postalCode: rateInfo.shipperPostalCode,
+            stateCode: rateInfo.shipperStateCode || null,
+            cityName: rateInfo.shipperCityName,
+          },
+          recipient: {
+            countryCode: rateInfo.recipientCountryCode,
+            postalCode: rateInfo.recipientPostalCode,
+            stateCode: rateInfo.recipientStateCode || null,
+            cityName: rateInfo.recipientCityName,
+            isResidential: rateInfo.isResidential,
+          },
+          shipDate: rateInfo.shipDate,
+          packageCount: rateInfo.packages.length,
+          packages: rateInfo.packages.map((pkg, idx) => ({
+            sequenceNumber: idx + 1,
+            weight: pkg.weight,
+            hasDimensions: !!pkg.dimensions,
+            dimensions: pkg.dimensions || null,
+            declaredValue: pkg.declaredValue || null,
+          })),
+          rateRequestType: requestBody?.requestedShipment?.rateRequestType,
+          accountNumber: credentials.accountNumber ? `${credentials.accountNumber.substring(0, 4)}****` : null,
+        },
+      }
+      // eslint-disable-next-line no-console
+      console.debug('[rate][audit][before_request]', audit)
+      ;(getFedExRates as any).__auditRequestOnce = true
+    } catch {}
+  }
+
   console.log('📊 FedX Rate API リクエスト:', JSON.stringify(requestBody, null, 2))
 
   const response = await fedexApiRequest<any>(

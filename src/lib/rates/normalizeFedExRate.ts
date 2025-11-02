@@ -53,10 +53,38 @@ function toNumber(val: any): number {
 export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBreakdown {
   const DEBUG_RATE_RECONCILE = String(process.env.DEBUG_RATE_RECONCILE || '').toLowerCase() === 'true' || process.env.DEBUG_RATE_RECONCILE === '1'
   const DEBUG_RATE_RAW = String(process.env.DEBUG_RATE_RAW || '').toLowerCase() === 'true' || process.env.DEBUG_RATE_RAW === '1'
+  const DEBUG_RATE_AUDIT = String(process.env.DEBUG_RATE_AUDIT || '').toLowerCase() === 'true' || process.env.DEBUG_RATE_AUDIT === '1'
   
   // 1回だけのログ出力ガード
   const loggedOnce = (normalizeFedExRate as any).__loggedOnce === true
   const rawLoggedOnce = (normalizeFedExRate as any).__rawLoggedOnce === true
+  const auditResponseOnce = (normalizeFedExRate as any).__auditResponseOnce === true
+  
+  // === AUDIT POINT 1: After Response (生レスポンスの記録) ===
+  if (DEBUG_RATE_AUDIT && !auditResponseOnce && process.env.NODE_ENV !== 'production') {
+    try {
+      const rated = Array.isArray(resp?.ratedShipmentDetails) ? resp.ratedShipmentDetails : []
+      const first = rated[0] || {}
+      const totalObj = first?.totalNetCharge || resp?.totalNetCharge
+      const currency = String(resp?.currency || totalObj?.currency || fallbackCurrency)
+      const audit = {
+        timestamp: new Date().toISOString(),
+        auditPoint: 'after_response',
+        rawResponse: {
+          hasRatedShipmentDetails: Array.isArray(resp?.ratedShipmentDetails),
+          ratedShipmentDetailsCount: Array.isArray(resp?.ratedShipmentDetails) ? resp.ratedShipmentDetails.length : 0,
+          totalNetCharge: totalObj ? { amount: toNumber(totalObj), currency } : null,
+          currency: resp?.currency || totalObj?.currency || fallbackCurrency,
+          serviceType: first?.serviceType || resp?.serviceType || null,
+          serviceName: first?.serviceName || resp?.serviceName || null,
+          rateType: first?.rateType || resp?.rateType || null,
+        },
+      }
+      // eslint-disable-next-line no-console
+      console.debug('[rate][audit][after_response]', audit)
+      ;(normalizeFedExRate as any).__auditResponseOnce = true
+    } catch {}
+  }
   
   const rated = Array.isArray(resp?.ratedShipmentDetails) ? resp.ratedShipmentDetails : []
   const first = rated[0] || {}
@@ -399,10 +427,12 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
   const calculatedTotal = netFreight + knownSurchargesSum + other
   const diff = Math.abs(calculatedTotal - total)
 
-  // Reconcileログ（devのみ、1回だけ）
+  // === AUDIT POINT 2: After Normalization (正規化後の記録) ===
   if (DEBUG_RATE_RECONCILE && !loggedOnce && process.env.NODE_ENV !== 'production') {
     try {
       const reconcile = {
+        timestamp: new Date().toISOString(),
+        auditPoint: 'after_normalization',
         base,
         discounts,
         fuelSource,
@@ -430,7 +460,7 @@ export function normalizeFedExRate(resp: any, fallbackCurrency = 'JPY'): RateBre
         diff,
       }
       // eslint-disable-next-line no-console
-      console.warn('[rate][reconcile]', reconcile)
+      console.warn('[rate][audit][after_normalization]', reconcile)
       ;(normalizeFedExRate as any).__loggedOnce = true
     } catch {}
   }
