@@ -71,7 +71,9 @@ export async function getAccessToken(kind: AccountKind): Promise<string> {
 		const body = new URLSearchParams()
 		body.set('grant_type', 'client_credentials')
 
-		const res = await fetch('https://apis.fedex.com/oauth/token', {
+		// 安全ガード: OAuth URLは許可されている
+		const { fedexFetch } = await import('./safety')
+		const res = await fedexFetch('https://apis.fedex.com/oauth/token', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -133,14 +135,21 @@ export async function request<T>(options: { endpoint: string; method?: 'GET' | '
 	}
 	if (correlationId) headers['X-Correlation-Id'] = correlationId
 
+  // 安全ガード: URL検証
+  const { assertSafeUrl } = await import('./safety')
+  const { throttle } = await import('./httpLimiter')
+  assertSafeUrl(url.toString())
+
   // 観測性: body はログしない（PII/巨大オブジェクト防止）。corrId は記録。
   logInfo('fedex.request', { endpoint: url.pathname, method, kind, corrId: correlationId })
-	const res = await fetch(url.toString(), {
-		method,
-		headers,
-		body: body !== undefined ? JSON.stringify(body) : undefined,
-		cache: 'no-store',
-	})
+	const res = await throttle(() =>
+		fetch(url.toString(), {
+			method,
+			headers,
+			body: body !== undefined ? JSON.stringify(body) : undefined,
+			cache: 'no-store',
+		})
+	)
 	const text = await res.text().catch(() => '')
 	const parsed = text ? safeJson(text) : undefined
 	if (!res.ok) {

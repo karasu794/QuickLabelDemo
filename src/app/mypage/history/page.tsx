@@ -286,10 +286,10 @@ export default function MypageHistoryPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Package className="h-6 w-6 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-900">発送履歴</h1>
+    <div className="p-3 md:p-6">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
+        <Package className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">発送履歴</h1>
       </div>
       
       <Tabs defaultValue="shipments" className="w-full">

@@ -8,6 +8,8 @@ import ToastOnQuery from '@/components/ToastOnQuery'
 import { Toaster } from 'react-hot-toast'
 import { getSession } from '@/lib/supabase/server'
 
+import DemoBanner from '@/components/DemoBanner'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
@@ -29,9 +31,10 @@ export default async function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
+        <DemoBanner />
         <AuthProvider initialSession={session}>
           <HeaderServer />
-          <main className="container mx-auto p-6 min-h-screen">
+          <main className="container mx-auto px-3 md:p-6 min-h-screen">
             {children}
           </main>
         </AuthProvider>

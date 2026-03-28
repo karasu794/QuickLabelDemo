@@ -4,6 +4,13 @@ import ResponsiveTable, { TableColumn, TableAction } from '@/components/Responsi
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserProfile } from './page'
+import toast from 'react-hot-toast'
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
+
+function demoToast(action: string) {
+  toast(`操作デモ ${action}を実行しました`, { icon: '✅' })
+}
 
 // 日時フォーマット用のヘルパー関数
 function formatDate(dateString: string | null) {
@@ -59,14 +66,15 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
     {
       label: '詳細',
       onClick: (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('詳細表示'); return }
         console.log('ユーザー詳細:', row)
-        // 詳細ページへの遷移やモーダル表示など
       },
       className: 'text-blue-600 hover:text-blue-900'
     },
     {
       label: 'メール送信',
       onClick: (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('メール送信'); return }
         if (row.email) {
           window.location.href = `mailto:${row.email}`
         }
@@ -77,6 +85,7 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
     {
       label: '削除',
       onClick: async (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('削除'); return }
         if (!confirm('このユーザーを論理削除します。よろしいですか？')) return
         setBusyIds(prev => new Set(prev).add(row.id))
         try {
@@ -97,6 +106,7 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
     {
       label: '永久停止',
       onClick: async (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('永久停止'); return }
         const reason = prompt('理由（任意）を入力してください') || ''
         if (!confirm('このユーザーを永久停止します。よろしいですか？')) return
         setBusyIds(prev => new Set(prev).add(row.id))
@@ -118,6 +128,7 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
     {
       label: '一時停止',
       onClick: async (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('一時停止'); return }
         const until = prompt('停止期限を ISO 形式（例: 2025-12-31T15:00:00Z）で入力')
         if (!until) return
         setBusyIds(prev => new Set(prev).add(row.id))
@@ -139,6 +150,7 @@ export default function UsersTableHorizontal({ users }: UsersTableHorizontalProp
     {
       label: '再開',
       onClick: async (row: UserProfile) => {
+        if (IS_DEMO) { demoToast('再開'); return }
         setBusyIds(prev => new Set(prev).add(row.id))
         try {
           const res = await fetch(`/api/admin/users/${row.id}/resume`, { method: 'POST' })

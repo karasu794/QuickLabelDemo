@@ -110,9 +110,9 @@ export default function ServiceStepPage() {
         setRates([])
         return
       }
-      // E2E/開発用モック: cookie `core-mode=mock` または env `CORE_MODE=mock` の場合は即時ダミーレートを表示
+      // E2E/開発用モック: cookie `core-mode=mock` の場合は即時ダミーレートを表示
       try {
-        const mockEnabled = (typeof document !== 'undefined' && /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(document.cookie)) || String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
+        const mockEnabled = (typeof document !== 'undefined' && /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(document.cookie))
         if (mockEnabled) {
           setIsLoading(true)
           const mockRates: UiRate[] = [
@@ -365,6 +365,12 @@ export default function ServiceStepPage() {
 
       {error && (
         <div className="text-red-600 mb-4" data-test="service-error">見積の取得に失敗しました。時間を置いてお試しください。</div>
+      )}
+
+      {!error && process.env.NEXT_PUBLIC_APP_ENV === 'demo' && rates.length > 0 && (
+        <div className="mb-4 rounded bg-amber-50 border border-amber-300 px-4 py-2 text-sm text-amber-800">
+          ※ こちらはデモ用の概算見積もりです。実際の料金とは異なる場合があります。
+        </div>
       )}
 
       {!error && (

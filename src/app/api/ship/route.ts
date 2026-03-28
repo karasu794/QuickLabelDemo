@@ -122,7 +122,9 @@ async function getFedExAccessToken(originCountry: string): Promise<string> {
   }
 
   try {
-    const response = await fetch(authUrl, {
+    // 安全ガード: OAuth URLは許可されているが、Ship APIはブロックされる
+    const { fedexFetch } = await import('@/lib/fedex/safety')
+    const response = await fedexFetch(authUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -398,6 +400,9 @@ async function validateFedExShipment(accessToken: string, data: ShipmentRequest)
   const validateUrl = 'https://apis.fedex.com/ship/v1/shipments/packages/validate'
 
   try {
+    // 安全ガード: Validate Ship APIはブロックされる（SAFE_MODE=rate-onlyの場合）
+    const { fedexFetch } = await import('@/lib/fedex/safety')
+    const { throttle } = await import('@/lib/fedex/httpLimiter')
     // 一度のみ為替取得
     let jpyToUsd = 1/150
     try {
@@ -425,15 +430,17 @@ async function validateFedExShipment(accessToken: string, data: ShipmentRequest)
     console.log('--- FedEx Validate Request Body ---');
     console.log(JSON.stringify(validateRequest, null, 2));
 
-    const response = await fetch(validateUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'X-locale': 'ja_JP',
-      },
-      body: JSON.stringify(validateRequest),
-    })
+    const response = await throttle(() =>
+      fedexFetch(validateUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'X-locale': 'ja_JP',
+        },
+        body: JSON.stringify(validateRequest),
+      })
+    )
 
     const responseText = await response.text()
     console.log(`FedX Validate レスポンス: ${response.status}`)
@@ -522,15 +529,21 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
     console.log(JSON.stringify(shipmentRequest, null, 2));
     console.log("-----------------------------------");
 
-    const response = await fetch(shipUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'X-locale': 'ja_JP',
-      },
-      body: JSON.stringify(shipmentRequest),
-    })
+    // 安全ガード: Ship APIはブロックされる（SAFE_MODE=rate-onlyの場合）
+    const { fedexFetch } = await import('@/lib/fedex/safety')
+    const { throttle } = await import('@/lib/fedex/httpLimiter')
+    const { safeLog } = await import('@/lib/logging/safeLog')
+    const response = await throttle(() =>
+      fedexFetch(shipUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'X-locale': 'ja_JP',
+        },
+        body: JSON.stringify(shipmentRequest),
+      })
+    )
 
     const responseText = await response.text()
     console.log(`FedX Ship レスポンス: ${response.status}`)
@@ -580,6 +593,15 @@ async function createFedExShipment(accessToken: string, data: ShipmentRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Demo mode guard: APP_ENV=demo では発行系を無効化
+  if (process.env.APP_ENV === 'demo') {
+    return NextResponse.json({
+      ok: false,
+      code: 'DEMO_MODE_DISABLED',
+      message: 'この操作（ラベル発行）はデモ環境では無効です。',
+    }, { status: 403 })
+  }
+
   // Keep rate-limit and validation, but remove sandbox sourceId replacement.
   let userId: string | null = null
   try { const { user } = await getUserOrThrow(); userId = user.id } catch { userId = null }

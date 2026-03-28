@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import FeeFormWrapper from './FeeForm'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(
@@ -199,7 +200,7 @@ function FeeUpdateForm({ currentFeePercentage }: { currentFeePercentage: number 
         <p className="text-sm text-gray-600 mt-1">新しいサービス手数料率を設定してください</p>
       </div>
       <div className="p-6">
-        <form action={updateFeeAction} className="space-y-6">
+        <FeeFormWrapper action={updateFeeAction}>
           {/* 手数料率入力 */}
           <div>
             <label htmlFor="feePercentage" className="block text-sm font-medium text-gray-700 mb-2">
@@ -239,7 +240,7 @@ function FeeUpdateForm({ currentFeePercentage }: { currentFeePercentage: number 
               手数料率を更新
             </button>
           </div>
-        </form>
+        </FeeFormWrapper>
       </div>
     </div>
   )

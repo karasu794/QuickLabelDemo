@@ -3,6 +3,7 @@ import AsciiPreviewField from '@/components/AsciiPreviewField'
 import { toAsciiForShipping } from '@/lib/text/toAsciiForShipping'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import CompanyInfoFormWrapper from './CompanyInfoForm'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(
@@ -327,7 +328,7 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
         <p className="text-sm text-gray-600 mt-1">送り状に記載される自社情報を設定してください</p>
       </div>
       <div className="p-6">
-        <form action={updateCompanyInfoAction} className="space-y-6">
+        <CompanyInfoFormWrapper action={updateCompanyInfoAction}>
           {/* 担当者名 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -492,7 +493,7 @@ function CompanyInfoUpdateForm({ currentCompanyInfo }: { currentCompanyInfo: Com
               自社情報を更新
             </button>
           </div>
-        </form>
+        </CompanyInfoFormWrapper>
       </div>
     </div>
   )

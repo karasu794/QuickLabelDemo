@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 // 簡易E2E: モックモードでトップページの内訳表示を検証
-// CORE_MODE=mock または cookie core-mode=mock を使う
+// cookie core-mode=mock を使う（CORE_MODE は boolean フラグ）
 
 test.describe('トップページ 見積の料金内訳の表示', () => {
   test('基本料金以外の行も表示される（燃料・混雑・地域外・輸入手数料・申告価格・フェニックス割引）', async ({ page }) => {

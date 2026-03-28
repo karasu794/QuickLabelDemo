@@ -78,6 +78,11 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return NextResponse.json({ ok: false, code: 'DEMO_MODE_DISABLED', message: 'この操作（アセット削除）はデモ環境では無効です。' }, { status: 403 })
+  }
+
   if (!(await isAdminServer())) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')

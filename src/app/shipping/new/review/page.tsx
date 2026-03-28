@@ -13,6 +13,9 @@ import { Loader2 } from 'lucide-react'
 import { isReviewDisclaimerEnabled, isServiceStepEnabled } from '@/lib/config/featureFlags'
 import BreakdownTable from './BreakdownTable'
 import InvoiceOptionsForm from './InvoiceOptions'
+import toast from 'react-hot-toast'
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 import { normalizeFedExRate } from '@/lib/rates/normalizeFedExRate'
 import { calcBreakdown } from '@/lib/rates/calcBreakdown'
 import type { InvoiceOptions } from '@/types/invoice'
@@ -314,6 +317,12 @@ export default function ReviewPage() {
       })
       const chargeJson = await chargeRes.json()
       if (!chargeRes.ok || !chargeJson.ok) {
+        // デモ環境ガード: DEMO_MODE_DISABLED を自然なメッセージに変換
+        if (chargeJson.code === 'DEMO_MODE_DISABLED') {
+          toast('デモ環境のため、決済処理はスキップされます', { icon: 'ℹ️' })
+          setIsProcessingPayment(false)
+          return
+        }
         throw new Error(chargeJson.message || '決済に失敗しました')
       }
 
@@ -402,6 +411,17 @@ export default function ReviewPage() {
       // 同期成功（200）
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+        // デモ環境ガード: DEMO_MODE_DISABLED / WRITE_DISABLED を自然なメッセージに変換
+        if (errorData.code === 'DEMO_MODE_DISABLED') {
+          toast('デモ環境のため、ラベル発行は無効です', { icon: 'ℹ️' })
+          setIsProcessingPayment(false)
+          return
+        }
+        if (errorData.code === 'WRITE_DISABLED') {
+          toast('ラベル発行機能は現在メンテナンス中です', { icon: 'ℹ️' })
+          setIsProcessingPayment(false)
+          return
+        }
         throw new Error(errorData.error || errorData.message || '送り状作成に失敗しました')
       }
 
@@ -445,10 +465,10 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">最終確認</h1>
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">最終確認</h1>
           <p className="text-gray-600">以下の内容をご確認の上、決済にお進みください</p>
         </div>
 
@@ -862,7 +882,15 @@ export default function ReviewPage() {
 
         {/* Square決済フォーム */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="bg-[#4D148C] text-white p-6 rounded-t-lg">
+          {IS_DEMO && (
+            <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 rounded-t-lg">
+              <p className="text-blue-700 text-sm flex items-center gap-2">
+                <span>ℹ️</span>
+                <span>デモ環境では決済・ラベル発行は実行されません。フォーム入力と見積もり取得までの体験をお試しいただけます。</span>
+              </p>
+            </div>
+          )}
+          <div className={`bg-[#4D148C] text-white p-6 ${IS_DEMO ? '' : 'rounded-t-lg'}`}>
             <h2 className="text-xl font-semibold">お支払い方法</h2>
             <p className="text-purple-100 text-sm">安全で確実な決済システム</p>
           </div>

@@ -294,7 +294,9 @@ async function getFedExAccessToken(originCountry: string): Promise<string> {
     throw new Error(`FedEx ${isExport ? '輸出' : '輸入'}用API認証情報が設定されていません`);
   }
 
-  const response = await fetch('https://apis.fedex.com/oauth/token', {
+  // 安全ガード: OAuth URLは許可されている
+  const { fedexFetch } = await import('@/lib/fedex/safety')
+  const response = await fedexFetch('https://apis.fedex.com/oauth/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -789,20 +791,26 @@ async function getAllServiceRates(accessToken: string, baseRequest: any, quotePa
 
 // FedEx Rate APIを呼び出し
 async function getFedExRates(accessToken: string, requestData: any) {
-  const response = await fetch('https://apis.fedex.com/rate/v1/rates/quotes', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-      'X-locale': 'ja_JP'
-    },
-    body: JSON.stringify(requestData)
-  });
+  const { fedexFetch } = await import('@/lib/fedex/safety')
+  const { throttle } = await import('@/lib/fedex/httpLimiter')
+  const { safeLog } = await import('@/lib/logging/safeLog')
+
+  const response = await throttle(() =>
+    fedexFetch('https://apis.fedex.com/rate/v1/rates/quotes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'X-locale': 'ja_JP'
+      },
+      body: JSON.stringify(requestData)
+    })
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('FedEx API Error Response:', errorText);
-    throw new Error(`FedEx Rate API failed: ${response.status} ${errorText}`);
+    console.error('FedEx API Error Response:', safeLog(errorText));
+    throw new Error(`FedEx Rate API failed: ${response.status} ${safeLog(errorText)}`);
   }
 
   return await response.json();

@@ -14,6 +14,19 @@ export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
+
+  const fillDemo = (type: 'user' | 'admin') => {
+    if (type === 'user') {
+      setEmail(process.env.NEXT_PUBLIC_DEMO_USER_EMAIL ?? '')
+      setPassword(process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD ?? '')
+    } else {
+      setEmail(process.env.NEXT_PUBLIC_DEMO_ADMIN_EMAIL ?? '')
+      setPassword(process.env.NEXT_PUBLIC_DEMO_ADMIN_PASSWORD ?? '')
+    }
+    setErrorMessage('')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -90,6 +103,59 @@ export default function LoginForm() {
       )}
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* デモ環境: クイック入力ボタン */}
+        {IS_DEMO && (
+          <div style={{
+            padding: '1rem',
+            backgroundColor: '#fffbeb',
+            border: '1px solid #fde68a',
+            borderRadius: '8px',
+            marginBottom: '0.5rem',
+          }}>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#92400e', fontWeight: 'bold' }}>
+              🎯 デモ用クイック入力
+            </p>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#a16207' }}>
+              ボタンを押すとメールアドレスとパスワードが自動入力されます。その後「ログイン」を押してください。
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => fillDemo('user')}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  color: '#1e40af',
+                  backgroundColor: '#dbeafe',
+                  border: '1px solid #93c5fd',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
+              >
+                👤 デモユーザー入力
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemo('admin')}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  color: '#7c2d12',
+                  backgroundColor: '#fed7aa',
+                  border: '1px solid #fdba74',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
+              >
+                🔧 デモ管理者入力
+              </button>
+            </div>
+          </div>
+        )}
         <div>
           <label 
             htmlFor="email" 

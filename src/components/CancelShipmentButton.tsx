@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Loader2 } from 'lucide-react'
 import { cancelShipmentAction } from '@/app/actions/cancelShipment'
+import toast from 'react-hot-toast'
 
 interface CancelShipmentButtonProps {
   trackingNumber: string
@@ -72,6 +73,11 @@ export default function CancelShipmentButton({
         }, 2000)
         
       } else {
+        // デモ環境ガード: 自然なトーストに変換
+        if (response.message?.includes('デモ環境')) {
+          toast('デモ環境のため、キャンセル操作は無効です', { icon: 'ℹ️' })
+          return
+        }
         console.error('❌ キャンセル・返金失敗:', response.message)
         setResult({
           type: 'error',

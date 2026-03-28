@@ -1,0 +1,37 @@
+{
+  "caseId": "C3",
+  "description": "Multiple boxes / International / Peak season simulation",
+  "shipper": {
+    "countryCode": "JP",
+    "postalCode": "460-0001",
+    "cityName": "Nagoya"
+  },
+  "recipient": {
+    "countryCode": "GB",
+    "postalCode": "SW1A 1AA",
+    "cityName": "London",
+    "isResidential": false
+  },
+  "shipDate": "2025-12-20",
+  "packages": [
+    {
+      "weight": 1.5,
+      "dimensions": {
+        "length": 25,
+        "width": 20,
+        "height": 10
+      },
+      "declaredValue": 30000
+    },
+    {
+      "weight": 2.0,
+      "dimensions": {
+        "length": 30,
+        "width": 25,
+        "height": 15
+      },
+      "declaredValue": 40000
+    }
+  ]
+}
+

@@ -14,6 +14,15 @@ interface PaymentRequest {
 }
 
 export async function POST(request: NextRequest) {
+  // Demo mode guard: 決済作成を無効化
+  if (process.env.APP_ENV === 'demo') {
+    return NextResponse.json({
+      ok: false,
+      code: 'DEMO_MODE_DISABLED',
+      message: 'この操作（決済）はデモ環境では無効です。',
+    }, { status: 403 })
+  }
+
   try {
     const { amount, sourceId }: PaymentRequest = await request.json()
     

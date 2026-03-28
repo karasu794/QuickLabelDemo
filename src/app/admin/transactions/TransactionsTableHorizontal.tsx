@@ -2,6 +2,9 @@
 
 import ResponsiveTable, { TableColumn, TableAction } from '@/components/ResponsiveTable'
 import { TrackingNumber, PaymentIdButton } from './TransactionActions'
+import toast from 'react-hot-toast'
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 
 // 取引データの型定義
 interface Transaction {
@@ -103,6 +106,7 @@ export default function TransactionsTableHorizontal({ transactions }: Transactio
     {
       label: '追跡',
       onClick: (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番ではFedEx追跡ページに遷移します', { icon: '✅' }); return }
         window.open(`https://www.fedex.com/fedextrack/?trknbr=${row.tracking_number}`, '_blank')
       },
       className: 'text-blue-600 hover:text-blue-900'
@@ -110,16 +114,18 @@ export default function TransactionsTableHorizontal({ transactions }: Transactio
     {
       label: 'ラベル',
       onClick: (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番では発行したラベルを再表示します', { icon: '✅' }); return }
         if (row.label_url) {
           window.open(row.label_url, '_blank')
         }
       },
       className: 'text-green-600 hover:text-green-900',
-      disabled: (row: Transaction) => !row.label_url
+      disabled: (row: Transaction) => !IS_DEMO && !row.label_url
     },
     {
       label: 'キャンセル',
       onClick: async (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番では取引のキャンセル処理を行います', { icon: '✅' }); return }
         // 確認ダイアログ
         const confirmCancel = window.confirm(
           `【管理者権限】追跡番号 ${row.tracking_number} の発送をキャンセルし、返金処理を行いますか？\n\nこの操作は取り消すことができません。`

@@ -3,6 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { createClient as createSvc } from '@supabase/supabase-js'
 import { getStatus } from '@/server/db/shipments'
 import { withTrace } from '@/lib/trace'
+import { CORE_MODE } from '@/lib/config/coreMode'
 
 // GET /api/ship/status?shipmentId=...
 export async function GET(request: NextRequest) {
@@ -16,8 +17,7 @@ export async function GET(request: NextRequest) {
       // Mock fast-path
       const cookieHeader = request.headers.get('cookie') || ''
       const hasMockCookie = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader)
-      const envCoreMode = String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
-      if (hasMockCookie || envCoreMode || shipmentId.startsWith('mock-')) {
+      if (hasMockCookie || CORE_MODE || shipmentId.startsWith('mock-')) {
         return NextResponse.json({ status: 'completed', labelUrl: 'https://example.com/mock-label.pdf', trackingNumber: '999999999999' }, { status: 200 })
       }
       const supabase = createServiceRoleClient()

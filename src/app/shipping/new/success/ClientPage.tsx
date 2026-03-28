@@ -92,7 +92,21 @@ function SuccessContent() {
     }
 
     const shouldFetchConsistency = !shipmentData && trackingNumber && !shipmentId
-    if (!shouldFetchConsistency) return
+    if (!shouldFetchConsistency) {
+      // デモ環境: パラメータなしでアクセスされた場合はダミーデータを表示
+      if (!shipmentData && process.env.NEXT_PUBLIC_APP_ENV === 'demo') {
+        setShipmentData({
+          trackingNumber: '794600000001',
+          labelUrl: undefined,
+          labelUrls: [],
+          paymentId: 'sandbox-demo-pay-001',
+          shipmentId: 'demo-shipment-001',
+          type: 'standard',
+          packageCount: 1,
+        })
+      }
+      return
+    }
 
     let cancelled = false
     setIsFetchingConsistency(true)

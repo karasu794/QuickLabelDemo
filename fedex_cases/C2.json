@@ -1,0 +1,29 @@
+{
+  "caseId": "C2",
+  "description": "Single box / Commercial / International / Heavy weight",
+  "shipper": {
+    "countryCode": "JP",
+    "postalCode": "530-0001",
+    "cityName": "Osaka"
+  },
+  "recipient": {
+    "countryCode": "US",
+    "postalCode": "90210",
+    "stateCode": "CA",
+    "cityName": "Beverly Hills",
+    "isResidential": false
+  },
+  "shipDate": "2025-11-15",
+  "packages": [
+    {
+      "weight": 15.0,
+      "dimensions": {
+        "length": 50,
+        "width": 40,
+        "height": 30
+      },
+      "declaredValue": 200000
+    }
+  ]
+}
+

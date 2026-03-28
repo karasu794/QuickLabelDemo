@@ -64,26 +64,26 @@ export default function HeaderClient({ initialAuth, showAdminNav = true }: Props
 
   return (
     <header className="bg-purple-900">
-      <div className="container mx-auto px-6 h-16">
+      <div className="container mx-auto px-4 md:px-6 h-16">
         <nav className="flex justify-between items-center h-full">
-          <Link href="/" className="text-white text-xl font-normal hover:opacity-80 transition-opacity">QuickLabel</Link>
-          <div className="flex items-center space-x-8">
+          <Link href="/" className="text-white text-lg md:text-xl font-normal hover:opacity-80 transition-opacity flex-shrink-0">QuickLabel</Link>
+          <div className="flex items-center space-x-3 md:space-x-8 text-sm md:text-base">
             {effectiveUser ? (
               <>
-                <Link href="/shipping/new/shipper" className="text-white hover:opacity-80 transition-opacity">送り状作成</Link>
+                <Link href="/shipping/new/shipper" className="text-white hover:opacity-80 transition-opacity hidden md:inline">送り状作成</Link>
                 <Link href="/mypage/profile" className="text-white hover:opacity-80 transition-opacity">マイページ</Link>
                 {showAdminNav && (
-                  <div className="flex items-center space-x-2">
-                    <ShieldCheckIcon className="w-5 h-5 text-white" />
-                    <Link href="/admin" className="text-white hover:opacity-80 transition-opacity" data-test="nav-admin-link">管理者ページ</Link>
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <ShieldCheckIcon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    <Link href="/admin" className="text-white hover:opacity-80 transition-opacity text-xs md:text-base" data-test="nav-admin-link">管理者</Link>
                   </div>
                 )}
-                <button onClick={handleLogout} className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors">ログアウト</button>
+                <button onClick={handleLogout} className="text-white bg-purple-700 px-3 py-1.5 md:px-4 md:py-2 rounded text-xs md:text-base hover:bg-purple-600 transition-colors">ログアウト</button>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-white hover:opacity-80 transition-opacity">ログイン</Link>
-                <Link href="/signup" className="text-white bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition-colors">新規登録</Link>
+                <Link href="/signup" className="text-white bg-purple-700 px-3 py-1.5 md:px-4 md:py-2 rounded text-sm md:text-base hover:bg-purple-600 transition-colors">新規登録</Link>
               </>
             )}
           </div>

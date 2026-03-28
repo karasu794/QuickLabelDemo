@@ -30,6 +30,11 @@ interface CancelShipmentResult {
  * @returns キャンセル結果
  */
 export async function cancelShipmentAction(trackingNumber: string, squarePaymentId: string): Promise<CancelShipmentResult> {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return { success: false, message: 'この操作（キャンセル）はデモ環境では無効です。' }
+  }
+
   // 関数冒頭でSupabaseクライアントを定義
   const cookieStore = cookies()
 

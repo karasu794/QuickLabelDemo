@@ -22,7 +22,7 @@ import { normalizeToQuotes } from '@/lib/quote/normalize'
 export async function POST(request: NextRequest) {
   return withTrace('api.quote', request, async ({ isMock, headers: traceHeaders }) => {
   try {
-    // E2E/開発用モック: Cookie `core-mode=mock` または env `CORE_MODE=mock` でダミーレートを返す
+    // E2E/開発用モック: Cookie `core-mode=mock` でダミーレートを返す
     if (isMock) {
       let rawBody: any
       try { rawBody = await request.json() } catch { rawBody = {} }

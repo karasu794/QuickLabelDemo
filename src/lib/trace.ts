@@ -33,13 +33,13 @@ export type TraceContext = {
 }
 
 // 追加: 本番での mock 無効化を明示
+// NOTE: isMock は E2E テスト用の cookie ベースモック。CORE_MODE (boolean) とは別概念。
 export function isMockEnabled(req: Request): boolean {
   const isProd = process.env.NODE_ENV === 'production'
   if (isProd) return false
   const cookie = req.headers.get('cookie') || ''
   const byCookie = /(?:^|;\s*)core-mode=mock\b/.test(cookie)
-  const byEnv = process.env.CORE_MODE === 'mock'
-  return byCookie || Boolean(byEnv)
+  return byCookie
 }
 
 /**

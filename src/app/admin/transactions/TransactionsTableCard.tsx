@@ -2,6 +2,9 @@
 
 import ResponsiveCardTable, { CardColumn, CardAction } from '@/components/ResponsiveCardTable'
 import { TrackingNumber, PaymentIdButton } from './TransactionActions'
+import toast from 'react-hot-toast'
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 
 // 取引データの型定義
 interface Transaction {
@@ -119,6 +122,7 @@ export default function TransactionsTableCard({ transactions }: TransactionsTabl
     {
       label: '追跡',
       onClick: (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番ではFedEx追跡ページに遷移します', { icon: '✅' }); return }
         window.open(`https://www.fedex.com/fedextrack/?trknbr=${row.tracking_number}`, '_blank')
       },
       className: 'text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100',
@@ -131,12 +135,13 @@ export default function TransactionsTableCard({ transactions }: TransactionsTabl
     {
       label: 'ラベル',
       onClick: (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番では発行したラベルを再表示します', { icon: '✅' }); return }
         if (row.label_url) {
           window.open(row.label_url, '_blank')
         }
       },
       className: 'text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100',
-      disabled: (row: Transaction) => !row.label_url,
+      disabled: (row: Transaction) => !IS_DEMO && !row.label_url,
       icon: (
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -146,6 +151,7 @@ export default function TransactionsTableCard({ transactions }: TransactionsTabl
     {
       label: 'キャンセル',
       onClick: async (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番では取引のキャンセル処理を行います', { icon: '✅' }); return }
         // 確認ダイアログ
         const confirmCancel = window.confirm(
           `【管理者権限】追跡番号 ${row.tracking_number} の発送をキャンセルし、返金処理を行いますか？\n\nこの操作は取り消すことができません。`
@@ -187,6 +193,7 @@ export default function TransactionsTableCard({ transactions }: TransactionsTabl
     {
       label: '決済情報',
       onClick: (row: Transaction) => {
+        if (IS_DEMO) { toast('操作デモ 本番では決済IDをコピーします', { icon: '✅' }); return }
         // PaymentIdButtonの機能を実装
         navigator.clipboard.writeText(row.payment_id)
       },

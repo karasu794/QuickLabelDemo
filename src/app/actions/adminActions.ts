@@ -30,6 +30,11 @@ interface AdminCancelResult {
  * @returns キャンセル結果
  */
 export async function adminCancelShipmentAction(trackingNumber: string): Promise<AdminCancelResult> {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return { success: false, message: 'この操作（管理者キャンセル）はデモ環境では無効です。' }
+  }
+
   try {
     console.log('🔐 管理者発送キャンセル処理開始:', trackingNumber)
 

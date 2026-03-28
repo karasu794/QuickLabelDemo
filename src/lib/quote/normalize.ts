@@ -1,10 +1,5 @@
 import { NormalizedQuote } from '@/types/quote'
-
-function isMockEnabled(): boolean {
-  try {
-    return String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
-  } catch { return false }
-}
+import { CORE_MODE } from '@/lib/config/coreMode'
 
 function coerceNumber(v: unknown, def = 0): number {
   const n = typeof v === 'string' ? Number(v) : (typeof v === 'number' ? v : NaN)
@@ -28,7 +23,7 @@ export function normalizeToQuotes(input: any): NormalizedQuote[] {
     return { id, service, total: Math.round(total), currency, eta }
   })
 
-  if (mapped.length === 0 && isMockEnabled()) {
+  if (mapped.length === 0 && CORE_MODE) {
     return [{ id: 'mock-PRIO', service: 'FEDEX_INTERNATIONAL_PRIORITY', total: 12345, currency: 'JPY', eta: '2099-12-31' }]
   }
   return mapped

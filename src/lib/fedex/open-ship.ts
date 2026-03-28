@@ -174,6 +174,11 @@ export interface ConfirmShipmentResponse {
 export async function createOpenShipment(
   shipmentData: OpenShipmentData
 ): Promise<OpenShipmentResponse> {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    throw new Error('DEMO_MODE_DISABLED: OpenShipment作成はデモ環境では無効です。')
+  }
+
   // 🚨 基幹仕様: 出荷地国コードに基づいて動的認証
   const originCountry = shipmentData.shipper.address.countryCode
   const accessToken = await getFedExAccessToken(originCountry)

@@ -9,6 +9,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { updateProfile } from './actions'
 import AsciiPreviewField from '@/components/AsciiPreviewField'
+import toast from 'react-hot-toast'
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 
 interface ProfileData {
   full_name: string
@@ -93,6 +96,11 @@ export default function ProfilePage() {
     e.preventDefault()
     if (!user) return
 
+    if (IS_DEMO) {
+      toast('デモ環境のため、プロフィール更新はスキップされます', { icon: 'ℹ️' })
+      return
+    }
+
     setLoading(true)
     setMessage(null)
 
@@ -116,7 +124,7 @@ export default function ProfilePage() {
   // 個別ページでの認証チェックは削除
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
         {/* ヘッダー */}
         <div className="flex items-center gap-3 mb-6">

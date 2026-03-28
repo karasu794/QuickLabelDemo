@@ -1,42 +1,85 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { CORE_MODE } from '@/lib/config/coreMode'
 
 export async function GET(request: NextRequest, { params }: { params: { jobId: string } }) {
   try {
     const { jobId } = params;
     console.log(`ジョブステータス確認 - ジョブID: ${jobId}`);
 
-    // E2E/開発用モック: Cookie `core-mode=mock` または env `CORE_MODE=mock`、もしくは jobId が `mock-` で始まる場合
-    const cookieHeader = request.headers.get('cookie') || ''
-    const hasMockCookie = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader)
-    const envCoreMode = String(process.env.CORE_MODE || '').toLowerCase()
-    if (hasMockCookie || envCoreMode === 'mock' || jobId.startsWith('mock-')) {
-      // jobId 形式は任意（mock-UUID など）を許容し、DB照会をせず即 completed を返す
+    // CORE_MODE (boolean) または jobId が core- / mock- prefix の場合、DB照会なしでモックレートを返す
+    if (CORE_MODE || jobId.startsWith('core-') || jobId.startsWith('mock-')) {
+      const now = new Date()
+      // 配送日: 3営業日後・5営業日後（土日スキップ）
+      function addBusinessDays(from: Date, days: number): Date {
+        const d = new Date(from)
+        let added = 0
+        while (added < days) {
+          d.setDate(d.getDate() + 1)
+          const dow = d.getDay()
+          if (dow !== 0 && dow !== 6) added++
+        }
+        return d
+      }
+      const eta1 = addBusinessDays(now, 3)
+      const eta2 = addBusinessDays(now, 5)
+      const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日']
       const mockData = {
         rates: [
           {
-            serviceType: 'FEDEX_INTERNATIONAL_PRIORITY',
-            totalNetFedExCharge: '12345',
-            deliveryDate: '2025-10-24',
-            deliveryDayOfWeek: 'Fri',
+            serviceType: 'FedEx International Priority®',
+            totalNetFedExCharge: '8750',
+            estimatedDeliveryTimestamp: eta1.toISOString(),
+            deliveryDate: eta1.toISOString().slice(0, 10),
+            deliveryDayOfWeek: days[eta1.getDay()],
             packagingType: 'YOUR_PACKAGING',
             rateType: 'ACCOUNT',
             breakdown: {
-              baseRate: 15000,
-              volumeDiscount: 3000,
-              importProcessingSurcharge: 100,
-              fuelSurcharge: 500,
-              peakSurcharge: 0,
+              baseRate: 6400,
+              volumeDiscount: 0,
+              quantityDiscount: 0,
+              importProcessingSurcharge: 580,
+              fuelSurcharge: 1280,
+              peakSurcharge: 490,
               residentialSurcharge: 0,
               deliveryAreaSurcharge: 0,
-              additionalHandlingSurcharge: 0,
+              saturdayDeliverySurcharge: 0,
               otherSurcharge: 0,
+              insuredValue: 0,
+              extraSurchargesJa: [],
+              specialHandling: {},
+              chargesPreview: { subtotal: 8750, tax: 875, total: 9625, fees: { serviceFee: 219, processingFee: 284 } },
+            }
+          },
+          {
+            serviceType: 'FedEx International Economy®',
+            totalNetFedExCharge: '5980',
+            estimatedDeliveryTimestamp: eta2.toISOString(),
+            deliveryDate: eta2.toISOString().slice(0, 10),
+            deliveryDayOfWeek: days[eta2.getDay()],
+            packagingType: 'YOUR_PACKAGING',
+            rateType: 'ACCOUNT',
+            breakdown: {
+              baseRate: 4200,
+              volumeDiscount: 0,
+              quantityDiscount: 0,
+              importProcessingSurcharge: 580,
+              fuelSurcharge: 840,
+              peakSurcharge: 360,
+              residentialSurcharge: 0,
+              deliveryAreaSurcharge: 0,
+              saturdayDeliverySurcharge: 0,
+              otherSurcharge: 0,
+              insuredValue: 0,
+              extraSurchargesJa: [],
+              specialHandling: {},
+              chargesPreview: { subtotal: 5980, tax: 598, total: 6578, fees: { serviceFee: 150, processingFee: 194 } },
             }
           }
         ]
       }
-      return NextResponse.json({ status: 'completed', message: 'mock completed', jobId, data: mockData })
+      return NextResponse.json({ status: 'completed', message: 'mock completed', jobId, data: { success: true, ...mockData } })
     }
 
     const supa = createServiceRoleClient()

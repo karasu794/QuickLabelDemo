@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import UserTableSwitcher from './UserTableSwitcher'
+import { maskEmail } from '@/lib/demo/maskEmail'
 
 // ユーザーデータの型定義
 export interface UserProfile {
@@ -36,7 +37,10 @@ export default async function UsersPage() {
     console.log(`管理者ページ: ${profiles?.length || 0}件のユーザー情報を取得`)
 
     // データを型安全にキャスト
-    const users: UserProfile[] = profiles || []
+    const users: UserProfile[] = (profiles || []).map((p: any) => ({
+      ...p,
+      email: maskEmail(p.email),
+    }))
 
     return (
       <div className="space-y-6">

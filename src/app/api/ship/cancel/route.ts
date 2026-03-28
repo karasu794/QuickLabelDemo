@@ -10,6 +10,15 @@ import { cancelShipmentByTrackingNumber } from '@/lib/ship/cancelShipmentService
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return NextResponse.json({
+      ok: false,
+      code: 'DEMO_MODE_DISABLED',
+      message: 'この操作（キャンセル）はデモ環境では無効です。',
+    }, { status: 403 })
+  }
+
   const auth = await requireAdminAuthRoute()
   if (!auth.ok) {
     const status = 'status' in auth ? auth.status : 403

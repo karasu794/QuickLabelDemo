@@ -71,7 +71,12 @@ export default function AdminCancelShipmentButton({
         if (onSuccess) onSuccess()
         setTimeout(() => window.location.reload(), 1000)
       } else {
-        setResult({ type: 'error', message: `キャンセルに失敗しました（${res.status}）` })
+        const body = await res.json().catch(() => ({}))
+        if (body?.code === 'DEMO_MODE_DISABLED') {
+          setResult({ type: 'error', message: 'デモ環境のため、キャンセル操作は無効です。' })
+        } else {
+          setResult({ type: 'error', message: `キャンセルに失敗しました（${res.status}）` })
+        }
       }
     } catch (e) {
       setResult({ type: 'error', message: 'キャンセル処理中にエラーが発生しました' })

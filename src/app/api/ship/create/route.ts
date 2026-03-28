@@ -114,11 +114,21 @@ export async function POST(req: NextRequest) {
 
   // Mock-fast path: allow instant processing response for E2E/dev
   const cookieHeader = req.headers.get('cookie') || ''
-  const isMock = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader) || String(process.env.CORE_MODE || '').toLowerCase() === 'mock'
+  const isMock = /(?:^|;\s*)core-mode=mock(?:;|$)/i.test(cookieHeader)
 
 	if (process.env.SHIP_API_WRITE_ENABLED !== 'true') {
     log.warn({ step: 'blocked', ok: false, context: { reason: 'WRITE_DISABLED' } })
 		return NextResponse.json({ code: 'WRITE_DISABLED' }, { status: 503 })
+	}
+
+	// Demo mode guard: APP_ENV=demo では FedEx 発行を二重ガード
+	if (process.env.APP_ENV === 'demo') {
+		log.info({ step: 'demo.guard', ok: true })
+		return NextResponse.json({
+			ok: false,
+			code: 'DEMO_MODE_DISABLED',
+			message: 'この操作（ラベル発行）はデモ環境では無効です。',
+		}, { status: 403 })
 	}
 
 	let input: CreateShipRequest

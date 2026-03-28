@@ -11,6 +11,8 @@ import {
   Building2
 } from 'lucide-react'
 
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
+
 const navigationItems = [
   {
     name: '通知管理',
@@ -50,7 +52,12 @@ export default function AdminSidebar() {
   }
 
   return (
-    <div className="fixed top-16 left-0 z-50 h-[calc(100vh-4rem)] w-64 flex flex-col bg-white shadow-lg border-r border-gray-200">
+    <div className={cn(
+      "fixed left-0 z-40 w-64 flex flex-col bg-white shadow-lg border-r border-gray-200",
+      IS_DEMO
+        ? "top-[calc(4rem+32px)] h-[calc(100vh-4rem-32px)]"
+        : "top-16 h-[calc(100vh-4rem)]"
+    )}>
       {/* ヘッダー */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800">管理画面</h2>

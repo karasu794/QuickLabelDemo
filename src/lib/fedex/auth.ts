@@ -42,7 +42,9 @@ export async function getFedExAccessToken(originCountry: string): Promise<string
   const credentials = getFedExCredentialsByOrigin(originCountry)
 
   try {
-    const response = await fetch(authUrl, {
+    // 安全ガード: OAuth URLは許可されている
+    const { fedexFetch } = await import('./safety')
+    const response = await fedexFetch(authUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -88,6 +90,11 @@ export async function fedexApiRequest<T = any>(
   const url = `${baseUrl}${endpoint}`
 
   try {
+    // 安全ガード: URL検証
+    const { fedexFetch } = await import('./safety')
+    const { throttle } = await import('./httpLimiter')
+    const { safeLog } = await import('@/lib/logging/safeLog')
+
     console.log(`🌐 FedEx API ${method} ${endpoint}`)
     
     // ===== デバッグ用: リクエストペイロードの詳細ログ =====
@@ -101,21 +108,23 @@ export async function fedexApiRequest<T = any>(
     });
     if (body) {
       console.log('📦 Request Body:');
-      console.log(JSON.stringify(body, null, 2));
+      console.log(safeLog(JSON.stringify(body, null, 2)));
     } else {
       console.log('📦 Request Body: (none)');
     }
     console.log('--- End of Request Payload ---');
     
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'X-locale': 'ja_JP',
-      },
-      ...(body && { body: JSON.stringify(body) }),
-    })
+    const response = await throttle(() =>
+      fedexFetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'X-locale': 'ja_JP',
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      })
+    )
 
     const responseText = await response.text()
     
@@ -126,7 +135,7 @@ export async function fedexApiRequest<T = any>(
     console.log('🔧 Response Headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
-      console.error(`❌ FedEx API Error ${response.status}:`, responseText)
+      console.error(`❌ FedEx API Error ${response.status}:`, safeLog(responseText))
       console.log('🔍 503エラーの場合の詳細チェック:');
       if (response.status === 503) {
         console.log('  - Service Unavailable detected');

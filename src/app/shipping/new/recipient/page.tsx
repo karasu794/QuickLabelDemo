@@ -67,6 +67,7 @@ export default function RecipientInfoPage() {
   const { isLoading, isReady } = useWaitForHydration()
   const { recipientInfo, updateRecipientInfo } = useRecipientInfo()
   const { phoenixMode, setPhoenixMode } = useShippingFormStore()
+  const markStepCompleted = useShippingFormStore((s) => s.markStepCompleted)
   
   console.log('🔄 RecipientInfoPage render with recipientInfo:', recipientInfo);
   console.log('🔄 Current phoenixMode:', phoenixMode);
@@ -390,6 +391,7 @@ export default function RecipientInfoPage() {
     setError('')
     
     if (validateForm()) {
+      markStepCompleted('/shipping/new/recipient')
       router.push('/shipping/new/packages')
     }
   }
@@ -596,17 +598,6 @@ export default function RecipientInfoPage() {
                       >
                         保存した宛先から入力
                       </Button>
-                      {phoenixMode !== 'shipper' && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handlePhoenixAddressClick}
-                          className="text-green-600 border-green-300 hover:bg-green-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
-                        >
-                          🏢 フェニックスへ送る
-                        </Button>
-                      )}
                     </div>
                     <GooglePlaceAutocomplete
                       value={addressInput}

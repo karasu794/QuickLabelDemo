@@ -9,6 +9,11 @@ export const runtime = 'nodejs'
 export const revalidate = 0
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return NextResponse.json({ ok: false, code: 'DEMO_MODE_DISABLED', message: 'この操作（ユーザー停止）はデモ環境では無効です。' }, { status: 403 })
+  }
+
   const auth = await requireAdminAuthRoute()
   if (!auth.ok) return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 'status' in auth ? auth.status : 403 })
 

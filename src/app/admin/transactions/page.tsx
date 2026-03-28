@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { TrackingNumber, PaymentIdButton } from './TransactionActions'
 import TransactionTableSwitcher from './TransactionTableSwitcher'
+import { maskEmail } from '@/lib/demo/maskEmail'
 
 // サービスロールキーを使用したSupabase client（サーバーサイド専用）
 const supabaseAdmin = createClient(
@@ -113,7 +114,7 @@ async function fetchTransactions(): Promise<{ transactions: Transaction[], stats
     const formattedTransactions: Transaction[] = data?.map((item: any) => ({
       id: item.id,
       created_at: item.created_at,
-      user_email: item.profiles?.email || null,
+      user_email: maskEmail(item.profiles?.email) || null,
               user_name: item.profiles?.full_name || null,
       total_amount: item.total_amount || 0,
       currency: 'JPY', // 現在はJPY固定

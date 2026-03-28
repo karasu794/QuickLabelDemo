@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { CreditCard, PaymentForm } from 'react-square-web-payments-sdk'
 
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
+
 // DIAG: 決済ボタンのdisabled制御は isProcessing のみ。免責事項チェックによるdisabledは未連動。
 // DIAG: data-test="confirm-button" 属性未付与。
 
@@ -54,6 +56,89 @@ export default function SquarePaymentForm({
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  // デモ環境: Squareフォームの代わりにダミーカード情報を表示
+  if (IS_DEMO) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4">
+          {/* ダミーカード情報（変更不可） */}
+          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded font-mono">VISA</div>
+              <span className="text-sm text-gray-500">Sandbox テストカード</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-3">
+                <label className="text-xs text-gray-500 block mb-1">カード番号</label>
+                <div className="bg-white border border-gray-200 rounded px-3 py-2 text-sm font-mono text-gray-700 select-none">
+                  4532 0150 0000 0000
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">有効期限</label>
+                <div className="bg-white border border-gray-200 rounded px-3 py-2 text-sm font-mono text-gray-700 select-none">
+                  12/28
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">CVV</label>
+                <div className="bg-white border border-gray-200 rounded px-3 py-2 text-sm font-mono text-gray-700 select-none">
+                  111
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">郵便番号</label>
+                <div className="bg-white border border-gray-200 rounded px-3 py-2 text-sm font-mono text-gray-700 select-none">
+                  10000
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 決済ボタン（デモ: トークンなしでコールバック） */}
+          <button
+            type="button"
+            disabled={isProcessing || disabled}
+            onClick={async () => {
+              setIsProcessing(true)
+              try {
+                if (onTokenReceived) {
+                  await onTokenReceived('demo-sandbox-token-' + Date.now())
+                }
+              } catch (e) {
+                if (onPaymentError) onPaymentError(e instanceof Error ? e.message : 'デモ決済エラー')
+              } finally {
+                setIsProcessing(false)
+              }
+            }}
+            className="w-full h-14 text-lg font-semibold bg-[#4D148C] hover:bg-[#3D0F6B] disabled:bg-purple-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-200 flex items-center justify-center gap-3"
+            data-test="confirm-ship"
+          >
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                処理中...
+              </>
+            ) : (
+              '決済して送り状を作成する'
+            )}
+          </button>
+
+          {/* 決済金額表示 */}
+          <div className="text-center text-sm text-gray-600">
+            決済金額: <span className="font-semibold text-[#4D148C]">¥{amount.toLocaleString()}</span>
+          </div>
+        </div>
+
+        {/* セキュリティ情報 */}
+        <div className="text-xs text-gray-500 text-center space-y-1">
+          <p>🔒 Square社の安全で確実な決済システムを使用</p>
+          <p>クレジットカード情報は弊社サーバーに保存されません</p>
+        </div>
+      </div>
+    )
   }
 
   return (

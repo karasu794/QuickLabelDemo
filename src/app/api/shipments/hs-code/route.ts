@@ -97,7 +97,9 @@ export async function POST(request: NextRequest) {
         console.log('🏠 HSコード検索: 輸入用認証情報を使用')
       }
 
-      const authResponse = await fetch('https://apis.fedex.com/oauth/token', {
+      // 安全ガード: OAuth URLは許可されている
+      const { fedexFetch } = await import('@/lib/fedex/safety')
+      const authResponse = await fedexFetch('https://apis.fedex.com/oauth/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -134,16 +136,19 @@ export async function POST(request: NextRequest) {
 
       console.log('HSコード検索リクエストボディ:', JSON.stringify(hsCodeRequestBody, null, 2))
 
-      // FedX HSコード検索APIを試行
-      const hsCodeResponse = await fetch('https://apis.fedex.com/commodity/v1/hscodes/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-locale': 'en_US',
-          'authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(hsCodeRequestBody),
-      })
+      // 安全ガード: commodity APIは許可されていない（SAFE_MODE=rate-onlyの場合）
+      const { throttle } = await import('@/lib/fedex/httpLimiter')
+      const hsCodeResponse = await throttle(() =>
+        fedexFetch('https://apis.fedex.com/commodity/v1/hscodes/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-locale': 'en_US',
+            'authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(hsCodeRequestBody),
+        })
+      )
 
       if (hsCodeResponse.ok) {
         const hsCodeData = await hsCodeResponse.json()

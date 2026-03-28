@@ -1,0 +1,74 @@
+{
+  "title": "JP→US PRIORITY 1.0kg Residential+DA",
+  "request": {
+    "accountNumber": { "value": "123456789" },
+    "requestedShipment": {
+      "shipper": {
+        "address": {
+          "postalCode": "1000001",
+          "countryCode": "JP",
+          "city": "Tokyo"
+        }
+      },
+      "recipient": {
+        "address": {
+          "postalCode": "10001",
+          "countryCode": "US",
+          "city": "New York",
+          "residential": true
+        }
+      },
+      "shipDatestamp": "2025-01-15",
+      "rateRequestType": ["ACCOUNT", "LIST"],
+      "pickupType": "DROPOFF_AT_FEDEX_LOCATION",
+      "requestedPackageLineItems": [
+        {
+          "sequenceNumber": 1,
+          "groupPackageCount": 1,
+          "weight": {
+            "units": "KG",
+            "value": 1.0
+          }
+        }
+      ]
+    }
+  },
+  "response": {
+    "output": {
+      "rateReplyDetails": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "ratedShipmentDetails": [
+            {
+              "totalNetCharge": { "amount": 5000, "currency": "JPY" },
+              "totalBaseCharge": { "amount": 4000, "currency": "JPY" },
+              "totalDiscounts": { "amount": 200, "currency": "JPY" },
+              "surcharges": [
+                {
+                  "surchargeType": "FUEL_SURCHARGE",
+                  "amount": { "amount": 800, "currency": "JPY" }
+                },
+                {
+                  "surchargeType": "DELIVERY_AREA",
+                  "amount": { "amount": 400, "currency": "JPY" }
+                },
+                {
+                  "surchargeType": "RESIDENTIAL_DELIVERY",
+                  "amount": { "amount": 0, "currency": "JPY" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expectedLines": [
+    { "key": "base", "present": true },
+    { "key": "fuel", "present": true, "approxPct": 20 },
+    { "key": "delivery_area", "present": true, "approxPct": 10 },
+    { "key": "residential", "present": true },
+    { "key": "discount", "present": true, "approxPct": 5 }
+  ]
+}
+

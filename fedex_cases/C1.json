@@ -1,0 +1,29 @@
+{
+  "caseId": "C1",
+  "description": "Single box / Residential / International / Standard weight",
+  "shipper": {
+    "countryCode": "JP",
+    "postalCode": "100-0001",
+    "cityName": "Tokyo"
+  },
+  "recipient": {
+    "countryCode": "US",
+    "postalCode": "10001",
+    "stateCode": "NY",
+    "cityName": "New York",
+    "isResidential": true
+  },
+  "shipDate": "2025-11-15",
+  "packages": [
+    {
+      "weight": 2.5,
+      "dimensions": {
+        "length": 30,
+        "width": 20,
+        "height": 15
+      },
+      "declaredValue": 50000
+    }
+  ]
+}
+

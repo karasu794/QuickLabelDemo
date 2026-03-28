@@ -6,6 +6,11 @@ import { createAdminNotification } from '@/lib/admin/notifications'
 type ServiceResult = { status: number; body: any }
 
 export async function cancelShipmentByTrackingNumber(params: { trackingNumber: string; actorUserId: string }): Promise<ServiceResult> {
+  // Demo mode guard
+  if (process.env.APP_ENV === 'demo') {
+    return { status: 403, body: { ok: false, code: 'DEMO_MODE_DISABLED', message: 'この操作（キャンセル）はデモ環境では無効です。' } }
+  }
+
   const { trackingNumber, actorUserId } = params
   const supabase = createServiceRoleClient()
 

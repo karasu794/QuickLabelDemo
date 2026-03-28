@@ -329,15 +329,15 @@ export default function QuoteFormComponent({
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-center mb-12">運送料金見積もり</h1>
+    <div className="max-w-4xl mx-auto py-4 md:py-8 px-2 md:px-4">
+      <h1 className="text-2xl md:text-4xl font-bold text-center mb-6 md:mb-12">運送料金見積もり</h1>
       <Card>
-        <CardContent className="p-8">
-          <form onSubmit={handleFormSubmit} className="space-y-6">
+        <CardContent className="p-4 md:p-8">
+          <form onSubmit={handleFormSubmit} className="space-y-4 md:space-y-6">
             {/* 上部の見出しと説明文 */}
-            <div className="text-center space-y-2 mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800">出荷地とお届け先（国／地域）を入力してください</h2>
-              <p className="text-gray-600">住所を入力すると、自動的に候補が表示されます</p>
+            <div className="text-center space-y-2 mb-4 md:mb-8">
+              <h2 className="text-lg md:text-2xl font-semibold text-gray-800">出荷地とお届け先（国／地域）を入力してください</h2>
+              <p className="text-sm md:text-base text-gray-600">住所を入力すると、自動的に候補が表示されます</p>
             </div>
 
             {/* 出荷地 */}
@@ -347,19 +347,6 @@ export default function QuoteFormComponent({
                   <span className="text-blue-600 mr-2">📍</span>
                   出荷地
                 </Label>
-                
-                {/* フェニックス住所自動入力ボタン（出荷地が空の場合のみ表示） */}
-                {!quoteParams.originAddressInput && quoteParams.phoenixMode !== 'recipient' && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePhoenixAddressClick('origin')}
-                    className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs"
-                  >
-                    🏢 フェニックスから送る
-                  </Button>
-                )}
               </div>
               
               <div className="relative">
@@ -476,19 +463,6 @@ export default function QuoteFormComponent({
                   <span className="text-green-600 mr-2">📍</span>
                   お届け先（国／地域）
                 </Label>
-                
-                {/* フェニックス住所自動入力ボタン（お届け先が空の場合のみ表示） */}
-                {!quoteParams.destinationAddressInput && quoteParams.phoenixMode !== 'shipper' && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePhoenixAddressClick('destination')}
-                    className="text-green-600 border-green-300 hover:bg-green-50 text-xs"
-                  >
-                    🏢 フェニックスへ送る
-                  </Button>
-                )}
               </div>
               
               <div className="relative">

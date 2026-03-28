@@ -21,6 +21,11 @@ function toAppStatus(squareStatus: string): 'pending' | 'completed' | 'failed' {
 }
 
 export async function POST(req: NextRequest) {
+  // Webhook未使用時: SQUARE_WEBHOOK_SIGNATURE_KEY が未設定なら処理をスキップ
+  if (!process.env.SQUARE_WEBHOOK_SIGNATURE_KEY) {
+    return NextResponse.json({ ok: true, skipped: true, reason: 'WEBHOOK_DISABLED' })
+  }
+
   const text = await req.text()
   if (!verifySquareSignature(req, text)) {
     return NextResponse.json({ ok: false, code: 'INVALID_SIGNATURE' }, { status: 400 })
