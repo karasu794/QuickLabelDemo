@@ -14,7 +14,7 @@ import { Combobox } from '@/components/ui/combobox'
 import { AlertCircle, Package, Loader2 } from 'lucide-react'
 import AuthGuard from '@/components/AuthGuard'
 import AddressHistoryPicker from '@/components/address/AddressHistoryPicker'
-import AddressBookPicker from '@/components/address/AddressBookPicker'
+
 
 // ストアの値から表示用住所を構築する関数
 type RecipientAddr = {
@@ -85,7 +85,6 @@ export default function RecipientInfoPage() {
   })
   const [error, setError] = useState('')
   const [showHistory, setShowHistory] = useState(false)
-  const [showAddressBook, setShowAddressBook] = useState(false)
   
   // ハイドレーション完了後に住所フィールドを更新
   useEffect(() => {
@@ -429,35 +428,6 @@ export default function RecipientInfoPage() {
     setShowHistory(false)
   }
 
-  const handleSelectFromAddressBook = (addr: {
-    name?: string, name_ascii?: string
-    company?: string, company_ascii?: string
-    phone?: string, phone_ascii?: string
-    email?: string
-    country?: string, country_ascii?: string
-    zip?: string, zip_ascii?: string
-    state?: string, state_ascii?: string
-    city?: string, city_ascii?: string
-    address1?: string, address1_ascii?: string
-    address2?: string, address2_ascii?: string
-  }) => {
-    // ASCII優先で適用（不足時は原文）
-    updateRecipientInfo('contactName', addr.name_ascii || addr.name || '')
-    updateRecipientInfo('companyName', addr.company_ascii || addr.company || '')
-    updateRecipientInfo('phoneNumber', addr.phone_ascii || addr.phone || '')
-    updateRecipientInfo('email', addr.email || '')
-    updateRecipientInfo('countryCode', addr.country_ascii || addr.country || 'JP')
-    updateRecipientInfo('postalCode', addr.zip_ascii || addr.zip || '')
-    updateRecipientInfo('stateCode', addr.state_ascii || addr.state || '')
-    updateRecipientInfo('cityName', addr.city_ascii || addr.city || '')
-    updateRecipientInfo('address1', addr.address1_ascii || addr.address1 || '')
-    updateRecipientInfo('address2', addr.address2_ascii || addr.address2 || '')
-    const displayAddress = `${addr.zip ?? ''} ${addr.city ?? ''} ${addr.address1 ?? ''}`.trim()
-    setAddressInput(displayAddress)
-    setIsAddressSelected(true)
-    setShowAddressBook(false)
-  }
-
   return (
     <AuthGuard requireAuth={false}>
       <div className="p-4 md:p-8">
@@ -587,16 +557,6 @@ export default function RecipientInfoPage() {
                         data-test="btn-history-picker"
                       >
                         履歴から入力
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowAddressBook(true)}
-                        className="text-purple-700 border-purple-300 hover:bg-purple-50 text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
-                        data-test="btn-addressbook-picker"
-                      >
-                        保存した宛先から入力
                       </Button>
                     </div>
                     <GooglePlaceAutocomplete
@@ -742,13 +702,6 @@ export default function RecipientInfoPage() {
               role="recipient"
               onSelect={handleSelectFromHistory}
               onClose={() => setShowHistory(false)}
-            />
-          )}
-          {showAddressBook && (
-            <AddressBookPicker
-              role="recipient"
-              onSelect={handleSelectFromAddressBook}
-              onClose={() => setShowAddressBook(false)}
             />
           )}
         </div>
