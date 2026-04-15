@@ -8,8 +8,11 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import toast from 'react-hot-toast'
 import type { Database } from '@/types/supabase'
 type ShipmentRow = Database['public']['Tables']['shipments']['Row']
+
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 
 // 動的レンダリングを強制してキャッシュを回避
 export const dynamic = 'force-dynamic'
@@ -103,6 +106,11 @@ export default function MypageReceiptsPage() {
 
   // 領収書を生成してダウンロード
   const handleDownloadReceipt = async (transactionId: string) => {
+    if (IS_DEMO) {
+      toast('デモ環境のため、領収書のダウンロードはスキップされました', { icon: '📄' })
+      return
+    }
+
     try {
       setGeneratingReceipts(prev => new Set(prev).add(transactionId))
 
@@ -158,6 +166,11 @@ export default function MypageReceiptsPage() {
 
   // 領収書をプレビュー
   const handlePreviewReceipt = async (transactionId: string) => {
+    if (IS_DEMO) {
+      toast('デモ環境のため、領収書のプレビューはスキップされました', { icon: '👁️' })
+      return
+    }
+
     try {
       setGeneratingReceipts(prev => new Set(prev).add(transactionId))
 
