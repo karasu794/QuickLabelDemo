@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import QuoteFormComponent from "@/components/QuoteFormComponent"
 import FedExQuoteResults, { FedExRate } from "@/components/FedExQuoteResults"
 import { Button } from "@/components/ui/button"
@@ -491,6 +492,19 @@ export default function Home() {
   return (
     <main className="container mx-auto px-2 md:px-4 py-4 md:py-8">
       <div className="max-w-6xl mx-auto">
+        {/* 補足テキストと About リンク */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 md:p-6 mb-6 text-center">
+          <p className="text-base md:text-lg font-semibold text-purple-900 mb-2">
+            FedEx API を用いた配送業務自動化 Web アプリのデモです
+          </p>
+          <Link
+            href="/about"
+            className="inline-block mt-1 text-purple-700 hover:text-purple-900 font-medium underline underline-offset-4 text-sm md:text-base"
+          >
+            このシステムについて →
+          </Link>
+        </div>
+
         {/* 見積もりフォーム */}
         <QuoteFormComponent
           quoteParams={quoteParams}

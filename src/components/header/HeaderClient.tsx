@@ -68,6 +68,7 @@ export default function HeaderClient({ initialAuth, showAdminNav = true }: Props
         <nav className="flex justify-between items-center h-full">
           <Link href="/" className="text-white text-lg md:text-xl font-normal hover:opacity-80 transition-opacity flex-shrink-0">QuickLabel</Link>
           <div className="flex items-center space-x-3 md:space-x-8 text-sm md:text-base">
+            <Link href="/about" className="text-white hover:opacity-80 transition-opacity">サービス説明</Link>
             {effectiveUser ? (
               <>
                 <Link href="/shipping/new/shipper" className="text-white hover:opacity-80 transition-opacity hidden md:inline">送り状作成</Link>
