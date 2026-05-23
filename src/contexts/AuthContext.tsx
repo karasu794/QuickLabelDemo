@@ -3,6 +3,12 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
+import {
+  isDemoMode,
+  loadDemoSession,
+  clearDemoSession,
+  isDemoUser,
+} from '@/lib/demo/auth'
 
 // 認証状態の型定義
 type AuthStatus = 'AUTHENTICATED' | 'UNAUTHENTICATED'
@@ -112,7 +118,26 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     if (process.env.NODE_ENV === 'development' && false) {
       console.log('[AUTH_CONTEXT] Initializing auth provider with session:', { hasInitialSession: !!initialSession })
     }
+
+    // ─── Demo mode: Supabaseを一切呼ばずローカルセッションで初期化 ───
+    if (isDemoMode) {
+      const demoSession = loadDemoSession()
+      if (demoSession?.user) {
+        setUser(demoSession.user)
+        setAuthStatus('AUTHENTICATED')
+        // デモ管理者判定
+        const role = (demoSession.user.app_metadata as any)?.role
+        setIsAdmin(role === 'admin')
+      } else {
+        setUser(null)
+        setAuthStatus('UNAUTHENTICATED')
+        setIsAdmin(false)
+      }
+      setLoading(false)
+      return // Supabase購読なし
+    }
     
+    // ─── Production mode: Supabase認証 ───
     // 初回に getUser でサーバーCookieと同期されたセッションを取得し、状態を確定
     const init = async () => {
       try {
@@ -164,6 +189,16 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
 
   const signOut = async () => {
     try {
+      // ─── Demo mode: ローカルセッションのみクリア ───
+      if (isDemoMode) {
+        clearDemoSession()
+        setUser(null)
+        setIsAdmin(false)
+        setAuthStatus('UNAUTHENTICATED')
+        return
+      }
+
+      // ─── Production mode ───
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       

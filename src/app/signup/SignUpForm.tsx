@@ -54,6 +54,11 @@ export default function SignUpForm() {
   }
 
   const onSubmit = async (values: SignUpInput) => {
+    // デモモードでは登録を拒否（防御的ガード）
+    if (process.env.NEXT_PUBLIC_APP_ENV === 'demo') {
+      setSubmitError('デモ版では新規登録はできません。')
+      return
+    }
     setIsSubmitting(true)
     setSubmitError(null)
     try {

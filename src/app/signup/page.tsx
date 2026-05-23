@@ -4,7 +4,40 @@ import { Suspense } from 'react'
 import SignUpForm from './SignUpForm'
 import Link from 'next/link'
 
+const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
+
 export default function SignUpPage() {
+  // デモモードでは新規登録を完全にブロック
+  if (IS_DEMO) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-bold text-gray-900">新規登録</h2>
+            </div>
+            <div className="rounded border border-amber-200 bg-amber-50 p-4 text-center">
+              <p className="text-amber-800 font-medium text-sm">
+                デモ版では新規登録はできません。
+              </p>
+              <p className="text-amber-700 text-xs mt-2">
+                デモ用アカウントでログインしてください。
+              </p>
+            </div>
+            <div className="text-center">
+              <Link
+                href="/login"
+                className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-500"
+              >
+                ログインページへ戻る
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">

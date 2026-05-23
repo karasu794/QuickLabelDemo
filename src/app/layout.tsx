@@ -26,7 +26,9 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   // サーバーサイドで初期セッション情報を取得
-  const session = await getSession()
+  // デモモードではSupabaseを呼ばずnullを返す（クライアント側でローカルセッションを使用）
+  const isDemo = (process.env.NEXT_PUBLIC_APP_ENV || process.env.APP_ENV) === 'demo'
+  const session = isDemo ? null : await getSession()
 
   return (
     <html lang="ja">

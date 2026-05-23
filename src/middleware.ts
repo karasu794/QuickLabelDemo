@@ -55,10 +55,15 @@ export async function middleware(req: NextRequest) {
   } catch {}
 
   // 3) Preserve existing Supabase auth refresh behavior for other routes
+  //    In demo mode, skip Supabase session refresh entirely
   const res = NextResponse.next({ request: { headers: requestHeaders } })
   res.headers.set('x-request-id', rid)
-  const supabase = createMiddlewareClient<Database>({ req, res })
-  await supabase.auth.getSession()
+
+  const isDemo = (process.env.NEXT_PUBLIC_APP_ENV || process.env.APP_ENV) === 'demo'
+  if (!isDemo) {
+    const supabase = createMiddlewareClient<Database>({ req, res })
+    await supabase.auth.getSession()
+  }
   return res
 }
 

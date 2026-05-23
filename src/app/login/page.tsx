@@ -19,6 +19,7 @@ function LoginPageContent() {
   const redirectTo = searchParams.get('redirect_to')
 
   const signupUrl = redirectTo ? `/signup?redirect_to=${encodeURIComponent(redirectTo)}` : '/signup'
+  const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
   const enableNew = useMemo(() => {
     if (typeof process !== 'undefined' && typeof process.env !== 'undefined' && process.env.NEXT_PUBLIC_ENABLE_NEW_LOGIN) {
       return String(process.env.NEXT_PUBLIC_ENABLE_NEW_LOGIN).toLowerCase() === 'true'
@@ -42,10 +43,13 @@ function LoginPageContent() {
             {enableNew ? <LoginFormNew /> : <LoginForm />}
           </Suspense>
 
-          <div className="pt-2 text-center text-sm text-gray-600">
-            <span className="block mb-2">アカウントをお持ちでない方</span>
-            <Link href={signupUrl} className="font-medium text-indigo-600 hover:text-indigo-500">新規登録はこちら</Link>
-          </div>
+          {/* デモモードではサインアップリンクを非表示 */}
+          {!IS_DEMO && (
+            <div className="pt-2 text-center text-sm text-gray-600">
+              <span className="block mb-2">アカウントをお持ちでない方</span>
+              <Link href={signupUrl} className="font-medium text-indigo-600 hover:text-indigo-500">新規登録はこちら</Link>
+            </div>
+          )}
 
           <div className="pt-2 text-center text-sm text-gray-600">
             <Link href="/forgot-password" className="underline mr-3">パスワードをお忘れですか？</Link>

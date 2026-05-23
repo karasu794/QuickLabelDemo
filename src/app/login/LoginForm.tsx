@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from '@/lib/supabase/client'
 import { supabase } from '@/lib/supabase/client'
+import { isDemoMode, demoLogin, persistDemoSession } from '@/lib/demo/auth'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -16,15 +17,21 @@ export default function LoginForm() {
 
   const IS_DEMO = process.env.NEXT_PUBLIC_APP_ENV === 'demo'
 
-  const fillDemo = (type: 'user' | 'admin') => {
-    if (type === 'user') {
-      setEmail(process.env.NEXT_PUBLIC_DEMO_USER_EMAIL ?? '')
-      setPassword(process.env.NEXT_PUBLIC_DEMO_USER_PASSWORD ?? '')
-    } else {
-      setEmail(process.env.NEXT_PUBLIC_DEMO_ADMIN_EMAIL ?? '')
-      setPassword(process.env.NEXT_PUBLIC_DEMO_ADMIN_PASSWORD ?? '')
-    }
+  const handleDemoLogin = (type: 'user' | 'admin') => {
+    setIsLoading(true)
     setErrorMessage('')
+    const email = type === 'admin'
+      ? (process.env.NEXT_PUBLIC_DEMO_ADMIN_EMAIL ?? 'demo-admin@example.com')
+      : (process.env.NEXT_PUBLIC_DEMO_USER_EMAIL ?? 'demo@example.com')
+    const result = demoLogin(email)
+    if (result.ok) {
+      persistDemoSession(result.session)
+      const redirectTo = searchParams.get('redirect_to')
+      const nextUrl = redirectTo ? decodeURIComponent(redirectTo) : '/'
+      router.replace(nextUrl)
+      router.refresh()
+    }
+    setIsLoading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,8 +40,9 @@ export default function LoginForm() {
     setErrorMessage('')
 
     try {
+      // ─── Demo mode: Route Handler経由でローカル認証 ───
+      // (サーバー側でSupabaseを呼ばない)
       console.log('🔐 ログイン試行:', { email })
-      // SSR Cookie を確立するため Route Handler 経由でサインイン
       const res = await fetch('/api/auth/sign-in', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,7 +57,6 @@ export default function LoginForm() {
         const errMsg = String(payload?.error || 'ログインに失敗しました')
         console.error('ログインエラー:', errMsg)
 
-        // エラーの種類に応じた処理（文字列マッチ）
         if (/Email not confirmed/i.test(errMsg)) {
           setErrorMessage('メールアドレスが確認されていません。確認メールをご確認ください。')
         } else if (/Invalid login credentials/i.test(errMsg)) {
@@ -61,17 +68,26 @@ export default function LoginForm() {
         }
       } else {
         console.log('✅ ログイン成功:', { email })
-        // クライアント側の Supabase セッションも同期（ヘッダー用）
-        try {
-          const access_token = payload?.access_token
-          const refresh_token = payload?.refresh_token
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token })
+
+        if (IS_DEMO) {
+          // デモモード: ローカルセッションを保存（Supabase setSession不要）
+          const { createDemoSession, resolveDemoUser, getDefaultDemoUser, persistDemoSession: persist } = await import('@/lib/demo/auth')
+          const demoUser = resolveDemoUser(email) ?? getDefaultDemoUser()
+          const session = createDemoSession(demoUser)
+          persist(session)
+        } else {
+          // Production: クライアント側の Supabase セッションも同期
+          try {
+            const access_token = payload?.access_token
+            const refresh_token = payload?.refresh_token
+            if (access_token && refresh_token) {
+              await supabase.auth.setSession({ access_token, refresh_token })
+            }
+          } catch (e) {
+            console.warn('client setSession failed (will rely on SSR cookie only):', e)
           }
-        } catch (e) {
-          console.warn('client setSession failed (will rely on SSR cookie only):', e)
         }
-        // ログイン成功時は元のページまたはトップページに遷移し、即時サーバ再評価
+
         const redirectTo = searchParams.get('redirect_to')
         const nextUrl = redirectTo ? decodeURIComponent(redirectTo) : '/'
         router.replace(nextUrl)
@@ -103,7 +119,7 @@ export default function LoginForm() {
       )}
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {/* デモ環境: クイック入力ボタン */}
+        {/* デモ環境: ワンクリックデモログインボタン */}
         {IS_DEMO && (
           <div style={{
             padding: '1rem',
@@ -113,15 +129,16 @@ export default function LoginForm() {
             marginBottom: '0.5rem',
           }}>
             <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: '#92400e', fontWeight: 'bold' }}>
-              🎯 デモ用クイック入力
+              🎯 デモログイン
             </p>
             <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#a16207' }}>
-              ボタンを押すとメールアドレスとパスワードが自動入力されます。その後「ログイン」を押してください。
+              ボタンを押すとデモユーザーとしてログインします。メールアドレス・パスワードの入力は不要です。
             </p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 type="button"
-                onClick={() => fillDemo('user')}
+                onClick={() => handleDemoLogin('user')}
+                disabled={isLoading}
                 style={{
                   flex: 1,
                   padding: '0.5rem 0.75rem',
@@ -131,14 +148,15 @@ export default function LoginForm() {
                   backgroundColor: '#dbeafe',
                   border: '1px solid #93c5fd',
                   borderRadius: '6px',
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                 }}
               >
-                👤 デモユーザー入力
+                👤 デモユーザーとしてログイン
               </button>
               <button
                 type="button"
-                onClick={() => fillDemo('admin')}
+                onClick={() => handleDemoLogin('admin')}
+                disabled={isLoading}
                 style={{
                   flex: 1,
                   padding: '0.5rem 0.75rem',
@@ -148,10 +166,10 @@ export default function LoginForm() {
                   backgroundColor: '#fed7aa',
                   border: '1px solid #fdba74',
                   borderRadius: '6px',
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                 }}
               >
-                🔧 デモ管理者入力
+                🔧 デモ管理者としてログイン
               </button>
             </div>
           </div>
